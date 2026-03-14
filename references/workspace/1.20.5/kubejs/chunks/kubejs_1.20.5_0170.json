@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0170",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/ClassWrapper.java",
+  "symbol": "ClassWrapper",
+  "signature": "convertJavaToJs; NativeJavaClass; toString",
+  "payload_type": null,
+  "code_example": "// ClassWrapper from ClassWrapper.java\n// Methods: convertJavaToJs, NativeJavaClass, toString",
+  "coverage_status": "generated"
+}

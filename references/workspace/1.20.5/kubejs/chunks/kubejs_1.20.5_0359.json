@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0359",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/tag/TagWrapper.java",
+  "symbol": "TagWrapper",
+  "signature": "TagWrapper; toString; add",
+  "payload_type": null,
+  "code_example": "// TagWrapper from TagWrapper.java\n// Fields:  event,  id,  entries\n// Methods: TagWrapper, toString, add",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0153",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/OrderedCompoundTag.java",
+  "symbol": "OrderedCompoundTag",
+  "signature": "OrderedCompoundTag; super; OrderedCompoundTag",
+  "payload_type": null,
+  "code_example": "// OrderedCompoundTag from OrderedCompoundTag.java\n// Fields:  tagMap, Tag tag\n// Methods: OrderedCompoundTag, super, OrderedCompoundTag",
+  "coverage_status": "generated"
+}

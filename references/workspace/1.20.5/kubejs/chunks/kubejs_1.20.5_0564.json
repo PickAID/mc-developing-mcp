@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0564",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/DetectorBlock.java",
+  "symbol": "DetectorBlock",
+  "signature": "Builder; super; displayName",
+  "payload_type": null,
+  "code_example": "// DetectorBlock from DetectorBlock.java\n// Fields:  detectorId,  detectorId,  detectorId\n// Methods: Builder, super, displayName",
+  "coverage_status": "generated"
+}

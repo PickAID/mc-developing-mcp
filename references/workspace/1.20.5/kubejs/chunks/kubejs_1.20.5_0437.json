@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0437",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/custom/ShearsItemBuilder.java",
+  "symbol": "ShearsItemBuilder",
+  "signature": "isCustomShears; ResourceLocation; ShearsItemBuilder",
+  "payload_type": null,
+  "code_example": "// ShearsItemBuilder from ShearsItemBuilder.java\n// Fields: public static final ResourceLocation TAG,  tool,  speedBaseline\n// Methods: isCustomShears, ResourceLocation, ShearsItemBuilder",
+  "coverage_status": "generated"
+}

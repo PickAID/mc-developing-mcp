@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0149",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/ConsoleJS.java",
+  "symbol": "ConsoleJS",
+  "signature": "getCurrent; getCurrent; ConsoleJS",
+  "payload_type": null,
+  "code_example": "// ConsoleJS from ConsoleJS.java\n// Fields: var cxf, return cxf, private static final Pattern GARBAGE_PATTERN\n// Methods: getCurrent, getCurrent, ConsoleJS",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0429",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/creativetab/CreativeTabContentSupplier.java",
+  "symbol": "CreativeTabContentSupplier",
+  "signature": "Wrapper; accept; getContent",
+  "payload_type": null,
+  "code_example": "// CreativeTabContentSupplier from CreativeTabContentSupplier.java\n// Fields: List<ItemStack> items,  items, CreativeTabContentSupplier DEFAULT\n// Methods: Wrapper, accept, getContent",
+  "coverage_status": "generated"
+}

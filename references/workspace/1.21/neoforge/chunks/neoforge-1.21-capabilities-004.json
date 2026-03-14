@@ -1,0 +1,15 @@
+{
+  "chunk_id": "neoforge-1.21-capabilities-004",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/ItemCapability.java",
+  "symbol": "ItemCapability",
+  "signature": "public class ItemCapability<C, T>",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "capabilities",
+    "items"
+  ],
+  "code_example": "// ItemCapability from ItemCapability.java\n"
+}

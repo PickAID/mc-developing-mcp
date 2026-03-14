@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0509",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "event",
+  "source_file": "event/EventHandler.java",
+  "symbol": "EventHandler",
+  "signature": "EventHandler; hasResult; getHasResult",
+  "payload_type": null,
+  "code_example": "// EventHandler from EventHandler.java\n// Fields: <p><code>public static final EventHandler CLIENT_RIGHT_CLICKED,  group,  name\n// Methods: EventHandler, hasResult, getHasResult",
+  "coverage_status": "generated"
+}

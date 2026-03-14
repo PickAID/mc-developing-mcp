@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0161",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/KubeJSPlugins.java",
+  "symbol": "KubeJSPlugins",
+  "signature": "ModResourceBindings; load; load",
+  "payload_type": null,
+  "code_example": "// KubeJSPlugins from KubeJSPlugins.java\n// Fields: private static final List<KubeJSPlugin> LIST, private static final List<String> GLOBAL_CLASS_FILTER, private static final ModResourceBindings BINDINGS\n// Methods: ModResourceBindings, load, load",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0086",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/BlockBehaviourMixin.java",
+  "symbol": "BlockBehaviourMixin",
+  "signature": "CompoundTag; onRandomTick; RandomTickCallbackJS",
+  "payload_type": null,
+  "code_example": "// BlockBehaviourMixin from BlockBehaviourMixin.java\n// Fields: var id, , at, , cancellable\n// Methods: CompoundTag, onRandomTick, RandomTickCallbackJS",
+  "coverage_status": "generated"
+}

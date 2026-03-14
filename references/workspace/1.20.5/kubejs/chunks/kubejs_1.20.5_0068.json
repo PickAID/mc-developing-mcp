@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0068",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/ServerPlayerKJS.java",
+  "symbol": "ServerPlayerKJS",
+  "signature": "return; SendDataFromServerPayload; PaintPayload",
+  "payload_type": null,
+  "code_example": "// ServerPlayerKJS from ServerPlayerKJS.java\n// Fields: var date, var userlistbansentry, var a\n// Methods: return, SendDataFromServerPayload, PaintPayload",
+  "coverage_status": "generated"
+}

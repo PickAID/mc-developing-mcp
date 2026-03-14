@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0193",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "entity",
+  "source_file": "entity/LivingEntityDropsKubeEvent.java",
+  "symbol": "LivingEntityDropsKubeEvent",
+  "signature": "LivingEntityDropsKubeEvent; getEntity; getSource",
+  "payload_type": null,
+  "code_example": "// LivingEntityDropsKubeEvent from LivingEntityDropsKubeEvent.java\n// Fields:  event,  eventDrops, var e\n// Methods: LivingEntityDropsKubeEvent, getEntity, getSource",
+  "coverage_status": "generated"
+}

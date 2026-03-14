@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0629",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "player",
+  "source_file": "player/PlayerStatsJS.java",
+  "symbol": "PlayerStatsJS",
+  "signature": "PlayerStatsJS; statOf; ResourceLocation",
+  "payload_type": null,
+  "code_example": "// PlayerStatsJS from PlayerStatsJS.java\n// Fields:  player,  statFile\n// Methods: PlayerStatsJS, statOf, ResourceLocation",
+  "coverage_status": "generated"
+}

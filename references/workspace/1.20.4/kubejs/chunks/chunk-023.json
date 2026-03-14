@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-023",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "loot",
+  "source_file": "loot/LootEventJS.java",
+  "symbols": ["LootEventJS", "LootTableModifier"],
+  "coverage_status": "complete",
+  "description": "Loot table modification",
+  "topics": ["loot", "loot-tables", "drops"]
+}

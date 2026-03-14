@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-008",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "client",
+  "source_file": "net/neoforged/neoforge/client/event/RenderGameOverlayEvent.java",
+  "symbols": ["RenderGameOverlayEvent", "Pre", "Post", "Element"],
+  "coverage_status": "complete",
+  "topics": ["client", "rendering", "gui", "overlay", "hud"],
+  "description": "Fired during rendering of game overlays. Used for custom HUD elements and GUI modifications.",
+  "code_example": "// Render custom HUD element\nNeoForge.EVENT_BUS.addListener((RenderGameOverlayEvent.Pre event) -> {\n    if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {\n        // Draw custom overlay\n    }\n});\n\nNeoForge.EVENT_BUS.addListener((RenderGameOverlayEvent.Post event) -> {\n    Minecraft mc = Minecraft.getInstance();\n    // Post-render effects\n});",
+  "source_citation": "net/neoforged/neoforge/client/event/RenderGameOverlayEvent.java"
+}

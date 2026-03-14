@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0356",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/tag/TagEventFilter.java",
+  "symbol": "TagEventFilter",
+  "signature": "of; of; Or",
+  "payload_type": null,
+  "code_example": "// TagEventFilter from TagEventFilter.java\n// Fields: var filters, var regex, var s\n// Methods: of, of, Or",
+  "coverage_status": "generated"
+}

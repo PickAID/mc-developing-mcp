@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0127",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/inject_resources/WorldLoaderPackConfigMixin.java",
+  "symbol": "WorldLoaderPackConfigMixin",
+  "signature": "injectKubeJSPacks; ServerScriptManager",
+  "payload_type": null,
+  "code_example": "// WorldLoaderPackConfigMixin from WorldLoaderPackConfigMixin.java\n// Fields: , at\n// Methods: injectKubeJSPacks, ServerScriptManager",
+  "coverage_status": "generated"
+}

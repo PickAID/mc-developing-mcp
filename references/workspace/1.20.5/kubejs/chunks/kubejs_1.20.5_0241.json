@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0241",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/RecipeKey.java",
+  "symbol": "RecipeKey",
+  "signature": "RecipeKey; hashCode; toString",
+  "payload_type": null,
+  "code_example": "// RecipeKey from RecipeKey.java\n// Fields: var sb,  optional,  optional\n// Methods: RecipeKey, hashCode, toString",
+  "coverage_status": "generated"
+}

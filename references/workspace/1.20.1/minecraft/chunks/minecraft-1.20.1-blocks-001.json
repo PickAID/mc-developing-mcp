@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-blocks-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "blocks",
+  "source_file": "net/minecraft/world/level/block/Block.java",
+  "symbols": [
+    {
+      "name": "Block",
+      "signature": "class Block",
+      "description": "Base class for all blocks"
+    },
+    {
+      "name": "Block.defaultBlockState",
+      "signature": "BlockState defaultBlockState()",
+      "description": "Get default block state"
+    },
+    {
+      "name": "Block.getStateDefinition",
+      "signature": "StateDefinition<Block, BlockState> getStateDefinition()",
+      "description": "Get state definition for block"
+    }
+  ],
+  "code_example": "// Working with blocks\nBlock block = Blocks.DIAMOND_BLOCK;\n\n// Default state\nBlockState state = block.defaultBlockState();\n\n// Get property\nIntegerProperty prop = (IntegerProperty) state.getProperties().iterator().next();\nint value = state.getValue(prop);\n\n// Set property\nBlockState newState = state.setValue(prop, 2);",
+  "topic_tags": ["blocks", "blockstate", "properties"],
+  "coverage_status": "verified"
+}

@@ -1,0 +1,149 @@
+{
+  "part_id": "part-001",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "status": "in_progress",
+  "source_root": "/Users/agenthome/mc-code-exports/1.20.1/kubejs/sources/",
+  "index_file": "references/workspace/1.20.1/kubejs/part-001/index.json",
+  "workspace_files": [
+    "inventory.json",
+    "part-001/index.json",
+    "part-001/source-notes.md",
+    "part-001/routing.json",
+    "part-001/events/",
+    "part-001/builders/",
+    "part-001/entities/",
+    "part-001/registry/",
+    "part-001/recipes/",
+    "part-001/worldgen/"
+  ],
+  "final_docs_targets": [
+    "references/documents/1.20.1/kubejs-api-reference.md"
+  ],
+  "tags": [
+    "events",
+    "builders",
+    "entities",
+    "registry",
+    "recipes",
+    "worldgen",
+    "commands",
+    "loot",
+    "networking",
+    "client",
+    "player",
+    "item",
+    "block",
+    "fluid",
+    "script"
+  ],
+  "topics": [
+    "server events",
+    "client events",
+    "startup events",
+    "player events",
+    "block events",
+    "item events",
+    "entity events",
+    "worldgen events",
+    "recipes",
+    "shaped recipe",
+    "shapeless recipe",
+    "block builder",
+    "item builder",
+    "fluid builder",
+    "entity api",
+    "player api",
+    "living entity api",
+    "registry",
+    "commands",
+    "loot tables"
+  ],
+  "key_classes": [
+    "ServerEvents",
+    "ClientEvents",
+    "StartupEvents",
+    "PlayerEvents",
+    "BlockEvents",
+    "ItemEvents",
+    "EntityEvents",
+    "WorldgenEvents",
+    "RecipesEventJS",
+    "ItemBuilder",
+    "BlockBuilder",
+    "FluidBuilder",
+    "EntityKJS",
+    "PlayerKJS",
+    "LivingEntityKJS",
+    "ItemStackKJS",
+    "RegistryEventJS"
+  ],
+  "source_coverage": {
+    "total_java_files": 678,
+    "classes_in_inventory": 554,
+    "resolved": 554,
+    "unresolved": 0,
+    "coverage_percent": 100.0
+  },
+  "category_coverage": {
+    "events": {
+      "inventory_count": 21,
+      "key_files": [
+        "bindings/event/ServerEvents.java",
+        "bindings/event/ClientEvents.java",
+        "bindings/event/StartupEvents.java",
+        "bindings/event/PlayerEvents.java",
+        "bindings/event/BlockEvents.java",
+        "bindings/event/ItemEvents.java",
+        "bindings/event/EntityEvents.java",
+        "bindings/event/WorldgenEvents.java"
+      ]
+    },
+    "builders": {
+      "inventory_count": 14,
+      "key_files": [
+        "misc/ItemBuilder.java",
+        "misc/BlockBuilder.java",
+        "misc/FluidBuilder.java",
+        "item/creativetab/CreativeTabBuilder.java"
+      ]
+    },
+    "entities": {
+      "inventory_count": 46,
+      "key_files": [
+        "core/EntityKJS.java",
+        "core/PlayerKJS.java",
+        "core/LivingEntityKJS.java",
+        "core/ItemStackKJS.java",
+        "core/BlockKJS.java",
+        "core/LevelKJS.java"
+      ]
+    },
+    "registry": {
+      "inventory_count": 7,
+      "key_files": [
+        "registry/RegistryEventJS.java",
+        "registry/BuilderFactory.java",
+        "registry/RegistryInfo.java"
+      ]
+    },
+    "recipes": {
+      "inventory_count": 76,
+      "key_files": [
+        "recipe/RecipesEventJS.java",
+        "recipe/ShapedRecipeSchema.java",
+        "recipe/ShapelessRecipeSchema.java"
+      ]
+    },
+    "worldgen": {
+      "inventory_count": 33,
+      "key_files": [
+        "level/gen/AddWorldgenEventJS.java",
+        "level/gen/RemoveWorldgenEventJS.java",
+        "level/gen/properties/AddOreProperties.java"
+      ]
+    }
+  },
+  "created_at": "2026-03-12T03:20:00Z",
+  "updated_at": "2026-03-12T03:31:00Z"
+}

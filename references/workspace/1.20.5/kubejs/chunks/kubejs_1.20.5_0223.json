@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0223",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ErroredKubeRecipe.java",
+  "symbol": "ErroredKubeRecipe",
+  "signature": "BaseFunction; call; ErroredKubeRecipe",
+  "payload_type": null,
+  "code_example": "// ErroredKubeRecipe from ErroredKubeRecipe.java\n// Fields: public final BaseFunction dummyFunction\n// Methods: BaseFunction, call, ErroredKubeRecipe",
+  "coverage_status": "generated"
+}

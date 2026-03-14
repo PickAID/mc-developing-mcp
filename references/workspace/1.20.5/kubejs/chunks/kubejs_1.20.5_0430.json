@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0430",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/creativetab/CreativeTabKubeEvent.java",
+  "symbol": "CreativeTabKubeEvent",
+  "signature": "CreativeTabKubeEvent; setDisplayName; setIcon",
+  "payload_type": null,
+  "code_example": "// CreativeTabKubeEvent from CreativeTabKubeEvent.java\n// Methods: CreativeTabKubeEvent, setDisplayName, setIcon",
+  "coverage_status": "generated"
+}

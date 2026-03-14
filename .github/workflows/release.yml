@@ -1,0 +1,200 @@
+name: Release on version change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - version.json
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── 2. Read version ───────────────────────────────────────────────────────
+      - name: Read version from version.json
+        id: version
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('version.json'))['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+      # ── 3. Check if release already exists (skip if duplicate) ───────────────
+      - name: Check for existing release
+        id: check_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.version.outputs.tag }} already exists — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.version.outputs.tag }} does not exist — will create."
+          fi
+
+      # ── 4. Download large SQLite from previous release ────────────────────────
+      #    Tries to grab minecraft_sources.sqlite from the most recent release asset.
+      #    If none found, the full zip won't be created (lite zip only).
+      - name: Download sources SQLite from previous release
+        id: dl_sqlite
+        if: steps.check_release.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p data
+          echo "Attempting to download minecraft_sources.sqlite from latest release..."
+
+          # Get the most recent release that has the asset (skip the one we're about to create)
+          ASSET_URL=$(gh release list --limit 10 --json tagName,assets \
+            | python3 -c "
+          import sys, json
+          releases = json.load(sys.stdin)
+          current = '${{ steps.version.outputs.tag }}'
+          for r in releases:
+              if r['tagName'] == current:
+                  continue
+              for a in r.get('assets', []):
+                  if a['name'] == 'minecraft_sources.sqlite':
+                      print(a['url'])
+                      sys.exit(0)
+          " 2>/dev/null || true)
+
+          if [ -n "$ASSET_URL" ]; then
+            echo "Found asset at: $ASSET_URL"
+            gh release download --pattern "minecraft_sources.sqlite" \
+              $(gh release list --limit 10 --json tagName,assets \
+                | python3 -c "
+          import sys, json
+          releases = json.load(sys.stdin)
+          current = '${{ steps.version.outputs.tag }}'
+          for r in releases:
+              if r['tagName'] == current:
+                  continue
+              for a in r.get('assets', []):
+                  if a['name'] == 'minecraft_sources.sqlite':
+                      print(r['tagName'])
+                      sys.exit(0)
+          ") --dir data/ 2>/dev/null && echo "has_sources=true" >> "$GITHUB_OUTPUT" || echo "has_sources=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No previous release with minecraft_sources.sqlite found."
+            echo "has_sources=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── 5. Build lite zip (no large database) ────────────────────────────────
+      - name: Build lite zip
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          ZIPNAME="mc-developing-mcp-lite-${TAG}.zip"
+
+          # Include everything except sources/, large SQLite, and dev artifacts
+          zip -r "$ZIPNAME" . \
+            --exclude "sources/*" \
+            --exclude "data/minecraft_sources.sqlite" \
+            --exclude "data/minecraft_sources.sqlite-wal" \
+            --exclude "data/minecraft_sources.sqlite-shm" \
+            --exclude ".git/*" \
+            --exclude "__pycache__/*" \
+            --exclude "*.pyc" \
+            --exclude ".DS_Store" \
+            --exclude "reports/*" \
+            --exclude "*.zip"
+
+          echo "Lite zip created: $ZIPNAME ($(du -sh "$ZIPNAME" | cut -f1))"
+          echo "lite_zip=$ZIPNAME" >> "$GITHUB_ENV"
+
+      # ── 6. Build full zip (includes large database if available) ─────────────
+      - name: Build full zip
+        if: >
+          steps.check_release.outputs.exists == 'false' &&
+          steps.dl_sqlite.outputs.has_sources == 'true'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          ZIPNAME="mc-developing-mcp-full-${TAG}.zip"
+
+          # Same as lite but include the sources SQLite we just downloaded
+          zip -r "$ZIPNAME" . \
+            --exclude "sources/*" \
+            --exclude "data/minecraft_sources.sqlite-wal" \
+            --exclude "data/minecraft_sources.sqlite-shm" \
+            --exclude ".git/*" \
+            --exclude "__pycache__/*" \
+            --exclude "*.pyc" \
+            --exclude ".DS_Store" \
+            --exclude "reports/*" \
+            --exclude "*-lite-*.zip"
+
+          echo "Full zip created: $ZIPNAME ($(du -sh "$ZIPNAME" | cut -f1))"
+          echo "full_zip=$ZIPNAME" >> "$GITHUB_ENV"
+
+      # ── 7. Create GitHub Release ──────────────────────────────────────────────
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          DESCRIPTION=$(python3 -c "import json; d=json.load(open('version.json')); print(d.get('description',''))")
+
+          # Build release notes
+          cat > release_notes.md << EOF
+          ## mc-developing-mcp ${VERSION}
+
+          ${DESCRIPTION}
+
+          ### Downloads
+
+          | File | Contents | Size |
+          |---|---|---|
+          | \`mc-developing-mcp-full-${TAG}.zip\` | Complete package (code + both databases) | ~1.3 GB |
+          | \`mc-developing-mcp-lite-${TAG}.zip\` | Code + docs database only (no sources DB) | ~50 MB |
+          | \`minecraft_sources.sqlite\` | Sources database standalone | ~1.2 GB |
+          | \`minecraft_docs.sqlite\` | Docs database standalone | ~20 MB |
+
+          ### Quick start
+
+          Download \`mc-developing-mcp-full-${TAG}.zip\`, extract, then see [README](.github/READMEEN.md) for setup.
+
+          If the full zip is not available (first release), download the lite zip and run:
+          \`\`\`bash
+          python scripts/download_release.py
+          \`\`\`
+          EOF
+
+          # Create the release
+          gh release create "$TAG" \
+            --title "mc-developing-mcp ${VERSION}" \
+            --notes-file release_notes.md
+
+          # Upload lite zip (always available)
+          gh release upload "$TAG" "${{ env.lite_zip }}"
+
+          # Upload full zip if built
+          if [ -n "${{ env.full_zip }}" ] && [ -f "${{ env.full_zip }}" ]; then
+            gh release upload "$TAG" "${{ env.full_zip }}"
+          fi
+
+          # Upload docs SQLite (small, always useful as standalone)
+          if [ -f "data/minecraft_docs.sqlite" ]; then
+            gh release upload "$TAG" "data/minecraft_docs.sqlite"
+          fi
+
+          # Upload sources SQLite if available
+          if [ -f "data/minecraft_sources.sqlite" ]; then
+            gh release upload "$TAG" "data/minecraft_sources.sqlite"
+          fi
+
+          echo "Release $TAG created successfully."

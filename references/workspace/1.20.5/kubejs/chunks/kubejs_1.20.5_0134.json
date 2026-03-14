@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0134",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/MutableBoolean.java",
+  "symbol": "MutableBoolean",
+  "signature": "MutableBoolean",
+  "payload_type": null,
+  "code_example": "// MutableBoolean from MutableBoolean.java\n// Methods: MutableBoolean",
+  "coverage_status": "generated"
+}

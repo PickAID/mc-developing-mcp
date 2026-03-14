@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0282",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/TimeComponent.java",
+  "symbol": "TimeComponent",
+  "signature": "TimeComponent; TimeComponent; TimeComponent",
+  "payload_type": null,
+  "code_example": "// TimeComponent from TimeComponent.java\n// Fields: public static final TimeComponent TICKS, public static final TimeComponent SECONDS, public static final TimeComponent MINUTES\n// Methods: TimeComponent, TimeComponent, TimeComponent",
+  "coverage_status": "generated"
+}

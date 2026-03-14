@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0265",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/MappingRecipeComponent.java",
+  "symbol": "MappingRecipeComponent",
+  "signature": "MappingRecipeComponent; componentType; read",
+  "payload_type": null,
+  "code_example": "// MappingRecipeComponent from MappingRecipeComponent.java\n// Methods: MappingRecipeComponent, componentType, read",
+  "coverage_status": "generated"
+}

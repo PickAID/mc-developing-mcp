@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0462",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "registry/RegistryCallback.java",
+  "symbol": "RegistryCallback",
+  "signature": "accept",
+  "payload_type": null,
+  "code_example": "// RegistryCallback from RegistryCallback.java\n// Methods: accept",
+  "coverage_status": "generated"
+}

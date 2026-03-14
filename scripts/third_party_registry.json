@@ -1,0 +1,277 @@
+{
+  "libraries": [
+    {
+      "name": "geckolib",
+      "repo": "bernie-g/geckolib",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+      }
+    },
+    {
+      "name": "curios",
+      "repo": "TheIllusiveC4/Curios",
+      "versions": {
+        "1.20.1": { "ref": "1.20.x", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+      }
+    },
+    {
+      "name": "ldlib",
+      "repo": "Low-Drag-MC/LDLib-MultiLoader",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["common/src/main/java", "forge/src/main/java"] }
+      }
+    },
+    {
+      "name": "ldlib2",
+      "repo": "Low-Drag-MC/LDLib2",
+      "versions": {
+        "1.21.1": { "ref": "1.21", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "architectury",
+      "repo": "architectury/architectury-api",
+      "versions": {
+        "1.20.1": { "ref": "1.20", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
+        "1.21.1": { "ref": "1.21", "source_dirs": ["common/src/main/java", "neoforge/src/main/java", "fabric/src/main/java"] }
+      }
+    },
+    {
+      "name": "citadel",
+      "repo": "AlexModGuy/Citadel",
+      "versions": {
+        "1.20.1": { "ref": "1.20", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "caelus",
+      "repo": "illusivesoulworks/caelus",
+      "versions": {
+        "1.20.1": { "ref": "1.20.x", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
+        "1.21.1": { "ref": "1.21.x", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+      }
+    },
+    {
+      "name": "cloth-config",
+      "repo": "shedaniel/cloth-config",
+      "versions": {
+        "1.20.1": { "ref": "v11", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
+        "1.21.1": { "ref": "v15", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+      }
+    },
+    {
+      "name": "yacl",
+      "repo": "isXander/YetAnotherConfigLib",
+      "versions": {
+        "1.20.1": { "ref": "main", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "create",
+      "repo": "Creators-of-Create/Create",
+      "versions": {
+        "1.20.1": { "ref": "mc1.20.1/dev", "source_dirs": ["src/main/java"] },
+        "1.21.1": { "ref": "mc1.21.1/dev", "source_dirs": ["src/main/java"] }
+      }
+    },
+    {
+      "name": "ftb-library",
+      "repo": "FTBTeam/FTB-Library",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1/dev", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
+        "1.21.1": { "ref": "1.21.1/dev", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+      }
+    },
+    {
+      "name": "registrate",
+      "repo": "tterrag1098/Registrate",
+      "versions": {
+        "1.20.1": { "ref": "1.20", "source_dirs": ["src/main/java"] }
+      }
+    },
+    {
+      "name": "guideme",
+      "repo": "AppliedEnergistics/GuideME",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "midnightlib",
+      "repo": "TeamMidnightDust/MidnightLib",
+      "versions": {
+        "1.20.1": { "ref": "architectury-1.20.1", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
+        "1.21.1": { "ref": "architectury-1.21.1", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+      }
+    },
+    {
+      "name": "multiblocked2",
+      "repo": "Low-Drag-MC/Multiblocked2",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "photon",
+      "repo": "Low-Drag-MC/Photon",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "entityjs",
+      "repo": "liopyu/EntityJS",
+      "versions": {
+        "1.20.1": { "ref": "EntityJS-1.20.1-forge", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "EntityJS-1.21-neo", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "lootjs",
+      "repo": "AlmostReliable/lootjs",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "ponderjs",
+      "repo": "AlmostReliable/ponderjs",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1-forge", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "renderjs",
+      "repo": "ch1335/RenderJS",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "neoforge-1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "geckojs",
+      "repo": "westernat/GeckoJS",
+      "versions": {
+        "1.20.1": { "ref": "2001/forge", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "animationjs",
+      "repo": "liopyu/AnimationJS",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "advancementjs",
+      "repo": "westernat/AdvancementJS",
+      "versions": {
+        "1.20.1": { "ref": "2001/forge", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubejs-additions",
+      "repo": "Hunter19823/kubejsadditions",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "morejs",
+      "repo": "AlmostReliable/morejs",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "player-animator",
+      "repo": "liopyu/liosplayerAnimatorAPI",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubejs-offline",
+      "repo": "Hunter19823/kubejsoffline",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubeutils",
+      "repo": "Nanite/KubeUtils",
+      "versions": {
+        "1.20.1": { "ref": "mc/1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "mc/1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubeloader",
+      "repo": "WhiseNT/kubeloader",
+      "versions": {
+        "1.20.1": { "ref": "Forge-1201", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubepackages",
+      "repo": "ZZZank/KubePackages",
+      "versions": {
+        "1.20.1": { "ref": "main", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "modifyjs",
+      "repo": "AnNingUI/ModifyJs",
+      "versions": {
+        "1.20.1": { "ref": "main", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "keybindjs",
+      "repo": "yiran1457/KeyBindJS",
+      "versions": {
+        "1.21.1": { "ref": "neoforge-1.21.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "fetchjs",
+      "repo": "Mafuyu404/FetchJS",
+      "versions": {
+        "1.21.1": { "ref": "1.21neo", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "filesjs",
+      "repo": "xiaoliziawa/Files-JS",
+      "versions": {
+        "1.21.1": { "ref": "1.21.1-neoforge", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "startres",
+      "repo": "zhiyinaitaimei/startres-mod",
+      "versions": {
+        "1.20.1": { "ref": "main", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "eventjs",
+      "repo": "ZZZank/EventJS",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] }
+      }
+    }
+  ]
+}

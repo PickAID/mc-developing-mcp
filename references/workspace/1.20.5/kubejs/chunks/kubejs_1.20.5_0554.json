@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0554",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/screen/LineObject.java",
+  "symbol": "LineObject",
+  "signature": "LineObject; load; draw",
+  "payload_type": null,
+  "code_example": "// LineObject from LineObject.java\n// Fields: public Unit color, public Unit x2, public Unit y2\n// Methods: LineObject, load, draw",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,32 @@
+{
+  "chunk_id": "nf-1.21.1-001",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "category": "attachments",
+  "source_files": [
+    "net/neoforged/neoforge/attachment/AttachmentHolder.java",
+    "net/neoforged/neoforge/attachment/AttachmentInternals.java",
+    "net/neoforged/neoforge/attachment/AttachmentSync.java",
+    "net/neoforged/neoforge/attachment/AttachmentSyncHandler.java",
+    "net/neoforged/neoforge/attachment/AttachmentType.java",
+    "net/neoforged/neoforge/attachment/IAttachmentCopyHandler.java",
+    "net/neoforged/neoforge/attachment/IAttachmentHolder.java",
+    "net/neoforged/neoforge/attachment/IAttachmentSerializer.java",
+    "net/neoforged/neoforge/attachment/LevelAttachmentsSavedData.java"
+  ],
+  "symbols": [
+    "AttachmentHolder",
+    "AttachmentInternals",
+    "AttachmentSync",
+    "AttachmentSyncHandler",
+    "AttachmentType",
+    "IAttachmentCopyHandler",
+    "IAttachmentHolder",
+    "IAttachmentSerializer",
+    "LevelAttachmentsSavedData"
+  ],
+  "description": "NeoForge attachment system for data storage",
+  "topic_tags": ["attachments", "data", "sync", "serialization"],
+  "code_example": "// Attachment APIs are defined in AttachmentType and IAttachmentSerializer.\n// Use AttachmentHolder/IAttachmentHolder to access per-object attachment storage.\n",
+  "coverage_status": "verified"
+}

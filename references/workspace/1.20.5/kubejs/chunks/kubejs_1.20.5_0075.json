@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0075",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/BlockStateKJS.java",
+  "symbol": "BlockStateKJS",
+  "signature": "NoMixinException; NoMixinException; NoMixinException",
+  "payload_type": null,
+  "code_example": "// BlockStateKJS from BlockStateKJS.java\n// Methods: NoMixinException, NoMixinException, NoMixinException",
+  "coverage_status": "generated"
+}

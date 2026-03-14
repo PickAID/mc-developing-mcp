@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_014",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "internal",
+  "topic": "internal_systems",
+  "source_file": "net/neoforged/neoforge/internal/NeoForgeVersion.java",
+  "symbols": ["NeoForgeVersion", "BaseEventHandler", "VersionDeprecatedException"],
+  "topic_tags": ["internal", "versioning"],
+  "coverage_status": "verified",
+  "line_count": 150,
+  "description": "Internal NeoForge version and compatibility systems",
+  "code_example": "// NeoForgeVersion from internal package\n"
+}

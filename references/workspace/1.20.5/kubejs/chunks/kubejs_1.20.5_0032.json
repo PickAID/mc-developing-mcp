@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0032",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "network",
+  "source_file": "net/SyncStagesPayload.java",
+  "symbol": "SyncStagesPayload",
+  "signature": "SyncStagesPayload; type; handle",
+  "payload_type": null,
+  "code_example": "// SyncStagesPayload from SyncStagesPayload.java\n// Fields: public static final StreamCodec<ByteBuf, SyncStagesPayload> STREAM_CODEC\n// Methods: SyncStagesPayload, type, handle",
+  "coverage_status": "generated"
+}

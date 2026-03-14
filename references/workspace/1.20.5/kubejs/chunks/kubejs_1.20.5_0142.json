@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0142",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/JsonSerializable.java",
+  "symbol": "JsonSerializable",
+  "signature": "toJsonJS",
+  "payload_type": null,
+  "code_example": "// JsonSerializable from JsonSerializable.java\n// Methods: toJsonJS",
+  "coverage_status": "generated"
+}

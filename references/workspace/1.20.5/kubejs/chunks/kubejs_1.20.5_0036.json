@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0036",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "network",
+  "source_file": "net/AddStagePayload.java",
+  "symbol": "AddStagePayload",
+  "signature": "AddStagePayload; type; handle",
+  "payload_type": null,
+  "code_example": "// AddStagePayload from AddStagePayload.java\n// Fields: public static final StreamCodec<ByteBuf, AddStagePayload> STREAM_CODEC, var p0, var p\n// Methods: AddStagePayload, type, handle",
+  "coverage_status": "generated"
+}

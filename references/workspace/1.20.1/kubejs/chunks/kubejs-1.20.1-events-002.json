@@ -1,0 +1,120 @@
+{
+  "chunk_id": "kubejs-1.20.1-events-002",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "events",
+  "source_file": "bindings/event/ClientEvents.java",
+  "symbols": [
+    {
+      "symbol": "ClientEvents.HIGH_ASSETS",
+      "signature": "EventHandler HIGH_ASSETS",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.highPriorityAssets((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "highpriorityassets"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.INIT",
+      "signature": "EventHandler INIT",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.init((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "init"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.LOGGED_IN",
+      "signature": "EventHandler LOGGED_IN",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.loggedIn((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "loggedin"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.LOGGED_OUT",
+      "signature": "EventHandler LOGGED_OUT",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.loggedOut((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "loggedout"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.TICK",
+      "signature": "EventHandler TICK",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.tick((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "tick"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.PAINTER_UPDATED",
+      "signature": "EventHandler PAINTER_UPDATED",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.painterUpdated((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "painterupdated"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.DEBUG_LEFT",
+      "signature": "EventHandler DEBUG_LEFT",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.leftDebugInfo((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "leftdebuginfo"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.DEBUG_RIGHT",
+      "signature": "EventHandler DEBUG_RIGHT",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.rightDebugInfo((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "rightdebuginfo"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.PAINT_SCREEN",
+      "signature": "EventHandler PAINT_SCREEN",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.paintScreen((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "paintscreen"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.ATLAS_SPRITE_REGISTRY",
+      "signature": "EventHandler ATLAS_SPRITE_REGISTRY",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.atlasSpriteRegistry((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "atlasspriteregistry"
+      ]
+    },
+    {
+      "symbol": "ClientEvents.LANG",
+      "signature": "EventHandler LANG",
+      "payload_type": "EventJS",
+      "code_example": "ClientEvents.lang((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "lang"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

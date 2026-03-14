@@ -1,0 +1,62 @@
+{
+  "part_id": "part-001",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "routes": [
+    {
+      "path": "/neoforge/attachments/**",
+      "category": "attachments",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/capabilities/**",
+      "category": "capabilities",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/client/**",
+      "category": "client",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/common/**",
+      "category": "common",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/events/**",
+      "category": "events",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/fluids/**",
+      "category": "fluids",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/items/**",
+      "category": "items",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/networking/**",
+      "category": "networking",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/registries/**",
+      "category": "registries",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/server/**",
+      "category": "server",
+      "chunk_ids": []
+    },
+    {
+      "path": "/neoforge/**",
+      "category": "core",
+      "chunk_ids": []
+    }
+  ]
+}

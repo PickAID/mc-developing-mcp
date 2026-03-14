@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0497",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "api",
+  "source_file": "bindings/event/PlayerEvents.java",
+  "symbol": "PlayerEvents",
+  "signature": "Extra; transformMenuType",
+  "payload_type": null,
+  "code_example": "// PlayerEvents from PlayerEvents.java\n// Fields: Extra SUPPORTS_MENU_TYPE, var id, return id\n// Methods: Extra, transformMenuType",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0293",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/DynamicRecipeComponent.java",
+  "symbol": "DynamicRecipeComponent",
+  "signature": "DynamicRecipeComponent; create",
+  "payload_type": null,
+  "code_example": "// DynamicRecipeComponent from DynamicRecipeComponent.java\n// Methods: DynamicRecipeComponent, create",
+  "coverage_status": "generated"
+}

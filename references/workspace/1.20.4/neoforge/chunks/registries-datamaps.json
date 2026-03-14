@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-019",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "registries",
+  "source_file": "net/neoforged/neoforge/registries/datamaps/RegisterDataMapTypesEvent.java",
+  "symbols": ["RegisterDataMapTypesEvent", "register", "DataMapType"],
+  "coverage_status": "complete",
+  "topics": ["datamaps", "data_driven", "sync", "world_data"],
+  "description": "Event for registering custom data maps. Allows syncing custom data with worlds and data packs.",
+  "code_example": "// Register custom data map\n@SubscribeEvent\npublic static void registerDataMaps(RegisterDataMapTypesEvent event) {\n    event.register(\n        Registries.BLOCK,\n        DataMapBuilder.<Block, Integer>builder()\n            .sync()\n            .build(new ResourceLocation(MODID, \"hardness\"))\n    );\n}",
+  "source_citation": "net/neoforged/neoforge/registries/datamaps/RegisterDataMapTypesEvent.java"
+}

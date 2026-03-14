@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0434",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/creativetab/CreativeTabCallback.java",
+  "symbol": "CreativeTabCallback",
+  "signature": "addAfter; addBefore; remove",
+  "payload_type": null,
+  "code_example": "// CreativeTabCallback from CreativeTabCallback.java\n// Methods: addAfter, addBefore, remove",
+  "coverage_status": "generated"
+}

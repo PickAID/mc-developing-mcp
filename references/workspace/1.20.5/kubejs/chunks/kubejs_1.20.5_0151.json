@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0151",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/ModResourceBindings.java",
+  "symbol": "ModResourceBindings",
+  "signature": "addBindings; readBindings; createProvider",
+  "payload_type": null,
+  "code_example": "// ModResourceBindings from ModResourceBindings.java\n// Fields: private final Map<String, Collection<BindingProvider>> bindings, var modName, var providers\n// Methods: addBindings, readBindings, createProvider",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0212",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/jei/InformationJEIKubeEvent.java",
+  "symbol": "InformationJEIKubeEvent",
+  "signature": "InformationJEIEventJS; addItem; addFluid",
+  "payload_type": null,
+  "code_example": "// InformationJEIKubeEvent from InformationJEIKubeEvent.java\n// Fields:  registration, var targets, var manager\n// Methods: InformationJEIEventJS, addItem, addFluid",
+  "coverage_status": "generated"
+}

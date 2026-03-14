@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-012",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "items",
+  "source_file": "net/neoforged/neoforge/capabilities/ItemCapability.java",
+  "symbols": ["ItemCapability", "ItemStackCapabilityCache", "IItemCapabilityProvider"],
+  "coverage_status": "verified",
+  "topics": ["capabilities", "items", "item_stacks", "data_storage"],
+  "topic_tags": ["capabilities", "items", "item-stacks", "storage"],
+  "content": "ItemCapability provides access to capabilities attached to ItemStacks. It allows storing custom data on items that persists across sessions.",
+  "code_example": "import net.neoforged.neoforge.capabilities.ItemCapability;\n\n// Define a capability for items\nItemCapability<MyData> CAPABILITY = ItemCapability.create(\n    () -> MyData.CODEC,\n    () -> MyData.NONE\n);\n\n// Query from item stack\nMyData data = stack.get(CAPABILITY).orElse(MyData.NONE);\n\n// Modify data\nstack.modify(CAPABILITY, data -> data.setValue(5));"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0214",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/jei/RemoveJEICategoriesKubeEvent.java",
+  "symbol": "RemoveJEICategoriesKubeEvent",
+  "signature": "RemoveJEICategoriesKubeEvent; getCategories; remove",
+  "payload_type": null,
+  "code_example": "// RemoveJEICategoriesKubeEvent from RemoveJEICategoriesKubeEvent.java\n// Fields:  runtime,  categoriesRemoved,  categoryLookup\n// Methods: RemoveJEICategoriesKubeEvent, getCategories, remove",
+  "coverage_status": "generated"
+}

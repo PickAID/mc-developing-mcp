@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0397",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "generator",
+  "source_file": "generator/AssetJsonGenerator.java",
+  "symbol": "AssetJsonGenerator",
+  "signature": "AssetJsonGenerator; super; blockState",
+  "payload_type": null,
+  "code_example": "// AssetJsonGenerator from AssetJsonGenerator.java\n// Fields: var gen, var gen, var gen\n// Methods: AssetJsonGenerator, super, blockState",
+  "coverage_status": "generated"
+}

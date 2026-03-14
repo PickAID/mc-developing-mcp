@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-008",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/RegisterCapabilitiesEvent.java",
+  "symbols": ["RegisterCapabilitiesEvent", "ICapabilityProvider", "CapabilityRegistry"],
+  "coverage_status": "verified",
+  "topics": ["capabilities", "registration", "providers", "events"],
+  "topic_tags": ["capabilities", "registration", "providers", "events"],
+  "content": "RegisterCapabilitiesEvent is fired during mod loading to allow mods to register capability providers for blocks, items, and entities.\n\nRegistration methods:\n- registerBlockEntity(): For block entities\n- registerBlock(): For blocks without block entities\n- registerEntity(): For entities\n- registerItemStack(): For item stacks",
+  "code_example": "import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;\nimport net.neoforged.neoforge.capabilities.Capabilities;\n\nmodBus.addListener((RegisterCapabilitiesEvent event) -> {\n    // Register for block entity\n    event.registerBlockEntity(\n        Capabilities.ItemHandler.BLOCK,\n        MY_BLOCK_ENTITY_TYPE,\n        (be, side) -> be.getInventory()\n    );\n    \n    // Register for plain block\n    event.registerBlock(\n        Capabilities.ItemHandler.BLOCK,\n        (level, pos, state, be, side) -> new MyItemHandler(),\n        MY_BLOCK\n    );\n});"
+}

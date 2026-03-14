@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0322",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ingredient/CreativeTabIngredient.java",
+  "symbol": "CreativeTabIngredient",
+  "signature": "CreativeTabIngredient; getType; test",
+  "payload_type": null,
+  "code_example": "// CreativeTabIngredient from CreativeTabIngredient.java\n// Fields: public static final MapCodec<CreativeTabIngredient> CODEC\n// Methods: CreativeTabIngredient, getType, test",
+  "coverage_status": "generated"
+}

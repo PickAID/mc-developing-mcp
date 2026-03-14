@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0402",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/MutableToolTier.java",
+  "symbol": "MutableToolTier",
+  "signature": "MutableToolTier; getUses; setUses",
+  "payload_type": null,
+  "code_example": "// MutableToolTier from MutableToolTier.java\n// Fields:  parent,  uses,  speed\n// Methods: MutableToolTier, getUses, setUses",
+  "coverage_status": "generated"
+}

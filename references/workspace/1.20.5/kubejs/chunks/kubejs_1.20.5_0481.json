@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0481",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "level",
+  "source_file": "level/ruletest/AlwaysFalseRuleTest.java",
+  "symbol": "AlwaysFalseRuleTest",
+  "signature": "AlwaysFalseRuleTest; AlwaysFalseRuleTest; test",
+  "payload_type": null,
+  "code_example": "// AlwaysFalseRuleTest from AlwaysFalseRuleTest.java\n// Fields: public static final AlwaysFalseRuleTest INSTANCE, public static final MapCodec<AlwaysFalseRuleTest> CODEC\n// Methods: AlwaysFalseRuleTest, AlwaysFalseRuleTest, test",
+  "coverage_status": "generated"
+}

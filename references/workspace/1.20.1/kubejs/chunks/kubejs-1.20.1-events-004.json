@@ -1,0 +1,130 @@
+{
+  "chunk_id": "kubejs-1.20.1-events-004",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "events",
+  "source_file": "bindings/event/PlayerEvents.java",
+  "symbols": [
+    {
+      "symbol": "PlayerEvents.LOGGED_IN",
+      "signature": "EventHandler LOGGED_IN",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.loggedIn((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "loggedin"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.LOGGED_OUT",
+      "signature": "EventHandler LOGGED_OUT",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.loggedOut((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "loggedout"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.RESPAWNED",
+      "signature": "EventHandler RESPAWNED",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.respawned((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "respawned"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.TICK",
+      "signature": "EventHandler TICK",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.tick((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "tick"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.CHAT",
+      "signature": "EventHandler CHAT",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.chat((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "chat"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.DECORATE_CHAT",
+      "signature": "EventHandler DECORATE_CHAT",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.decorateChat((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "decoratechat"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.ADVANCEMENT",
+      "signature": "EventHandler ADVANCEMENT",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.advancement((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "advancement"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.INVENTORY_OPENED",
+      "signature": "EventHandler INVENTORY_OPENED",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.inventoryOpened((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "inventoryopened"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.INVENTORY_CLOSED",
+      "signature": "EventHandler INVENTORY_CLOSED",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.inventoryClosed((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "inventoryclosed"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.INVENTORY_CHANGED",
+      "signature": "EventHandler INVENTORY_CHANGED",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.inventoryChanged((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "inventorychanged"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.CHEST_OPENED",
+      "signature": "EventHandler CHEST_OPENED",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.chestOpened((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "chestopened"
+      ]
+    },
+    {
+      "symbol": "PlayerEvents.CHEST_CLOSED",
+      "signature": "EventHandler CHEST_CLOSED",
+      "payload_type": "EventJS",
+      "code_example": "PlayerEvents.chestClosed((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "chestclosed"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0179",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "stages",
+  "source_file": "stages/StageEvents.java",
+  "symbol": "StageEvents",
+  "signature": "create; StageCreationEvent; TagWrapperStages",
+  "payload_type": null,
+  "code_example": "// StageEvents from StageEvents.java\n// Fields: Event<Consumer<StageCreationEvent>> OVERRIDE_CREATION, var event, return player\n// Methods: create, StageCreationEvent, TagWrapperStages",
+  "coverage_status": "generated"
+}

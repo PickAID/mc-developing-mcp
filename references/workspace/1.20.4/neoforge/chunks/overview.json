@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-022",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "overview",
+  "source_file": "net/neoforged/neoforge/NeoForge.java",
+  "symbols": ["NeoForge", "EVENT_BUS", "TENDRIS", "getVersion"],
+  "coverage_status": "complete",
+  "topics": ["overview", "api", "main_class", "events"],
+  "description": "Main entry point for NeoForge API. Provides access to event bus and core functionality.",
+  "code_example": "// Access NeoForge event bus\nNeoForge.EVENT_BUS.addListener(MyEventClass::onEvent);\n\n// Get version\nString version = NeoForge.getVersion();\n\n// Check if modding environment\nboolean isDedicatedServer = NeoForge.TENDRIS.isDedicatedServer();",
+  "source_citation": "net/neoforged/neoforge/NeoForge.java"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0133",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/CollectionTagWrapper.java",
+  "symbol": "CollectionTagWrapper",
+  "signature": "CollectionTagWrapper; convertJavaToJs; NativeJavaList",
+  "payload_type": null,
+  "code_example": "// CollectionTagWrapper from CollectionTagWrapper.java\n// Methods: CollectionTagWrapper, convertJavaToJs, NativeJavaList",
+  "coverage_status": "generated"
+}

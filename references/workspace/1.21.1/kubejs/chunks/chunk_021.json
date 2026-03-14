@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_021",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "recipe_schema",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/recipe/RecipeSchemaProvider.java",
+  "symbols": ["RecipeSchemaProvider", "registerSchema", "shaped", "shapeless", "smelting", "blasting", "smithing", "stonecutter"],
+  "topic_tags": ["kubejs", "recipes", "schema"],
+  "coverage_status": "verified",
+  "code": "public class RecipeSchemaProvider {\n\tprivate static final Map<String, RecipeSchema> SCHEMAS = new HashMap<>();\n\n\tpublic static void registerSchema(String type, RecipeSchema schema) {\n\t\tSCHEMAS.put(type, schema);\n\t}\n\n\tpublic static RecipeSchema getSchema(String type) {\n\t\treturn SCHEMAS.get(type);\n\t}\n\n\tpublic static void init() {\n\t\tregisterSchema(\"shaped\", new ShapedRecipeSchema());\n\t\tregisterSchema(\"shapeless\", new ShapelessRecipeSchema());\n\t\tregisterSchema(\"smelting\", new CookingRecipeSchema(\"smelting\"));\n\t\tregisterSchema(\"blasting\", new CookingRecipeSchema(\"blasting\"));\n\t\tregisterSchema(\"smoking\", new CookingRecipeSchema(\"smoking\"));\n\t\tregisterSchema(\"campfire_cooking\", new CookingRecipeSchema(\"campfire_cooking\"));\n\t\tregisterSchema(\"smithing_transform\", new SmithingTransformRecipeSchema());\n\t\tregisterSchema(\"stonecutting\", new StonecuttingRecipeSchema());\n\t}\n\n\tpublic static void registerDefaults() {\n\t\tregisterSchema(\"kubejs:shaped\", new KubeShapedRecipeSchema());\n\t\tregisterSchema(\"kubejs:shapeless\", new KubeShapelessRecipeSchema());\n\t\tregisterSchema(\"kubejs:cooking\", new KubeCookingRecipeSchema());\n\t}\n}",
+  "code_example": "// RecipeSchemaProvider from RecipeSchemaProvider.java\n"
+}

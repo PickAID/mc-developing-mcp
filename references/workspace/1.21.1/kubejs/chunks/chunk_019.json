@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_019",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "biome_builder",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/level/BiomeBuilder.java",
+  "symbols": ["BiomeBuilder", "precipitation", "temperature", "downfall", "temperatureAdjustment", "effects", "spawnSettings", "generationSettings"],
+  "topic_tags": ["kubejs", "biomes", "builder"],
+  "coverage_status": "verified",
+  "code": "public class BiomeBuilder extends BuilderBase<Biome> {\n\tpublic transient Biome.ClimateSettings climate;\n\tpublic transient Biome.BiomeEffects effects;\n\tpublic transient Biome.BiomeGenerationSettings generationSettings;\n\tpublic transient Biome.SpawnSettings spawnSettings;\n\n\tpublic BiomeBuilder(ResourceLocation id) {\n\t\tsuper(id);\n\t\tthis.climate = Biome.ClimateSettings.plain();\n\t\tthis.effects = new Biome.BiomeEffects.Builder().build();\n\t\tthis.generationSettings = new Biome.BiomeGenerationSettings.Builder().build();\n\t\tthis.spawnSettings = new Biome.SpawnSettings.Builder().build();\n\t}\n\n\t@Info(\"Sets the biome's precipitation type.\")\n\tpublic BiomeBuilder precipitation(Biome.Precipitation v) {\n\t\tclimate = new Biome.ClimateSettings.Builder().precipitation(v).build();\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the biome's temperature.\")\n\tpublic BiomeBuilder temperature(float v) {\n\t\tclimate = new Biome.ClimateSettings.Builder().temperature(v).build();\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the biome's downfall.\")\n\tpublic BiomeBuilder downfall(float v) {\n\t\tclimate = new Biome.ClimateSettings.Builder().downfall(v).build();\n\t\treturn this;\n\t}",
+  "code_example": "// BiomeBuilder from BiomeBuilder.java\n"
+}

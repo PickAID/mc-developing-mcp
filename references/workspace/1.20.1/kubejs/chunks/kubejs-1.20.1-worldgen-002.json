@@ -1,0 +1,190 @@
+{
+  "chunk_id": "kubejs-1.20.1-worldgen-002",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "worldgen",
+  "source_file": "level/gen/RemoveWorldgenEventJS.java",
+  "symbols": [
+    {
+      "symbol": "RemoveWorldgenEventJS.checkTree",
+      "signature": "void checkTree(ConfiguredFeature<?, ?> configuredFeature, Predicate<FeatureConfiguration> predicate)",
+      "code_example": "// RemoveWorldgenEventJS.checkTree() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeFeature",
+      "signature": "private removeFeature(BiomeFilter filter, GenerationStep.Decoration decoration, Predicate<FeatureConfiguration> predicate)",
+      "code_example": "// RemoveWorldgenEventJS.removeFeature() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeSpawn",
+      "signature": "private removeSpawn(BiomeFilter filter, BiPredicate<MobCategory, MobSpawnSettings.SpawnerData> predicate)",
+      "code_example": "// RemoveWorldgenEventJS.removeSpawn() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFeatures",
+      "signature": "public printFeatures()",
+      "code_example": "// RemoveWorldgenEventJS.printFeatures() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFiltered",
+      "signature": "public printFiltered()",
+      "code_example": "// RemoveWorldgenEventJS.printFiltered() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFeatures",
+      "signature": "public printFeatures(@Nullable GenerationStep.Decoration type)",
+      "code_example": "// RemoveWorldgenEventJS.printFeatures() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFiltered",
+      "signature": "public printFiltered(@Nullable GenerationStep.Decoration type)",
+      "code_example": "// RemoveWorldgenEventJS.printFiltered() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFeatures",
+      "signature": "public printFeatures(@Nullable GenerationStep.Decoration type, BiomeFilter filter)",
+      "code_example": "// RemoveWorldgenEventJS.printFeatures() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFiltered",
+      "signature": "public printFiltered(@Nullable GenerationStep.Decoration type, BiomeFilter filter)",
+      "code_example": "// RemoveWorldgenEventJS.printFiltered() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.printFeaturesForType",
+      "signature": "public printFeaturesForType(@Nullable GenerationStep.Decoration type, BiomeFilter filter, boolean afterRemoval)",
+      "code_example": "// RemoveWorldgenEventJS.printFeaturesForType() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.accept",
+      "signature": "public accept(BiomeModifications.BiomeContext ctx, BiomeProperties.Mutable properties)",
+      "code_example": "// RemoveWorldgenEventJS.accept() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.MutableInt",
+      "signature": "void MutableInt(0)",
+      "code_example": "// RemoveWorldgenEventJS.MutableInt() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeFeatureById",
+      "signature": "public removeFeatureById(BiomeFilter filter, GenerationStep.Decoration decoration, ResourceLocation[] ids)",
+      "code_example": "// RemoveWorldgenEventJS.removeFeatureById() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeFeatureById",
+      "signature": "public removeFeatureById(GenerationStep.Decoration type, ResourceLocation[] ids)",
+      "code_example": "// RemoveWorldgenEventJS.removeFeatureById() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeAllFeatures",
+      "signature": "public removeAllFeatures(BiomeFilter filter, GenerationStep.Decoration type)",
+      "code_example": "// RemoveWorldgenEventJS.removeAllFeatures() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeAllFeatures",
+      "signature": "public removeAllFeatures(BiomeFilter filter)",
+      "code_example": "// RemoveWorldgenEventJS.removeAllFeatures() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeAllFeatures",
+      "signature": "public removeAllFeatures()",
+      "code_example": "// RemoveWorldgenEventJS.removeAllFeatures() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.removeOres",
+      "signature": "public removeOres(Consumer<RemoveOresProperties> p)",
+      "code_example": "// RemoveWorldgenEventJS.removeOres() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.RemoveOresProperties",
+      "signature": "void RemoveOresProperties()",
+      "code_example": "// RemoveWorldgenEventJS.RemoveOresProperties() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "RemoveWorldgenEventJS.if",
+      "signature": "void if(fc instanceof ReplaceBlockConfiguration rb)",
+      "code_example": "// RemoveWorldgenEventJS.if() - see level/gen/RemoveWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

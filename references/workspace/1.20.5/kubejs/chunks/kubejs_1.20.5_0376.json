@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0376",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "script/ScriptsLoadedEvent.java",
+  "symbol": "ScriptsLoadedEvent",
+  "signature": null,
+  "payload_type": null,
+  "code_example": "// ScriptsLoadedEvent from ScriptsLoadedEvent.java\n// Fields: public static final Event<Runnable> EVENT\n",
+  "coverage_status": "generated"
+}

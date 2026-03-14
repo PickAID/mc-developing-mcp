@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0626",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "player",
+  "source_file": "player/PlayerChatDecorateKubeEvent.java",
+  "symbol": "PlayerChatDecorateKubeEvent",
+  "signature": "cancelled; PlayerChatDecorateKubeEvent; getEntity",
+  "payload_type": null,
+  "code_example": "// PlayerChatDecorateKubeEvent from PlayerChatDecorateKubeEvent.java\n// Methods: cancelled, PlayerChatDecorateKubeEvent, getEntity",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0217",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/jei/JEIPlugin.java",
+  "symbol": "JEIPlugin",
+  "signature": "ResourceLocation; getPluginUid; onRuntimeAvailable",
+  "payload_type": null,
+  "code_example": "// JEIPlugin from JEIPlugin.java\n// Fields: public static final ResourceLocation ID,  runtime, var fs\n// Methods: ResourceLocation, getPluginUid, onRuntimeAvailable",
+  "coverage_status": "generated"
+}

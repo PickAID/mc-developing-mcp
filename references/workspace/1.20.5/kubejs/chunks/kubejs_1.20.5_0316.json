@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0316",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/filter/NotFilter.java",
+  "symbol": "NotFilter",
+  "signature": "NotFilter; test; toString",
+  "payload_type": null,
+  "code_example": "// NotFilter from NotFilter.java\n// Methods: NotFilter, test, toString",
+  "coverage_status": "generated"
+}

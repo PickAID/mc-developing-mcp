@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0085",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/IItemHandlerMixin.java",
+  "symbol": "IItemHandlerMixin",
+  "signature": "return",
+  "payload_type": null,
+  "code_example": "// IItemHandlerMixin from IItemHandlerMixin.java\n// Fields: class, remap\n// Methods: return",
+  "coverage_status": "generated"
+}

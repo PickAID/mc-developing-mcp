@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0001",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "BuiltinKubeJSPlugin.java",
+  "symbol": "BuiltinKubeJSPlugin",
+  "signature": "init; initStartup; ItemToolTierRegistryKubeEvent",
+  "payload_type": null,
+  "code_example": "// BuiltinKubeJSPlugin from BuiltinKubeJSPlugin.java\n// Fields: public static final HashMap<String, Object> GLOBAL, var se\n// Methods: init, initStartup, ItemToolTierRegistryKubeEvent",
+  "coverage_status": "generated"
+}

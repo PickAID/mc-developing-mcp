@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0218",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/jei/JEIIntegration.java",
+  "symbol": "JEIIntegration",
+  "signature": "registerEvents",
+  "payload_type": null,
+  "code_example": "// JEIIntegration from JEIIntegration.java\n// Methods: registerEvents",
+  "coverage_status": "generated"
+}

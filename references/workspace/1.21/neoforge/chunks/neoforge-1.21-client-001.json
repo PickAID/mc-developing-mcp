@@ -1,0 +1,37 @@
+{
+  "chunk_id": "neoforge-1.21-client-001",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "client",
+  "source_file": "net/neoforged/neoforge/client/event/ScreenEvent.java",
+  "symbols": [
+    {
+      "name": "RegisterMenuScreensEvent.register",
+      "signature": "<M,U> void register(MenuType<? extends M>, ScreenConstructor<M,U>)",
+      "description": "Register menu->screen mapping"
+    },
+    {
+      "name": "ScreenEvent.Render.Pre",
+      "signature": "class ScreenEvent.Render.Pre",
+      "description": "Cancelable pre-render hook"
+    },
+    {
+      "name": "RegisterGuiLayersEvent.registerBelowAll",
+      "signature": "void registerBelowAll(ResourceLocation, GuiLayerFactory)",
+      "description": "Register a GUI layer before all"
+    },
+    {
+      "name": "RegisterShadersEvent.registerShader",
+      "signature": "void registerShader(ShaderInstance, Consumer<ShaderInstance>)",
+      "description": "Register custom shader"
+    },
+    {
+      "name": "RegisterRenderBuffersEvent.registerRenderBuffer",
+      "signature": "void registerRenderBuffer(RenderType, ByteBufferBuilder)",
+      "description": "Register render buffer (SequencedMap backend)"
+    }
+  ],
+  "topic_tags": ["client", "gui", "screens", "rendering", "shaders"],
+  "coverage_status": "verified",
+  "code_example": "@SubscribeEvent\nstatic void onRender(ScreenEvent.Render.Pre event) {\n    // draw overlay\n}\n"
+}

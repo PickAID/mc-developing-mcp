@@ -1,0 +1,118 @@
+{
+  "chunk_id": "kubejs-1.20.1-registry-001",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "registry/RegistryEventJS.java",
+  "symbols": [
+    {
+      "symbol": "RegistryEventJS.RegistryEventJS",
+      "signature": "void RegistryEventJS(RegistryInfo<T> r)",
+      "code_example": "// RegistryEventJS.RegistryEventJS() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.create",
+      "signature": "public create(String id, String type)",
+      "code_example": "// RegistryEventJS.create() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Unknown type '\" + type + \"' for object '\" + id + \"'!\")",
+      "code_example": "// RegistryEventJS.IllegalArgumentException() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Unknown type '\" + type + \"' for object '\" + id + \"'!\")",
+      "code_example": "// RegistryEventJS.IllegalArgumentException() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.create",
+      "signature": "public create(String id)",
+      "code_example": "// RegistryEventJS.create() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Registry for type '\" + registry.key.m_135782_()",
+      "code_example": "// RegistryEventJS.IllegalArgumentException() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Unknown type '\" + t.type()",
+      "code_example": "// RegistryEventJS.IllegalArgumentException() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.custom",
+      "signature": "public custom(String id, Object object)",
+      "code_example": "// RegistryEventJS.custom() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.createCustom",
+      "signature": "void createCustom(id, ()",
+      "code_example": "// RegistryEventJS.createCustom() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.createCustom",
+      "signature": "public createCustom(String id, Supplier<Object> object)",
+      "code_example": "// RegistryEventJS.createCustom() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Tried to register a null object with id: \" + id)",
+      "code_example": "// RegistryEventJS.IllegalArgumentException() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    },
+    {
+      "symbol": "RegistryEventJS.CustomBuilderObject",
+      "signature": "void CustomBuilderObject(rl, object, registry)",
+      "code_example": "// RegistryEventJS.CustomBuilderObject() - see registry/RegistryEventJS.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

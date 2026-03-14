@@ -1,0 +1,54 @@
+{
+  "chunk_id": "minecraft-1.20.5-client-001",
+  "version": "1.20.5",
+  "loader": "minecraft",
+  "category": "client",
+  "source_files": [
+    "net/minecraft/client/gui/screens/Screen.java",
+    "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen.java",
+    "net/minecraft/client/renderer/GameRenderer.java",
+    "net/minecraft/client/renderer/RenderType.java",
+    "net/minecraft/client/renderer/PostChain.java",
+    "com/mojang/blaze3d/shaders/Shader.java"
+  ],
+  "symbols": [
+    {
+      "name": "Screen",
+      "signature": "abstract class Screen",
+      "description": "Base client screen class"
+    },
+    {
+      "name": "Screen.render",
+      "signature": "void render(GuiGraphics,int,int,float)",
+      "description": "Render hook for screens"
+    },
+    {
+      "name": "AbstractContainerScreen.renderBg",
+      "signature": "protected abstract void renderBg(GuiGraphics,float,int,int)",
+      "description": "Container screen background rendering"
+    },
+    {
+      "name": "GameRenderer.render",
+      "signature": "void render(float,long,boolean)",
+      "description": "Main render pipeline entry point (1.20.5)"
+    },
+    {
+      "name": "RenderType.solid",
+      "signature": "static RenderType solid()",
+      "description": "Solid render type"
+    },
+    {
+      "name": "PostChain.process",
+      "signature": "void process(float)",
+      "description": "Post-processing pipeline"
+    },
+    {
+      "name": "Shader.getId",
+      "signature": "int getId()",
+      "description": "Shader program ID"
+    }
+  ],
+  "code_example": "// Basic screen render hook\npublic class MyScreen extends Screen {\n    public MyScreen(Component title) { super(title); }\n\n    @Override\n    public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {\n        super.render(gfx, mouseX, mouseY, partialTick);\n        // draw custom UI\n    }\n}\n",
+  "topic_tags": ["gui", "screen", "rendering", "shaders", "client"],
+  "coverage_status": "verified"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0503",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "event",
+  "source_file": "event/EventExit.java",
+  "symbol": "EventExit",
+  "signature": "EventExit; super",
+  "payload_type": null,
+  "code_example": "// EventExit from EventExit.java\n// Methods: EventExit, super",
+  "coverage_status": "generated"
+}

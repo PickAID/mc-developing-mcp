@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0588",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/callbacks/CanBeReplacedCallbackJS.java",
+  "symbol": "CanBeReplacedCallbackJS",
+  "signature": "CanBeReplacedCallbackJS; getClickedPos; getClickedBlock",
+  "payload_type": null,
+  "code_example": "// CanBeReplacedCallbackJS from CanBeReplacedCallbackJS.java\n// Fields:  context\n// Methods: CanBeReplacedCallbackJS, getClickedPos, getClickedBlock",
+  "coverage_status": "generated"
+}

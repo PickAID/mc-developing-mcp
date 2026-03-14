@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-004",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/BlockBuilder.java",
+  "symbols": ["BlockBuilder", "BlockEventJS", "BlockStateBaseMixin"],
+  "coverage_status": "complete",
+  "description": "Block builder and block events",
+  "topics": ["blocks", "block-entities", "custom-blocks"]
+}

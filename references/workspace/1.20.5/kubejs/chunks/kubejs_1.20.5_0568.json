@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0568",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/MapColorHelper.java",
+  "symbol": "MapColorHelper",
+  "signature": "MapColorHelper; add; MapColorHelper",
+  "payload_type": null,
+  "code_example": "// MapColorHelper from MapColorHelper.java\n// Fields: public static final Map<String, MapColorHelper> NAME_MAP, public static final Map<Integer, MapColorHelper> ID_MAP, float r\n// Methods: MapColorHelper, add, MapColorHelper",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,25 @@
+{
+  "chunk_id": "nf-1.21.1-026",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "category": "networking",
+  "source_files": [
+    "net/neoforged/neoforge/network/registration/PayloadRegistrar.java",
+    "net/neoforged/neoforge/network/PacketDistributor.java",
+    "net/neoforged/neoforge/network/event/RegisterPayloadHandlersEvent.java"
+  ],
+  "symbols": [
+    "PayloadRegistrar.playToClient",
+    "PayloadRegistrar.playToServer",
+    "PayloadRegistrar.configurationToClient",
+    "PayloadRegistrar.commonToClient",
+    "PayloadRegistrar.executesOn",
+    "PayloadRegistrar.versioned",
+    "PacketDistributor.sendToServer",
+    "PacketDistributor.sendToPlayer"
+  ],
+  "description": "Payload registration and distribution helpers for NeoForge 1.21.1",
+  "topic_tags": ["networking", "payload", "distribution"],
+  "coverage_status": "verified",
+  "code_example": "@SubscribeEvent\nstatic void registerPayloads(RegisterPayloadHandlersEvent event) {\n    PayloadRegistrar registrar = event.registrar(\"1\");\n    registrar.playToServer(MY_PAYLOAD_ID, MY_PAYLOAD_CODEC, (payload, ctx) -> {\n        ctx.enqueueWork(() -> handleOnServer(payload));\n    }).executesOn(HandlerThread.MAIN);\n}\n\nPacketDistributor.sendToPlayer(player, new MyPayload(data));\n"
+}

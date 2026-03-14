@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0201",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/rei/HideREIKubeEvent.java",
+  "symbol": "HideREIKubeEvent",
+  "signature": "HideREIKubeEvent; getAllEntryValues; hide",
+  "payload_type": null,
+  "code_example": "// HideREIKubeEvent from HideREIKubeEvent.java\n// Fields:  allValues, var filter,  filter\n// Methods: HideREIKubeEvent, getAllEntryValues, hide",
+  "coverage_status": "generated"
+}

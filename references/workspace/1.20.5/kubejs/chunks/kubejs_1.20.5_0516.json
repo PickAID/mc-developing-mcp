@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0516",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/MultipartBlockStateGenerator.java",
+  "symbol": "MultipartBlockStateGenerator",
+  "signature": "model; toJson; JsonObject",
+  "payload_type": null,
+  "code_example": "// MultipartBlockStateGenerator from MultipartBlockStateGenerator.java\n// Fields: Model> apply, var model, var json\n// Methods: model, toJson, JsonObject",
+  "coverage_status": "generated"
+}

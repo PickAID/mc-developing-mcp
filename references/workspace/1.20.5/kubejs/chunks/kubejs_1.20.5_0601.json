@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0601",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/entity/BlockEntityAttachmentHolder.java",
+  "symbol": "BlockEntityAttachmentHolder",
+  "signature": "BlockEntityAttachmentHolder; toString",
+  "payload_type": null,
+  "code_example": "// BlockEntityAttachmentHolder from BlockEntityAttachmentHolder.java\n// Methods: BlockEntityAttachmentHolder, toString",
+  "coverage_status": "generated"
+}

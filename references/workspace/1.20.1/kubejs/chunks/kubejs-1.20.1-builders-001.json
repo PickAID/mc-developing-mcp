@@ -1,0 +1,55 @@
+{
+  "chunk_id": "kubejs-1.20.1-builders-001",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "builders",
+  "source_file": "item/creativetab/CreativeTabBuilder.java",
+  "symbols": [
+    {
+      "symbol": "CreativeTabBuilder.CreativeTabBuilder",
+      "signature": "void CreativeTabBuilder(ResourceLocation i)",
+      "code_example": "// CreativeTabBuilder.CreativeTabBuilder - see item/creativetab/CreativeTabBuilder.java",
+      "topic_tags": [
+        "builders",
+        "creative_tabs"
+      ]
+    },
+    {
+      "symbol": "CreativeTabBuilder.getRegistryType",
+      "signature": "void getRegistryType()",
+      "code_example": "// CreativeTabBuilder.getRegistryType - see item/creativetab/CreativeTabBuilder.java",
+      "topic_tags": [
+        "builders",
+        "creative_tabs"
+      ]
+    },
+    {
+      "symbol": "CreativeTabBuilder.createObject",
+      "signature": "public createObject()",
+      "code_example": "// CreativeTabBuilder.createObject - see item/creativetab/CreativeTabBuilder.java",
+      "topic_tags": [
+        "builders",
+        "creative_tabs"
+      ]
+    },
+    {
+      "symbol": "CreativeTabBuilder.icon",
+      "signature": "public icon(CreativeTabIconSupplier icon)",
+      "code_example": "// CreativeTabBuilder.icon - see item/creativetab/CreativeTabBuilder.java",
+      "topic_tags": [
+        "builders",
+        "creative_tabs"
+      ]
+    },
+    {
+      "symbol": "CreativeTabBuilder.content",
+      "signature": "public content(CreativeTabContentSupplier content)",
+      "code_example": "// CreativeTabBuilder.content - see item/creativetab/CreativeTabBuilder.java",
+      "topic_tags": [
+        "builders",
+        "creative_tabs"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

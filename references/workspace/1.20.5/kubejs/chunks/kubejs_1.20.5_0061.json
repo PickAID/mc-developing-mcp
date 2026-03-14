@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0061",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/TagLoaderKJS.java",
+  "symbol": "TagLoaderKJS",
+  "signature": "TagKubeEvent; TagWrapper; JsonArray",
+  "payload_type": null,
+  "code_example": "// TagLoaderKJS from TagLoaderKJS.java\n// Fields: var reg, var regInfo, var preEvent\n// Methods: TagKubeEvent, TagWrapper, JsonArray",
+  "coverage_status": "generated"
+}

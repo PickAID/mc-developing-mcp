@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0145",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/ListJS.java",
+  "symbol": "ListJS",
+  "signature": "of; ofArray; orEmpty",
+  "payload_type": null,
+  "code_example": "// ListJS from ListJS.java\n// Fields: var list, var l, return l\n// Methods: of, ofArray, orEmpty",
+  "coverage_status": "generated"
+}

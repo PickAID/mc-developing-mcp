@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0336",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "types",
+  "source_file": "typings/desc/ArrayDescJS.java",
+  "symbol": "ArrayDescJS",
+  "signature": "ArrayDescJS; build; toString",
+  "payload_type": null,
+  "code_example": "// ArrayDescJS from ArrayDescJS.java\n// Methods: ArrayDescJS, build, toString",
+  "coverage_status": "generated"
+}

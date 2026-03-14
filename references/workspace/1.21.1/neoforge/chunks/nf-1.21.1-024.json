@@ -1,0 +1,18 @@
+{
+  "chunk_id": "nf-1.21.1-024",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "category": "mixins",
+  "source_files": [
+    "net/neoforged/neoforge/mixins/BlockEntityTypeAccessor.java",
+    "net/neoforged/neoforge/mixins/MappedRegistryAccessor.java"
+  ],
+  "symbols": [
+    "BlockEntityTypeAccessor",
+    "MappedRegistryAccessor"
+  ],
+  "description": "Mixin configuration",
+  "topic_tags": ["mixins", "accessors", "registry"],
+  "code_example": "// Accessor mixins are in net.neoforged.neoforge.mixins.*\n",
+  "coverage_status": "verified"
+}

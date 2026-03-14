@@ -1,0 +1,41 @@
+{
+  "chunk_id": "minecraft-1.20.4-block-entities-001",
+  "version": "1.20.4",
+  "loader": "minecraft",
+  "category": "block_entities",
+  "source_files": [
+    "net/minecraft/world/level/block/entity/BlockEntity.java",
+    "net/minecraft/world/level/block/entity/BlockEntityType.java",
+    "net/minecraft/client/renderer/blockentity/BlockEntityRenderer.java"
+  ],
+  "symbols": [
+    {
+      "name": "BlockEntity",
+      "signature": "abstract class BlockEntity",
+      "description": "Base class for per-block entity data"
+    },
+    {
+      "name": "BlockEntity.saveAdditional",
+      "signature": "protected void saveAdditional(CompoundTag)",
+      "description": "Persist block entity state to NBT"
+    },
+    {
+      "name": "BlockEntity.getUpdateTag",
+      "signature": "CompoundTag getUpdateTag()",
+      "description": "Network sync tag (default uses saveAdditional)"
+    },
+    {
+      "name": "BlockEntityType.Builder.of",
+      "signature": "static <T extends BlockEntity> Builder<T> of(BlockEntitySupplier<T>, Block... )",
+      "description": "Register block entity types"
+    },
+    {
+      "name": "BlockEntityRenderer.render",
+      "signature": "void render(T,float,PoseStack,MultiBufferSource,int,int)",
+      "description": "Client-side block entity renderer"
+    }
+  ],
+  "code_example": "// Simple block entity with save/load\npublic class MyBlockEntity extends BlockEntity {\n    private int progress;\n\n    public MyBlockEntity(BlockPos pos, BlockState state) {\n        super(MyBlockEntities.TYPE.get(), pos, state);\n    }\n\n    @Override\n    protected void saveAdditional(CompoundTag tag) {\n        super.saveAdditional(tag);\n        tag.putInt(\"Progress\", progress);\n    }\n\n    @Override\n    public void load(CompoundTag tag) {\n        super.load(tag);\n        progress = tag.getInt(\"Progress\");\n    }\n}\n",
+  "topic_tags": ["block-entities", "nbt", "sync", "rendering"],
+  "coverage_status": "verified"
+}

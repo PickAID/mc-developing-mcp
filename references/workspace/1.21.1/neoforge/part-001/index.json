@@ -1,0 +1,31 @@
+{
+  "part_id": "part-001",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "created": "2026-03-12",
+  "total_classes": 841,
+  "categories": {
+    "attachments": 9,
+    "capabilities": 13,
+    "client": 212,
+    "common": 219,
+    "core": 2,
+    "data": 2,
+    "energy": 4,
+    "entities": 3,
+    "events": 137,
+    "fluids": 33,
+    "internal": 5,
+    "items": 24,
+    "logging": 3,
+    "mixins": 2,
+    "networking": 76,
+    "registries": 51,
+    "resources": 3,
+    "server": 38,
+    "testing": 5
+  },
+  "source_root": "/Users/agenthome/mc-code-exports/1.21.1/neoforge/sources",
+  "chunk_count": 24,
+  "status": "chunks_generated"
+}

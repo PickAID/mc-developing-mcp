@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-005",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "registries",
+  "source_file": "net/neoforged/neoforge/registries/RegisterEvent.java",
+  "symbols": ["RegisterEvent", "NewRegistryEvent", "RegistryBuilder"],
+  "coverage_status": "verified",
+  "topics": ["registries", "registration", "custom_registries", "registry_builder"],
+  "topic_tags": ["registries", "events", "registration"]
+  "content": "RegisterEvent fires when objects should be registered to a registry. This is the main event for registering custom objects to both vanilla and modded registries.\n\nNewRegistryEvent fires when a new registry is being created, allowing mods to create custom registries.\n\nRegistryBuilder is used to create custom registries with custom behaviors.",
+  "code_example": "import net.neoforged.neoforge.registries.RegisterEvent;\nimport net.neoforged.neoforge.registries.RegistryBuilder;\nimport net.neoforged.neoforge.registries.NewRegistryEvent;\n\n// Register to existing registry\nNeoForge.EVENT_BUS.addListener((RegisterEvent event) -> {\n    event.register(MyRegistryKeys.MY_CUSTOM_OBJECT, \"my_object\", () -> new MyCustomObject());\n});\n\n// Create custom registry\nNeoForge.EVENT_BUS.addListener((NewRegistryEvent event) -> {\n    event.create(new RegistryBuilder<>()\n        .setName(new ResourceLocation(MODID, \"my_registry\"))\n        .setType(MyCustomObject.class)\n        .disableSync()\n    );\n});"
+}

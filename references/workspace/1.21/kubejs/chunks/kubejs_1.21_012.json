@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_012",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "RecipesKubeEvent.java",
+  "symbols": ["RecipesKubeEvent", "add", "remove", "removeByRegex", "removeAll", "replace", "all", "get", "id", "type"],
+  "coverage_status": "complete"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0262",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/OrRecipeComponent.java",
+  "symbol": "OrRecipeComponent",
+  "signature": "componentType; constructorDescription; role",
+  "payload_type": null,
+  "code_example": "// OrRecipeComponent from OrRecipeComponent.java\n// Fields: var l, var l, var r\n// Methods: componentType, constructorDescription, role",
+  "coverage_status": "generated"
+}

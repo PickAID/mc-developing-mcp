@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0495",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "api",
+  "source_file": "bindings/event/StartupEvents.java",
+  "symbol": "StartupEvents",
+  "signature": null,
+  "payload_type": null,
+  "code_example": "// StartupEvents from StartupEvents.java\n// Fields: EventGroup GROUP, EventHandler INIT, EventHandler POST_INIT\n",
+  "coverage_status": "generated"
+}

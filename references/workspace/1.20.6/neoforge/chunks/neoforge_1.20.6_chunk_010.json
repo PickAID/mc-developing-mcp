@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_010",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "common",
+  "topic": "common_systems",
+  "source_file": "net/neoforged/neoforge/common",
+  "symbols": ["NeoForge", "NeoForgeMod", "IWorldGenerationBase", "IBucketable"],
+  "topic_tags": ["common", "utilities"],
+  "coverage_status": "verified",
+  "line_count": 2800,
+  "description": "Common systems shared between client and server",
+  "code_example": "// Common systems under net.neoforged.neoforge.common.*\n"
+}

@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_009",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "events",
+  "source_file": "net/minecraftforge/event/level/BlockEvent.java",
+  "symbols": ["BlockEvent", "BlockPlaceEvent", "BlockBreakEvent", "BlockDropsEvent"],
+  "coverage_status": "complete",
+  "description": "Block-level events - placement, breaking, drops",
+  "code_example": "// Listen to block events\nMinecraftForge.EVENT_BUS.addListener(this::onBlockPlace);\nMinecraftForge.EVENT_BUS.addListener(this::onBlockBreak);\nMinecraftForge.EVENT_BUS.addListener(this::onBlockDrops);\n\nprivate void onBlockPlace(BlockEvent.EntityPlaceEvent event) {\n    Level world = event.getLevel();\n    BlockPos pos = event.getPos();\n    BlockState state = event.getState();\n    \n    // Example: Prevent placing blocks in certain areas\n    if (pos.getY() > 100 && !world.isClientSide()) {\n        event.setCanceled(true);\n    }\n}\n\nprivate void onBlockBreak(BlockEvent.BreakEvent event) {\n    Player player = event.getPlayer();\n    Level world = event.getLevel();\n    BlockPos pos = event.getPos();\n    BlockState state = event.getState();\n    \n    // Example: Custom drop logic\n    if (state.is(Blocks.DIAMOND_ORE)) {\n        event.setExpToDrop(10); // Increase XP\n    }\n}\n\nprivate void onBlockDrops(BlockEvent.BlockDropsEvent event) {\n    // Modify or add custom drops\n    if (event.getState().is(Blocks.COBWEB)) {\n        event.getDrops().add(new ItemStack(Items.STRING, 2));\n    }\n}"
+}

@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-018",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "gametest",
+  "source_file": "net/neoforged/neoforge/gametest/GameTestHelper.java",
+  "symbols": ["GameTestHelper", "GameTestGenerator", "GameTestTemplate"],
+  "coverage_status": "verified",
+  "topics": ["gametest", "testing", "automation", "validation"],
+  "topic_tags": ["gametest", "testing", "automation"],
+  "content": "GameTestHelper provides utilities for writing game tests. These are automated tests that run in-game to verify block/entity behavior.\n\nKey methods:\n- spawnAt(): Spawn an entity at a position\n- setBlock(): Set a block at a position\n- startLocation(): Get the test's starting position\n- succeed(): Mark test as passed\n- fail(): Mark test as failed",
+  "code_example": "import net.neoforged.neoforge.gametest.GameTestHelper;\nimport net.minecraft.gametest.framework.GameTestInfo;\n\n// Test method\n@GameTest(template = \"my_template\")\npublic void testMyFeature(GameTestHelper helper) {\n    // Spawn entity\n    helper.spawnAt(Entities.ZOMBIE, helper.absolutePos(3, 1, 3));\n    \n    // Run assertions\n    helper.succeedWhen(() -> {\n        // Check conditions\n    });\n}"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0071",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/IngredientSupplierKJS.java",
+  "symbol": "IngredientSupplierKJS",
+  "signature": "NoMixinException",
+  "payload_type": null,
+  "code_example": "// IngredientSupplierKJS from IngredientSupplierKJS.java\n// Methods: NoMixinException",
+  "coverage_status": "generated"
+}

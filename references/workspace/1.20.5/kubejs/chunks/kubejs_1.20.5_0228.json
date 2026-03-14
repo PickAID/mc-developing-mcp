@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0228",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/AfterRecipesLoadedKubeEvent.java",
+  "symbol": "AfterRecipesLoadedKubeEvent",
+  "signature": "AfterRecipesLoadedKubeEvent; getOriginalRecipes; forEachRecipe",
+  "payload_type": null,
+  "code_example": "// AfterRecipesLoadedKubeEvent from AfterRecipesLoadedKubeEvent.java\n// Fields:  originalRecipes, int count, var itr\n// Methods: AfterRecipesLoadedKubeEvent, getOriginalRecipes, forEachRecipe",
+  "coverage_status": "generated"
+}

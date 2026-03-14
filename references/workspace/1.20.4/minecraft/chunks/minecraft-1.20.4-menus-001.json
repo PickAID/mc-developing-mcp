@@ -1,0 +1,51 @@
+{
+  "chunk_id": "minecraft-1.20.4-menus-001",
+  "version": "1.20.4",
+  "loader": "minecraft",
+  "category": "menus",
+  "source_files": [
+    "net/minecraft/world/inventory/MenuType.java",
+    "net/minecraft/world/inventory/AbstractContainerMenu.java",
+    "net/minecraft/client/gui/screens/MenuScreens.java"
+  ],
+  "symbols": [
+    {
+      "name": "MenuType",
+      "signature": "class MenuType<T extends AbstractContainerMenu>",
+      "description": "Menu type registry entries and factories"
+    },
+    {
+      "name": "MenuType.create",
+      "signature": "T create(int, Inventory)",
+      "description": "Construct a menu instance"
+    },
+    {
+      "name": "AbstractContainerMenu",
+      "signature": "abstract class AbstractContainerMenu",
+      "description": "Server-side container logic"
+    },
+    {
+      "name": "AbstractContainerMenu.addSlot",
+      "signature": "protected Slot addSlot(Slot)",
+      "description": "Register slots in the container"
+    },
+    {
+      "name": "AbstractContainerMenu.stillValid",
+      "signature": "static boolean stillValid(ContainerLevelAccess, Player, Block)",
+      "description": "Distance/validity guard for menus"
+    },
+    {
+      "name": "MenuScreens.create",
+      "signature": "static <T extends AbstractContainerMenu> void create(MenuType<T>, Minecraft, int, Component)",
+      "description": "Open a client screen for a menu type"
+    },
+    {
+      "name": "MenuScreens.ScreenConstructor",
+      "signature": "interface ScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>",
+      "description": "Client menu screen factory"
+    }
+  ],
+  "code_example": "// Custom menu type and client screen pairing\npublic class MyMenu extends AbstractContainerMenu {\n    public MyMenu(int id, Inventory inv) { super(MyMenus.MY_MENU.get(), id); }\n    @Override public boolean stillValid(Player player) { return true; }\n}\n\npublic class MyMenuScreen extends AbstractContainerScreen<MyMenu> {\n    public MyMenuScreen(MyMenu menu, Inventory inv, Component title) { super(menu, inv, title); }\n    @Override protected void renderBg(GuiGraphics gfx, float partialTick, int mouseX, int mouseY) {}\n}\n\n// MenuScreens is vanilla-registered for built-in menus.\n",
+  "topic_tags": ["menus", "containers", "screens", "gui", "inventory"],
+  "coverage_status": "verified"
+}

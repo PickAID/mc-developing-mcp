@@ -1,0 +1,192 @@
+{
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "total_files": 867,
+  "categories": {
+    "attachment": {
+      "count": 8,
+      "description": "Attachment system for persistent entity data",
+      "files": [
+        "net/neoforged/neoforge/attachment/AttachmentHolder.java",
+        "net/neoforged/neoforge/attachment/AttachmentType.java",
+        "net/neoforged/neoforge/attachment/AttachmentTypeBuilder.java",
+        "net/neoforged/neoforge/attachment/AttachmentInternals.java",
+        "net/neoforged/neoforge/attachment/EntityAttachmentsEvent.java",
+        "net/neoforged/neoforge/attachment/ItemAttachmentsEvent.java",
+        "net/neoforged/neoforge/attachment/RecipeAttachmentsEvent.java",
+        "net/neoforged/neoforge/attachment/BlockAttachmentsEvent.java"
+      ]
+    },
+    "capabilities": {
+      "count": 14,
+      "description": "Capability system for mod interoperability",
+      "files": [
+        "net/neoforged/neoforge/capabilities/CapabilityToken.java",
+        "net/neoforged/neoforge/capabilities/Capability.java",
+        "net/neoforged/neoforge/capabilities/CapabilityProvider.java",
+        "net/neoforged/neoforge/capabilities/BlockCapabilityProvider.java",
+        "net/neoforged/neoforge/capabilities/EntityCapabilityProvider.java",
+        "net/neoforged/neoforge/capabilities/ItemCapabilityProvider.java",
+        "net/neoforged/neoforge/capabilities/RegisterCapabilitiesEvent.java",
+        "net/neoforged/neoforge/capabilities/ItemStackCapabilityProvider.java",
+        "net/neoforged/neoforge/capabilities/ICapabilityProvider.java",
+        "net/neoforged/neoforge/capabilities/IRegistryExtension.java",
+        "net/neoforged/neoforge/capabilities/ICapabilityProviderImpl.java",
+        "net/neoforged/neoforge/capabilities/CapabilityReference.java",
+        "net/neoforged/neoforge/capabilities/ResolveCapabilitiesEvent.java",
+        "net/neoforged/neoforge/capabilities/ThreadsafeCapabilityProvider.java"
+      ]
+    },
+    "client": {
+      "count": 207,
+      "description": "Client-side rendering and GUI systems",
+      "topics": ["rendering", "gui", "textures", "models", "particles", "sound", "input", "fonts"]
+    },
+    "common": {
+      "count": 219,
+      "description": "Common systems shared between client and server",
+      "topics": ["blocks", "items", "entities", "world", "inventory", "recipes", "loot", "tags"]
+    },
+    "energy": {
+      "count": 5,
+      "description": "Energy/fluid transfer systems",
+      "files": [
+        "net/neoforged/neoforge/energy/EnergyStorage.java",
+        "net/neoforged/neoforge/energy/EnergyTransfer.java",
+        "net/neoforged/neoforge/energy/EnergyUnit.java",
+        "net/neoforged/neoforge/energy/IEnergyStorage.java",
+        "net/neoforged/neoforge/energy/BlockEnergyStorage.java"
+      ]
+    },
+    "entity": {
+      "count": 3,
+      "description": "Entity systems",
+      "files": [
+        "net/neoforged/neoforge/entity/EntityEvent.java",
+        "net/neoforged/neoforge/entity/ExistingTrackingMethod.java",
+        "net/neoforged/neoforge/entity/EntityStrider.java"
+      ]
+    },
+    "event": {
+      "count": 145,
+      "description": "Event system for modding",
+      "topics": ["lifecycle", "world", "entity", "player", "block", "item", "registry"]
+    },
+    "fluids": {
+      "count": 37,
+      "description": "Fluid systems and handling",
+      "files": [
+        "net/neoforged/neoforge/fluids/FluidType.java",
+        "net/neoforged/neoforge/fluids/FluidStack.java",
+        "net/neoforged/neoforge/fluids/IFluidBlock.java",
+        "net/neoforged/neoforge/fluids/FluidAttributes.java",
+        "net/neoforged/neoforge/fluids/FluidActionResult.java",
+        "net/neoforged/neoforge/fluids/SimpleFluidStack.java",
+        "net/neoforged/neoforge/fluids/FluidInfo.java",
+        "net/neoforged/neoforge/fluids/capability/FluidTankCallback.java",
+        "net/neoforged/neoforge/fluids/capability/IFluidHandler.java",
+        "net/neoforged/neoforge/fluids/capability/IFluidHandlerItem.java",
+        "net/neoforged/neoforge/fluids/capability/WrapperFluidProvider.java",
+        "net/neoforged/neoforge/fluids/capability/FluidTransport.java"
+      ]
+    },
+    "gametest": {
+      "count": 5,
+      "description": "Game testing framework",
+      "files": [
+        "net/neoforged/neoforge/gametest/GameTest.java",
+        "net/neoforged/neoforge/gametest/GameTestHelper.java",
+        "net/neoforged/neoforge/gametest/GameTestRegistry.java",
+        "net/neoforged/neoforge/gametest/GameTestInfo.java",
+        "net/neoforged/neoforge/gametest/GameTestListener.java"
+      ]
+    },
+    "internal": {
+      "count": 8,
+      "description": "Internal NeoForge systems",
+      "files": [
+        "net/neoforged/neoforge/internal/BaseEventHandler.java",
+        "net/neoforged/neoforge/internal/LoggedAbstract.java",
+        "net/neoforged/neoforge/internal/NeoForgeVersion.java",
+        "net/neoforged/neoforge/internal/VersionDeprecatedException.java",
+        "net/neoforged/neoforge/internal/TextTable.java",
+        "net/neoforged/neoforge/internal/LogicalSideUtils.java",
+        "net/neoforged/neoforge/internal/ThreadEffectProcessor.java",
+        "net/neoforged/neoforge/internal/CommonInputs.java"
+      ]
+    },
+    "items": {
+      "count": 24,
+      "description": "Item and inventory systems",
+      "files": [
+        "net/neoforged/neoforge/items/ItemHandlerHelper.java",
+        "net/neoforged/neoforge/items/IItemHandler.java",
+        "net/neoforged/neoforge/items/IItemHandlerModifiable.java",
+        "net/neoforged/neoforge/items/ItemStackHandler.java",
+        "net/neoforged/neoforge/items/ItemOutputSlot.java",
+        "net/neoforged/neoforge/items/ItemStackList.java",
+        "net/neoforged/neoforge/items/IIconContainer.java",
+        "net/neoforged/neoforge/items/NonNullSlotItemHandler.java",
+        "net/neoforged/neoforge/items/VanillaPacketTypes.java"
+      ]
+    },
+    "junit": {
+      "count": 2,
+      "description": "JUnit testing integration",
+      "files": [
+        "net/neoforged/neoforge/junit/IniSection.java",
+        "net/neoforged/neoforge/junit/RegexMatcher.java"
+      ]
+    },
+    "logging": {
+      "count": 4,
+      "description": "Logging systems",
+      "files": [
+        "net/neoforged/neoforge/logging/LogRegistryTicket.java",
+        "net/neoforged/neoforge/logging/LoggingConfig.java",
+        "net/neoforged/neoforge/logging/LoggerRegistry.java",
+        "net/neoforged/neoforge/logging/LoggerTicket.java"
+      ]
+    },
+    "network": {
+      "count": 75,
+      "description": "Network and packet handling",
+      "topics": ["packets", "login", "play", "handshake", "channels"]
+    },
+    "registries": {
+      "count": 53,
+      "description": "Registry system for game content",
+      "files": [
+        "net/neoforged/neoforge/registries/RegistryManager.java",
+        "net/neoforged/neoforge/registries/RegistrySnapshot.java",
+        "net/neoforged/neoforge/registries/DeferredRegister.java",
+        "net/neoforged/neoforge/registries/RegisterEvent.java",
+        "net/neoforged/neoforge/registries/NeoForgeRegistries.java",
+        "net/neoforged/neoforge/registries/DeferredBlock.java",
+        "net/neoforged/neoforge/registries/DeferredItem.java",
+        "net/neoforged/neoforge/registries/DeferredHolder.java",
+        "net/neoforged/neoforge/registries/RegistryBuilder.java",
+        "net/neoforged/neoforge/registries/GameData.java",
+        "net/neoforged/neoforge/registries/IdMappingEvent.java",
+        "net/neoforged/neoforge/registries/NewRegistryEvent.java"
+      ]
+    },
+    "resource": {
+      "count": 4,
+      "description": "Resource loading systems",
+      "files": [
+        "net/neoforged/neoforge/resource/ResourceValidationException.java",
+        "net/neoforged/neoforge/resource/ResourcePackLoader.java",
+        "net/neoforged/neoforge/resource/ResourceFileNotFoundException.java",
+        "net/neoforged/neoforge/resource/ResourceLocationHelper.java"
+      ]
+    },
+    "server": {
+      "count": 47,
+      "description": "Server-side systems",
+      "topics": ["commands", "save", "tick", "simulation", "permissions"]
+    }
+  },
+  "source_root": "/Users/agenthome/mc-code-exports/1.20.6/neoforge/sources/",
+  "extracted_at": "2026-03-12T00:00:00Z"
+}

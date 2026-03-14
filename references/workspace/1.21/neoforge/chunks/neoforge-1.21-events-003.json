@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-events-003",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/event/LootTableLoadEvent.java",
+  "symbol": "LootTableLoadEvent",
+  "signature": "public class LootTableLoadEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "loot",
+    "tables",
+    " loot_table"
+  ],
+  "code_example": "// LootTableLoadEvent from LootTableLoadEvent.java\n"
+}

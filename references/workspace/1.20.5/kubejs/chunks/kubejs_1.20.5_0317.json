@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0317",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/filter/ModFilter.java",
+  "symbol": "ModFilter",
+  "signature": "ModFilter; test; toString",
+  "payload_type": null,
+  "code_example": "// ModFilter from ModFilter.java\n// Fields:  mod\n// Methods: ModFilter, test, toString",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0560",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "helpers/IngredientHelper.java",
+  "symbol": "IngredientHelper",
+  "signature": "get; stack; register",
+  "payload_type": null,
+  "code_example": "// IngredientHelper from IngredientHelper.java\n// Fields: >> INGREDIENT_TYPES, public static final Supplier<IngredientType<WildcardIngredient>> WILDCARD, public static final Supplier<IngredientType<ModIngredient>> MOD\n// Methods: get, stack, register",
+  "coverage_status": "generated"
+}

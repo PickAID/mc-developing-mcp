@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0344",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/CommandKubeEvent.java",
+  "symbol": "CommandKubeEvent",
+  "signature": "CommandKubeEvent; super; getCommandName",
+  "payload_type": null,
+  "code_example": "// CommandKubeEvent from CommandKubeEvent.java\n// Fields:  event,  commandName\n// Methods: CommandKubeEvent, super, getCommandName",
+  "coverage_status": "generated"
+}

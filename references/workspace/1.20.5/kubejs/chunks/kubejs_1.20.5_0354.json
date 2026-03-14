@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0354",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/tag/PreTagWrapper.java",
+  "symbol": "PreTagWrapper",
+  "signature": "AddAction; accept; RemoveAction",
+  "payload_type": null,
+  "code_example": "// PreTagWrapper from PreTagWrapper.java\n// Fields:  preEvent,  id\n// Methods: AddAction, accept, RemoveAction",
+  "coverage_status": "generated"
+}

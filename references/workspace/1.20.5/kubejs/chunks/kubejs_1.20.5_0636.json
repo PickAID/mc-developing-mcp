@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0636",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "player",
+  "source_file": "player/PlayerChatReceivedKubeEvent.java",
+  "symbol": "PlayerChatReceivedKubeEvent",
+  "signature": "PlayerChatReceivedKubeEvent; getEntity; getUsername",
+  "payload_type": null,
+  "code_example": "// PlayerChatReceivedKubeEvent from PlayerChatReceivedKubeEvent.java\n// Methods: PlayerChatReceivedKubeEvent, getEntity, getUsername",
+  "coverage_status": "generated"
+}

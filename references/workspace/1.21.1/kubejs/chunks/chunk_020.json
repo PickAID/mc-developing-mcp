@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_020",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "command_builder",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/command/CommandBuilder.java",
+  "symbols": ["CommandBuilder", "argument", "requires", "permission", "executes", "then", "redirect"],
+  "topic_tags": ["kubejs", "commands", "builder"],
+  "coverage_status": "verified",
+  "code": "public class CommandBuilder {\n\tprivate final CommandDispatcher<CommandSourceStack> dispatcher;\n\tprivate final LiteralArgumentBuilder<CommandSourceStack> root;\n\n\tpublic CommandBuilder(CommandDispatcher<CommandSourceStack> dispatcher, String name) {\n\t\tthis.dispatcher = dispatcher;\n\t\tthis.root = LiteralArgumentBuilder.literal(name);\n\t}\n\n\tpublic CommandBuilder argument(String name, ArgumentType<?> type) {\n\t\tvar argument = RequiredArgumentBuilder.argument(name, type);\n\t\troot.then(argument);\n\t\treturn this;\n\t}\n\n\tpublic CommandBuilder requires(Predicate<CommandSourceStack> requirement) {\n\t\troot.requires(requirement);\n\t\treturn this;\n\t}\n\n\tpublic CommandBuilder permission(int level) {\n\t\treturn requires(s -> s.hasPermission(level));\n\t}\n\n\tpublic CommandBuilder executes(CommandExecutor<CommandSourceStack> executor) {\n\t\troot.executes(executor);\n\t\treturn this;\n\t}\n\n\tpublic CommandBuilder then(ArgumentBuilder<CommandSourceStack, ?> argument) {\n\t\troot.then(argument);\n\t\treturn this;\n\t}\n\n\tpublic void register() {\n\t\tdispatcher.register(root);\n\t}\n}",
+  "code_example": "// CommandBuilder from CommandBuilder.java\n"
+}

@@ -1,0 +1,22 @@
+{
+  "chunk_id": "nf-1.21.1-018",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "category": "energy",
+  "source_files": [
+    "net/neoforged/neoforge/energy/ComponentEnergyStorage.java",
+    "net/neoforged/neoforge/energy/EmptyEnergyStorage.java",
+    "net/neoforged/neoforge/energy/EnergyStorage.java",
+    "net/neoforged/neoforge/energy/IEnergyStorage.java"
+  ],
+  "symbols": [
+    "ComponentEnergyStorage",
+    "EmptyEnergyStorage",
+    "EnergyStorage",
+    "IEnergyStorage"
+  ],
+  "description": "Energy (Forge Energy) API",
+  "topic_tags": ["energy", "capabilities", "storage"],
+  "code_example": "// Implement IEnergyStorage or extend EnergyStorage for energy handling.\n",
+  "coverage_status": "verified"
+}

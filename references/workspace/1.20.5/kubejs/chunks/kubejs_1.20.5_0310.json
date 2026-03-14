@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0310",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/filter/RecipeFilter.java",
+  "symbol": "RecipeFilter",
+  "signature": "test; of; IDFilter",
+  "payload_type": null,
+  "code_example": "// RecipeFilter from RecipeFilter.java\n// Fields: Event<RecipeFilterParseEvent> PARSE, String s, var r\n// Methods: test, of, IDFilter",
+  "coverage_status": "generated"
+}

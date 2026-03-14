@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_018",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "event",
+  "topic": "entity_events",
+  "source_file": "net/neoforged/neoforge/event/entity",
+  "symbols": ["EntityEvent", "EntityJoinWorldEvent", "EntityStrider"],
+  "topic_tags": ["events", "entities"],
+  "coverage_status": "verified",
+  "line_count": 520,
+  "description": "Entity-related events for modding",
+  "code_example": "// Entity events under net.neoforged.neoforge.event.entity.*\n"
+}

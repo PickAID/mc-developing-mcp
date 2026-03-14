@@ -1,0 +1,19 @@
+{
+  "version": "1.21",
+  "loader": "neoforge",
+  "source_root": "/Users/agenthome/mc-code-exports/1.21/neoforge/sources/",
+  "total_classes": 1206,
+  "categories": {
+    "events": 350,
+    "registry": 180,
+    "capabilities": 85,
+    "entities": 120,
+    "builders": 280,
+    "networking": 45,
+    "data": 65,
+    "commands": 35,
+    "worldgen": 46
+  },
+  "source_verified": true,
+  "java_files_count": 905
+}

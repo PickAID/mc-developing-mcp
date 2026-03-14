@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0445",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ingredient/IngredientWithCustomPredicate.java",
+  "symbol": "IngredientWithCustomPredicate",
+  "signature": "IngredientWithCustomPredicate",
+  "payload_type": null,
+  "code_example": "// IngredientWithCustomPredicate from IngredientWithCustomPredicate.java\n// Methods: IngredientWithCustomPredicate",
+  "coverage_status": "generated"
+}

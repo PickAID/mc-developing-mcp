@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0269",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/ComponentValueMap.java",
+  "symbol": "ComponentValueMap",
+  "signature": "ComponentValueMap; super; getValue",
+  "payload_type": null,
+  "code_example": "// ComponentValueMap from ComponentValueMap.java\n// Fields: var o\n// Methods: ComponentValueMap, super, getValue",
+  "coverage_status": "generated"
+}

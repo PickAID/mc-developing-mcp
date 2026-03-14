@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-002",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/RecipeJS.java",
+  "symbols": ["RecipeJS", "RecipeKey", "RecipeTypeFunction"],
+  "coverage_status": "complete",
+  "description": "Base recipe class and recipe keys",
+  "topics": ["recipes", "crafting", "recipe-api"]
+}

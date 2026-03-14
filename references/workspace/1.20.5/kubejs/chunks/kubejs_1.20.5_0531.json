@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0531",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/LangKubeEvent.java",
+  "symbol": "LangKubeEvent",
+  "signature": "LangKubeEvent; Key; add",
+  "payload_type": null,
+  "code_example": "// LangKubeEvent from LangKubeEvent.java\n// Fields: public static final Pattern PATTERN, var d, var d\n// Methods: LangKubeEvent, Key, add",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,32 @@
+{
+  "chunk_id": "minecraft-1.20.1-items-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "items",
+  "source_file": "net/minecraft/world/item/ItemStack.java",
+  "symbols": [
+    {
+      "name": "ItemStack",
+      "signature": "class ItemStack",
+      "description": "Represents a stack of items"
+    },
+    {
+      "name": "ItemStack.getItem",
+      "signature": "Item getItem()",
+      "description": "Get the item type"
+    },
+    {
+      "name": "ItemStack.getCount",
+      "signature": "int getCount()",
+      "description": "Get stack size"
+    },
+    {
+      "name": "ItemStack.setCount",
+      "signature": "void setCount(int)",
+      "description": "Set stack size"
+    }
+  ],
+  "code_example": "// Working with item stacks\nItemStack stack = new ItemStack(Items.DIAMOND_SWORD, 5);\n\n// Get item\nItem item = stack.getItem();\n\n// Count\nint count = stack.getCount();\nstack.setCount(10);\n\n// Check item type\nif (stack.is(Items.DIAMOND_SWORD)) {\n    // Diamond sword\n}\n\n// NBT data\nCompoundTag nbt = stack.getTag();\nif (nbt != null) {\n    String name = nbt.getString(\"display\");\n}",
+  "topic_tags": ["items", "itemstack", "inventory", "nbt"],
+  "coverage_status": "verified"
+}

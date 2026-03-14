@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_009",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "fluid_builder",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/fluid/FluidBuilder.java",
+  "symbols": ["FluidBuilder", "density", "viscosity", "temperature", "lightLevel", "bucketItem", "stillTexture", "flowingTexture"],
+  "topic_tags": ["kubejs", "fluids", "builder"],
+  "coverage_status": "verified",
+  "code": "public class FluidBuilder extends BuilderBase<FluidType> {\n\tpublic transient ResourceLocation stillTexture;\n\tpublic transient ResourceLocation flowingTexture;\n\tpublic transient ResourceLocation bucketItem;\n\tpublic transient int density;\n\tpublic transient int viscosity;\n\tpublic transient int temperature;\n\tpublic transient int lightLevel;\n\tpublic transient int color;\n\tpublic transient Map<String, Component> lang;\n\tpublic transient boolean gaseous;\n\n\tpublic FluidBuilder(ResourceLocation id) {\n\t\tsuper(id);\n\t\tthis.density = 1000;\n\t\tthis.viscosity = 1000;\n\t\tthis.temperature = 300;\n\t\tthis.lightLevel = 0;\n\t\tthis.color = 0xFFFFFFFF;\n\t\tthis.lang = new HashMap<>();\n\t\tthis.gaseous = false;\n\t}\n\n\t@Info(\"Sets the fluid's density.\")\n\tpublic FluidBuilder density(int v) {\n\t\tdensity = v;\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the fluid's viscosity.\")\n\tpublic FluidBuilder viscosity(int v) {\n\t\tviscosity = v;\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the fluid's temperature.\")\n\tpublic FluidBuilder temperature(int v) {\n\t\ttemperature = v;\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the fluid's light level.\")\n\tpublic FluidBuilder lightLevel(int v) {\n\t\tlightLevel = v;\n\t\treturn this;\n\t}",
+  "code_example": "// FluidBuilder fields and methods from FluidBuilder.java\n"
+}

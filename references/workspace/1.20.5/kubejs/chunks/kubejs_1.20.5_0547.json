@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0547",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/screen/ScreenPainterObject.java",
+  "symbol": "ScreenPainterObject",
+  "signature": "preDraw; draw; load",
+  "payload_type": null,
+  "code_example": "// ScreenPainterObject from ScreenPainterObject.java\n// Fields: public Unit x, public Unit y, public Unit z\n// Methods: preDraw, draw, load",
+  "coverage_status": "generated"
+}

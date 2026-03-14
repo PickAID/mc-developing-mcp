@@ -1,0 +1,37 @@
+{
+  "chunk_id": "minecraft-1.20.1-block-entities-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "block_entities",
+  "source_file": "net/minecraft/world/level/block/entity/BlockEntity.java",
+  "symbols": [
+    {
+      "name": "BlockEntity.saveAdditional",
+      "signature": "protected void saveAdditional(CompoundTag)",
+      "description": "Write custom NBT for block entity state"
+    },
+    {
+      "name": "BlockEntity.getUpdateTag",
+      "signature": "CompoundTag getUpdateTag()",
+      "description": "Tag used for block entity sync"
+    },
+    {
+      "name": "BlockEntityType.Builder.of",
+      "signature": "static <T extends BlockEntity> Builder<T> of(BlockEntitySupplier<T>, Block...)",
+      "description": "Create block entity type"
+    },
+    {
+      "name": "BlockEntityRenderer.render",
+      "signature": "void render(T,float,PoseStack,MultiBufferSource,int,int)",
+      "description": "Client-side block entity rendering"
+    },
+    {
+      "name": "ClientboundBlockEntityDataPacket.create",
+      "signature": "static ClientboundBlockEntityDataPacket create(BlockEntity, Function<BlockEntity, CompoundTag>)",
+      "description": "Network packet for block entity updates"
+    }
+  ],
+  "code_example": "// Block entity save + sync\npublic class MyBlockEntity extends BlockEntity {\n    @Override\n    protected void saveAdditional(CompoundTag tag) {\n        super.saveAdditional(tag);\n        tag.putInt(\"value\", value);\n    }\n\n    @Override\n    public CompoundTag getUpdateTag() {\n        return saveWithoutMetadata();\n    }\n}\n",
+  "topic_tags": ["block_entity", "nbt", "sync", "renderer"],
+  "coverage_status": "verified"
+}

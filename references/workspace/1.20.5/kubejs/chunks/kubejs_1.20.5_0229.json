@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0229",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/RecipesKubeEvent.java",
+  "symbol": "RecipesKubeEvent",
+  "signature": "recipeToString; that; ForkJoinPool",
+  "payload_type": null,
+  "code_example": "// RecipesKubeEvent from RecipesKubeEvent.java\n// Fields: public static final Pattern SKIP_ERROR, private static final Predicate<KubeRecipe> RECIPE_NOT_REMOVED, private static final EventExceptionHandler RECIPE_EXCEPTION_HANDLER\n// Methods: recipeToString, that, ForkJoinPool",
+  "coverage_status": "generated"
+}

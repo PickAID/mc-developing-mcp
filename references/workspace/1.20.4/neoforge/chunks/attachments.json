@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-006",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "attachments",
+  "source_file": "net/neoforged/neoforge/attachment/AttachmentType.java",
+  "symbols": ["AttachmentType", "AttachmentBuilder", "builder", "serialize", "deserialize"],
+  "coverage_status": "complete",
+  "topics": ["attachments", "data_persistence", "serialization", "mod_data"],
+  "description": "Modern replacement for capabilities. Provides typed data storage on game objects with built-in serialization.",
+  "code_example": "// Define an attachment\npublic static final AttachmentType<MyData> MY_DATA = AttachmentType.builder(() -> new MyData())\n    .serialize(MyData.CODEC)\n    .build();\n\n// Register\n@SubscribeEvent\npublic static void registerAttachments(RegisterAttachmentsEvent event) {\n    event.registerEntity(Entity.class, MY_DATA);\n}\n\n// Usage\nMyData data = player.getData(MY_DATA);\ndata.setValue(42);",
+  "source_citation": "net/neoforged/neoforge/attachment/AttachmentType.java"
+}

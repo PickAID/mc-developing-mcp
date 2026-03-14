@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0558",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/screen/BoxObject.java",
+  "symbol": "BoxObject",
+  "signature": "BoxObject; load",
+  "payload_type": null,
+  "code_example": "// BoxObject from BoxObject.java\n// Fields: private static final Unit DEFAULT_SIZE, public Unit w, public Unit h\n// Methods: BoxObject, load",
+  "coverage_status": "generated"
+}

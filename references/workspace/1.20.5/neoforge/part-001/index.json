@@ -1,0 +1,19 @@
+{
+  "part_id": "part-001",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "created_at": "2026-03-12T00:00:00Z",
+  "metadata": {
+    "description": "NeoForge 1.20.5 API reference - Part 1 (Events, Registries, Capabilities)",
+    "source_root": "/Users/agenthome/mc-code-exports/1.20.5/neoforge/sources",
+    "total_java_files": 847,
+    "categories_covered": [
+      "events",
+      "registries",
+      "capabilities",
+      "data_components"
+    ]
+  },
+  "chunk_count": 25,
+  "status": "generated"
+}

@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-010",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/event/entity/living/LivingDeathEvent.java",
+  "symbols": ["LivingDeathEvent", "getSource", "getEntity"],
+  "coverage_status": "complete",
+  "topics": ["death", "mobs", "damage", "killing"],
+  "description": "Fired when a living entity dies. Used for custom death handling, loot modification, and kill tracking.",
+  "code_example": "// Handle entity death\nNeoForge.EVENT_BUS.addListener((LivingDeathEvent event) -> {\n    if (event.getEntity() instanceof Player player) {\n        // Player died - handle respawn, inventory, etc.\n    }\n    \n    if (event.getSource().getDirectEntity() instanceof Arrow arrow) {\n        // Arrow kill tracking\n    }\n});",
+  "source_citation": "net/neoforged/neoforge/event/entity/living/LivingDeathEvent.java"
+}

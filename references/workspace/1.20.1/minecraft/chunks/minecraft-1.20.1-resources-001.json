@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-resources-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "resources",
+  "source_file": "net/minecraft/server/packs/resources/ResourceManager.java",
+  "symbols": [
+    {
+      "name": "ResourceManager",
+      "signature": "class ResourceManager",
+      "description": "Manages game resources"
+    },
+    {
+      "name": "ResourceManager.getResource",
+      "signature": "Optional<Resource> getResource(ResourceLocation)",
+      "description": "Get a resource"
+    },
+    {
+      "name": "ResourceManager.listResources",
+      "signature": "List<ResourceLocation> listResources(String, ResourceFilter)",
+      "description": "List resources by path"
+    }
+  ],
+  "code_example": "// Loading resources\nResourceManager manager = server.getResourceManager();\n\n// Get single resource\nOptional<Resource> resource = manager.getResource(\n    new ResourceLocation(\"mymod\", \"textures/item/icon.png\")\n);\n\n// List resources\nList<ResourceLocation> configs = manager.listResources(\"configs\", r -> r.endsWith(\".json\"));",
+  "topic_tags": ["resources", "assets", "loading", "files"],
+  "coverage_status": "verified"
+}

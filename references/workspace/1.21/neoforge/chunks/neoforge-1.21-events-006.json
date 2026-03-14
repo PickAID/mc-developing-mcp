@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-events-006",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/client/event/ClientTickEvent.java",
+  "symbol": "ClientTickEvent",
+  "signature": "public class ClientTickEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "client",
+    "tick",
+    "update"
+  ],
+  "code_example": "// ClientTickEvent from ClientTickEvent.java\n"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0381",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "script/ScriptTypePredicate.java",
+  "symbol": "ScriptTypePredicate",
+  "signature": "test; getValidTypes",
+  "payload_type": null,
+  "code_example": "// ScriptTypePredicate from ScriptTypePredicate.java\n// Fields: ScriptTypePredicate ALL, ScriptTypePredicate COMMON, ScriptTypePredicate STARTUP_OR_CLIENT\n// Methods: test, getValidTypes",
+  "coverage_status": "generated"
+}

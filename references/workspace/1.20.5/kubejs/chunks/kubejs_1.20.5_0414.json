@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0414",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ArmorMaterialBuilder.java",
+  "symbol": "ArmorMaterialBuilder",
+  "signature": "ArmorMaterialBuilder; super; getRegistryType",
+  "payload_type": null,
+  "code_example": "// ArmorMaterialBuilder from ArmorMaterialBuilder.java\n// Fields:  defense,  enchantmentValue,  equipSound\n// Methods: ArmorMaterialBuilder, super, getRegistryType",
+  "coverage_status": "generated"
+}

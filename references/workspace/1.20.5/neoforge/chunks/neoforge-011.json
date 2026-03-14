@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-011",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "items",
+  "source_file": "net/neoforged/neoforge/items/ItemStackHandler.java",
+  "symbols": ["ItemStackHandler", "IItemHandler", "IItemHandlerModifiable"],
+  "coverage_status": "verified",
+  "topics": ["items", "inventory", "handler", "storage"],
+  "topic_tags": ["items", "inventory", "capabilities", "storage"],
+  "content": "ItemStackHandler is a default implementation of IItemHandler for managing item inventories. It provides a simple inventory system that can be attached to block entities via capabilities.\n\nKey features:\n- Configurable number of slots\n- Automatic slot validation\n- Supports capability system for auto-connecting inventories",
+  "code_example": "import net.neoforged.neoforge.items.ItemStackHandler;\nimport net.neoforged.neoforge.items.IItemHandler;\nimport net.neoforged.neoforge.capabilities.Capabilities;\n\n// Create item handler\nItemStackHandler inventory = new ItemStackHandler(9) {\n    @Override\n    public void onContentsChanged(int slot) {\n        // Mark dirty when contents change\n        setChanged();\n    }\n};\n\n// Get/set items\nItemStack stack = inventory.getStackInSlot(0);\ninventory.setStackInSlot(0, new ItemStack(Items.DIAMOND, 5));\n\n// Insert items\nItemStack remaining = inventory.insertItem(0, new ItemStack(Items.GOLD_INGOT), false);"
+}

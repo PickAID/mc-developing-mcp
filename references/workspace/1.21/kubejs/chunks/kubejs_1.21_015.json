@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_015",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "ServerProperties.java",
+  "symbols": ["ServerProperties", "instance", "get", "reload", "allowGameInfo", "logPlayerJoin", "logPlayerLeave", "executeCommand", "commandPermissionLevel", "announceAdvancementMessages", "enableWebServer", "publicAddress", "port", "maxResponseSize"],
+  "coverage_status": "complete"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0423",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ItemModificationKubeEvent.java",
+  "symbol": "ItemModificationKubeEvent",
+  "signature": "modify",
+  "payload_type": null,
+  "code_example": "// ItemModificationKubeEvent from ItemModificationKubeEvent.java\n// Methods: modify",
+  "coverage_status": "generated"
+}

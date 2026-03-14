@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_021",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "gametest",
+  "source_file": "net/minecraftforge/gametest/ForgeGameTestHooks.java",
+  "symbols": ["ForgeGameTestHooks", "GameTestHolder", "GameTestMain"],
+  "coverage_status": "complete",
+  "description": "GameTest framework for testing mod content",
+  "code_example": "// Create a game test\n@GameTestHolder\npublic class MyBlockTests {\n    private static final int TICK_WAIT = 20;\n    \n    @Test(\"mymod:my_block_test\")\n    public void testMyBlock(GameTestHelper helper) {\n        // Place a block\n        helper.setBlock(new BlockPos(0, 1, 0), MyBlocks.MY_BLOCK.get());\n        \n        // Wait for block to update\n        helper.sleep(TICK_WAIT);\n        \n        // Verify block state\n        BlockState state = helper.getBlockState(new BlockPos(0, 1, 0));\n        helper.assertTrue(\n            state.is(MyBlocks.MY_BLOCK.get()), \n            \"Block should be my block\"\n        );\n        \n        // Success\n        helper.succeed();\n    }\n    \n    @Test(\"mymod:redstone_test\")\n    public void testRedstonePower(GameTestHelper helper) {\n        // Create test for block powering\n        helper.setBlock(new BlockPos(0, 1, 0), Blocks.REDSTONE_BLOCK);\n        helper.sleep(TICK_WAIT);\n        \n        // Test passes if no errors\n        helper.succeed();\n    }\n}"
+}

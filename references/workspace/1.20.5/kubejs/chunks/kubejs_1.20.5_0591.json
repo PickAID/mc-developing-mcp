@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0591",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/callbacks/EntitySteppedOnBlockCallbackJS.java",
+  "symbol": "EntitySteppedOnBlockCallbackJS",
+  "signature": "EntitySteppedOnBlockCallbackJS; BlockContainerJS; getLevel",
+  "payload_type": null,
+  "code_example": "// EntitySteppedOnBlockCallbackJS from EntitySteppedOnBlockCallbackJS.java\n// Methods: EntitySteppedOnBlockCallbackJS, BlockContainerJS, getLevel",
+  "coverage_status": "generated"
+}

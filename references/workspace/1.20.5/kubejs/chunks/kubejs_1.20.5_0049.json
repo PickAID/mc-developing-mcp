@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0049",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/DataSenderKJS.java",
+  "symbol": "DataSenderKJS",
+  "signature": "NoMixinException",
+  "payload_type": null,
+  "code_example": "// DataSenderKJS from DataSenderKJS.java\n// Methods: NoMixinException",
+  "coverage_status": "generated"
+}

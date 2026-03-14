@@ -1,0 +1,20 @@
+{
+  "chunk_id": "chunk_026",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "client",
+  "source_file": "net/minecraftforge/client/event/ScreenEvent.java",
+  "symbols": [
+    "ScreenEvent",
+    "ContainerScreenEvent",
+    "RegisterShadersEvent",
+    "RegisterNamedRenderTypesEvent",
+    "EntityRenderersEvent",
+    "IForgeMenuType",
+    "IContainerFactory",
+    "IForgeBlockEntity"
+  ],
+  "coverage_status": "complete",
+  "description": "Menu factories, screen events, shader registration, render type hooks, and block entity sync helpers",
+  "code_example": "public static final MenuType<MyMenu> MY_MENU =\n    IForgeMenuType.create((id, inv, data) -> new MyMenu(id, inv, data.readBlockPos()));\n\n@SubscribeEvent\npublic static void onScreenRender(ScreenEvent.Render.Pre event) {\n    // overlay rendering\n}\n"
+}

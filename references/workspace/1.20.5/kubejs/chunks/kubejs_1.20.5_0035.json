@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0035",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "network",
+  "source_file": "net/NetworkKubeEvent.java",
+  "symbol": "NetworkKubeEvent",
+  "signature": "NetworkKubeEvent; getEntity; getChannel",
+  "payload_type": null,
+  "code_example": "// NetworkKubeEvent from NetworkKubeEvent.java\n// Fields:  player,  channel,  data\n// Methods: NetworkKubeEvent, getEntity, getChannel",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0539",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/PainterObject.java",
+  "symbol": "PainterObject",
+  "signature": "id; load; update",
+  "payload_type": null,
+  "code_example": "// PainterObject from PainterObject.java\n// Fields: public String id, public Unit visible,  id\n// Methods: id, load, update",
+  "coverage_status": "generated"
+}

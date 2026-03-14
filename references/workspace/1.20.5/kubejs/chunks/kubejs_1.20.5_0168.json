@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0168",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/StackTraceCollector.java",
+  "symbol": "StackTraceCollector",
+  "signature": "OutputStream; write; write",
+  "payload_type": null,
+  "code_example": "// StackTraceCollector from StackTraceCollector.java\n// Fields: private static final OutputStream OUTPUT_SINK, boolean isAt,  x\n// Methods: OutputStream, write, write",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0485",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "api",
+  "source_file": "bindings/TextWrapper.java",
+  "symbol": "TextWrapper",
+  "signature": "of; ofString; ofString",
+  "payload_type": null,
+  "code_example": "// TextWrapper from TextWrapper.java\n// Fields:  o, var s,  text\n// Methods: of, ofString, ofString",
+  "coverage_status": "generated"
+}

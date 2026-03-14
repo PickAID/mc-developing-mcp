@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0215",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/jei/JEISubtypesKubeEvent.java",
+  "symbol": "JEISubtypesKubeEvent",
+  "signature": "DataComponentTypeInterpreter; apply; JEISubtypesKubeEvent",
+  "payload_type": null,
+  "code_example": "// JEISubtypesKubeEvent from JEISubtypesKubeEvent.java\n// Fields: var o, return o,  registration\n// Methods: DataComponentTypeInterpreter, apply, JEISubtypesKubeEvent",
+  "coverage_status": "generated"
+}

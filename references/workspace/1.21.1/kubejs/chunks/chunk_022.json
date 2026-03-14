@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_022",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "item_stack_extension",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/core/ItemStackMixin.java",
+  "symbols": ["ItemStackMixin", "kjs$getComponents", "kjs$setComponents", "kjs$copyComponents", "kjs$hasTag", "kjs$getTag"],
+  "topic_tags": ["kubejs", "items", "components", "mixin"],
+  "coverage_status": "verified",
+  "code": "public class ItemStackMixin {\n\t@Mixin(ItemStack.class)\n\tpublic interface ExtendedItemStack {\n\t\t@Accessor(\"components\")\n\t\tDataComponentMap kjs$getComponents();\n\n\t\t@Accessor(\"components\")\n\t\tvoid kjs$setComponents(DataComponentMap components);\n\n\t\t@Accessor(\"tag\")\n\t\tCompoundTag kjs$getTag();\n\n\t\t@Accessor(\"tag\")\n\t\tvoid kjs$setTag(CompoundTag tag);\n\t}\n\n\tpublic static ItemStack kjs$copyWithComponents(ItemStack original) {\n\t\tvar copy = original.copy();\n\t\tcopy.kjs$setComponents(original.kjs$getComponents().copy());\n\t\treturn copy;\n\t}\n\n\tpublic static boolean kjs$hasComponent(ItemStack stack, DataComponentType<?> type) {\n\t\treturn stack.kjs$getComponents().has(type);\n\t}\n\n\tpublic static <T> T kjs$getComponent(ItemStack stack, DataComponentType<T> type) {\n\t\treturn stack.kjs$getComponents().get(type);\n\t}\n\n\tpublic static <T> void kjs$setComponent(ItemStack stack, DataComponentType<T> type, T value) {\n\t\tvar components = stack.kjs$getComponents().with(type, value);\n\t\tstack.kjs$setComponents(components);\n\t}\n}",
+  "code_example": "// ItemStackMixin accessors from ItemStackMixin.java\n"
+}

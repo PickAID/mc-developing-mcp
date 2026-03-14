@@ -1,0 +1,30 @@
+{
+  "chunk_id": "kubejs-1.20.1-events-008",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "events",
+  "source_file": "bindings/event/WorldgenEvents.java",
+  "symbols": [
+    {
+      "symbol": "WorldgenEvents.ADD",
+      "signature": "EventHandler ADD",
+      "payload_type": "EventJS",
+      "code_example": "WorldgenEvents.add((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "add"
+      ]
+    },
+    {
+      "symbol": "WorldgenEvents.REMOVE",
+      "signature": "EventHandler REMOVE",
+      "payload_type": "EventJS",
+      "code_example": "WorldgenEvents.remove((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "remove"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

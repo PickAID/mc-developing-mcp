@@ -1,0 +1,4882 @@
+{
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "total_classes": 554,
+  "categories": {
+    "block": 59,
+    "other": 10,
+    "events": 21,
+    "item": 51,
+    "util": 29,
+    "client": 52,
+    "commands": 5,
+    "entities": 46,
+    "fluid": 12,
+    "platform": 24,
+    "generator": 3,
+    "integration": 23,
+    "worldgen": 33,
+    "loot": 13,
+    "misc": 14,
+    "networking": 13,
+    "player": 12,
+    "recipes": 76,
+    "registry": 7,
+    "script": 19,
+    "server": 15,
+    "stages": 6,
+    "typings": 11
+  },
+  "classes": [
+    {
+      "name": "bindings/BlockWrapper",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/BlockWrapper.java"
+    },
+    {
+      "name": "bindings/DamageSourceWrapper",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/DamageSourceWrapper.java"
+    },
+    {
+      "name": "bindings/event/BlockEvents",
+      "category": "events",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/BlockEvents.java"
+    },
+    {
+      "name": "bindings/event/ClientEvents",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/ClientEvents.java"
+    },
+    {
+      "name": "bindings/event/EntityEvents",
+      "category": "events",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/EntityEvents.java"
+    },
+    {
+      "name": "bindings/event/ItemEvents",
+      "category": "events",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/ItemEvents.java"
+    },
+    {
+      "name": "bindings/event/LevelEvents",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/LevelEvents.java"
+    },
+    {
+      "name": "bindings/event/NetworkEvents",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/NetworkEvents.java"
+    },
+    {
+      "name": "bindings/event/PlayerEvents",
+      "category": "events",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/PlayerEvents.java"
+    },
+    {
+      "name": "bindings/event/ServerEvents",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/ServerEvents.java"
+    },
+    {
+      "name": "bindings/event/StartupEvents",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/StartupEvents.java"
+    },
+    {
+      "name": "bindings/event/WorldgenEvents",
+      "category": "events",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/event/WorldgenEvents.java"
+    },
+    {
+      "name": "bindings/IngredientWrapper",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/IngredientWrapper.java"
+    },
+    {
+      "name": "bindings/ItemWrapper",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/ItemWrapper.java"
+    },
+    {
+      "name": "bindings/JavaWrapper",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/JavaWrapper.java"
+    },
+    {
+      "name": "bindings/KMath",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/KMath.java"
+    },
+    {
+      "name": "bindings/TextWrapper",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/TextWrapper.java"
+    },
+    {
+      "name": "bindings/UtilsWrapper",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/bindings/UtilsWrapper.java"
+    },
+    {
+      "name": "block/BlockBrokenEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockBrokenEventJS.java"
+    },
+    {
+      "name": "block/BlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockBuilder.java"
+    },
+    {
+      "name": "block/BlockItemBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockItemBuilder.java"
+    },
+    {
+      "name": "block/BlockLeftClickedEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockLeftClickedEventJS.java"
+    },
+    {
+      "name": "block/BlockModificationEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockModificationEventJS.java"
+    },
+    {
+      "name": "block/BlockPlacedEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockPlacedEventJS.java"
+    },
+    {
+      "name": "block/BlockRightClickedEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockRightClickedEventJS.java"
+    },
+    {
+      "name": "block/BlockTintFunction",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/BlockTintFunction.java"
+    },
+    {
+      "name": "block/callbacks/AfterEntityFallenOnBlockCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/AfterEntityFallenOnBlockCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/BlockExplodedCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/BlockExplodedCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/BlockStateMirrorCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/BlockStateMirrorCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/BlockStateModifyCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/BlockStateModifyCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/BlockStateModifyPlacementCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/BlockStateModifyPlacementCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/BlockStateRotateCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/BlockStateRotateCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/CanBeReplacedCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/CanBeReplacedCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/EntityFallenOnBlockCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/EntityFallenOnBlockCallbackJS.java"
+    },
+    {
+      "name": "block/callbacks/EntitySteppedOnBlockCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/callbacks/EntitySteppedOnBlockCallbackJS.java"
+    },
+    {
+      "name": "block/custom/BasicBlockJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/BasicBlockJS.java"
+    },
+    {
+      "name": "block/custom/BasicCropBlockJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/BasicCropBlockJS.java"
+    },
+    {
+      "name": "block/custom/ButtonBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/ButtonBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/CarpetBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/CarpetBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/CropBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/CropBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/FallingBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/FallingBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/FenceBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/FenceBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/FenceGateBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/FenceGateBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/HorizontalDirectionalBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/HorizontalDirectionalBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/MultipartShapedBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "recipes",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/MultipartShapedBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/PressurePlateBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/PressurePlateBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/ShapedBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "recipes",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/ShapedBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/SlabBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/SlabBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/StairBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/StairBlockBuilder.java"
+    },
+    {
+      "name": "block/custom/WallBlockBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/custom/WallBlockBuilder.java"
+    },
+    {
+      "name": "block/DetectorBlock",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/DetectorBlock.java"
+    },
+    {
+      "name": "block/DetectorBlockEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/DetectorBlockEventJS.java"
+    },
+    {
+      "name": "block/entity/BlockEntityAttachment",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityAttachment.java"
+    },
+    {
+      "name": "block/entity/BlockEntityAttachmentHolder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityAttachmentHolder.java"
+    },
+    {
+      "name": "block/entity/BlockEntityAttachmentType",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityAttachmentType.java"
+    },
+    {
+      "name": "block/entity/BlockEntityBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "builders",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityBuilder.java"
+    },
+    {
+      "name": "block/entity/BlockEntityCallback",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityCallback.java"
+    },
+    {
+      "name": "block/entity/BlockEntityEventCallback",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityEventCallback.java"
+    },
+    {
+      "name": "block/entity/BlockEntityInfo",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityInfo.java"
+    },
+    {
+      "name": "block/entity/BlockEntityJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityJS.java"
+    },
+    {
+      "name": "block/entity/BlockEntityJSTicker",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/BlockEntityJSTicker.java"
+    },
+    {
+      "name": "block/entity/InventoryAttachment",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/entity/InventoryAttachment.java"
+    },
+    {
+      "name": "block/EntityBlockKJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/EntityBlockKJS.java"
+    },
+    {
+      "name": "block/FarmlandTrampledEventJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/FarmlandTrampledEventJS.java"
+    },
+    {
+      "name": "block/KubeJSBlockEventHandler",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/KubeJSBlockEventHandler.java"
+    },
+    {
+      "name": "block/KubeJSBlockProperties",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/KubeJSBlockProperties.java"
+    },
+    {
+      "name": "block/MapColorHelper",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/MapColorHelper.java"
+    },
+    {
+      "name": "block/PickBlockCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/PickBlockCallbackJS.java"
+    },
+    {
+      "name": "block/predicate/BlockEntityPredicate",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/predicate/BlockEntityPredicate.java"
+    },
+    {
+      "name": "block/predicate/BlockEntityPredicateDataCheck",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/predicate/BlockEntityPredicateDataCheck.java"
+    },
+    {
+      "name": "block/predicate/BlockIDPredicate",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/predicate/BlockIDPredicate.java"
+    },
+    {
+      "name": "block/predicate/BlockPredicate",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/predicate/BlockPredicate.java"
+    },
+    {
+      "name": "block/RandomTickCallbackJS",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/RandomTickCallbackJS.java"
+    },
+    {
+      "name": "block/SeedItemBuilder",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/SeedItemBuilder.java"
+    },
+    {
+      "name": "block/SoundTypeWrapper",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/SoundTypeWrapper.java"
+    },
+    {
+      "name": "block/state/BlockStatePredicate",
+      "category": "block",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/block/state/BlockStatePredicate.java"
+    },
+    {
+      "name": "BuiltinKubeJSPlugin",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/BuiltinKubeJSPlugin.java"
+    },
+    {
+      "name": "client/AtlasSpriteRegistryEventJS",
+      "category": "client",
+      "topics": [
+        "registration",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/AtlasSpriteRegistryEventJS.java"
+    },
+    {
+      "name": "client/BlockTintFunctionWrapper",
+      "category": "client",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/BlockTintFunctionWrapper.java"
+    },
+    {
+      "name": "client/BuiltinKubeJSClientPlugin",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/BuiltinKubeJSClientPlugin.java"
+    },
+    {
+      "name": "client/ClientEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/ClientEventJS.java"
+    },
+    {
+      "name": "client/ClientInitEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/ClientInitEventJS.java"
+    },
+    {
+      "name": "client/ClientProperties",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/ClientProperties.java"
+    },
+    {
+      "name": "client/DebugInfoEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/DebugInfoEventJS.java"
+    },
+    {
+      "name": "client/GenerateClientAssetsEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/GenerateClientAssetsEventJS.java"
+    },
+    {
+      "name": "client/GeneratedClientResourcePack",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/GeneratedClientResourcePack.java"
+    },
+    {
+      "name": "client/ItemTintFunctionWrapper",
+      "category": "client",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/ItemTintFunctionWrapper.java"
+    },
+    {
+      "name": "client/KubeJSClient",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/KubeJSClient.java"
+    },
+    {
+      "name": "client/KubeJSClientEventHandler",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/KubeJSClientEventHandler.java"
+    },
+    {
+      "name": "client/KubeJSErrorScreen",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/KubeJSErrorScreen.java"
+    },
+    {
+      "name": "client/KubeJSResourcePackFinder",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/KubeJSResourcePackFinder.java"
+    },
+    {
+      "name": "client/LangEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/LangEventJS.java"
+    },
+    {
+      "name": "client/ModelGenerator",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/ModelGenerator.java"
+    },
+    {
+      "name": "client/MultipartBlockStateGenerator",
+      "category": "client",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/MultipartBlockStateGenerator.java"
+    },
+    {
+      "name": "client/NotificationToast",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/NotificationToast.java"
+    },
+    {
+      "name": "client/ScheduledClientEvent",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/ScheduledClientEvent.java"
+    },
+    {
+      "name": "client/StencilTexture",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/StencilTexture.java"
+    },
+    {
+      "name": "client/TagInstance",
+      "category": "client",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/TagInstance.java"
+    },
+    {
+      "name": "client/VariantBlockStateGenerator",
+      "category": "client",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/VariantBlockStateGenerator.java"
+    },
+    {
+      "name": "client/painter/Painter",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/Painter.java"
+    },
+    {
+      "name": "client/painter/PainterFactory",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/PainterFactory.java"
+    },
+    {
+      "name": "client/painter/PainterObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/PainterObject.java"
+    },
+    {
+      "name": "client/painter/PainterObjectProperties",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/PainterObjectProperties.java"
+    },
+    {
+      "name": "client/painter/PainterObjectStorage",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/PainterObjectStorage.java"
+    },
+    {
+      "name": "client/painter/PaintEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/PaintEventJS.java"
+    },
+    {
+      "name": "client/painter/screen/AlignMode",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/AlignMode.java"
+    },
+    {
+      "name": "client/painter/screen/AtlasTextureObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/AtlasTextureObject.java"
+    },
+    {
+      "name": "client/painter/screen/BoxObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/BoxObject.java"
+    },
+    {
+      "name": "client/painter/screen/GradientObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/GradientObject.java"
+    },
+    {
+      "name": "client/painter/screen/ItemObject",
+      "category": "client",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/ItemObject.java"
+    },
+    {
+      "name": "client/painter/screen/LineObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/LineObject.java"
+    },
+    {
+      "name": "client/painter/screen/MultiMaxFunc",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/MultiMaxFunc.java"
+    },
+    {
+      "name": "client/painter/screen/PaintScreenEventJS",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/PaintScreenEventJS.java"
+    },
+    {
+      "name": "client/painter/screen/RectangleObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/RectangleObject.java"
+    },
+    {
+      "name": "client/painter/screen/ScreenDrawMode",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/ScreenDrawMode.java"
+    },
+    {
+      "name": "client/painter/screen/ScreenGroup",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/ScreenGroup.java"
+    },
+    {
+      "name": "client/painter/screen/ScreenPainterObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/ScreenPainterObject.java"
+    },
+    {
+      "name": "client/painter/screen/TextObject",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/client/painter/screen/TextObject.java"
+    },
+    {
+      "name": "command/ArgumentFunction",
+      "category": "commands",
+      "topics": [
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/command/ArgumentFunction.java"
+    },
+    {
+      "name": "command/ArgumentTypeWrapper",
+      "category": "commands",
+      "topics": [
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/command/ArgumentTypeWrapper.java"
+    },
+    {
+      "name": "command/ArgumentTypeWrappers",
+      "category": "commands",
+      "topics": [
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/command/ArgumentTypeWrappers.java"
+    },
+    {
+      "name": "command/CommandRegistryEventJS",
+      "category": "commands",
+      "topics": [
+        "registration",
+        "registry",
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/command/CommandRegistryEventJS.java"
+    },
+    {
+      "name": "command/KubeJSCommands",
+      "category": "commands",
+      "topics": [
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/command/KubeJSCommands.java"
+    },
+    {
+      "name": "core/BlockBuilderProvider",
+      "category": "entities",
+      "topics": [
+        "builders",
+        "blocks",
+        "events",
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/BlockBuilderProvider.java"
+    },
+    {
+      "name": "core/BlockKJS",
+      "category": "entities",
+      "topics": [
+        "blocks",
+        "events",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/BlockKJS.java"
+    },
+    {
+      "name": "core/BlockStateKJS",
+      "category": "entities",
+      "topics": [
+        "blocks",
+        "events",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/BlockStateKJS.java"
+    },
+    {
+      "name": "core/ClientLevelKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ClientLevelKJS.java"
+    },
+    {
+      "name": "core/ClientPlayerKJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "player",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ClientPlayerKJS.java"
+    },
+    {
+      "name": "core/ComponentKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ComponentKJS.java"
+    },
+    {
+      "name": "core/CraftingContainerKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/CraftingContainerKJS.java"
+    },
+    {
+      "name": "core/CreativeModeTabKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/CreativeModeTabKJS.java"
+    },
+    {
+      "name": "core/DataSenderKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/DataSenderKJS.java"
+    },
+    {
+      "name": "core/EntityKJS",
+      "category": "entities",
+      "topics": [
+        "entities",
+        "events",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/EntityKJS.java"
+    },
+    {
+      "name": "core/FireworkRocketEntityKJS",
+      "category": "entities",
+      "topics": [
+        "entities",
+        "events",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/FireworkRocketEntityKJS.java"
+    },
+    {
+      "name": "core/GameRulesKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/GameRulesKJS.java"
+    },
+    {
+      "name": "core/ImageButtonKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ImageButtonKJS.java"
+    },
+    {
+      "name": "core/IngredientKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/IngredientKJS.java"
+    },
+    {
+      "name": "core/IngredientSupplierKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/IngredientSupplierKJS.java"
+    },
+    {
+      "name": "core/InventoryKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/InventoryKJS.java"
+    },
+    {
+      "name": "core/ItemEntityKJS",
+      "category": "entities",
+      "topics": [
+        "entities",
+        "events",
+        "items",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ItemEntityKJS.java"
+    },
+    {
+      "name": "core/ItemFrameEntityKJS",
+      "category": "entities",
+      "topics": [
+        "entities",
+        "events",
+        "items",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ItemFrameEntityKJS.java"
+    },
+    {
+      "name": "core/ItemKJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "items",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ItemKJS.java"
+    },
+    {
+      "name": "core/ItemStackKJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "items",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ItemStackKJS.java"
+    },
+    {
+      "name": "core/LazyComponentKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/LazyComponentKJS.java"
+    },
+    {
+      "name": "core/LevelKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/LevelKJS.java"
+    },
+    {
+      "name": "core/LivingEntityKJS",
+      "category": "entities",
+      "topics": [
+        "entities",
+        "events",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/LivingEntityKJS.java"
+    },
+    {
+      "name": "core/LootTablesKJS",
+      "category": "entities",
+      "topics": [
+        "drops",
+        "loot",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/LootTablesKJS.java"
+    },
+    {
+      "name": "core/MessageSenderKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/MessageSenderKJS.java"
+    },
+    {
+      "name": "core/MinecraftClientKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/MinecraftClientKJS.java"
+    },
+    {
+      "name": "core/MinecraftEnvironmentKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/MinecraftEnvironmentKJS.java"
+    },
+    {
+      "name": "core/MinecraftServerKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/MinecraftServerKJS.java"
+    },
+    {
+      "name": "core/ModifiableItemKJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "items",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ModifiableItemKJS.java"
+    },
+    {
+      "name": "core/PlayerKJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "player",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/PlayerKJS.java"
+    },
+    {
+      "name": "core/PlayerSelector",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "events",
+        "worldgen",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/PlayerSelector.java"
+    },
+    {
+      "name": "core/RecipeKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/RecipeKJS.java"
+    },
+    {
+      "name": "core/ServerLevelKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ServerLevelKJS.java"
+    },
+    {
+      "name": "core/ServerPlayerKJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "player",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/ServerPlayerKJS.java"
+    },
+    {
+      "name": "core/TagLoaderKJS",
+      "category": "entities",
+      "topics": [
+        "datapack",
+        "tags",
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/TagLoaderKJS.java"
+    },
+    {
+      "name": "core/WindowKJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "api",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/WindowKJS.java"
+    },
+    {
+      "name": "core/WithAttachedData",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/WithAttachedData.java"
+    },
+    {
+      "name": "core/WithPersistentData",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/core/WithPersistentData.java"
+    },
+    {
+      "name": "entity/CheckLivingEntitySpawnEventJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "events",
+        "worldgen",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/CheckLivingEntitySpawnEventJS.java"
+    },
+    {
+      "name": "entity/EntityEventJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/EntityEventJS.java"
+    },
+    {
+      "name": "entity/EntityPotionEffectsJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/EntityPotionEffectsJS.java"
+    },
+    {
+      "name": "entity/EntitySpawnedEventJS",
+      "category": "entities",
+      "topics": [
+        "generation",
+        "events",
+        "worldgen",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/EntitySpawnedEventJS.java"
+    },
+    {
+      "name": "entity/LivingEntityDeathEventJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/LivingEntityDeathEventJS.java"
+    },
+    {
+      "name": "entity/LivingEntityEventJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/LivingEntityEventJS.java"
+    },
+    {
+      "name": "entity/LivingEntityHurtEventJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/LivingEntityHurtEventJS.java"
+    },
+    {
+      "name": "entity/RayTraceResultJS",
+      "category": "entities",
+      "topics": [
+        "events",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/entity/RayTraceResultJS.java"
+    },
+    {
+      "name": "event/EventExceptionHandler",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventExceptionHandler.java"
+    },
+    {
+      "name": "event/EventExit",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventExit.java"
+    },
+    {
+      "name": "event/EventGroup",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventGroup.java"
+    },
+    {
+      "name": "event/EventGroupWrapper",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventGroupWrapper.java"
+    },
+    {
+      "name": "event/EventHandler",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventHandler.java"
+    },
+    {
+      "name": "event/EventHandlerContainer",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventHandlerContainer.java"
+    },
+    {
+      "name": "event/EventJS",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventJS.java"
+    },
+    {
+      "name": "event/EventResult",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/EventResult.java"
+    },
+    {
+      "name": "event/Extra",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/Extra.java"
+    },
+    {
+      "name": "event/IEventHandler",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/IEventHandler.java"
+    },
+    {
+      "name": "event/StartupEventJS",
+      "category": "events",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/event/StartupEventJS.java"
+    },
+    {
+      "name": "fluid/BoundFluidStackJS",
+      "category": "fluid",
+      "topics": [
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/BoundFluidStackJS.java"
+    },
+    {
+      "name": "fluid/EmptyFluidStackJS",
+      "category": "fluid",
+      "topics": [
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/EmptyFluidStackJS.java"
+    },
+    {
+      "name": "fluid/FlowingFluidBuilder",
+      "category": "fluid",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FlowingFluidBuilder.java"
+    },
+    {
+      "name": "fluid/FluidBlockBuilder",
+      "category": "fluid",
+      "topics": [
+        "events",
+        "blocks",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FluidBlockBuilder.java"
+    },
+    {
+      "name": "fluid/FluidBucketItemBuilder",
+      "category": "fluid",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FluidBucketItemBuilder.java"
+    },
+    {
+      "name": "fluid/FluidBuilder",
+      "category": "fluid",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FluidBuilder.java"
+    },
+    {
+      "name": "fluid/FluidLike",
+      "category": "fluid",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FluidLike.java"
+    },
+    {
+      "name": "fluid/FluidStackJS",
+      "category": "fluid",
+      "topics": [
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FluidStackJS.java"
+    },
+    {
+      "name": "fluid/FluidWrapper",
+      "category": "fluid",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/FluidWrapper.java"
+    },
+    {
+      "name": "fluid/InputFluid",
+      "category": "fluid",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/InputFluid.java"
+    },
+    {
+      "name": "fluid/OutputFluid",
+      "category": "fluid",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/OutputFluid.java"
+    },
+    {
+      "name": "fluid/UnboundFluidStackJS",
+      "category": "fluid",
+      "topics": [
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/fluid/UnboundFluidStackJS.java"
+    },
+    {
+      "name": "forge/BuiltinKubeJSForgeClientPlugin",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/BuiltinKubeJSForgeClientPlugin.java"
+    },
+    {
+      "name": "forge/BuiltinKubeJSForgePlugin",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/BuiltinKubeJSForgePlugin.java"
+    },
+    {
+      "name": "forge/ForgeEventConsumer",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/ForgeEventConsumer.java"
+    },
+    {
+      "name": "forge/ForgeEventWrapper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/ForgeEventWrapper.java"
+    },
+    {
+      "name": "forge/ForgeKubeJSEvents",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/ForgeKubeJSEvents.java"
+    },
+    {
+      "name": "forge/GenericForgeEventConsumer",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/GenericForgeEventConsumer.java"
+    },
+    {
+      "name": "forge/KubeJSForge",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/KubeJSForge.java"
+    },
+    {
+      "name": "forge/KubeJSForgeClient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/forge/KubeJSForgeClient.java"
+    },
+    {
+      "name": "generator/AssetJsonGenerator",
+      "category": "generator",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/generator/AssetJsonGenerator.java"
+    },
+    {
+      "name": "generator/DataJsonGenerator",
+      "category": "generator",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/generator/DataJsonGenerator.java"
+    },
+    {
+      "name": "generator/ResourceGenerator",
+      "category": "generator",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/generator/ResourceGenerator.java"
+    },
+    {
+      "name": "gui/chest/ChestMenuClickEvent",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/ChestMenuClickEvent.java"
+    },
+    {
+      "name": "gui/chest/ChestMenuClickHandler",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/ChestMenuClickHandler.java"
+    },
+    {
+      "name": "gui/chest/ChestMenuContainerSlot",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/ChestMenuContainerSlot.java"
+    },
+    {
+      "name": "gui/chest/ChestMenuData",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/ChestMenuData.java"
+    },
+    {
+      "name": "gui/chest/ChestMenuInventoryClickEvent",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/ChestMenuInventoryClickEvent.java"
+    },
+    {
+      "name": "gui/chest/ChestMenuSlot",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/ChestMenuSlot.java"
+    },
+    {
+      "name": "gui/chest/CustomChestMenu",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/chest/CustomChestMenu.java"
+    },
+    {
+      "name": "gui/InventoryKJSSlot",
+      "category": "client",
+      "topics": [
+        "api"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/InventoryKJSSlot.java"
+    },
+    {
+      "name": "gui/KubeJSGUI",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/KubeJSGUI.java"
+    },
+    {
+      "name": "gui/KubeJSMenu",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/KubeJSMenu.java"
+    },
+    {
+      "name": "gui/KubeJSScreen",
+      "category": "client",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/gui/KubeJSScreen.java"
+    },
+    {
+      "name": "integration/forge/gamestages/GameStageClientHelper",
+      "category": "integration",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/gamestages/GameStageClientHelper.java"
+    },
+    {
+      "name": "integration/forge/gamestages/GameStageEventJS",
+      "category": "integration",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/gamestages/GameStageEventJS.java"
+    },
+    {
+      "name": "integration/forge/gamestages/GameStagesIntegration",
+      "category": "integration",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/gamestages/GameStagesIntegration.java"
+    },
+    {
+      "name": "integration/forge/gamestages/GameStagesWrapper",
+      "category": "integration",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/gamestages/GameStagesWrapper.java"
+    },
+    {
+      "name": "integration/forge/jei/AddJEIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/AddJEIEventJS.java"
+    },
+    {
+      "name": "integration/forge/jei/HideCustomJEIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/HideCustomJEIEventJS.java"
+    },
+    {
+      "name": "integration/forge/jei/HideJEIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/HideJEIEventJS.java"
+    },
+    {
+      "name": "integration/forge/jei/InformationJEIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/InformationJEIEventJS.java"
+    },
+    {
+      "name": "integration/forge/jei/JEIEvents",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/JEIEvents.java"
+    },
+    {
+      "name": "integration/forge/jei/JEIPlugin",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/JEIPlugin.java"
+    },
+    {
+      "name": "integration/forge/jei/JEISubtypesEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/JEISubtypesEventJS.java"
+    },
+    {
+      "name": "integration/forge/jei/RemoveJEICategoriesEvent",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/RemoveJEICategoriesEvent.java"
+    },
+    {
+      "name": "integration/forge/jei/RemoveJEIRecipesEvent",
+      "category": "integration",
+      "topics": [
+        "recipes",
+        "crafting"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/forge/jei/RemoveJEIRecipesEvent.java"
+    },
+    {
+      "name": "integration/rei/AddREIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/AddREIEventJS.java"
+    },
+    {
+      "name": "integration/rei/EntryWrapper",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/EntryWrapper.java"
+    },
+    {
+      "name": "integration/rei/GroupREIEntriesEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/GroupREIEntriesEventJS.java"
+    },
+    {
+      "name": "integration/rei/HideREIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/HideREIEventJS.java"
+    },
+    {
+      "name": "integration/rei/InformationREIEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/InformationREIEventJS.java"
+    },
+    {
+      "name": "integration/rei/KubeJSREIPlugin",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/KubeJSREIPlugin.java"
+    },
+    {
+      "name": "integration/rei/REIEntryWrappers",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/REIEntryWrappers.java"
+    },
+    {
+      "name": "integration/rei/REIEvents",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/REIEvents.java"
+    },
+    {
+      "name": "integration/rei/RemoveREICategoryEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/RemoveREICategoryEventJS.java"
+    },
+    {
+      "name": "integration/rei/RemoveREIRecipeEventJS",
+      "category": "integration",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/integration/rei/RemoveREIRecipeEventJS.java"
+    },
+    {
+      "name": "item/creativetab/CreativeTabBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/creativetab/CreativeTabBuilder.java"
+    },
+    {
+      "name": "item/creativetab/CreativeTabCallback",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/creativetab/CreativeTabCallback.java"
+    },
+    {
+      "name": "item/creativetab/CreativeTabContentSupplier",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/creativetab/CreativeTabContentSupplier.java"
+    },
+    {
+      "name": "item/creativetab/CreativeTabEvent",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/creativetab/CreativeTabEvent.java"
+    },
+    {
+      "name": "item/creativetab/CreativeTabIconSupplier",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/creativetab/CreativeTabIconSupplier.java"
+    },
+    {
+      "name": "item/creativetab/KubeJSCreativeTabs",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/creativetab/KubeJSCreativeTabs.java"
+    },
+    {
+      "name": "item/custom/ArmorItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/ArmorItemBuilder.java"
+    },
+    {
+      "name": "item/custom/AxeItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/AxeItemBuilder.java"
+    },
+    {
+      "name": "item/custom/BasicItemJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/BasicItemJS.java"
+    },
+    {
+      "name": "item/custom/HandheldItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/HandheldItemBuilder.java"
+    },
+    {
+      "name": "item/custom/HoeItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/HoeItemBuilder.java"
+    },
+    {
+      "name": "item/custom/ItemArmorTierRegistryEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "registration",
+        "items",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/ItemArmorTierRegistryEventJS.java"
+    },
+    {
+      "name": "item/custom/ItemToolTierRegistryEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "registration",
+        "items",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/ItemToolTierRegistryEventJS.java"
+    },
+    {
+      "name": "item/custom/PickaxeItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/PickaxeItemBuilder.java"
+    },
+    {
+      "name": "item/custom/RecordItemJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/RecordItemJS.java"
+    },
+    {
+      "name": "item/custom/ShearsItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/ShearsItemBuilder.java"
+    },
+    {
+      "name": "item/custom/ShovelItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/ShovelItemBuilder.java"
+    },
+    {
+      "name": "item/custom/SmithingTemplateItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/SmithingTemplateItemBuilder.java"
+    },
+    {
+      "name": "item/custom/SwordItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/custom/SwordItemBuilder.java"
+    },
+    {
+      "name": "item/EmptyItemError",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/EmptyItemError.java"
+    },
+    {
+      "name": "item/FoodBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/FoodBuilder.java"
+    },
+    {
+      "name": "item/FoodEatenEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/FoodEatenEventJS.java"
+    },
+    {
+      "name": "item/forge/ItemDestroyedEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/forge/ItemDestroyedEventJS.java"
+    },
+    {
+      "name": "item/ingredient/IngredientJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ingredient/IngredientJS.java"
+    },
+    {
+      "name": "item/ingredient/IngredientWithCustomPredicate",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ingredient/IngredientWithCustomPredicate.java"
+    },
+    {
+      "name": "item/ingredient/TagContext",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ingredient/TagContext.java"
+    },
+    {
+      "name": "item/InputItem",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/InputItem.java"
+    },
+    {
+      "name": "item/ItemBuilder",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemBuilder.java"
+    },
+    {
+      "name": "item/ItemClickedEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemClickedEventJS.java"
+    },
+    {
+      "name": "item/ItemCraftedEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemCraftedEventJS.java"
+    },
+    {
+      "name": "item/ItemDroppedEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemDroppedEventJS.java"
+    },
+    {
+      "name": "item/ItemEntityInteractedEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemEntityInteractedEventJS.java"
+    },
+    {
+      "name": "item/ItemHandlerUtils",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemHandlerUtils.java"
+    },
+    {
+      "name": "item/ItemModelPropertiesEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemModelPropertiesEventJS.java"
+    },
+    {
+      "name": "item/ItemModificationEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemModificationEventJS.java"
+    },
+    {
+      "name": "item/ItemPickedUpEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemPickedUpEventJS.java"
+    },
+    {
+      "name": "item/ItemSmeltedEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemSmeltedEventJS.java"
+    },
+    {
+      "name": "item/ItemStackJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "api",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemStackJS.java"
+    },
+    {
+      "name": "item/ItemStackKey",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemStackKey.java"
+    },
+    {
+      "name": "item/ItemStackSet",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemStackSet.java"
+    },
+    {
+      "name": "item/ItemTintFunction",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemTintFunction.java"
+    },
+    {
+      "name": "item/ItemTooltipEventJS",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/ItemTooltipEventJS.java"
+    },
+    {
+      "name": "item/KubeJSItemEventHandler",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/KubeJSItemEventHandler.java"
+    },
+    {
+      "name": "item/KubeJSItemProperties",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/KubeJSItemProperties.java"
+    },
+    {
+      "name": "item/KubeJSItemStackData",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/KubeJSItemStackData.java"
+    },
+    {
+      "name": "item/MutableArmorTier",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/MutableArmorTier.java"
+    },
+    {
+      "name": "item/MutableToolTier",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/MutableToolTier.java"
+    },
+    {
+      "name": "item/OutputItem",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/OutputItem.java"
+    },
+    {
+      "name": "item/PlayerMainInvWrapper",
+      "category": "item",
+      "topics": [
+        "events",
+        "player",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/PlayerMainInvWrapper.java"
+    },
+    {
+      "name": "item/RangedWrapper",
+      "category": "item",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/item/RangedWrapper.java"
+    },
+    {
+      "name": "KubeJS",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/KubeJS.java"
+    },
+    {
+      "name": "KubeJSCommon",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/KubeJSCommon.java"
+    },
+    {
+      "name": "KubeJSPaths",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/KubeJSPaths.java"
+    },
+    {
+      "name": "KubeJSPlugin",
+      "category": "other",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/KubeJSPlugin.java"
+    },
+    {
+      "name": "level/BlockContainerJS",
+      "category": "worldgen",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/BlockContainerJS.java"
+    },
+    {
+      "name": "level/ExplosionEventJS",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/ExplosionEventJS.java"
+    },
+    {
+      "name": "level/ExplosionJS",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/ExplosionJS.java"
+    },
+    {
+      "name": "level/FireworksJS",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/FireworksJS.java"
+    },
+    {
+      "name": "level/gen/AddWorldgenEventJS",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/AddWorldgenEventJS.java"
+    },
+    {
+      "name": "level/gen/filter/biome/AndFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/AndFilter.java"
+    },
+    {
+      "name": "level/gen/filter/biome/BiomeFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/BiomeFilter.java"
+    },
+    {
+      "name": "level/gen/filter/biome/IDFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/IDFilter.java"
+    },
+    {
+      "name": "level/gen/filter/biome/NotFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/NotFilter.java"
+    },
+    {
+      "name": "level/gen/filter/biome/OrFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/OrFilter.java"
+    },
+    {
+      "name": "level/gen/filter/biome/RegexIDFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/RegexIDFilter.java"
+    },
+    {
+      "name": "level/gen/filter/biome/TagFilter",
+      "category": "worldgen",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/biome/TagFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/AndFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/AndFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/CategoryFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/CategoryFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/IDFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/IDFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/MobFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/MobFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/NotFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/NotFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/OrFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/OrFilter.java"
+    },
+    {
+      "name": "level/gen/filter/mob/RegexIDFilter",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/filter/mob/RegexIDFilter.java"
+    },
+    {
+      "name": "level/gen/properties/AddLakeProperties",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/properties/AddLakeProperties.java"
+    },
+    {
+      "name": "level/gen/properties/AddOreProperties",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/properties/AddOreProperties.java"
+    },
+    {
+      "name": "level/gen/properties/AddSpawnProperties",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/properties/AddSpawnProperties.java"
+    },
+    {
+      "name": "level/gen/properties/RemoveOresProperties",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/properties/RemoveOresProperties.java"
+    },
+    {
+      "name": "level/gen/properties/RemoveSpawnsProperties",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/properties/RemoveSpawnsProperties.java"
+    },
+    {
+      "name": "level/gen/RemoveWorldgenEventJS",
+      "category": "worldgen",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/RemoveWorldgenEventJS.java"
+    },
+    {
+      "name": "level/gen/ruletest/AllMatchRuleTest",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/ruletest/AllMatchRuleTest.java"
+    },
+    {
+      "name": "level/gen/ruletest/AlwaysFalseRuleTest",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/ruletest/AlwaysFalseRuleTest.java"
+    },
+    {
+      "name": "level/gen/ruletest/AnyMatchRuleTest",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/ruletest/AnyMatchRuleTest.java"
+    },
+    {
+      "name": "level/gen/ruletest/InvertRuleTest",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/ruletest/InvertRuleTest.java"
+    },
+    {
+      "name": "level/gen/ruletest/KubeJSRuleTests",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/gen/ruletest/KubeJSRuleTests.java"
+    },
+    {
+      "name": "level/KubeJSWorldEventHandler",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/KubeJSWorldEventHandler.java"
+    },
+    {
+      "name": "level/LevelEventJS",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/LevelEventJS.java"
+    },
+    {
+      "name": "level/SimpleLevelEventJS",
+      "category": "worldgen",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/level/SimpleLevelEventJS.java"
+    },
+    {
+      "name": "loot/BlockLootEventJS",
+      "category": "loot",
+      "topics": [
+        "events",
+        "drops",
+        "blocks",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/BlockLootEventJS.java"
+    },
+    {
+      "name": "loot/ChestLootEventJS",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/ChestLootEventJS.java"
+    },
+    {
+      "name": "loot/ConditionalFunction",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/ConditionalFunction.java"
+    },
+    {
+      "name": "loot/ConditionContainer",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/ConditionContainer.java"
+    },
+    {
+      "name": "loot/EntityLootEventJS",
+      "category": "loot",
+      "topics": [
+        "events",
+        "drops",
+        "entities",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/EntityLootEventJS.java"
+    },
+    {
+      "name": "loot/FishingLootEventJS",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/FishingLootEventJS.java"
+    },
+    {
+      "name": "loot/FunctionContainer",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/FunctionContainer.java"
+    },
+    {
+      "name": "loot/GenericLootEventJS",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/GenericLootEventJS.java"
+    },
+    {
+      "name": "loot/GiftLootEventJS",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/GiftLootEventJS.java"
+    },
+    {
+      "name": "loot/LootBuilder",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "builders",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/LootBuilder.java"
+    },
+    {
+      "name": "loot/LootBuilderPool",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "builders",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/LootBuilderPool.java"
+    },
+    {
+      "name": "loot/LootEventJS",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/LootEventJS.java"
+    },
+    {
+      "name": "loot/LootTableEntry",
+      "category": "loot",
+      "topics": [
+        "drops",
+        "loot"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/loot/LootTableEntry.java"
+    },
+    {
+      "name": "misc/BasicEnchantment",
+      "category": "misc",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/BasicEnchantment.java"
+    },
+    {
+      "name": "misc/BasicMobEffect",
+      "category": "misc",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/BasicMobEffect.java"
+    },
+    {
+      "name": "misc/BasicParticleType",
+      "category": "misc",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/BasicParticleType.java"
+    },
+    {
+      "name": "misc/ComplexParticleType",
+      "category": "misc",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/ComplexParticleType.java"
+    },
+    {
+      "name": "misc/CustomStatBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/CustomStatBuilder.java"
+    },
+    {
+      "name": "misc/EnchantmentBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/EnchantmentBuilder.java"
+    },
+    {
+      "name": "misc/MobEffectBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/MobEffectBuilder.java"
+    },
+    {
+      "name": "misc/PaintingVariantBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/PaintingVariantBuilder.java"
+    },
+    {
+      "name": "misc/ParticleTypeBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/ParticleTypeBuilder.java"
+    },
+    {
+      "name": "misc/PoiTypeBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/PoiTypeBuilder.java"
+    },
+    {
+      "name": "misc/PotionBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/PotionBuilder.java"
+    },
+    {
+      "name": "misc/SoundEventBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/SoundEventBuilder.java"
+    },
+    {
+      "name": "misc/VillagerProfessionBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/VillagerProfessionBuilder.java"
+    },
+    {
+      "name": "misc/VillagerTypeBuilder",
+      "category": "misc",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/misc/VillagerTypeBuilder.java"
+    },
+    {
+      "name": "net/AddStageMessage",
+      "category": "networking",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/AddStageMessage.java"
+    },
+    {
+      "name": "net/DisplayClientErrorsMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/DisplayClientErrorsMessage.java"
+    },
+    {
+      "name": "net/DisplayServerErrorsMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/DisplayServerErrorsMessage.java"
+    },
+    {
+      "name": "net/FirstClickMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/FirstClickMessage.java"
+    },
+    {
+      "name": "net/KubeJSNet",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/KubeJSNet.java"
+    },
+    {
+      "name": "net/NetworkEventJS",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/NetworkEventJS.java"
+    },
+    {
+      "name": "net/NotificationMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/NotificationMessage.java"
+    },
+    {
+      "name": "net/PaintMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/PaintMessage.java"
+    },
+    {
+      "name": "net/ReloadStartupScriptsMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/ReloadStartupScriptsMessage.java"
+    },
+    {
+      "name": "net/RemoveStageMessage",
+      "category": "networking",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/RemoveStageMessage.java"
+    },
+    {
+      "name": "net/SendDataFromClientMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/SendDataFromClientMessage.java"
+    },
+    {
+      "name": "net/SendDataFromServerMessage",
+      "category": "networking",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/SendDataFromServerMessage.java"
+    },
+    {
+      "name": "net/SyncStagesMessage",
+      "category": "networking",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/net/SyncStagesMessage.java"
+    },
+    {
+      "name": "platform/forge/ingredient/CreativeTabIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/CreativeTabIngredient.java"
+    },
+    {
+      "name": "platform/forge/ingredient/CustomIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/CustomIngredient.java"
+    },
+    {
+      "name": "platform/forge/ingredient/CustomPredicateIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/CustomPredicateIngredient.java"
+    },
+    {
+      "name": "platform/forge/ingredient/KubeJSIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/KubeJSIngredient.java"
+    },
+    {
+      "name": "platform/forge/ingredient/KubeJSIngredientSerializer",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/KubeJSIngredientSerializer.java"
+    },
+    {
+      "name": "platform/forge/ingredient/ModIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/ModIngredient.java"
+    },
+    {
+      "name": "platform/forge/ingredient/RegExIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/RegExIngredient.java"
+    },
+    {
+      "name": "platform/forge/ingredient/WildcardIngredient",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/ingredient/WildcardIngredient.java"
+    },
+    {
+      "name": "platform/forge/IngredientForgeHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/IngredientForgeHelper.java"
+    },
+    {
+      "name": "platform/forge/LevelForgeHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/LevelForgeHelper.java"
+    },
+    {
+      "name": "platform/forge/MiscForgeHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/MiscForgeHelper.java"
+    },
+    {
+      "name": "platform/forge/RecipeForgeHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/forge/RecipeForgeHelper.java"
+    },
+    {
+      "name": "platform/IngredientPlatformHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/IngredientPlatformHelper.java"
+    },
+    {
+      "name": "platform/LevelPlatformHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/LevelPlatformHelper.java"
+    },
+    {
+      "name": "platform/MiscPlatformHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/MiscPlatformHelper.java"
+    },
+    {
+      "name": "platform/RecipePlatformHelper",
+      "category": "platform",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/platform/RecipePlatformHelper.java"
+    },
+    {
+      "name": "player/AdvancementJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/AdvancementJS.java"
+    },
+    {
+      "name": "player/ChestEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/ChestEventJS.java"
+    },
+    {
+      "name": "player/EntityArrayList",
+      "category": "player",
+      "topics": [
+        "events",
+        "player",
+        "entities"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/EntityArrayList.java"
+    },
+    {
+      "name": "player/InventoryChangedEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/InventoryChangedEventJS.java"
+    },
+    {
+      "name": "player/InventoryEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/InventoryEventJS.java"
+    },
+    {
+      "name": "player/PlayerAdvancementEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/PlayerAdvancementEventJS.java"
+    },
+    {
+      "name": "player/PlayerChatDecorateEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/PlayerChatDecorateEventJS.java"
+    },
+    {
+      "name": "player/PlayerChatReceivedEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/PlayerChatReceivedEventJS.java"
+    },
+    {
+      "name": "player/PlayerEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/PlayerEventJS.java"
+    },
+    {
+      "name": "player/PlayerRespawnedEventJS",
+      "category": "player",
+      "topics": [
+        "generation",
+        "events",
+        "worldgen",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/PlayerRespawnedEventJS.java"
+    },
+    {
+      "name": "player/PlayerStatsJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/PlayerStatsJS.java"
+    },
+    {
+      "name": "player/SimplePlayerEventJS",
+      "category": "player",
+      "topics": [
+        "events",
+        "player"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/player/SimplePlayerEventJS.java"
+    },
+    {
+      "name": "recipe/AfterRecipesLoadedEventJS",
+      "category": "recipes",
+      "topics": [
+        "recipes",
+        "crafting"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/AfterRecipesLoadedEventJS.java"
+    },
+    {
+      "name": "recipe/component/AndRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/AndRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/ArrayRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/ArrayRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/BlockComponent",
+      "category": "recipes",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/BlockComponent.java"
+    },
+    {
+      "name": "recipe/component/BlockStateComponent",
+      "category": "recipes",
+      "topics": [
+        "events",
+        "blocks"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/BlockStateComponent.java"
+    },
+    {
+      "name": "recipe/component/BooleanComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/BooleanComponent.java"
+    },
+    {
+      "name": "recipe/component/ComponentRole",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/ComponentRole.java"
+    },
+    {
+      "name": "recipe/component/ComponentValueMap",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/ComponentValueMap.java"
+    },
+    {
+      "name": "recipe/component/EnumComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/EnumComponent.java"
+    },
+    {
+      "name": "recipe/component/FluidComponents",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/FluidComponents.java"
+    },
+    {
+      "name": "recipe/component/ItemComponents",
+      "category": "recipes",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/ItemComponents.java"
+    },
+    {
+      "name": "recipe/component/MappingRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/MappingRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/MapRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/MapRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/MissingComponentException",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/MissingComponentException.java"
+    },
+    {
+      "name": "recipe/component/NestedRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/NestedRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/NumberComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/NumberComponent.java"
+    },
+    {
+      "name": "recipe/component/OrRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/OrRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/RecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/RecipeComponentBuilder",
+      "category": "recipes",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RecipeComponentBuilder.java"
+    },
+    {
+      "name": "recipe/component/RecipeComponentBuilderMap",
+      "category": "recipes",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RecipeComponentBuilderMap.java"
+    },
+    {
+      "name": "recipe/component/RecipeComponentValue",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RecipeComponentValue.java"
+    },
+    {
+      "name": "recipe/component/RecipeComponentValueFunction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RecipeComponentValueFunction.java"
+    },
+    {
+      "name": "recipe/component/RecipeComponentWithParent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RecipeComponentWithParent.java"
+    },
+    {
+      "name": "recipe/component/RegistryComponent",
+      "category": "recipes",
+      "topics": [
+        "registration",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/RegistryComponent.java"
+    },
+    {
+      "name": "recipe/component/SimpleMappingRecipeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/SimpleMappingRecipeComponent.java"
+    },
+    {
+      "name": "recipe/component/StringComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/StringComponent.java"
+    },
+    {
+      "name": "recipe/component/TagKeyComponent",
+      "category": "recipes",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/TagKeyComponent.java"
+    },
+    {
+      "name": "recipe/component/TimeComponent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/component/TimeComponent.java"
+    },
+    {
+      "name": "recipe/CompostableRecipesEventJS",
+      "category": "recipes",
+      "topics": [
+        "recipes",
+        "crafting"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/CompostableRecipesEventJS.java"
+    },
+    {
+      "name": "recipe/ErroredRecipeJS",
+      "category": "recipes",
+      "topics": [
+        "generation",
+        "worldgen"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ErroredRecipeJS.java"
+    },
+    {
+      "name": "recipe/filter/AndFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/AndFilter.java"
+    },
+    {
+      "name": "recipe/filter/ConstantFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/ConstantFilter.java"
+    },
+    {
+      "name": "recipe/filter/GroupFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/GroupFilter.java"
+    },
+    {
+      "name": "recipe/filter/IDFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/IDFilter.java"
+    },
+    {
+      "name": "recipe/filter/InputFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/InputFilter.java"
+    },
+    {
+      "name": "recipe/filter/ModFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/ModFilter.java"
+    },
+    {
+      "name": "recipe/filter/NotFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/NotFilter.java"
+    },
+    {
+      "name": "recipe/filter/OrFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/OrFilter.java"
+    },
+    {
+      "name": "recipe/filter/OutputFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/OutputFilter.java"
+    },
+    {
+      "name": "recipe/filter/RecipeFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/RecipeFilter.java"
+    },
+    {
+      "name": "recipe/filter/RecipeFilterParseEvent",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/RecipeFilterParseEvent.java"
+    },
+    {
+      "name": "recipe/filter/RegexIDFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/RegexIDFilter.java"
+    },
+    {
+      "name": "recipe/filter/TypeFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/filter/TypeFilter.java"
+    },
+    {
+      "name": "recipe/ingredientaction/ConsumeAction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/ConsumeAction.java"
+    },
+    {
+      "name": "recipe/ingredientaction/CustomIngredientAction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/CustomIngredientAction.java"
+    },
+    {
+      "name": "recipe/ingredientaction/CustomIngredientActionCallback",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/CustomIngredientActionCallback.java"
+    },
+    {
+      "name": "recipe/ingredientaction/DamageAction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/DamageAction.java"
+    },
+    {
+      "name": "recipe/ingredientaction/IngredientAction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/IngredientAction.java"
+    },
+    {
+      "name": "recipe/ingredientaction/IngredientActionFilter",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/IngredientActionFilter.java"
+    },
+    {
+      "name": "recipe/ingredientaction/KeepAction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/KeepAction.java"
+    },
+    {
+      "name": "recipe/ingredientaction/ReplaceAction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ingredientaction/ReplaceAction.java"
+    },
+    {
+      "name": "recipe/IngredientMatch",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/IngredientMatch.java"
+    },
+    {
+      "name": "recipe/InputReplacement",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/InputReplacement.java"
+    },
+    {
+      "name": "recipe/InputReplacementTransformer",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/InputReplacementTransformer.java"
+    },
+    {
+      "name": "recipe/ItemMatch",
+      "category": "recipes",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ItemMatch.java"
+    },
+    {
+      "name": "recipe/JsonRecipeJS",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/JsonRecipeJS.java"
+    },
+    {
+      "name": "recipe/MissingRecipeFunctionException",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/MissingRecipeFunctionException.java"
+    },
+    {
+      "name": "recipe/ModifyRecipeCraftingGrid",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ModifyRecipeCraftingGrid.java"
+    },
+    {
+      "name": "recipe/ModifyRecipeResultCallback",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ModifyRecipeResultCallback.java"
+    },
+    {
+      "name": "recipe/NamespaceFunction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/NamespaceFunction.java"
+    },
+    {
+      "name": "recipe/OutputReplacement",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/OutputReplacement.java"
+    },
+    {
+      "name": "recipe/OutputReplacementTransformer",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/OutputReplacementTransformer.java"
+    },
+    {
+      "name": "recipe/RecipeExceptionJS",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipeExceptionJS.java"
+    },
+    {
+      "name": "recipe/RecipeFunction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipeFunction.java"
+    },
+    {
+      "name": "recipe/RecipeJS",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipeJS.java"
+    },
+    {
+      "name": "recipe/RecipeKey",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipeKey.java"
+    },
+    {
+      "name": "recipe/RecipeSchemaRegistryEventJS",
+      "category": "recipes",
+      "topics": [
+        "registration",
+        "recipes",
+        "crafting",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipeSchemaRegistryEventJS.java"
+    },
+    {
+      "name": "recipe/RecipesEventJS",
+      "category": "recipes",
+      "topics": [
+        "recipes",
+        "crafting"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipesEventJS.java"
+    },
+    {
+      "name": "recipe/RecipeTypeFunction",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/RecipeTypeFunction.java"
+    },
+    {
+      "name": "recipe/ReplacementMatch",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/ReplacementMatch.java"
+    },
+    {
+      "name": "recipe/SingleItemMatch",
+      "category": "recipes",
+      "topics": [
+        "events",
+        "items"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/SingleItemMatch.java"
+    },
+    {
+      "name": "recipe/special/KubeJSCraftingRecipe",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/special/KubeJSCraftingRecipe.java"
+    },
+    {
+      "name": "recipe/special/RecipeFlags",
+      "category": "recipes",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/special/RecipeFlags.java"
+    },
+    {
+      "name": "recipe/special/ShapedKubeJSRecipe",
+      "category": "recipes",
+      "topics": [
+        "recipes"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/special/ShapedKubeJSRecipe.java"
+    },
+    {
+      "name": "recipe/special/ShapelessKubeJSRecipe",
+      "category": "recipes",
+      "topics": [
+        "recipes"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/special/ShapelessKubeJSRecipe.java"
+    },
+    {
+      "name": "recipe/special/SpecialRecipeSerializerManager",
+      "category": "recipes",
+      "topics": [
+        "recipes",
+        "crafting"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/recipe/special/SpecialRecipeSerializerManager.java"
+    },
+    {
+      "name": "registry/BuilderBase",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "builders",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/BuilderBase.java"
+    },
+    {
+      "name": "registry/BuilderFactory",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "builders",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/BuilderFactory.java"
+    },
+    {
+      "name": "registry/BuilderType",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "builders",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/BuilderType.java"
+    },
+    {
+      "name": "registry/CustomBuilderObject",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "builders",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/CustomBuilderObject.java"
+    },
+    {
+      "name": "registry/RegistryCallback",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/RegistryCallback.java"
+    },
+    {
+      "name": "registry/RegistryEventJS",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/RegistryEventJS.java"
+    },
+    {
+      "name": "registry/RegistryInfo",
+      "category": "registry",
+      "topics": [
+        "registration",
+        "registry"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/registry/RegistryInfo.java"
+    },
+    {
+      "name": "script/BindingsEvent",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/BindingsEvent.java"
+    },
+    {
+      "name": "script/ConsoleLine",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ConsoleLine.java"
+    },
+    {
+      "name": "script/CustomJavaToJsWrappersEvent",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/CustomJavaToJsWrappersEvent.java"
+    },
+    {
+      "name": "script/data/DataPackEventJS",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/data/DataPackEventJS.java"
+    },
+    {
+      "name": "script/data/ExportablePackResources",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/data/ExportablePackResources.java"
+    },
+    {
+      "name": "script/data/GeneratedData",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/data/GeneratedData.java"
+    },
+    {
+      "name": "script/data/GeneratedResourcePack",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/data/GeneratedResourcePack.java"
+    },
+    {
+      "name": "script/data/VirtualKubeJSDataPack",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/data/VirtualKubeJSDataPack.java"
+    },
+    {
+      "name": "script/PlatformWrapper",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/PlatformWrapper.java"
+    },
+    {
+      "name": "script/ScriptFile",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptFile.java"
+    },
+    {
+      "name": "script/ScriptFileInfo",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptFileInfo.java"
+    },
+    {
+      "name": "script/ScriptManager",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptManager.java"
+    },
+    {
+      "name": "script/ScriptPack",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptPack.java"
+    },
+    {
+      "name": "script/ScriptPackInfo",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptPackInfo.java"
+    },
+    {
+      "name": "script/ScriptsLoadedEvent",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptsLoadedEvent.java"
+    },
+    {
+      "name": "script/ScriptSource",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptSource.java"
+    },
+    {
+      "name": "script/ScriptType",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptType.java"
+    },
+    {
+      "name": "script/ScriptTypeHolder",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptTypeHolder.java"
+    },
+    {
+      "name": "script/ScriptTypePredicate",
+      "category": "script",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/script/ScriptTypePredicate.java"
+    },
+    {
+      "name": "server/CommandEventJS",
+      "category": "server",
+      "topics": [
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/CommandEventJS.java"
+    },
+    {
+      "name": "server/CustomCommandEventJS",
+      "category": "server",
+      "topics": [
+        "commands",
+        "brigadier"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/CustomCommandEventJS.java"
+    },
+    {
+      "name": "server/DataExport",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/DataExport.java"
+    },
+    {
+      "name": "server/GeneratedServerResourcePack",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/GeneratedServerResourcePack.java"
+    },
+    {
+      "name": "server/KubeJSReloadListener",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/KubeJSReloadListener.java"
+    },
+    {
+      "name": "server/KubeJSServerEventHandler",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/KubeJSServerEventHandler.java"
+    },
+    {
+      "name": "server/ServerEventJS",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/ServerEventJS.java"
+    },
+    {
+      "name": "server/ServerScriptManager",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/ServerScriptManager.java"
+    },
+    {
+      "name": "server/ServerSettings",
+      "category": "server",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/ServerSettings.java"
+    },
+    {
+      "name": "server/tag/EmptyTagTargetException",
+      "category": "server",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/tag/EmptyTagTargetException.java"
+    },
+    {
+      "name": "server/tag/PreTagEventJS",
+      "category": "server",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/tag/PreTagEventJS.java"
+    },
+    {
+      "name": "server/tag/PreTagWrapper",
+      "category": "server",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/tag/PreTagWrapper.java"
+    },
+    {
+      "name": "server/tag/TagEventFilter",
+      "category": "server",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/tag/TagEventFilter.java"
+    },
+    {
+      "name": "server/tag/TagEventJS",
+      "category": "server",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/tag/TagEventJS.java"
+    },
+    {
+      "name": "server/tag/TagWrapper",
+      "category": "server",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/server/tag/TagWrapper.java"
+    },
+    {
+      "name": "stages/NoStages",
+      "category": "stages",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/stages/NoStages.java"
+    },
+    {
+      "name": "stages/StageChangeEvent",
+      "category": "stages",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/stages/StageChangeEvent.java"
+    },
+    {
+      "name": "stages/StageCreationEvent",
+      "category": "stages",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/stages/StageCreationEvent.java"
+    },
+    {
+      "name": "stages/StageEventJS",
+      "category": "stages",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/stages/StageEventJS.java"
+    },
+    {
+      "name": "stages/Stages",
+      "category": "stages",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/stages/Stages.java"
+    },
+    {
+      "name": "stages/TagWrapperStages",
+      "category": "stages",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/stages/TagWrapperStages.java"
+    },
+    {
+      "name": "typings/desc/ArrayDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/ArrayDescJS.java"
+    },
+    {
+      "name": "typings/desc/DescriptionContext",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/DescriptionContext.java"
+    },
+    {
+      "name": "typings/desc/FixedArrayDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/FixedArrayDescJS.java"
+    },
+    {
+      "name": "typings/desc/GenericDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/GenericDescJS.java"
+    },
+    {
+      "name": "typings/desc/ObjectDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/ObjectDescJS.java"
+    },
+    {
+      "name": "typings/desc/OrDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/OrDescJS.java"
+    },
+    {
+      "name": "typings/desc/PrimitiveDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/PrimitiveDescJS.java"
+    },
+    {
+      "name": "typings/desc/TypeDescJS",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/desc/TypeDescJS.java"
+    },
+    {
+      "name": "typings/Generics",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/Generics.java"
+    },
+    {
+      "name": "typings/Info",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/Info.java"
+    },
+    {
+      "name": "typings/Param",
+      "category": "typings",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/typings/Param.java"
+    },
+    {
+      "name": "util/AttachedData",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/AttachedData.java"
+    },
+    {
+      "name": "util/ClassFilter",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/ClassFilter.java"
+    },
+    {
+      "name": "util/ClassWrapper",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/ClassWrapper.java"
+    },
+    {
+      "name": "util/ConsoleJS",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/ConsoleJS.java"
+    },
+    {
+      "name": "util/FluidAmounts",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/FluidAmounts.java"
+    },
+    {
+      "name": "util/JSObjectType",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/JSObjectType.java"
+    },
+    {
+      "name": "util/JsonIO",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/JsonIO.java"
+    },
+    {
+      "name": "util/KubeJSBackgroundThread",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/KubeJSBackgroundThread.java"
+    },
+    {
+      "name": "util/KubeJSPlugins",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/KubeJSPlugins.java"
+    },
+    {
+      "name": "util/Lazy",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/Lazy.java"
+    },
+    {
+      "name": "util/LegacyCodeHandler",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/LegacyCodeHandler.java"
+    },
+    {
+      "name": "util/ListJS",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/ListJS.java"
+    },
+    {
+      "name": "util/LogType",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/LogType.java"
+    },
+    {
+      "name": "util/MapJS",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/MapJS.java"
+    },
+    {
+      "name": "util/ModResourceBindings",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/ModResourceBindings.java"
+    },
+    {
+      "name": "util/MutableBoolean",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/MutableBoolean.java"
+    },
+    {
+      "name": "util/MutedError",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/MutedError.java"
+    },
+    {
+      "name": "util/NotificationBuilder",
+      "category": "util",
+      "topics": [
+        "builders"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/NotificationBuilder.java"
+    },
+    {
+      "name": "util/RotationAxis",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/RotationAxis.java"
+    },
+    {
+      "name": "util/ScheduledEvents",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/ScheduledEvents.java"
+    },
+    {
+      "name": "util/StackTraceCollector",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/StackTraceCollector.java"
+    },
+    {
+      "name": "util/Tags",
+      "category": "util",
+      "topics": [
+        "tags",
+        "datapack"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/Tags.java"
+    },
+    {
+      "name": "util/TickDuration",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/TickDuration.java"
+    },
+    {
+      "name": "util/TickTemporalUnit",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/TickTemporalUnit.java"
+    },
+    {
+      "name": "util/TinyMap",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/TinyMap.java"
+    },
+    {
+      "name": "util/UtilsJS",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/UtilsJS.java"
+    },
+    {
+      "name": "util/WrappedJS",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/WrappedJS.java"
+    },
+    {
+      "name": "util/WrappedJSObjectChangeListener",
+      "category": "util",
+      "topics": [
+        "general"
+      ],
+      "source_file": "dev/latvian/mods/kubejs/util/WrappedJSObjectChangeListener.java"
+    }
+  ]
+}

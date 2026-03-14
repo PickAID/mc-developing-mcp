@@ -1,0 +1,14 @@
+# Mc-Skill MCP Server — Python dependencies
+#
+# Required for source indexing (scripts/index_sources.py):
+tree-sitter>=0.23.0
+tree-sitter-java>=0.23.0
+#
+# Core runtime (mcp_server/server.py):
+#   sqlite3 is part of the standard library — no install needed.
+#
+# To install:
+#   pip install -r requirements.txt
+#
+# To rebuild the source index:
+#   python scripts/index_sources.py --rebuild

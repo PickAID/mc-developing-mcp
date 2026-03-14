@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0239",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ItemMatch.java",
+  "symbol": "ItemMatch",
+  "signature": "contains; contains; contains",
+  "payload_type": null,
+  "code_example": "// ItemMatch from ItemMatch.java\n// Fields: var item, var item\n// Methods: contains, contains, contains",
+  "coverage_status": "generated"
+}

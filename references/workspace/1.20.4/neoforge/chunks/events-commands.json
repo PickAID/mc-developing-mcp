@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-024",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/event/CommandEvent.java",
+  "symbols": ["CommandEvent", "getCommand", "setCommand", "getArguments"],
+  "coverage_status": "complete",
+  "topics": ["commands", "command_registration", "custom_commands"],
+  "description": "Fired when a command is being executed. Can be used to modify or intercept commands.",
+  "code_example": "// Intercept and modify command execution\nNeoForge.EVENT_BUS.addListener((CommandEvent event) -> {\n    String command = event.getCommand().getCommandName();\n    if (command.equals(\"kill\")) {\n        // Custom kill behavior\n        event.setCanceled(true);\n        // Execute custom logic\n    }\n});",
+  "source_citation": "net/neoforged/neoforge/event/CommandEvent.java"
+}

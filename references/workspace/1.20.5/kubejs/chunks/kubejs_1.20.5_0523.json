@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0523",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/KubeJSClientEventHandler.java",
+  "symbol": "KubeJSClientEventHandler",
+  "signature": "ResourceLocation; init; debugInfoLeft",
+  "payload_type": null,
+  "code_example": "// KubeJSClientEventHandler from KubeJSClientEventHandler.java\n// Fields: private static final ResourceLocation RECIPE_BUTTON_TEXTURE, StaticTooltipHandler>> staticItemTooltips, private final Map<ResourceLocation, TagInstance> tempTagNames\n// Methods: ResourceLocation, init, debugInfoLeft",
+  "coverage_status": "generated"
+}

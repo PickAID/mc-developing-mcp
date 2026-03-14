@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0362",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "fluid",
+  "source_file": "fluid/FluidBuilder.java",
+  "symbol": "FluidBuilder",
+  "signature": "FluidBuilder; super; FlowingFluidBuilder",
+  "payload_type": null,
+  "code_example": "// FluidBuilder from FluidBuilder.java\n// Fields: public transient int color, public transient int bucketColor, public transient int luminosity\n// Methods: FluidBuilder, super, FlowingFluidBuilder",
+  "coverage_status": "generated"
+}

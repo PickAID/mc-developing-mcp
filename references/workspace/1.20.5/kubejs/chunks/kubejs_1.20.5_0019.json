@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0019",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "misc/ParticleTypeBuilder.java",
+  "symbol": "ParticleTypeBuilder",
+  "signature": "ParticleTypeBuilder; super; getRegistryType",
+  "payload_type": null,
+  "code_example": "// ParticleTypeBuilder from ParticleTypeBuilder.java\n// Fields:  overrideLimiter,  overrideLimiter,  codec\n// Methods: ParticleTypeBuilder, super, getRegistryType",
+  "coverage_status": "generated"
+}

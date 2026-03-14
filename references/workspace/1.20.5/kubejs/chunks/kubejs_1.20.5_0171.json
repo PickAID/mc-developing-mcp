@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0171",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/TinyMap.java",
+  "symbol": "TinyMap",
+  "signature": "TinyMap; this; TinyMap",
+  "payload_type": null,
+  "code_example": "// TinyMap from TinyMap.java\n// Fields: var entries, int i\n// Methods: TinyMap, this, TinyMap",
+  "coverage_status": "generated"
+}

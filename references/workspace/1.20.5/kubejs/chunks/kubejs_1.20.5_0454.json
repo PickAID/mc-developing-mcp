@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0454",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "gui",
+  "source_file": "gui/chest/ChestMenuClickEvent.java",
+  "symbol": "ChestMenuClickEvent",
+  "signature": "onClick; ChestMenuClickEvent; setHandled",
+  "payload_type": null,
+  "code_example": "// ChestMenuClickEvent from ChestMenuClickEvent.java\n// Fields:  handled\n// Methods: onClick, ChestMenuClickEvent, setHandled",
+  "coverage_status": "generated"
+}

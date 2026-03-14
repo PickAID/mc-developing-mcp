@@ -1,0 +1,26 @@
+.DS_Store
+**/.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Raw source files — not needed at runtime, large (1.3GB+)
+# Rebuild with: python scripts/fetch_third_party.py && python scripts/index_sources.py --rebuild
+sources/
+
+# Large source database — distributed as a GitHub Release asset, not in git
+# Download with: python scripts/download_release.py
+data/minecraft_sources.sqlite
+data/minecraft_sources.sqlite-shm
+data/minecraft_sources.sqlite-wal
+
+# WAL/SHM sidecar files for the docs database (auto-managed by SQLite)
+data/minecraft_docs.sqlite-shm
+data/minecraft_docs.sqlite-wal
+
+# Misc
+tmp/
+*.egg-info/
+.venv/
+venv/

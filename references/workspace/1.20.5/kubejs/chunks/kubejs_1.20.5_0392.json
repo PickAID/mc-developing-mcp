@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0392",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "script/data/GeneratedData.java",
+  "symbol": "GeneratedData",
+  "signature": "GeneratedData; GeneratedData; GeneratedData",
+  "payload_type": null,
+  "code_example": "// GeneratedData from GeneratedData.java\n// Fields: public static final GeneratedData INTERNAL_RELOAD, public static final GeneratedData PACK_META, var json\n// Methods: GeneratedData, GeneratedData, GeneratedData",
+  "coverage_status": "generated"
+}

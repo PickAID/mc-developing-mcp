@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0219",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/jei/HideJEIKubeEvent.java",
+  "symbol": "HideJEIKubeEvent",
+  "signature": "HideJEIKubeEvent; getAllIngredients; hide",
+  "payload_type": null,
+  "code_example": "// HideJEIKubeEvent from HideJEIKubeEvent.java\n// Fields:  runtime,  type,  function\n// Methods: HideJEIKubeEvent, getAllIngredients, hide",
+  "coverage_status": "generated"
+}

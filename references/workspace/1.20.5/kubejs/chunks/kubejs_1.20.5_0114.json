@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0114",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/PlayerMixin.java",
+  "symbol": "PlayerMixin",
+  "signature": "closeContainer; KubeJSInventoryListener",
+  "payload_type": null,
+  "code_example": "// PlayerMixin from PlayerMixin.java\n// Fields: class, priority\n// Methods: closeContainer, KubeJSInventoryListener",
+  "coverage_status": "generated"
+}

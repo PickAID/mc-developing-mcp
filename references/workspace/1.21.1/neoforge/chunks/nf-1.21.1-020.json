@@ -1,0 +1,24 @@
+{
+  "chunk_id": "nf-1.21.1-020",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "category": "testing",
+  "source_files": [
+    "net/neoforged/neoforge/gametest/BlockPosValueConverter.java",
+    "net/neoforged/neoforge/gametest/GameTestHolder.java",
+    "net/neoforged/neoforge/gametest/GameTestHooks.java",
+    "net/neoforged/neoforge/junit/JUnitMain.java",
+    "net/neoforged/neoforge/gametest/PrefixGameTestTemplate.java"
+  ],
+  "symbols": [
+    "BlockPosValueConverter",
+    "GameTestHolder",
+    "GameTestHooks",
+    "JUnitMain",
+    "PrefixGameTestTemplate"
+  ],
+  "description": "GameTest framework",
+  "topic_tags": ["testing", "gametest", "junit"],
+  "code_example": "// GameTest helpers live under net.neoforged.neoforge.gametest.*\n",
+  "coverage_status": "verified"
+}

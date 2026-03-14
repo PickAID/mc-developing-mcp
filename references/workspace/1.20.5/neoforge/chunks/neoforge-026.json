@@ -1,0 +1,21 @@
+{
+  "chunk_id": "neoforge-026",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "client",
+  "source_file": "net/neoforged/neoforge/client/event/ScreenEvent.java",
+  "symbols": [
+    "RegisterMenuScreensEvent",
+    "ScreenEvent",
+    "ContainerScreenEvent",
+    "RegisterShadersEvent",
+    "RegisterNamedRenderTypesEvent",
+    "RegisterRenderBuffersEvent",
+    "EntityRenderersEvent"
+  ],
+  "coverage_status": "verified",
+  "topics": ["client", "screens", "rendering", "shaders", "menus"],
+  "topic_tags": ["client", "screens", "menus", "rendering", "shaders"],
+  "content": "Client UI hooks and rendering registration events for NeoForge 1.20.5.",
+  "code_example": "@SubscribeEvent\nstatic void registerScreens(RegisterMenuScreensEvent event) {\n    event.register(MyMenus.MY_MENU.get(), MyMenuScreen::new);\n}\n\n@SubscribeEvent\nstatic void registerShaders(RegisterShadersEvent event) throws IOException {\n    ShaderInstance shader = new ShaderInstance(event.getResourceProvider(), new ResourceLocation(\"mymod\", \"my_shader\"), DefaultVertexFormat.NEW_ENTITY);\n    event.registerShader(shader, loaded -> MyClientShaders.MY_SHADER = loaded);\n}\n"
+}

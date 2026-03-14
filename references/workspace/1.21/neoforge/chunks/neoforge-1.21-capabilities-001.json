@@ -1,0 +1,17 @@
+{
+  "chunk_id": "neoforge-1.21-capabilities-001",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/Capabilities.java",
+  "symbol": "Capabilities",
+  "signature": "public class Capabilities",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "capabilities",
+    "item",
+    "block",
+    "entity"
+  ],
+  "code_example": "// Capabilities registry from Capabilities.java\n"
+}

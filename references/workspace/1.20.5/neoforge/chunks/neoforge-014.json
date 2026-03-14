@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-014",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "data_components",
+  "source_file": "net/neoforged/neoforge/common/MutableDataComponentHolder.java",
+  "symbols": ["MutableDataComponentHolder", "DataComponentType", "IDataComponentHolderExtension"],
+  "coverage_status": "verified",
+  "topics": ["data_components", "item_data", "custom_data", "nbt"],
+  "topic_tags": ["data-components", "items", "nbt", "data"],
+  "content": "MutableDataComponentHolder provides an API for managing data components on item stacks. Data components are the modern replacement for NBT tags on items.\n\nKey methods:\n- set(): Set a data component\n- remove(): Remove a data component\n- get(): Get a data component\n- has(): Check if has a component",
+  "code_example": "import net.neoforged.neoforge.common.MutableDataComponentHolder;\nimport net.minecraft.core.component.DataComponentType;\nimport net.minecraft.network.chat.Component;\n\n// Create custom data component type (in data generation)\nDataComponentType<Component> CUSTOM_NAME = DataComponentType.<Component>builder()\n    .persistent(Component.CODEC)\n    .build();\n\n// Use on item stack\nitemStack.set(CUSTOM_NAME, Component.literal(\"My Sword\"));\nComponent name = itemStack.get(CUSTOM_NAME).orElse(null);"
+}

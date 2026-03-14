@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-001",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "registries",
+  "source_file": "net/neoforged/neoforge/registries/DeferredRegister.java",
+  "symbols": ["DeferredRegister", "DeferredRegister.Items", "DeferredRegister.Blocks", "register", "registerSimpleBlock", "registerSimpleBlockItem", "create", "createItems", "createBlocks"],
+  "coverage_status": "complete",
+  "topics": ["registry", "deferred_registration", "modding", "items", "blocks"],
+  "description": "Main class for deferred registration of game objects. Provides suppliers for blocks, items, and other registry entries.",
+  "code_example": "private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);\nprivate static final DeferredRegister<Block> MY_BLOCK = BLOCKS.registerBlock(\"my_block\", MyBlock::new, Block.Properties.create(Material.ROCK));\n\npublic ExampleMod(IEventBus modBus) {\n    ITEMS.register(modBus);\n}",
+  "source_citation": "net/neoforged/neoforge/registries/DeferredRegister.java"
+}

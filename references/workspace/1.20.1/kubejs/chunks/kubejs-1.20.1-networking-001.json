@@ -1,0 +1,46 @@
+{
+  "chunk_id": "kubejs-1.20.1-networking-001",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "networking",
+  "source_file": "net/NetworkEventJS.java",
+  "symbols": [
+    {
+      "symbol": "NetworkEventJS.NetworkEventJS",
+      "signature": "void NetworkEventJS(Player p, String c, @Nullable CompoundTag d)",
+      "code_example": "// NetworkEventJS.NetworkEventJS() - see net/NetworkEventJS.java",
+      "topic_tags": [
+        "networking",
+        "messages"
+      ]
+    },
+    {
+      "symbol": "NetworkEventJS.getEntity",
+      "signature": "public getEntity()",
+      "code_example": "// NetworkEventJS.getEntity() - see net/NetworkEventJS.java",
+      "topic_tags": [
+        "networking",
+        "messages"
+      ]
+    },
+    {
+      "symbol": "NetworkEventJS.getChannel",
+      "signature": "public getChannel()",
+      "code_example": "// NetworkEventJS.getChannel() - see net/NetworkEventJS.java",
+      "topic_tags": [
+        "networking",
+        "messages"
+      ]
+    },
+    {
+      "symbol": "NetworkEventJS.getData",
+      "signature": "public getData()",
+      "code_example": "// NetworkEventJS.getData() - see net/NetworkEventJS.java",
+      "topic_tags": [
+        "networking",
+        "messages"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

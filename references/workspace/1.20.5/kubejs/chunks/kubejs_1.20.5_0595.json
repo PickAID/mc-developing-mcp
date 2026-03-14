@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0595",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/callbacks/BlockStateRotateCallbackJS.java",
+  "symbol": "BlockStateRotateCallbackJS",
+  "signature": "BlockStateRotateCallbackJS; super; rotate",
+  "payload_type": null,
+  "code_example": "// BlockStateRotateCallbackJS from BlockStateRotateCallbackJS.java\n// Methods: BlockStateRotateCallbackJS, super, rotate",
+  "coverage_status": "generated"
+}

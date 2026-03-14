@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0249",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ingredientaction/ReplaceAction.java",
+  "symbol": "ReplaceAction",
+  "signature": "ReplaceAction; transform; getType",
+  "payload_type": null,
+  "code_example": "// ReplaceAction from ReplaceAction.java\n// Fields:  item\n// Methods: ReplaceAction, transform, getType",
+  "coverage_status": "generated"
+}

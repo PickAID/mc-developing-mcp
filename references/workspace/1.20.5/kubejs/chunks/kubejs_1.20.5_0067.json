@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0067",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/ServerLevelKJS.java",
+  "symbol": "ServerLevelKJS",
+  "signature": "return; EntityArrayList",
+  "payload_type": null,
+  "code_example": "// ServerLevelKJS from ServerLevelKJS.java\n// Fields: var e\n// Methods: return, EntityArrayList",
+  "coverage_status": "generated"
+}

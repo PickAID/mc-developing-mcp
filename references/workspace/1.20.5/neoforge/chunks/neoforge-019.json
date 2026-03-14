@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-019",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "common",
+  "source_file": "net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry.java",
+  "symbols": ["BrewingRecipeRegistry", "RegisterBrewingRecipesEvent"],
+  "coverage_status": "verified",
+  "topics": ["brewing", "potions", "recipes", "alchemy"],
+  "topic_tags": ["brewing", "potions", "recipes"],
+  "content": "BrewingRecipeRegistry manages all brewing recipes in the game. It allows mods to add custom brewing recipes, potion transformations, and fuel sources.",
+  "code_example": "import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;\nimport net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;\n\nNeoForge.EVENT_BUS.addListener((RegisterBrewingRecipesEvent event) -> {\n    // Add brewing recipe\n    event.addRecipe(\n        () -> new net.minecraft.world.item.alchemy.Potion(Items.POTION),\n        Items.GLOWSTONE_DUST,\n        () -> new net.minecraft.world.item.alchemy.Potion(Items.POTION)\n    );\n    \n    // Add fuel\n    event.registerFuel(Items.BLAZE_ROD, 200);\n});"
+}

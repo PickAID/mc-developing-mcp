@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0146",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/MutedError.java",
+  "symbol": "MutedError",
+  "signature": "isMuted",
+  "payload_type": null,
+  "code_example": "// MutedError from MutedError.java\n// Methods: isMuted",
+  "coverage_status": "generated"
+}

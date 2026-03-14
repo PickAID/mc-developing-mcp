@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0141",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/AttachedData.java",
+  "symbol": "AttachedData",
+  "signature": "AttachedData; getParent; add",
+  "payload_type": null,
+  "code_example": "// AttachedData from AttachedData.java\n// Fields:  parent\n// Methods: AttachedData, getParent, add",
+  "coverage_status": "generated"
+}

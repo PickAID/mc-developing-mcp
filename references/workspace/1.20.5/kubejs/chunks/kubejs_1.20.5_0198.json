@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0198",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/gamestages/GameStageEventJS.java",
+  "symbol": "GameStageEventJS",
+  "signature": "GameStageEventJS; getEntity; getStage",
+  "payload_type": null,
+  "code_example": "// GameStageEventJS from GameStageEventJS.java\n// Fields:  event\n// Methods: GameStageEventJS, getEntity, getStage",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,50 @@
+{
+  "chunk_id": "kubejs-1.20.1-events-007",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "events",
+  "source_file": "bindings/event/EntityEvents.java",
+  "symbols": [
+    {
+      "symbol": "EntityEvents.DEATH",
+      "signature": "EventHandler DEATH",
+      "payload_type": "EventJS",
+      "code_example": "EntityEvents.death((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "death"
+      ]
+    },
+    {
+      "symbol": "EntityEvents.HURT",
+      "signature": "EventHandler HURT",
+      "payload_type": "EventJS",
+      "code_example": "EntityEvents.hurt((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "hurt"
+      ]
+    },
+    {
+      "symbol": "EntityEvents.CHECK_SPAWN",
+      "signature": "EventHandler CHECK_SPAWN",
+      "payload_type": "EventJS",
+      "code_example": "EntityEvents.checkSpawn((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "checkspawn"
+      ]
+    },
+    {
+      "symbol": "EntityEvents.SPAWNED",
+      "signature": "EventHandler SPAWNED",
+      "payload_type": "EventJS",
+      "code_example": "EntityEvents.spawned((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "spawned"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

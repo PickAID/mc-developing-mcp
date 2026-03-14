@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0457",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "gui",
+  "source_file": "gui/chest/ChestMenuData.java",
+  "symbol": "ChestMenuData",
+  "signature": "ChestMenuData; ChestMenuSlot; getSlot",
+  "payload_type": null,
+  "code_example": "// ChestMenuData from ChestMenuData.java\n// Fields: int i, int y, int x\n// Methods: ChestMenuData, ChestMenuSlot, getSlot",
+  "coverage_status": "generated"
+}

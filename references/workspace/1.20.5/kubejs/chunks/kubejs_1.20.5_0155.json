@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0155",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/JSObjectType.java",
+  "symbol": "JSObjectType",
+  "signature": "checkMap; checkList",
+  "payload_type": null,
+  "code_example": "// JSObjectType from JSObjectType.java\n// Fields: return this, return this\n// Methods: checkMap, checkList",
+  "coverage_status": "generated"
+}

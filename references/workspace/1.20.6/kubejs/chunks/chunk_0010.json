@@ -1,0 +1,17 @@
+{
+  "chunk_id": "kubejs_1.20.6_0010",
+  "version": "1.20.6",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "dev/latvian/mods/kubejs/core/PlayerKJS.java",
+  "symbols": [
+    "field:D",
+    "field:d0",
+    "field:v",
+    "field:FakePlayer",
+    "method:NoMixinException",
+    "field:d1",
+    "field:m"
+  ],
+  "coverage_status": "indexed"
+}

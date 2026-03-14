@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0090",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/AbstractClientPlayerMixin.java",
+  "symbol": "AbstractClientPlayerMixin",
+  "signature": "AbstractClientPlayerMixin; super",
+  "payload_type": null,
+  "code_example": "// AbstractClientPlayerMixin from AbstractClientPlayerMixin.java\n// Methods: AbstractClientPlayerMixin, super",
+  "coverage_status": "generated"
+}

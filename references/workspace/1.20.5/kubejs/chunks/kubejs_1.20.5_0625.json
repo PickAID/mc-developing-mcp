@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0625",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "player",
+  "source_file": "player/PlayerRespawnedKubeEvent.java",
+  "symbol": "PlayerRespawnedKubeEvent",
+  "signature": "PlayerRespawnedKubeEvent; getEntity; getOldPlayer",
+  "payload_type": null,
+  "code_example": "// PlayerRespawnedKubeEvent from PlayerRespawnedKubeEvent.java\n// Methods: PlayerRespawnedKubeEvent, getEntity, getOldPlayer",
+  "coverage_status": "generated"
+}

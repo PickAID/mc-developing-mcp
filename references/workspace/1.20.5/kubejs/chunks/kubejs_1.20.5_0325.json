@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0325",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ingredient/KubeJSIngredient.java",
+  "symbol": "KubeJSIngredient",
+  "signature": "test; getItems; isSimple",
+  "payload_type": null,
+  "code_example": "// KubeJSIngredient from KubeJSIngredient.java\n// Methods: test, getItems, isSimple",
+  "coverage_status": "generated"
+}

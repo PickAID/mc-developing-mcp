@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-016",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "net",
+  "source_file": "net/KubeJSNet.java",
+  "symbols": ["KubeJSNet", "NetworkEventJS"],
+  "coverage_status": "complete",
+  "description": "Network and messaging",
+  "topics": ["networking", "custom-packets"]
+}

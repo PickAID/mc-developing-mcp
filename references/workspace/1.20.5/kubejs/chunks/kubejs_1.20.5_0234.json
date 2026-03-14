@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0234",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/KubeJSRecipeEventHandler.java",
+  "symbol": "KubeJSRecipeEventHandler",
+  "signature": "init; registry; registry",
+  "payload_type": null,
+  "code_example": "// KubeJSRecipeEventHandler from KubeJSRecipeEventHandler.java\n// Fields: >> REGISTER,  SHAPED,  SHAPELESS\n// Methods: init, registry, registry",
+  "coverage_status": "generated"
+}

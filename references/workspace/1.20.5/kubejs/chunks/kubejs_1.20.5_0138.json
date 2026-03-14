@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0138",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/NotificationToastData.java",
+  "symbol": "NotificationToastData",
+  "signature": "NotificationToastData; SimpleColor; SimpleColor",
+  "payload_type": null,
+  "code_example": "// NotificationToastData from NotificationToastData.java\n// Fields: public static final Duration DEFAULT_DURATION, public static final Color DEFAULT_BORDER_COLOR, public static final Color DEFAULT_BACKGROUND_COLOR\n// Methods: NotificationToastData, SimpleColor, SimpleColor",
+  "coverage_status": "generated"
+}

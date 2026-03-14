@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0226",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/OutputReplacementTransformer.java",
+  "symbol": "OutputReplacementTransformer",
+  "signature": "transform; Replacement; toString",
+  "payload_type": null,
+  "code_example": "// OutputReplacementTransformer from OutputReplacementTransformer.java\n// Methods: transform, Replacement, toString",
+  "coverage_status": "generated"
+}

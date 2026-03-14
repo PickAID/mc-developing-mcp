@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-022",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "client",
+  "source_file": "net/neoforged/neoforge/client/model/RegistryAwareItemModelShaper.java",
+  "symbols": ["RegistryAwareItemModelShaper", "ItemModelShaper", "ModelResourceLocation"],
+  "coverage_status": "verified",
+  "topics": ["client", "models", "items", "rendering"],
+  "topic_tags": ["client", "item-models", "rendering"],
+  "content": "RegistryAwareItemModelShaper extends ItemModelShaper with registry-aware functionality. It maps items to their model locations using resource locations.",
+  "code_example": "import net.neoforged.neoforge.client.model.RegistryAwareItemModelShaper;\nimport net.minecraft.client.resources.model.ModelResourceLocation;\n\n// Get model location\nRegistryAwareItemModelShaper shaper = client.getItemModelShaper();\nModelResourceLocation location = shaper.getModelLocation(itemStack);"
+}

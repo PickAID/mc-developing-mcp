@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0163",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/StringWithContext.java",
+  "symbol": "StringWithContext",
+  "signature": "StringWithContext; of; StringWithContext",
+  "payload_type": null,
+  "code_example": "// StringWithContext from StringWithContext.java\n// Methods: StringWithContext, of, StringWithContext",
+  "coverage_status": "generated"
+}

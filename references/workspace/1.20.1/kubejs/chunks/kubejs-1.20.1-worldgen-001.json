@@ -1,0 +1,154 @@
+{
+  "chunk_id": "kubejs-1.20.1-worldgen-001",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "worldgen",
+  "source_file": "level/gen/AddWorldgenEventJS.java",
+  "symbols": [
+    {
+      "symbol": "AddWorldgenEventJS.registerFeature",
+      "signature": "void registerFeature(Registry<T> registry, ResourceLocation id, T object)",
+      "code_example": "// AddWorldgenEventJS.registerFeature() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addFeature",
+      "signature": "private addFeature(ResourceLocation id, BiomeFilter filter, GenerationStep.Decoration step,\n\t\t\t\t\t\t\tConfiguredFeature<?, ?> feature, List<PlacementModifier> modifiers)",
+      "code_example": "// AddWorldgenEventJS.addFeature() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.ResourceLocation",
+      "signature": "void ResourceLocation(\"kubejs:features/\" + UtilsJS.getUniqueId(feature, ConfiguredFeature.f_65373_)",
+      "code_example": "// AddWorldgenEventJS.ResourceLocation() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.PlacedFeature",
+      "signature": "void PlacedFeature(holder, modifiers)",
+      "code_example": "// AddWorldgenEventJS.PlacedFeature() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addFeature",
+      "signature": "private addFeature(ResourceLocation id, BiomeFilter filter, GenerationStep.Decoration step, PlacedFeature feature)",
+      "code_example": "// AddWorldgenEventJS.addFeature() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.ResourceLocation",
+      "signature": "void ResourceLocation(\"kubejs:features/\" + UtilsJS.getUniqueId(feature, PlacedFeature.f_191772_)",
+      "code_example": "// AddWorldgenEventJS.ResourceLocation() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addEntitySpawn",
+      "signature": "private addEntitySpawn(BiomeFilter filter, MobCategory category, MobSpawnSettings.SpawnerData spawnerData)",
+      "code_example": "// AddWorldgenEventJS.addEntitySpawn() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addOre",
+      "signature": "public addOre(Consumer<AddOreProperties> p)",
+      "code_example": "// AddWorldgenEventJS.addOre() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.AddOreProperties",
+      "signature": "void AddOreProperties()",
+      "code_example": "// AddWorldgenEventJS.AddOreProperties() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.OreConfiguration",
+      "signature": "void OreConfiguration(properties.targets, properties.size, properties.noSurface)",
+      "code_example": "// AddWorldgenEventJS.OreConfiguration() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addLake",
+      "signature": "public addLake(Consumer<AddLakeProperties> p)",
+      "code_example": "// AddWorldgenEventJS.addLake() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.AddLakeProperties",
+      "signature": "void AddLakeProperties()",
+      "code_example": "// AddWorldgenEventJS.AddLakeProperties() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addSpawn",
+      "signature": "public addSpawn(Consumer<AddSpawnProperties> p)",
+      "code_example": "// AddWorldgenEventJS.addSpawn() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.AddSpawnProperties",
+      "signature": "void AddSpawnProperties()",
+      "code_example": "// AddWorldgenEventJS.AddSpawnProperties() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addSpawn",
+      "signature": "public addSpawn(BiomeFilter filter, MobCategory category, String spawn)",
+      "code_example": "// AddWorldgenEventJS.addSpawn() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    },
+    {
+      "symbol": "AddWorldgenEventJS.addSpawn",
+      "signature": "public addSpawn(MobCategory category, String spawn)",
+      "code_example": "// AddWorldgenEventJS.addSpawn() - see level/gen/AddWorldgenEventJS.java",
+      "topic_tags": [
+        "worldgen",
+        "worldgen"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

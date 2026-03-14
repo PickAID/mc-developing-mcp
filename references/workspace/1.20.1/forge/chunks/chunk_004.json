@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_004",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "network",
+  "source_file": "net/minecraftforge/network/simple/SimpleChannel.java",
+  "symbols": ["SimpleChannel", "MessageConsumer", "NetworkRegistry", "NetworkDirection"],
+  "coverage_status": "complete",
+  "description": "Simple network channel for mod-to-mod and client-server communication",
+  "code_example": "// Define a message\npublic class MyMessage {\n    public int data;\n    public MyMessage() {}\n    public MyMessage(int data) { this.data = data; }\n}\n\n// Create the network channel\nprivate static final String PROTOCOL_VERSION = \"1\";\npublic static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(\n    new ResourceLocation(MODID, \"main\"),\n    () -> PROTOCOL_VERSION,\n    PROTOCOL_VERSION::equals,\n    PROTOCOL_VERSION::equals\n);\n\n// Register message handlers\nprivate static final AtomicInteger ID = new AtomicInteger(0);\npublic static void register() {\n    NETWORK.registerMessage(ID.getAndIncrement(), MyMessage.class, \n        (msg, buf) -> { buf.writeInt(msg.data); },\n        (buf) -> new MyMessage(buf.readInt()),\n        (msg, ctx) -> {\n            msg.handle(ctx.getSender());\n        }\n    );\n}\n\n// Sending messages\n// Server to client: NETWORK.send(PacketDistributor.PLAYER.with(() -> player), new MyMessage(42));\n// Client to server: NETWORK.sendToServer(new MyMessage(42));"
+}

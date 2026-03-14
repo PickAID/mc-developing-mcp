@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0623",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/custom/ShapedBlockBuilder.java",
+  "symbol": "ShapedBlockBuilder",
+  "signature": "ShapedBlockBuilder; super; notSolid",
+  "payload_type": null,
+  "code_example": "// ShapedBlockBuilder from ShapedBlockBuilder.java\n// Methods: ShapedBlockBuilder, super, notSolid",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_022",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "client",
+  "topic": "client_gui",
+  "source_file": "net/neoforged/neoforge/client/gui",
+  "symbols": ["ForgeGui", "ElementList", "ScreenHooks"],
+  "topic_tags": ["client", "gui"],
+  "coverage_status": "verified",
+  "line_count": 650,
+  "description": "Client GUI and UI components",
+  "code_example": "// Client GUI classes under net.neoforged.neoforge.client.gui.*\n"
+}

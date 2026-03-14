@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0460",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "registry/CustomBuilderObject.java",
+  "symbol": "CustomBuilderObject",
+  "signature": "CustomBuilderObject; super; getTranslationKeyGroup",
+  "payload_type": null,
+  "code_example": "// CustomBuilderObject from CustomBuilderObject.java\n// Methods: CustomBuilderObject, super, getTranslationKeyGroup",
+  "coverage_status": "generated"
+}

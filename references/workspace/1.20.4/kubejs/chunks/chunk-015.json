@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-015",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "misc/VillagerProfessionBuilder.java",
+  "symbols": ["VillagerProfessionBuilder", "VillagerTypeBuilder", "PoiTypeBuilder"],
+  "coverage_status": "complete",
+  "description": "Villager-related builders",
+  "topics": ["villagers", "trading", "professions"]
+}

@@ -1,0 +1,80 @@
+{
+  "chunk_id": "kubejs-1.20.1-entities-005",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "entities",
+  "source_file": "core/LevelKJS.java",
+  "symbols": [
+    {
+      "symbol": "LevelKJS.NoMixinException",
+      "signature": "void NoMixinException()",
+      "code_example": "// LevelKJS.NoMixinException() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    },
+    {
+      "symbol": "LevelKJS.BlockContainerJS",
+      "signature": "void BlockContainerJS(kjs$self()",
+      "code_example": "// LevelKJS.BlockContainerJS() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    },
+    {
+      "symbol": "LevelKJS.BlockContainerJS",
+      "signature": "void BlockContainerJS(blockEntity)",
+      "code_example": "// LevelKJS.BlockContainerJS() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    },
+    {
+      "symbol": "LevelKJS.EntityArrayList",
+      "signature": "void EntityArrayList(kjs$self()",
+      "code_example": "// LevelKJS.EntityArrayList() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    },
+    {
+      "symbol": "LevelKJS.EntityArrayList",
+      "signature": "void EntityArrayList(kjs$self()",
+      "code_example": "// LevelKJS.EntityArrayList() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    },
+    {
+      "symbol": "LevelKJS.ExplosionJS",
+      "signature": "void ExplosionJS(kjs$self()",
+      "code_example": "// LevelKJS.ExplosionJS() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    },
+    {
+      "symbol": "LevelKJS.EntityArrayList",
+      "signature": "void EntityArrayList(kjs$self()",
+      "code_example": "// LevelKJS.EntityArrayList() - see core/LevelKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "world"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

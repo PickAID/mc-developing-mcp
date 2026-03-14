@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-worldgen-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "worldgen",
+  "source_file": "net/minecraft/world/level/levelgen/NoiseRouter.java",
+  "symbols": [
+    {
+      "name": "NoiseRouter",
+      "signature": "class NoiseRouter",
+      "description": "Controls noise generation for terrain"
+    },
+    {
+      "name": "NoiseRouter.barrier",
+      "signature": "DensityFunction barrier",
+      "description": "Noise for underwater barriers"
+    },
+    {
+      "name": "NoiseRouter.fluidLevelFloodedness",
+      "signature": "DensityFunction fluidLevelFloodedness",
+      "description": "Fluid level calculation"
+    }
+  ],
+  "code_example": "// Configuring noise for custom world generation\nNoiseRouter noiseRouter = new NoiseRouter(\n    DensityFunction.constant(-0.4),  // barrier\n    DensityFunction.constant(0.7),   // fluidLevelFloodedness\n    DensityFunction.constant(0.0),   // fluidLevelSpread\n    DensityFunction.constant(1.0),   // terrain\n    DensityFunction.constant(0.0),   // continentalness\n    DensityFunction.constant(0.0),   // erosion\n    DensityFunction.constant(0.0),   // depth\n    DensityFunction.constant(0.0),   // ridges\n    DensityFunction.constant(0.0)    // ridgesFolding\n);",
+  "topic_tags": ["worldgen", "noise", "terrain", "density"],
+  "coverage_status": "verified"
+}

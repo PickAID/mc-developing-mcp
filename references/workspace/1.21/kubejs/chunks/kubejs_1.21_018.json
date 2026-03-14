@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_018",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "ScriptManager.java",
+  "symbols": ["ScriptManager", "scriptType", "loaded", "console", "preload", "load", "loadFromDirectory", "loadPackFromDirectory", "reload", "stop", "getScriptSource", "getScriptsDirectory", "getNewScriptFile", "loadScript", "execute", "getErrorCount", "getWarningCount", "getScriptInfo"],
+  "coverage_status": "complete"
+}

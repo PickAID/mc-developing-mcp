@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-017",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "registry/RegistryEventJS.java",
+  "symbols": ["RegistryEventJS", "RegistryHelper"],
+  "coverage_status": "complete",
+  "description": "Registry events and helpers",
+  "topics": ["registry", "custom-content"]
+}

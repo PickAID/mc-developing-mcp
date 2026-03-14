@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0553",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/screen/AtlasTextureObject.java",
+  "symbol": "AtlasTextureObject",
+  "signature": "AtlasTextureObject; super; load",
+  "payload_type": null,
+  "code_example": "// AtlasTextureObject from AtlasTextureObject.java\n// Fields: public Unit color, public ResourceLocation atlas, public ResourceLocation texture\n// Methods: AtlasTextureObject, super, load",
+  "coverage_status": "generated"
+}

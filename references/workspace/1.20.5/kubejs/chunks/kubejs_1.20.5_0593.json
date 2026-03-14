@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0593",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/callbacks/BlockStateMirrorCallbackJS.java",
+  "symbol": "BlockStateMirrorCallbackJS",
+  "signature": "BlockStateMirrorCallbackJS; super; mirror",
+  "payload_type": null,
+  "code_example": "// BlockStateMirrorCallbackJS from BlockStateMirrorCallbackJS.java\n// Methods: BlockStateMirrorCallbackJS, super, mirror",
+  "coverage_status": "generated"
+}

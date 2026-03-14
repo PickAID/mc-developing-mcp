@@ -1,0 +1,121 @@
+{
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "source_root": "/Users/agenthome/mc-code-exports/1.20.4/kubejs/sources/dev/latvian/mods/kubejs",
+  "total_java_files": 631,
+  "categories": {
+    "events": {
+      "count": 12,
+      "files": [
+        "event/EventGroupWrapper.java",
+        "event/EventGroup.java",
+        "event/EventHandler.java",
+        "event/EventJS.java",
+        "event/EventResult.java",
+        "event/EventExit.java",
+        "event/EventExceptionHandler.java",
+        "event/IEventHandler.java",
+        "event/Extra.java",
+        "event/StartupEventJS.java",
+        "event/EventHandlerContainer.java"
+      ],
+      "topics": ["event-system", "event-handlers", "lifecycle"]
+    },
+    "recipe": {
+      "count": 120,
+      "description": "Recipe manipulation and creation",
+      "topics": ["recipes", "crafting", "smelting", "brewing", "stonecutting", "smithing"]
+    },
+    "block": {
+      "count": 40,
+      "description": "Block-related builders and events",
+      "topics": ["blocks", "block-entities", "block-states"]
+    },
+    "item": {
+      "count": 55,
+      "description": "Item-related builders and events",
+      "topics": ["items", "item-stacks", "armor", "tools", "food"]
+    },
+    "fluid": {
+      "count": 25,
+      "description": "Fluid-related builders",
+      "topics": ["fluids", "fluid-handling"]
+    },
+    "entity": {
+      "count": 30,
+      "description": "Entity-related classes",
+      "topics": ["entities", "mobs", "entity-spawning"]
+    },
+    "player": {
+      "count": 35,
+      "description": "Player-specific events and helpers",
+      "topics": ["players", "inventory", "permissions"]
+    },
+    "client": {
+      "count": 30,
+      "description": "Client-side events and rendering",
+      "topics": ["client", "rendering", "gui", "input"]
+    },
+    "server": {
+      "count": 25,
+      "description": "Server-side events",
+      "topics": ["server", "commands", "permissions"]
+    },
+    "level": {
+      "count": 25,
+      "description": "World/level events",
+      "topics": ["world", "dimensions", "loading"]
+    },
+    "registry": {
+      "count": 20,
+      "description": "Registry helpers",
+      "topics": ["registry", "custom-content"]
+    },
+    "misc": {
+      "count": 20,
+      "description": "Miscellaneous builders (enchantments, potions, sounds, etc.)",
+      "topics": ["enchantments", "potions", "sounds", "villagers", "particles"]
+    },
+    "net": {
+      "count": 15,
+      "description": "Network messages",
+      "topics": ["networking", "custom-packets"]
+    },
+    "core": {
+      "count": 80,
+      "description": "Core KubeJS classes and mixins",
+      "topics": ["core", "internal", "mixins"]
+    },
+    "bindings": {
+      "count": 20,
+      "description": "JavaScript bindings",
+      "topics": ["javascript", "api-bindings"]
+    },
+    "helpers": {
+      "count": 15,
+      "description": "Helper utilities",
+      "topics": ["utilities", "helpers"]
+    },
+    "util": {
+      "count": 50,
+      "description": "Utility classes",
+      "topics": ["utils", "data-types"]
+    }
+  },
+  "key_event_classes": [
+    "EventJS",
+    "StartupEventJS",
+    "EventHandler",
+    "EventGroup"
+  ],
+  "key_builder_classes": [
+    "BlockBuilder",
+    "ItemBuilder",
+    "FluidBuilder",
+    "EnchantmentBuilder",
+    "PotionBuilder",
+    "SoundEventBuilder",
+    "VillagerProfessionBuilder"
+  ],
+  "generated_at": "2026-03-12T00:00:00Z"
+}

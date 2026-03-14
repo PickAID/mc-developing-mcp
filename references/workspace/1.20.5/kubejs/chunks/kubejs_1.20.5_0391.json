@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0391",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "script/data/GeneratedResourcePack.java",
+  "symbol": "GeneratedResourcePack",
+  "signature": "PackLocationInfo; tryWalk; scanForInvalidFiles",
+  "payload_type": null,
+  "code_example": "// GeneratedResourcePack from GeneratedResourcePack.java\n// Fields: public static final PackLocationInfo PACK_LOCATION_INFO, var fileName, var fileNameLC\n// Methods: PackLocationInfo, tryWalk, scanForInvalidFiles",
+  "coverage_status": "generated"
+}

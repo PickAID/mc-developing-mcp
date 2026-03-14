@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0100",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/KeyboardHandlerMixin.java",
+  "symbol": "KeyboardHandlerMixin",
+  "signature": "reloadResources",
+  "payload_type": null,
+  "code_example": "// KeyboardHandlerMixin from KeyboardHandlerMixin.java\n// Fields: , at, , target, , shift\n// Methods: reloadResources",
+  "coverage_status": "generated"
+}

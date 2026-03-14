@@ -1,0 +1,100 @@
+{
+  "chunk_id": "kubejs-1.20.1-entities-004",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "entities",
+  "source_file": "core/ItemStackKJS.java",
+  "symbols": [
+    {
+      "symbol": "ItemStackKJS.specialEquals",
+      "signature": "void specialEquals(Object o, boolean shallow)",
+      "code_example": "// ItemStackKJS.specialEquals() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.if",
+      "signature": "void if(o instanceof ItemStack s)",
+      "code_example": "// ItemStackKJS.if() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.if",
+      "signature": "void if(self.m_41619_()",
+      "code_example": "// ItemStackKJS.if() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.EnchantmentInstance",
+      "signature": "void EnchantmentInstance(enchantment, level)",
+      "code_example": "// ItemStackKJS.EnchantmentInstance() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.toNBTJS",
+      "signature": "void toNBTJS()",
+      "code_example": "// ItemStackKJS.toNBTJS() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.StringBuilder",
+      "signature": "void StringBuilder()",
+      "code_example": "// ItemStackKJS.StringBuilder() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.if",
+      "signature": "void if(hasNbt)",
+      "code_example": "// ItemStackKJS.if() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.toJsonJS",
+      "signature": "void toJsonJS()",
+      "code_example": "// ItemStackKJS.toJsonJS() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    },
+    {
+      "symbol": "ItemStackKJS.JsonObject",
+      "signature": "void JsonObject()",
+      "code_example": "// ItemStackKJS.JsonObject() - see core/ItemStackKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "items"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

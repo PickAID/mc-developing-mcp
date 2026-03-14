@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-network-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "network",
+  "source_file": "net/minecraft/network/protocol/game/ClientboundSetEntityDataPacket.java",
+  "symbols": [
+    {
+      "name": "ClientboundSetEntityDataPacket",
+      "signature": "class ClientboundSetEntityDataPacket",
+      "description": "Packet to sync entity data"
+    },
+    {
+      "name": "ClientboundSetEntityDataPacket.getId",
+      "signature": "int getId()",
+      "description": "Get entity ID"
+    },
+    {
+      "name": "ClientboundSetEntityDataPacket.getTrackedValues",
+      "signature": "List<SynchedEntityData.DataItem<?>> getTrackedValues()",
+      "description": "Get synced data"
+    }
+  ],
+  "code_example": "// Network packet handling\n// Sending a custom packet\nClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(\n    entity.getId(),\n    entity.getEntityData().getAll()\n);\n\n// Send to players\nServerPlayer player = ...;\nplayer.connection.send(packet);\n\n// For custom packets, use custom payload",
+  "topic_tags": ["network", "packets", "syncing", "protocol"],
+  "coverage_status": "verified"
+}

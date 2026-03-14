@@ -1,0 +1,19 @@
+{
+  "chunk_id": "neoforge-1.21-registry-001",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "registry",
+  "source_file": "net/neoforged/neoforge/registries/RegisterEvent.java",
+  "symbol": "RegisterEvent",
+  "signature": "public class RegisterEvent extends Event implements IModBusEvent",
+  "payload_type": "ResourceKey<? extends Registry<?>>",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "registry",
+    "registration",
+    "items",
+    "blocks",
+    "events"
+  ],
+  "code_example": "// RegisterEvent from RegisterEvent.java\n"
+}

@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-014",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "misc/SoundEventBuilder.java",
+  "symbols": ["SoundEventBuilder"],
+  "coverage_status": "complete",
+  "description": "Sound event builder",
+  "topics": ["sounds", "audio", "custom-sounds"]
+}

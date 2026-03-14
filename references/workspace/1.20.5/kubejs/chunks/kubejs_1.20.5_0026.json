@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0026",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "network",
+  "source_file": "net/RemoveStagePayload.java",
+  "symbol": "RemoveStagePayload",
+  "signature": "RemoveStagePayload; type; handle",
+  "payload_type": null,
+  "code_example": "// RemoveStagePayload from RemoveStagePayload.java\n// Fields: public static final StreamCodec<ByteBuf, RemoveStagePayload> STREAM_CODEC, var p0, var p\n// Methods: RemoveStagePayload, type, handle",
+  "coverage_status": "generated"
+}

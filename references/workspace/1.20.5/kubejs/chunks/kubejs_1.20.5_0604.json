@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0604",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/entity/InventoryAttachment.java",
+  "symbol": "InventoryAttachment",
+  "signature": "BlockEntityAttachmentType; PrimitiveDescJS; InventoryAttachment",
+  "payload_type": null,
+  "code_example": "// InventoryAttachment from InventoryAttachment.java\n// Fields: public static final BlockEntityAttachmentType TYPE, var width, var height\n// Methods: BlockEntityAttachmentType, PrimitiveDescJS, InventoryAttachment",
+  "coverage_status": "generated"
+}

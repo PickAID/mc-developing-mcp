@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_007",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "network",
+  "topic": "networking",
+  "source_file": "net/neoforged/neoforge/network",
+  "symbols": ["NetworkRegistry", "SimpleChannel", "IPacketHandler", "PacketDistributor"],
+  "topic_tags": ["networking", "packets"],
+  "coverage_status": "verified",
+  "line_count": 1100,
+  "description": "Network and packet handling system",
+  "code_example": "// NetworkRegistry and PacketDistributor from network package\n"
+}

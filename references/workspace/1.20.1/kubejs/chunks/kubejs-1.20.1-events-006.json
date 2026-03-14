@@ -1,0 +1,160 @@
+{
+  "chunk_id": "kubejs-1.20.1-events-006",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "events",
+  "source_file": "bindings/event/ItemEvents.java",
+  "symbols": [
+    {
+      "symbol": "ItemEvents.MODIFICATION",
+      "signature": "EventHandler MODIFICATION",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.modification((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "modification"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.TOOL_TIER_REGISTRY",
+      "signature": "EventHandler TOOL_TIER_REGISTRY",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.toolTierRegistry((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "tooltierregistry"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.ARMOR_TIER_REGISTRY",
+      "signature": "EventHandler ARMOR_TIER_REGISTRY",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.armorTierRegistry((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "armortierregistry"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.RIGHT_CLICKED",
+      "signature": "EventHandler RIGHT_CLICKED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.rightClicked((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "rightclicked"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.CAN_PICK_UP",
+      "signature": "EventHandler CAN_PICK_UP",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.canPickUp((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "canpickup"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.PICKED_UP",
+      "signature": "EventHandler PICKED_UP",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.pickedUp((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "pickedup"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.DROPPED",
+      "signature": "EventHandler DROPPED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.dropped((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "dropped"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.ENTITY_INTERACTED",
+      "signature": "EventHandler ENTITY_INTERACTED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.entityInteracted((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "entityinteracted"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.CRAFTED",
+      "signature": "EventHandler CRAFTED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.crafted((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "crafted"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.SMELTED",
+      "signature": "EventHandler SMELTED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.smelted((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "smelted"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.FOOD_EATEN",
+      "signature": "EventHandler FOOD_EATEN",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.foodEaten((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "foodeaten"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.TOOLTIP",
+      "signature": "EventHandler TOOLTIP",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.tooltip((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "tooltip"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.MODEL_PROPERTIES",
+      "signature": "EventHandler MODEL_PROPERTIES",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.modelProperties((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "modelproperties"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.FIRST_RIGHT_CLICKED",
+      "signature": "EventHandler FIRST_RIGHT_CLICKED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.firstRightClicked((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "firstrightclicked"
+      ]
+    },
+    {
+      "symbol": "ItemEvents.FIRST_LEFT_CLICKED",
+      "signature": "EventHandler FIRST_LEFT_CLICKED",
+      "payload_type": "EventJS",
+      "code_example": "ItemEvents.firstLeftClicked((event) => {\n  // EventJS\n})",
+      "topic_tags": [
+        "events",
+        "firstleftclicked"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

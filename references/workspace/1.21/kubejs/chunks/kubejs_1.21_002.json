@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_002",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "properties",
+  "source_file": "BaseProperties.java",
+  "symbols": ["BaseProperties", "GSON", "path", "name", "properties", "writeProperties", "load", "get", "set", "remove", "save"],
+  "coverage_status": "complete"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_007",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "event_groups",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/event/EventGroups.java",
+  "symbols": ["EventGroups", "EventGroup", "register", "ALL"],
+  "topic_tags": ["kubejs", "events", "registry"],
+  "coverage_status": "verified",
+  "code": "public record EventGroups(Map<String, EventGroup> map) implements EventGroupRegistry {\n\tpublic static final Lazy<EventGroups> ALL = Lazy.of(() -> {\n\t\tvar groups = new EventGroups(new LinkedHashMap<>());\n\t\tKubeJSPlugins.forEachPlugin(p -> p.registerEvents(groups));\n\t\treturn groups;\n\t});\n\n\t@Override\n\tpublic void register(EventGroup group) {\n\t\tmap.put(group.name, group);\n\t}\n}",
+  "code_example": "// Event groups registry from EventGroups.java\n"
+}

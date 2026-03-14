@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-015",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "client",
+  "source_file": "net/neoforged/neoforge/client/event/EntityRenderersEvent.java",
+  "symbols": ["EntityRenderersEvent", "RegisterLayerDefinitions", "CreateModelRegistries"],
+  "coverage_status": "complete",
+  "topics": ["rendering", "models", "entity_rendering", "client_modding"],
+  "description": "Events for registering custom entity renderers and models on the client.",
+  "code_example": "// Register custom entity renderer\n@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)\npublic class ClientEvents {\n    @SubscribeEvent\n    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {\n        event.registerEntityRenderer(EntityRegistry.MY_ENTITY.get(), MyEntityRenderer::new);\n    }\n    \n    @SubscribeEvent\n    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {\n        event.registerLayerDefinition(MyModel.LAYER_LOCATION, MyModel::createBodyModel);\n    }\n}",
+  "source_citation": "net/neoforged/neoforge/client/event/EntityRenderersEvent.java"
+}

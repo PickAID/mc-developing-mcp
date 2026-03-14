@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-009",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/ClientEventJS.java",
+  "symbols": ["ClientEventJS", "RenderEventJS", "GuiEventJS"],
+  "coverage_status": "complete",
+  "description": "Client-side events",
+  "topics": ["client", "rendering", "gui", "input"]
+}

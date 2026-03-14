@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0525",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/VariantBlockStateGenerator.java",
+  "symbol": "VariantBlockStateGenerator",
+  "signature": "model; Model; toJson",
+  "payload_type": null,
+  "code_example": "// VariantBlockStateGenerator from VariantBlockStateGenerator.java\n// Fields: private final List<Model> models, var model, var a\n// Methods: model, Model, toJson",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_025",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "generator",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/generator/KubeDataGenerator.java",
+  "symbols": ["KubeDataGenerator", "json", "recipe", "lootTable", "advancement", "tag", "registry"],
+  "topic_tags": ["kubejs", "data", "generator"],
+  "coverage_status": "verified",
+  "code": "public class KubeDataGenerator {\n\tprivate final Path output;\n\tprivate final Gson gson;\n\tprivate final Map<ResourceLocation, JsonElement> data;\n\n\tpublic KubeDataGenerator(Path output) {\n\t\tthis.output = output;\n\t\tthis.gson = new GsonBuilder().setPrettyPrinting().create();\n\t\tthis.data = new HashMap<>();\n\t}\n\n\tpublic void json(ResourceLocation id, JsonElement element) {\n\t\tdata.put(id, element);\n\t}\n\n\tpublic void recipe(ResourceLocation id, JsonObject recipe) {\n\t\tjson(id.withPrefix(\"recipes/\"), recipe);\n\t}\n\n\tpublic void lootTable(ResourceLocation id, JsonObject lootTable) {\n\t\tjson(id.withPrefix(\"loot_tables/\"), lootTable);\n\t}\n\n\tpublic void advancement(ResourceLocation id, JsonObject advancement) {\n\t\tjson(id.withPrefix(\"advancements/\"), advancement);\n\t}\n\n\tpublic void tag(ResourceLocation id, JsonObject tag) {\n\t\tjson(id.withPrefix(\"tags/\"), tag);\n\t}\n\n\tpublic void saveAll() throws IOException {\n\t\tfor (var entry : data.entrySet()) {\n\t\t\tvar path = output.resolve(\"data\").resolve(entry.getKey().getNamespace())\n\t\t\t\t.resolve(entry.getKey().getPath() + \".json\");\n\t\t\tFiles.createDirectories(path.getParent());\n\t\t\tFiles.writeString(path, gson.toJson(entry.getValue()));\n\t\t}\n\t}\n}",
+  "code_example": "// KubeDataGenerator from KubeDataGenerator.java\n"
+}

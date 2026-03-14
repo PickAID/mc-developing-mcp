@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0346",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/ServerKubeEvent.java",
+  "symbol": "ServerKubeEvent",
+  "signature": "ServerKubeEvent; getServer",
+  "payload_type": null,
+  "code_example": "// ServerKubeEvent from ServerKubeEvent.java\n// Fields:  server\n// Methods: ServerKubeEvent, getServer",
+  "coverage_status": "generated"
+}

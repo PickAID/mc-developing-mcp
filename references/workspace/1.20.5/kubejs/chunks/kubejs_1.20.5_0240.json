@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0240",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/RecipeFunction.java",
+  "symbol": "RecipeFunction",
+  "signature": "RecipeFunction; super; RecipeComponentValueFunction",
+  "payload_type": null,
+  "code_example": "// RecipeFunction from RecipeFunction.java\n// Fields: var map, var key, var value\n// Methods: RecipeFunction, super, RecipeComponentValueFunction",
+  "coverage_status": "generated"
+}

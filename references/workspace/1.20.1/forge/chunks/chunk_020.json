@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_020",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "data",
+  "source_file": "net/minecraftforge/event/GatherDataEvent.java",
+  "symbols": ["GatherDataEvent", "DataGenerator", "BlockTagsProvider", "RecipeProvider"],
+  "coverage_status": "complete",
+  "description": "Data generation for recipes, tags, loot tables",
+  "code_example": "// Data generator provider\npublic class MyDataProvider extends ForgeDataProvider {\n    private final DataGenerator gen;\n    private final ExistingFileHelper existingFileHelper;\n    \n    public MyDataProvider(DataGenerator gen, ExistingFileHelper efh) {\n        this.gen = gen;\n        this.existingFileHelper = efh;\n    }\n    \n    @Override\n    public void run(HashCache cache) {\n        // Add block tags\n        BlockTagsProvider blockTags = new BlockTagsProvider(gen, MODID, cache, existingFileHelper) {\n            @Override\n            protected void addTags() {\n                tag(BlockTags.MINEABLE_WITH_PICKAXE)\n                    .add(MyBlocks.MY_BLOCK.get());\n                tag(new ResourceLocation(MODID, \"my_custom_tag\"))\n                    .add(Blocks.STONE);\n            }\n        };\n        gen.addProvider(true, blockTags);\n        \n        // Add recipes\n        gen.addProvider(true, new RecipeProvider(gen) {\n            @Override\n            protected void buildRecipes() {\n                ShapedRecipeBuilder.shaped(Items.DIAMOND)\n                    .pattern(\"AAA\")\n                    .pattern(\"ABA\")\n                    .pattern(\"AAA\")\n                    .define('A', Items.COAL)\n                    .define('B', Items.EMERALD)\n                    .save(gen);\n            }\n        });\n    }\n    \n    @Override\n    public String getName() { return MODID + \" data provider\"; }\n}"
+}

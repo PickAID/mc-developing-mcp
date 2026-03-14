@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0380",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "script/ScriptPackInfo.java",
+  "symbol": "ScriptPackInfo",
+  "signature": "ScriptPackInfo",
+  "payload_type": null,
+  "code_example": "// ScriptPackInfo from ScriptPackInfo.java\n// Fields:  namespace,  scripts,  pathStart\n// Methods: ScriptPackInfo",
+  "coverage_status": "generated"
+}

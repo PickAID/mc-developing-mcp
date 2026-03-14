@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-007",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "network",
+  "source_file": "net/neoforged/neoforge/network/NetworkRegistry.java",
+  "symbols": ["NetworkRegistry", "ChannelBuilder", "SimpleChannel", "play", "simpleChannel"],
+  "coverage_status": "complete",
+  "topics": ["networking", "packets", "client_server", "message_passing"],
+  "description": "Network channel registration and message handling for client-server communication.",
+  "code_example": "public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder\n    .named(new ResourceLocation(MODID, \"main\"))\n    .networkProtocolVersion(() -> NetworkConstants.NETWORK_VERSION)\n    .simpleChannel();\n\n// Register message\nprivate static int ID = 0;\npublic static void registerMessage() {\n    CHANNEL.messageHolder(S2CMessage.class)\n        .encoder(S2CMessage::toBytes)\n        .decoder(S2CMessage::new)\n        .consumer(S2CMessage::handle)\n        .add();\n}",
+  "source_citation": "net/neoforged/neoforge/network/NetworkRegistry.java"
+}

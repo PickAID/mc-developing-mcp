@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-013",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "fluids",
+  "source_file": "net/neoforged/neoforge/fluids/FluidInteractionRegistry.java",
+  "symbols": ["FluidInteractionRegistry", "FluidInteraction", "RegisterCauldronFluidContentEvent"],
+  "coverage_status": "verified",
+  "topics": ["fluids", "cauldron", "interaction", "water"],
+  "topic_tags": ["fluids", "cauldrons", "interactions"],
+  "content": "FluidInteractionRegistry allows mods to register fluid interactions - what happens when fluids interact with blocks like cauldrons or other fluids.\n\nRegisterCauldronFluidContentEvent allows modifying what fluids a cauldron can contain.",
+  "code_example": "import net.neoforged.neoforge.fluids.FluidInteractionRegistry;\nimport net.neoforged.neoforge.fluids.FluidInteraction;\n\n// Register fluid interaction\nFluidInteractionRegistry.registerFluidInteraction(\n    Registries.FLUID,\n    Registries.BLOCK,\n    (fluid, state, blockState) -> {\n        // Return interaction result\n        return new FluidInteraction.Result(\n            Interactions.PLACE,\n            new FluidStack(MY_FLUID, 1000)\n        );\n    }\n);"
+}

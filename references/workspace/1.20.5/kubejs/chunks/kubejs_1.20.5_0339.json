@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0339",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "platform",
+  "source_file": "neoforge/KubeJSEntryPoint.java",
+  "symbol": "KubeJSEntryPoint",
+  "signature": "KubeJSEntryPoint; KubeJS; DisplayTest",
+  "payload_type": null,
+  "code_example": "// KubeJSEntryPoint from KubeJSEntryPoint.java\n// Fields: private static final ThreadLocal<IEventBus> BUS, var info, var entries\n// Methods: KubeJSEntryPoint, KubeJS, DisplayTest",
+  "coverage_status": "generated"
+}

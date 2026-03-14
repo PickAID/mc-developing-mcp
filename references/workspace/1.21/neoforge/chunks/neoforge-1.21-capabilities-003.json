@@ -1,0 +1,15 @@
+{
+  "chunk_id": "neoforge-1.21-capabilities-003",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/BlockCapability.java",
+  "symbol": "BlockCapability",
+  "signature": "public class BlockCapability<C, T>",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "capabilities",
+    "blocks"
+  ],
+  "code_example": "// BlockCapability from BlockCapability.java\n"
+}

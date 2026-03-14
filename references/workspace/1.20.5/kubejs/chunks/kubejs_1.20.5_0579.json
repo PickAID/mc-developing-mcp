@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0579",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/SeedItemBuilder.java",
+  "symbol": "SeedItemBuilder",
+  "signature": "SeedItemBuilder; super; getTranslationKeyGroup",
+  "payload_type": null,
+  "code_example": "// SeedItemBuilder from SeedItemBuilder.java\n// Methods: SeedItemBuilder, super, getTranslationKeyGroup",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0477",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "level",
+  "source_file": "level/ExplosionJS.java",
+  "symbol": "ExplosionJS",
+  "signature": "ExplosionJS; exploder; strength",
+  "payload_type": null,
+  "code_example": "// ExplosionJS from ExplosionJS.java\n// Fields:  level,  x,  y\n// Methods: ExplosionJS, exploder, strength",
+  "coverage_status": "generated"
+}

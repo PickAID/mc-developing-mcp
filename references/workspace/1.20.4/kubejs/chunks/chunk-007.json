@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-007",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "entity",
+  "source_file": "entity/EntityEventJS.java",
+  "symbols": ["EntityEventJS", "EntitySpawningEvent", "MobsEventJS"],
+  "coverage_status": "complete",
+  "description": "Entity events and spawning",
+  "topics": ["entities", "mobs", "spawning"]
+}

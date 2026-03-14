@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_005",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "items",
+  "source_file": "net/minecraftforge/items/ItemStackHandler.java",
+  "symbols": ["ItemStackHandler", "IItemHandler", "ItemHandlerHelper"],
+  "coverage_status": "complete",
+  "description": "Inventory and item handler capabilities",
+  "code_example": "// Create an item handler (inventory)\npublic class MyInventory extends ItemStackHandler {\n    private static final int SLOTS = 9;\n    \n    public MyInventory() {\n        super(SLOTS);\n    }\n    \n    @Override\n    public void setStackInSlot(int slot, ItemStack stack) {\n        super.setStackInSlot(slot, stack);\n        // Add custom logic when item changes\n    }\n}\n\n// Use with capabilities\npublic class MyBlockEntity extends BlockEntity {\n    private final ItemStackHandler inventory = new MyInventory();\n    \n    @Override\n    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {\n        return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> inventory));\n    }\n}\n\n// Using ItemHandlerHelper to insert items\nItemStack remaining = ItemHandlerHelper.insertItem(inventory, itemStack, false);"
+}

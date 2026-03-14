@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0321",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ingredient/WildcardIngredient.java",
+  "symbol": "WildcardIngredient",
+  "signature": "WildcardIngredient; WildcardIngredient; getType",
+  "payload_type": null,
+  "code_example": "// WildcardIngredient from WildcardIngredient.java\n// Fields: public static WildcardIngredient INSTANCE, public static final MapCodec<WildcardIngredient> CODEC\n// Methods: WildcardIngredient, WildcardIngredient, getType",
+  "coverage_status": "generated"
+}

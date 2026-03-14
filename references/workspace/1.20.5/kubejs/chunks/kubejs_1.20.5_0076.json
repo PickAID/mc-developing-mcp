@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0076",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/LivingEntityKJS.java",
+  "symbol": "LivingEntityKJS",
+  "signature": "return; FoodEatenKubeEvent; EntityPotionEffectsJS",
+  "payload_type": null,
+  "code_example": "// LivingEntityKJS from LivingEntityKJS.java\n// Fields: UUID KJS_PLAYER_CUSTOM_SPEED, String KJS_PLAYER_CUSTOM_SPEED_NAME, var event\n// Methods: return, FoodEatenKubeEvent, EntityPotionEffectsJS",
+  "coverage_status": "generated"
+}

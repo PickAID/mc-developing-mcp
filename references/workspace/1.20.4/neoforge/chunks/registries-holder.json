@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-002",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "registries",
+  "source_file": "net/neoforged/neoforge/registries/DeferredHolder.java",
+  "symbols": ["DeferredHolder", "get", "isBound", "orElse", "orElseThrow"],
+  "coverage_status": "complete",
+  "topics": ["holder", "registry_reference", "lazy_loading"],
+  "description": "A holder that defers resolution of a registry entry until first access.",
+  "code_example": "public static final DeferredHolder<Block, MyBlock> MY_BLOCK = BLOCKS.registerBlock(\"my_block\", MyBlock::new, Block.Properties.create(Material.ROCK));\n\n// Usage\nBlock block = MY_BLOCK.get(); // Gets the block when first called",
+  "source_citation": "net/neoforged/neoforge/registries/DeferredHolder.java"
+}

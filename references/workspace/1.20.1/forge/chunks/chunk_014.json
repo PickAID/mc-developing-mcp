@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_014",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "common",
+  "source_file": "net/minecraftforge/common/loot/LootModifier.java",
+  "symbols": ["LootModifier", "IGlobalLootModifier", "LootModifierManager"],
+  "coverage_status": "complete",
+  "description": "Global loot modifiers for customizing drops",
+  "code_example": "// Create a global loot modifier\npublic class MyLootModifier extends LootModifier {\n    public MyLootModifier(ICondition[] conditions) {\n        super(conditions);\n    }\n    \n    @Override\n    protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context) {\n        // Modify the loot\n        for (ItemStack stack : generatedLoot) {\n            if (stack.getItem() == Items.DIAMOND) {\n                stack.grow(1); // Double diamonds\n            }\n        }\n        return generatedLoot;\n    }\n    \n    public static class Serializer extends GlobalLootModifierSerializer<MyLootModifier> {\n        @Override\n        public MyLootModifier m_6754_(JsonObject json, IFunction<LootContext, Boolean>[] conditions) {\n            return new MyLootModifier(conditions);\n        }\n        \n        @Override\n        public void m_6757_(JsonObject json, MyLootModifier modifier) {\n            // Serialize\n        }\n    }\n}\n\n// Register in data generator\nprivate static final RegistryObject<GlobalLootModifierSerializer<?>> MY_MODIFIER = \n    LOOT_MODIFIERS.register(\"my_modifier\", MyLootModifier.Serializer::new);"
+}

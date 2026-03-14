@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_013",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "command",
+  "source_file": "CommandRegistryKubeEvent.java",
+  "symbols": ["CommandRegistryKubeEvent", "register", "getArgumentType", "getServer", "getLevel"],
+  "coverage_status": "complete"
+}

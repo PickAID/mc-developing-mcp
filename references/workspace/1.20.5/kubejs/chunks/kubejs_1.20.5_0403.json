@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0403",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ItemPickedUpKubeEvent.java",
+  "symbol": "ItemPickedUpKubeEvent",
+  "signature": "ItemPickedUpKubeEvent; getEntity; getItemEntity",
+  "payload_type": null,
+  "code_example": "// ItemPickedUpKubeEvent from ItemPickedUpKubeEvent.java\n// Methods: ItemPickedUpKubeEvent, getEntity, getItemEntity",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0287",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/special/ShapedKubeJSRecipe.java",
+  "symbol": "ShapedKubeJSRecipe",
+  "signature": "keys; decode; encode",
+  "payload_type": null,
+  "code_example": "// ShapedKubeJSRecipe from ShapedKubeJSRecipe.java\n// Fields: public static final String SHRINK_KEY, public static final String MIRROR_KEY, public static final MapCodec<ShapedRecipePattern> PATTERN_NO_SHRINK_CODEC\n// Methods: keys, decode, encode",
+  "coverage_status": "generated"
+}

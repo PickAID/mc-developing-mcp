@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0433",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/creativetab/CreativeTabBuilder.java",
+  "symbol": "CreativeTabBuilder",
+  "signature": "CreativeTabBuilder; super; getRegistryType",
+  "payload_type": null,
+  "code_example": "// CreativeTabBuilder from CreativeTabBuilder.java\n// Fields:  displayName\n// Methods: CreativeTabBuilder, super, getRegistryType",
+  "coverage_status": "generated"
+}

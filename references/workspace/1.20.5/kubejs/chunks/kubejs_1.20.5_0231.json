@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0231",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/RecipeSchemaRegistryKubeEvent.java",
+  "symbol": "RecipeSchemaRegistryKubeEvent",
+  "signature": "RecipeSchemaRegistryKubeEvent; namespace; register",
+  "payload_type": null,
+  "code_example": "// RecipeSchemaRegistryKubeEvent from RecipeSchemaRegistryKubeEvent.java\n// Fields:  components\n// Methods: RecipeSchemaRegistryKubeEvent, namespace, register",
+  "coverage_status": "generated"
+}

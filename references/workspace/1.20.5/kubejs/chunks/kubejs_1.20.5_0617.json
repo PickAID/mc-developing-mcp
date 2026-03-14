@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0617",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/custom/CarpetBlockBuilder.java",
+  "symbol": "CarpetBlockBuilder",
+  "signature": "CarpetBlockBuilder; super; tagBoth",
+  "payload_type": null,
+  "code_example": "// CarpetBlockBuilder from CarpetBlockBuilder.java\n// Fields: var mod, var texture\n// Methods: CarpetBlockBuilder, super, tagBoth",
+  "coverage_status": "generated"
+}

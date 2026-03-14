@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_001",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "registries",
+  "topic": "registry_deferred_register",
+  "source_file": "net/neoforged/neoforge/registries/DeferredRegister.java",
+  "symbols": ["DeferredRegister", "DeferredBlock", "DeferredItem", "DeferredHolder"],
+  "topic_tags": ["registries", "registration", "deferred"],
+  "coverage_status": "verified",
+  "line_count": 450,
+  "description": "Deferred registration system for blocks, items, and other game content",
+  "code_example": "// DeferredRegister from DeferredRegister.java\n"
+}

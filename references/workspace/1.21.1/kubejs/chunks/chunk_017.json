@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_017",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "client_events",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/plugin/builtin/event/ClientEvents.java",
+  "symbols": ["ClientEvents", "INIT", "LOAD", "RENDER", "TICK", "SCREEN_OPEN", "SCREEN_CLOSE", "KEY_PRESS", "KEY_RELEASE"],
+  "topic_tags": ["kubejs", "events", "client"],
+  "coverage_status": "verified",
+  "code": "public class ClientEvents {\n\tpublic static final EventGroup GROUP = new EventGroup(\"client\");\n\n\tpublic static final SimpleEvent<Minecraft> INIT = GROUP.makeEvent(\"init\");\n\tpublic static final SimpleEvent<Minecraft> LOAD = GROUP.makeEvent(\"load\");\n\tpublic static final SimpleEvent<RenderTickEvent> RENDER = GROUP.makeEvent(\"render\");\n\tpublic static final SimpleEvent<Minecraft> TICK = GROUP.makeEvent(\"tick\");\n\tpublic static final SimpleEvent<ScreenOpenEvent> SCREEN_OPEN = GROUP.makeEvent(\"screen_open\");\n\tpublic static final SimpleEvent<ScreenCloseEvent> SCREEN_CLOSE = GROUP.makeEvent(\"screen_close\");\n\tpublic static final SimpleEvent<KeyEvent> KEY_PRESS = GROUP.makeEvent(\"key_press\");\n\tpublic static final SimpleEvent<KeyEvent> KEY_RELEASE = GROUP.makeEvent(\"key_release\");\n\tpublic static final SimpleEvent<ChatEvent> CHAT_SEND = GROUP.makeEvent(\"chat_send\");\n\tpublic static final SimpleEvent<ChatEvent> CHAT_RECEIVE = GROUP.makeEvent(\"chat_receive\");\n\n\tpublic static void init() {\n\t\tINIT.addHandler(e -> ConsoleJS.CLIENT.info(\"Client initialized\"));\n\t\tRENDER.addHandler(e -> {\n\t\t\tvar partialTicks = e.getPartialTicks();\n\t\t\t// Custom rendering\n\t\t});\n\t}\n}",
+  "code_example": "// ClientEvents from ClientEvents.java\n"
+}

@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-003",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/event/entity/player/PlayerInteractEvent.java",
+  "symbols": ["PlayerInteractEvent", "EntityInteract", "EntityInteractSpecific", "RightClickBlock", "RightClickItem", "LeftClickBlock", "LeftClickEmpty"],
+  "coverage_status": "complete",
+  "topics": ["player_interaction", "events", "right_click", "left_click", "block_interaction"],
+  "description": "Fired when a player interacts with the world. Contains multiple sub-events for different interaction types.",
+  "code_example": "// Listen for right-click on entities\nNeoForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteract event) -> {\n    if (event.getTarget() instanceof Villager villager) {\n        // Trade with villager\n    }\n});\n\n// Listen for right-click on blocks\nNeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickBlock event) -> {\n    BlockPos pos = event.getPos();\n    Player player = event.getEntity();\n});",
+  "source_citation": "net/neoforged/neoforge/event/entity/player/PlayerInteractEvent.java"
+}

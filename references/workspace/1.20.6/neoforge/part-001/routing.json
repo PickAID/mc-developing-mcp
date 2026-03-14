@@ -1,0 +1,70 @@
+{
+  "routing_version": "1.0",
+  "part_id": "part-001",
+  "routes": [
+    {
+      "route_id": "chunk_001",
+      "category": "registries",
+      "topic": "registry_system",
+      "file_patterns": ["**/registries/*.java"]
+    },
+    {
+      "route_id": "chunk_002",
+      "category": "event",
+      "topic": "event_bus",
+      "file_patterns": ["**/event/*.java"]
+    },
+    {
+      "route_id": "chunk_003",
+      "category": "capabilities",
+      "topic": "capability_system",
+      "file_patterns": ["**/capabilities/*.java"]
+    },
+    {
+      "route_id": "chunk_004",
+      "category": "client",
+      "topic": "client_rendering",
+      "file_patterns": ["**/client/**/*.java"]
+    },
+    {
+      "route_id": "chunk_005",
+      "category": "common",
+      "topic": "common_systems",
+      "file_patterns": ["**/common/**/*.java"]
+    },
+    {
+      "route_id": "chunk_006",
+      "category": "network",
+      "topic": "networking",
+      "file_patterns": ["**/network/**/*.java"]
+    },
+    {
+      "route_id": "chunk_007",
+      "category": "fluids",
+      "topic": "fluid_systems",
+      "file_patterns": ["**/fluids/**/*.java"]
+    },
+    {
+      "route_id": "chunk_008",
+      "category": "items",
+      "topic": "item_system",
+      "file_patterns": ["**/items/**/*.java"]
+    },
+    {
+      "route_id": "chunk_009",
+      "category": "attachment",
+      "topic": "attachment_holder",
+      "file_patterns": ["**/attachment/**/*.java"]
+    },
+    {
+      "route_id": "chunk_010",
+      "category": "server",
+      "topic": "server_systems",
+      "file_patterns": ["**/server/**/*.java"]
+    }
+  ],
+  "fallback_route": {
+    "category": "uncategorized",
+    "description": "Files not matching any specific route"
+  }
+}

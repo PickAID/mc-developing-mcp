@@ -1,0 +1,15 @@
+{
+  "chunk_id": "neoforge-1.21-capabilities-005",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/EntityCapability.java",
+  "symbol": "EntityCapability",
+  "signature": "public class EntityCapability<C, T>",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "capabilities",
+    "entities"
+  ],
+  "code_example": "// EntityCapability from EntityCapability.java\n"
+}

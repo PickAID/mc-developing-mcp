@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0254",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/ingredientaction/IngredientAction.java",
+  "symbol": "IngredientAction",
+  "signature": "GsonBuilder; fromJson; CustomIngredientAction",
+  "payload_type": null,
+  "code_example": "// IngredientAction from IngredientAction.java\n// Fields: private static final Gson GSON, public static final Map<String, Function<JsonObject, IngredientAction>> FACTORY_MAP, ify this\n\tpublic static final Codec<IngredientAction> CODEC\n// Methods: GsonBuilder, fromJson, CustomIngredientAction",
+  "coverage_status": "generated"
+}

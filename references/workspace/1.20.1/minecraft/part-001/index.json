@@ -1,0 +1,25 @@
+{
+  "part_id": "part-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "description": "Initial chunk set covering core Minecraft APIs",
+  "created": "2026-03-12",
+  "chunk_count": 24,
+  "categories_covered": [
+    "commands",
+    "worldgen",
+    "entities",
+    "blocks",
+    "items",
+    "recipes",
+    "world",
+    "nbt",
+    "network",
+    "biomes",
+    "dimensions",
+    "resources",
+    "tags"
+  ],
+  "source_root": "/Users/agenthome/mc-code-exports/1.20.1/minecraft/",
+  "status": "generated"
+}

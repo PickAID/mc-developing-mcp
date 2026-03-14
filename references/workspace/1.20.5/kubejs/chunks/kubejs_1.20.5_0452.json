@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0452",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "gui",
+  "source_file": "gui/KubeJSGUI.java",
+  "symbol": "KubeJSGUI",
+  "signature": "SimpleContainer; KubeJSGUI; KubeJSGUI",
+  "payload_type": null,
+  "code_example": "// KubeJSGUI from KubeJSGUI.java\n// Fields: private static final Component DEFAULT_TITLE, public static final SimpleContainer EMPTY_CONTAINER, public int width\n// Methods: SimpleContainer, KubeJSGUI, KubeJSGUI",
+  "coverage_status": "generated"
+}

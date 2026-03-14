@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0028",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "network",
+  "source_file": "net/FirstClickPayload.java",
+  "symbol": "FirstClickPayload",
+  "signature": "FirstClickPayload; type; handle",
+  "payload_type": null,
+  "code_example": "// FirstClickPayload from FirstClickPayload.java\n// Fields: public static final StreamCodec<ByteBuf, FirstClickPayload> STREAM_CODEC, var stack, var stack\n// Methods: FirstClickPayload, type, handle",
+  "coverage_status": "generated"
+}

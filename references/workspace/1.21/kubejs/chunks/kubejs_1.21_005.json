@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_005",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "codecs",
+  "source_file": "KubeJSCodecs.java",
+  "symbols": ["KubeJSCodecs", "CHARACTER", "INT_PROVIDER_STREAM_CODEC", "KUBEJS_ID_STREAM_CODEC", "stringResolverCodec", "byName", "fromJsonOrThrow", "toJsonOrThrow", "getUniqueId", "numberProviderJson", "listOfOrSelf"],
+  "coverage_status": "complete"
+}

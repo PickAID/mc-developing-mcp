@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0545",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/PainterObjectProperties.java",
+  "symbol": "PainterObjectProperties",
+  "signature": "PainterObjectProperties; hasAny; has",
+  "payload_type": null,
+  "code_example": "// PainterObjectProperties from PainterObjectProperties.java\n// Fields:  tag, var s, var col\n// Methods: PainterObjectProperties, hasAny, has",
+  "coverage_status": "generated"
+}

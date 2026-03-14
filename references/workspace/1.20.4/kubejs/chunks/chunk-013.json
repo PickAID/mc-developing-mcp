@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-013",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "misc/PotionBuilder.java",
+  "symbols": ["PotionBuilder", "MobEffectBuilder", "BasicMobEffect"],
+  "coverage_status": "complete",
+  "description": "Potion and effect builders",
+  "topics": ["potions", "effects", "status-effects"]
+}

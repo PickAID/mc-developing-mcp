@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-020",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "attachments",
+  "source_file": "net/neoforged/neoforge/attachment/AttachmentHolder.java",
+  "symbols": ["AttachmentHolder", "getData", "setData", "removeData"],
+  "coverage_status": "complete",
+  "topics": ["attachments", "data_management", "mod_state"],
+  "description": "Holder class that provides access to attachments on entities, items, and blocks.",
+  "code_example": "// Get attachment data\nPlayer player = event.getPlayer();\nplayer.getData(MY_MOD_DATA).getValue();\n\n// Set attachment data\nplayer.getData(MY_MOD_DATA).setValue(customData);\n\n// Remove attachment\nplayer.removeData(MY_MOD_DATA);",
+  "source_citation": "net/neoforged/neoforge/attachment/AttachmentHolder.java"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0297",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/RecipeNamespace.java",
+  "symbol": "RecipeNamespace",
+  "signature": "getAll; JsonRecipeSchemaType; RegisterRecipeSchemasEvent",
+  "payload_type": null,
+  "code_example": "// RecipeNamespace from RecipeNamespace.java\n// Fields:  all,  mappedRecipes, var ns\n// Methods: getAll, JsonRecipeSchemaType, RegisterRecipeSchemasEvent",
+  "coverage_status": "generated"
+}

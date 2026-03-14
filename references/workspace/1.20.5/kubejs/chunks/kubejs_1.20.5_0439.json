@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0439",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/custom/SmithingTemplateItemBuilder.java",
+  "symbol": "SmithingTemplateItemBuilder",
+  "signature": "SmithingTemplateItemBuilder; super; formatting",
+  "payload_type": null,
+  "code_example": "// SmithingTemplateItemBuilder from SmithingTemplateItemBuilder.java\n// Fields: private static final List<ResourceLocation> ARMOR_ICONS, private static final List<ResourceLocation> INGOTS_AND_CRYSTALS_ICONS, private static final List<ResourceLocation> EQUIPMENT_ICONS\n// Methods: SmithingTemplateItemBuilder, super, formatting",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-009",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "network",
+  "source_file": "net/neoforged/neoforge/network/registration/NetworkRegistry.java",
+  "symbols": ["NetworkRegistry", "PayloadRegistry", "ChannelBuilder"],
+  "coverage_status": "verified",
+  "topics": ["network", "packets", "channels", "sync"],
+  "topic_tags": ["networking", "payloads", "channels", "sync"],
+  "content": "NetworkRegistry manages network channels and payloads in NeoForge. It provides the modern payload-based networking system.\n\nKey classes:\n- ChannelBuilder: Build named channels with custom behavior\n- PayloadRegistry: Register and handle payloads\n- KnownRegistryDataMapsPayload: Sync registry data maps",
+  "code_example": "import net.neoforged.neoforge.network.registration.NetworkRegistry;\nimport net.neoforged.neoforge.network.ChannelBuilder;\nimport net.neoforged.neoforge.network.payload.KnownRegistryDataMapsPayload;\n\n// Create a channel\nvar channel = ChannelBuilder.named(new ResourceLocation(MODID, \"main\"))\n    .networkProtocolVersion(() -> \"1.0\")\n    .optional()\n    .simpleChannel();\n\n// Register a message\nchannel.registerMessage(0, MyMessage.class, MyMessage::new, \n    (msg, ctx) -> { \n        ctx.enqueueWork(() -> msg.handle(ctx)); \n    });"
+}

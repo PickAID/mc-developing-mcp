@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0559",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/painter/screen/ScreenDrawMode.java",
+  "symbol": "ScreenDrawMode",
+  "signature": "ingame; gui",
+  "payload_type": null,
+  "code_example": "// ScreenDrawMode from ScreenDrawMode.java\n// Fields: return this, return this\n// Methods: ingame, gui",
+  "coverage_status": "generated"
+}

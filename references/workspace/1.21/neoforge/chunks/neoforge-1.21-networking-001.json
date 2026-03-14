@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-networking-001",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "networking",
+  "source_file": "net/neoforged/neoforge/network/event/RegisterPayloadHandlersEvent.java",
+  "symbol": "RegisterPayloadHandlersEvent",
+  "signature": "public class RegisterPayloadHandlersEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "networking",
+    "payload",
+    "sync"
+  ],
+  "code_example": "// RegisterPayloadHandlersEvent from RegisterPayloadHandlersEvent.java\n"
+}

@@ -1,0 +1,32 @@
+{
+  "chunk_id": "minecraft-1.20.1-nbt-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "nbt",
+  "source_file": "net/minecraft/nbt/CompoundTag.java",
+  "symbols": [
+    {
+      "name": "CompoundTag",
+      "signature": "class CompoundTag extends Tag",
+      "description": "NBT compound tag (like a map)"
+    },
+    {
+      "name": "CompoundTag.put",
+      "signature": "void put(String key, Tag value)",
+      "description": "Put a tag"
+    },
+    {
+      "name": "CompoundTag.getInt",
+      "signature": "int getInt(String key)",
+      "description": "Get integer value"
+    },
+    {
+      "name": "CompoundTag.getString",
+      "signature": "String getString(String key)",
+      "description": "Get string value"
+    }
+  ],
+  "code_example": "// Working with NBT\nCompoundTag nbt = new CompoundTag();\n\n// Put values\nnbt.putInt(\"Health\", 100);\nnbt.putString(\"Name\", \"Test\");\nnbt.putBoolean(\"Active\", true);\nnbt.put(\"Data\", anotherTag);\n\n// Get values\nint health = nbt.getInt(\"Health\");\nString name = nbt.getString(\"Name\");\n\n// Check existence\nif (nbt.contains(\"Health\")) {\n    // Has health\n}",
+  "topic_tags": ["nbt", "tags", "serialization", "data"],
+  "coverage_status": "verified"
+}

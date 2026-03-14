@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0473",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "level",
+  "source_file": "level/KubeJSWorldEventHandler.java",
+  "symbol": "KubeJSWorldEventHandler",
+  "signature": "init; levelLoad; SimpleLevelKubeEvent",
+  "payload_type": null,
+  "code_example": "// KubeJSWorldEventHandler from KubeJSWorldEventHandler.java\n// Methods: init, levelLoad, SimpleLevelKubeEvent",
+  "coverage_status": "generated"
+}

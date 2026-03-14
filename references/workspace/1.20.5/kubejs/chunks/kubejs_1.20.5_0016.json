@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0016",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "misc/BasicMobEffect.java",
+  "symbol": "BasicMobEffect",
+  "signature": "BasicMobEffect; super; applyEffectTick",
+  "payload_type": null,
+  "code_example": "// BasicMobEffect from BasicMobEffect.java\n// Fields: private boolean modified,  modifierMap,  modified\n// Methods: BasicMobEffect, super, applyEffectTick",
+  "coverage_status": "generated"
+}

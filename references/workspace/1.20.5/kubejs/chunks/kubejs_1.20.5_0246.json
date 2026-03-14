@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0246",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/CompostableRecipesKubeEvent.java",
+  "symbol": "CompostableRecipesKubeEvent",
+  "signature": "CompostableRecipesKubeEvent; remove; removeAll",
+  "payload_type": null,
+  "code_example": "// CompostableRecipesKubeEvent from CompostableRecipesKubeEvent.java\n// Fields: public static Object2FloatMap<ItemLike> originalMap,  originalMap\n// Methods: CompostableRecipesKubeEvent, remove, removeAll",
+  "coverage_status": "generated"
+}

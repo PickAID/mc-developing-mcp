@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_021",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "logging",
+  "topic": "logging_systems",
+  "source_file": "net/neoforged/neoforge/logging/LoggerRegistry.java",
+  "symbols": ["LoggerRegistry", "LoggingConfig", "LoggerTicket"],
+  "topic_tags": ["logging", "debugging"],
+  "coverage_status": "verified",
+  "line_count": 120,
+  "description": "Logging configuration and registry systems",
+  "code_example": "// LoggerRegistry from logging package\n"
+}

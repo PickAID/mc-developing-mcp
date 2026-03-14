@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0631",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "player",
+  "source_file": "player/ChestKubeEvent.java",
+  "symbol": "ChestKubeEvent",
+  "signature": "ChestKubeEvent; super; getInventory",
+  "payload_type": null,
+  "code_example": "// ChestKubeEvent from ChestKubeEvent.java\n// Methods: ChestKubeEvent, super, getInventory",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-tags-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "tags",
+  "source_file": "net/minecraft/tags/Tag.java",
+  "symbols": [
+    {
+      "name": "Tag",
+      "signature": "class Tag<T>",
+      "description": "Tag for grouping items/blocks"
+    },
+    {
+      "name": "Tag.contains",
+      "signature": "boolean contains(T)",
+      "description": "Check if tag contains value"
+    },
+    {
+      "name": "Tag.getValues",
+      "signature": "Set<T> getValues()",
+      "description": "Get all values in tag"
+    }
+  ],
+  "code_example": "// Working with tags\nTag<Block> stoneBlocks = Tags.Blocks.STONE;\n\n// Check if block is in tag\nif (stoneBlocks.contains(Blocks.GRANITE)) {\n    // Granite is stone\n}\n\n// Get all blocks in tag\nSet<Block> stones = stoneBlocks.getValues();\n\n// For custom tags\nTagKey<Block> myTag = TagKey.create(Registry.BLOCK_REGISTRY, \n    new ResourceLocation(\"mymod\", \"my_blocks\"));",
+  "topic_tags": ["tags", "block_tags", "item_tags", "grouping"],
+  "coverage_status": "verified"
+}

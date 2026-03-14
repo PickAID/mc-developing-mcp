@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_020",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "resource",
+  "topic": "resource_loading",
+  "source_file": "net/neoforged/neoforge/resource/ResourcePackLoader.java",
+  "symbols": ["ResourcePackLoader", "ResourceValidationException", "ResourceFileNotFoundException"],
+  "topic_tags": ["resources", "reload"],
+  "coverage_status": "verified",
+  "line_count": 180,
+  "description": "Resource loading and validation systems",
+  "code_example": "// ResourcePackLoader from resource package\n"
+}

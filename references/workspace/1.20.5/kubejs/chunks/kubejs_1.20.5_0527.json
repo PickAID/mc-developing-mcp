@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0527",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/GenerateClientAssetsKubeEvent.java",
+  "symbol": "GenerateClientAssetsKubeEvent",
+  "signature": "GenerateClientAssetsKubeEvent; addLang; add",
+  "payload_type": null,
+  "code_example": "// GenerateClientAssetsKubeEvent from GenerateClientAssetsKubeEvent.java\n// Fields: , event, var gen, var gen\n// Methods: GenerateClientAssetsKubeEvent, addLang, add",
+  "coverage_status": "generated"
+}

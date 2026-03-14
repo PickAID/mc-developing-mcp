@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0209",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/rei/RemoveREICategoryKubeEvent.java",
+  "symbol": "RemoveREICategoryKubeEvent",
+  "signature": "RemoveREICategoryKubeEvent; getRegistry; getCategories",
+  "payload_type": null,
+  "code_example": "// RemoveREICategoryKubeEvent from RemoveREICategoryKubeEvent.java\n// Fields:  registry\n// Methods: RemoveREICategoryKubeEvent, getRegistry, getCategories",
+  "coverage_status": "generated"
+}

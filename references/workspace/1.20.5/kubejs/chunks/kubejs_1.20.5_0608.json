@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0608",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/drop/BlockDrop.java",
+  "symbol": "BlockDrop",
+  "signature": "BlockDrop",
+  "payload_type": null,
+  "code_example": "// BlockDrop from BlockDrop.java\n// Methods: BlockDrop",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_009",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "fluid",
+  "source_file": "FluidBuilder.java",
+  "symbols": ["FluidBuilder", "WATER_COLOR", "slopeFindDistance", "levelDecreasePerBlock", "explosionResistance", "tickRate", "fluidType", "flowingFluid", "block", "bucketItem", "properties", "displayName", "createProperties", "createObject", "createAdditionalObjects", "tag", "type", "tint", "stillTexture", "flowingTexture", "renderType", "translucent", "slopeFindDistance", "levelDecreasePerBlock", "explosionResistance", "tickRate", "noBucket", "noBlock"],
+  "coverage_status": "complete"
+}

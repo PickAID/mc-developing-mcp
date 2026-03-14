@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0508",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "event",
+  "source_file": "event/EventGroups.java",
+  "symbol": "EventGroups",
+  "signature": "EventGroups; EventGroups; register",
+  "payload_type": null,
+  "code_example": "// EventGroups from EventGroups.java\n// Fields: public static final Lazy<EventGroups> ALL, var groups\n// Methods: EventGroups, EventGroups, register",
+  "coverage_status": "generated"
+}

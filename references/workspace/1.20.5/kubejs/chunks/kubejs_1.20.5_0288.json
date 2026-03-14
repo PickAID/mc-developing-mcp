@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0288",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/special/SpecialRecipeSerializerManager.java",
+  "symbol": "SpecialRecipeSerializerManager",
+  "signature": "SpecialRecipeSerializerManager; reset; synchronized",
+  "payload_type": null,
+  "code_example": "// SpecialRecipeSerializerManager from SpecialRecipeSerializerManager.java\n// Fields: public static final SpecialRecipeSerializerManager INSTANCE, public static final Event<Runnable> EVENT, private final Map<ResourceLocation, Boolean> data\n// Methods: SpecialRecipeSerializerManager, reset, synchronized",
+  "coverage_status": "generated"
+}

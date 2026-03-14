@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0463",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "registry/RegistryKubeEvent.java",
+  "symbol": "RegistryKubeEvent",
+  "signature": "RegistryKubeEvent; create; IllegalArgumentException",
+  "payload_type": null,
+  "code_example": "// RegistryKubeEvent from RegistryKubeEvent.java\n// Fields: var t, var b, var t\n// Methods: RegistryKubeEvent, create, IllegalArgumentException",
+  "coverage_status": "generated"
+}

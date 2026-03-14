@@ -1,0 +1,152 @@
+{
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "total_java_files": 847,
+  "categories": {
+    "events": {
+      "count": 90,
+      "description": "Event classes for modding hooks",
+      "key_classes": [
+        "net.neoforged.neoforge.event.AddPackFindersEvent",
+        "net.neoforged.neoforge.event.AddReloadListenerEvent",
+        "net.neoforged.neoforge.event.CommandEvent",
+        "net.neoforged.neoforge.event.ModMismatchEvent",
+        "net.neoforged.neoforge.event.RegisterGameTestsEvent",
+        "net.neoforged.neoforge.event.AnvilUpdateEvent",
+        "net.neoforged.neoforge.event.brewing.PotionBrewEvent",
+        "net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent",
+        "net.neoforged.neoforge.event.brewing.PlayerBrewedPotionEvent",
+        "net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent",
+        "net.neoforged.neoforge.event.enchanting.EnchantmentLevelSetEvent",
+        "net.neoforged.neoforge.event.enchanting.GetEnchantmentLevelEvent",
+        "net.neoforged.neoforge.event.entity.EntityJoinLevelEvent",
+        "net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent",
+        "net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent",
+        "net.neoforged.neoforge.event.entity.EntityTeleportEvent",
+        "net.neoforged.neoforge.event.entity.EntityMobGriefingEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingDeathEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingHurtEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingAttackEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingDamageEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingHealEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingDropsEvent",
+        "net.neoforged.neoforge.event.entity.living.LivingEvent",
+        "net.neoforged.neoforge.event.entity.player.PlayerEvent",
+        "net.neoforged.neoforge.event.entity.player.PlayerInteractEvent",
+        "net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent",
+        "net.neoforged.neoforge.data.event.GatherDataEvent",
+        "net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent",
+        "net.neoforged.neoforge.registries.RegisterEvent"
+      ],
+      "topics": ["events", "hooks", "callbacks", "lifecycle"]
+    },
+    "registries": {
+      "count": 40,
+      "description": "Registry system for custom game objects",
+      "key_classes": [
+        "net.neoforged.neoforge.registries.DeferredRegister",
+        "net.neoforged.neoforge.registries.RegistryBuilder",
+        "net.neoforged.neoforge.registries.RegistryManager",
+        "net.neoforged.neoforge.registries.RegistrySnapshot",
+        "net.neoforged.neoforge.registries.RegisterEvent",
+        "net.neoforged.neoforge.registries.NewRegistryEvent",
+        "net.neoforged.neoforge.registries.ModifyRegistriesEvent",
+        "net.neoforged.neoforge.registries.IdMappingEvent",
+        "net.neoforged.neoforge.registries.DataPackRegistryEvent",
+        "net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent"
+      ],
+      "topics": ["registries", "registration", "deferred", "datapacks"]
+    },
+    "capabilities": {
+      "count": 15,
+      "description": "Capability system for entity/block/item data",
+      "key_classes": [
+        "net.neoforged.neoforge.capabilities.CapabilityRegistry",
+        "net.neoforged.neoforge.capabilities.ICapabilityProvider",
+        "net.neoforged.neoforge.capabilities.IBlockCapabilityProvider",
+        "net.neoforged.neoforge.capabilities.BlockCapability",
+        "net.neoforged.neoforge.capabilities.ItemCapability",
+        "net.neoforged.neoforge.capabilities.EntityCapability",
+        "net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent"
+      ],
+      "topics": ["capabilities", "data", "storage", "provider"]
+    },
+    "data_components": {
+      "count": 20,
+      "description": "Data component system for item/block entities",
+      "key_classes": [
+        "net.neoforged.neoforge.common.MutableDataComponentHolder",
+        "net.neoforged.neoforge.common.crafting.DataComponentIngredient",
+        "net.neoforged.neoforge.common.extensions.IDataComponentHolderExtension",
+        "net.neoforged.neoforge.common.extensions.IDataComponentMapBuilderExtensions",
+        "net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent"
+      ],
+      "topics": ["data_components", "nbt", "item_data", "custom_data"]
+    },
+    "network": {
+      "count": 35,
+      "description": "Networking and packet handling",
+      "key_classes": [
+        "net.neoforged.neoforge.network.registration.NetworkRegistry",
+        "net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent",
+        "net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent",
+        "net.neoforged.neoforge.network.negotiation.NetworkComponentNegotiator",
+        "net.neoforged.neoforge.network.payload.RegistryDataMapSyncPayload"
+      ],
+      "topics": ["network", "packets", "sync", "s2c", "c2s"]
+    },
+    "items": {
+      "count": 25,
+      "description": "Item and block API classes",
+      "key_classes": [
+        "net.neoforged.neoforge.items.IItemHandler",
+        "net.neoforged.neoforge.items.IItemHandlerModifiable",
+        "net.neoforged.neoforge.items.ItemStackHandler"
+      ],
+      "topics": ["items", "inventory", "handler"]
+    },
+    "fluids": {
+      "count": 20,
+      "description": "Fluid handling and interaction",
+      "key_classes": [
+        "net.neoforged.neoforge.fluids.FluidInteractionRegistry",
+        "net.neoforged.neoforge.fluids.RegisterCauldronFluidContentEvent"
+      ],
+      "topics": ["fluids", "cauldron", "interaction"]
+    },
+    "data_providers": {
+      "count": 15,
+      "description": "Data generation providers",
+      "key_classes": [
+        "net.neoforged.neoforge.common.data.DataMapProvider",
+        "net.neoforged.neoforge.common.data.JsonCodecProvider",
+        "net.neoforged.neoforge.common.data.AdvancementProvider",
+        "net.neoforged.neoforge.common.data.GlobalLootModifierProvider",
+        "net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider"
+      ],
+      "topics": ["datagen", "data_generation", "assets", "recipes", "tags"]
+    },
+    "gametest": {
+      "count": 10,
+      "description": "Game test framework",
+      "key_classes": [
+        "net.neoforged.neoforge.gametest.GameTestGenerator",
+        "net.neoforged.neoforge.gametest.GameTestHelper"
+      ],
+      "topics": ["gametest", "testing", "automation"]
+    }
+  },
+  "topics": [
+    "neoforge",
+    "1.20.5",
+    "modding",
+    "api",
+    "forge",
+    "events",
+    "registries",
+    "capabilities",
+    "network",
+    "datagen"
+  ],
+  "generated_at": "2026-03-12T00:00:00Z"
+}

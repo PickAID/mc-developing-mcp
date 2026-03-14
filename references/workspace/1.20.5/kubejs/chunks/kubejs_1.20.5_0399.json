@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0399",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ItemSmeltedKubeEvent.java",
+  "symbol": "ItemSmeltedKubeEvent",
+  "signature": "ItemSmeltedKubeEvent; getEntity; getItem",
+  "payload_type": null,
+  "code_example": "// ItemSmeltedKubeEvent from ItemSmeltedKubeEvent.java\n// Methods: ItemSmeltedKubeEvent, getEntity, getItem",
+  "coverage_status": "generated"
+}

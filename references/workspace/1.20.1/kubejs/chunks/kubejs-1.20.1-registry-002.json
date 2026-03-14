@@ -1,0 +1,19 @@
+{
+  "chunk_id": "kubejs-1.20.1-registry-002",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "registry/BuilderFactory.java",
+  "symbols": [
+    {
+      "symbol": "BuilderFactory.createBuilder",
+      "signature": "void createBuilder(ResourceLocation id)",
+      "code_example": "// BuilderFactory.createBuilder() - see registry/BuilderFactory.java",
+      "topic_tags": [
+        "registry",
+        "registry"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

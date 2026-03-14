@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0619",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/custom/FallingBlockBuilder.java",
+  "symbol": "FallingBlockBuilder",
+  "signature": "FallingBlockBuilder; super; createObject",
+  "payload_type": null,
+  "code_example": "// FallingBlockBuilder from FallingBlockBuilder.java\n// Fields: private int dustColor, var dustRgb, var dustAlpha\n// Methods: FallingBlockBuilder, super, createObject",
+  "coverage_status": "generated"
+}

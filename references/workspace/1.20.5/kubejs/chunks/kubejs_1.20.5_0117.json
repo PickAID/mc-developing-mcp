@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0117",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/LoadingOverlayMixin.java",
+  "symbol": "LoadingOverlayMixin",
+  "signature": "backgroundColorKJS; barColorKJS1; barColorKJS2",
+  "payload_type": null,
+  "code_example": "// LoadingOverlayMixin from LoadingOverlayMixin.java\n// Fields: , at, , remap, false, cancellable\n// Methods: backgroundColorKJS, barColorKJS1, barColorKJS2",
+  "coverage_status": "generated"
+}

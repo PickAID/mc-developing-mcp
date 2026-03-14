@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-025",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "common",
+  "source_file": "net/neoforged/neoforge/common/world/chunk/RegisterTicketControllersEvent.java",
+  "symbols": ["RegisterTicketControllersEvent", "TicketType", "ChunkTicketManager"],
+  "coverage_status": "verified",
+  "topics": ["world", "chunks", "tickets", "loading"],
+  "topic_tags": ["world", "chunks", "chunk-loading", "tickets"],
+  "content": "RegisterTicketControllersEvent allows registering custom chunk ticket types. These control when chunks are loaded and how long they stay loaded.\n\nTicketTypes control chunk loading radius and timeout behavior.",
+  "code_example": "import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;\nimport net.minecraft.server.level.TicketType;\nimport net.minecraft.world.level.ChunkPos;\n\nNeoForge.EVENT_BUS.addListener((RegisterTicketControllersEvent event) -> {\n    // Register custom ticket type\n    TicketType<ChunkPos> myTicket = TicketType.create(\n        new ResourceLocation(MODID, \"my_ticket\"),\n        (a, b) -> a.equals(b),\n        (a, b) -> a - b\n    );\n    \n    // Use ticket to force load chunk\n    world.getChunkSource().addTicket(myTicket, new ChunkPos(x, z), 1, new ChunkPos(x, z));\n});"
+}

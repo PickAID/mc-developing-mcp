@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0244",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/RecipeTypeFunction.java",
+  "symbol": "RecipeTypeFunction",
+  "signature": "RecipeTypeFunction; call; createRecipe",
+  "payload_type": null,
+  "code_example": "// RecipeTypeFunction from RecipeTypeFunction.java\n// Fields: public static final Pattern SKIP_ERROR, int i, var constructor\n// Methods: RecipeTypeFunction, call, createRecipe",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0060",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/WithAttachedData.java",
+  "symbol": "WithAttachedData",
+  "signature": null,
+  "payload_type": null,
+  "code_example": "// WithAttachedData from WithAttachedData.java\n",
+  "coverage_status": "generated"
+}

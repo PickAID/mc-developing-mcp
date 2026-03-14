@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0291",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/RecipeComponentFactory.java",
+  "symbol": "RecipeComponentFactory",
+  "signature": "Simple; create; Dynamic",
+  "payload_type": null,
+  "code_example": "// RecipeComponentFactory from RecipeComponentFactory.java\n// Fields: var map, var component\n// Methods: Simple, create, Dynamic",
+  "coverage_status": "generated"
+}

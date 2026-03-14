@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0349",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/KubeJSServerEventHandler.java",
+  "symbol": "KubeJSServerEventHandler",
+  "signature": "LevelResource; init; serverBeforeStart",
+  "payload_type": null,
+  "code_example": "// KubeJSServerEventHandler from KubeJSServerEventHandler.java\n// Fields: private static final LevelResource PERSISTENT_DATA, var p, var tag\n// Methods: LevelResource, init, serverBeforeStart",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0456",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "gui",
+  "source_file": "gui/chest/CustomChestMenu.java",
+  "symbol": "CustomChestMenu",
+  "signature": "CustomChestMenu; super; addSlot",
+  "payload_type": null,
+  "code_example": "// CustomChestMenu from CustomChestMenu.java\n// Fields: public static final MenuType[] TYPES, int k, int y\n// Methods: CustomChestMenu, super, addSlot",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0008",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "KubeJSPlugin.java",
+  "symbol": "KubeJSPlugin",
+  "signature": "init; initStartup; clientInit",
+  "payload_type": null,
+  "code_example": "// KubeJSPlugin from KubeJSPlugin.java\n// Methods: init, initStartup, clientInit",
+  "coverage_status": "generated"
+}

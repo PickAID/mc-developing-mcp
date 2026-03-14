@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0510",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "event",
+  "source_file": "event/EventGroupRegistry.java",
+  "symbol": "EventGroupRegistry",
+  "signature": "register",
+  "payload_type": null,
+  "code_example": "// EventGroupRegistry from EventGroupRegistry.java\n// Methods: register",
+  "coverage_status": "generated"
+}

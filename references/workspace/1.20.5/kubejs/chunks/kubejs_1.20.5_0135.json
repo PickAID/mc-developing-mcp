@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0135",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/WrappedJSObjectChangeListener.java",
+  "symbol": "WrappedJSObjectChangeListener",
+  "signature": "onChanged",
+  "payload_type": null,
+  "code_example": "// WrappedJSObjectChangeListener from WrappedJSObjectChangeListener.java\n// Methods: onChanged",
+  "coverage_status": "generated"
+}

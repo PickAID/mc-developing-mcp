@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0353",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/ServerScriptManager.java",
+  "symbol": "ServerScriptManager",
+  "signature": "getScriptManager; ServerScriptManager; super",
+  "payload_type": null,
+  "code_example": "// ServerScriptManager from ServerScriptManager.java\n// Fields: >, PreTagKubeEvent> preTagEvents, var virtualDataPackLow, var virtualDataPackHigh\n// Methods: getScriptManager, ServerScriptManager, super",
+  "coverage_status": "generated"
+}

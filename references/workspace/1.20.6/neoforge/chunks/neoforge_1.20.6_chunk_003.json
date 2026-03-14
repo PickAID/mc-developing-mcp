@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_003",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "topic": "capability_system",
+  "source_file": "net/neoforged/neoforge/capabilities/Capability.java",
+  "symbols": ["Capability", "CapabilityProvider", "ICapabilityProvider", "RegisterCapabilitiesEvent"],
+  "topic_tags": ["capabilities", "registration"],
+  "coverage_status": "verified",
+  "line_count": 280,
+  "description": "Capability system for mod interoperability",
+  "code_example": "// Capability and RegisterCapabilitiesEvent from capabilities package\n"
+}

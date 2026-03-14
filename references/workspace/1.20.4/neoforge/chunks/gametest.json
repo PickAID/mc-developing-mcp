@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-012",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "gametest",
+  "source_file": "net/neoforged/neoforge/gametest/GameTestHelper.java",
+  "symbols": ["GameTestHelper", "setBlock", "getBlockState", "spawnEntity", "succeedWhen", "waitFor"],
+  "coverage_status": "complete",
+  "topics": ["testing", "automated_testing", "integration_tests", "mod_testing"],
+  "description": "Helper class for writing GameTest tests. Provides methods for manipulating the test world and asserting conditions.",
+  "code_example": "@GameTest\npublic void testMyBlock(GameTestHelper helper) {\n    // Place a block\n    helper.setBlock(new BlockPos(0, 1, 0), ModBlocks.MY_BLOCK.get());\n    \n    // Spawn entity\n    helper.spawnEntity(new ItemEntity(helper.getLevel(), 0, 2, 0, new ItemStack(Items.DIAMOND)));\n    \n    // Assert success\n    helper.succeedWhen(() -> {\n        helper.getBlockState(new BlockPos(0, 1, 0)).is(ModBlocks.MY_BLOCK.get());\n    });\n}",
+  "source_citation": "net/neoforged/neoforge/gametest/GameTestHelper.java"
+}

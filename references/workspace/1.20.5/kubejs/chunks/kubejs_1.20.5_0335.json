@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0335",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "types",
+  "source_file": "typings/desc/PrimitiveDescJS.java",
+  "symbol": "PrimitiveDescJS",
+  "signature": "PrimitiveDescJS; build; build",
+  "payload_type": null,
+  "code_example": "// PrimitiveDescJS from PrimitiveDescJS.java\n// Methods: PrimitiveDescJS, build, build",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Minecraft RAG Chunk Schema",
+  "type": "object",
+  "required": ["chunk_id", "version", "loader", "category", "coverage_status"],
+  "properties": {
+    "chunk_id": {
+      "type": "string",
+      "pattern": "^[a-z]+-[0-9.]+-[a-z]+-[0-9]+$",
+      "description": "Unique identifier: {loader}-{version}-{category}-{sequence}"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Minecraft version (e.g., 1.20.1)"
+    },
+    "loader": {
+      "type": "string",
+      "enum": ["kubejs", "forge", "neoforge", "minecraft"],
+      "description": "Mod loader or API"
+    },
+    "category": {
+      "type": "string",
+      "description": "API category for routing"
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Relative path to source file in mc-code-exports"
+    },
+    "source_files": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Relative paths to source files in mc-code-exports"
+    },
+    "symbol": {
+      "type": "string",
+      "description": "Exact symbol name (class, method, event)"
+    },
+    "symbols": {
+      "description": "Symbols covered by the chunk",
+      "oneOf": [
+        {"type": "array", "items": {"type": "string"}},
+        {"type": "array", "items": {"type": "object"}}
+      ]
+    },
+    "signature": {
+      "type": "string",
+      "description": "Full method/class signature"
+    },
+    "payload_type": {
+      "type": "string",
+      "description": "Event payload class name"
+    },
+    "code_example": {
+      "type": "string",
+      "description": "Working code example in appropriate language"
+    },
+    "topic_tags": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "Topic tags for search routing"
+    },
+    "topics": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Topic tags (alternate field name)"
+    },
+    "topic": {
+      "type": "string",
+      "description": "Topic label (alternate field name)"
+    },
+    "coverage_status": {
+      "type": "string",
+      "enum": ["verified", "unverified", "missing", "partial", "covered", "complete"],
+      "description": "Source verification status"
+    },
+    "description": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "line_count": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional context or caveats"
+    }
+  }
+}

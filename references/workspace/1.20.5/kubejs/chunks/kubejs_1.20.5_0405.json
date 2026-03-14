@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0405",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/PlayerMainInvWrapper.java",
+  "symbol": "PlayerMainInvWrapper",
+  "signature": "PlayerMainInvWrapper; super; getInventoryPlayer",
+  "payload_type": null,
+  "code_example": "// PlayerMainInvWrapper from PlayerMainInvWrapper.java\n// Fields:  inventoryPlayer, var rest, the stack in the slot changed, animate it\n\t\t\tvar inSlot\n// Methods: PlayerMainInvWrapper, super, getInventoryPlayer",
+  "coverage_status": "generated"
+}

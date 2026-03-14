@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0197",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/gamestages/GameStagesIntegration.java",
+  "symbol": "GameStagesIntegration",
+  "signature": "init; override; GameStagesWrapper",
+  "payload_type": null,
+  "code_example": "// GameStagesIntegration from GameStagesIntegration.java\n// Methods: init, override, GameStagesWrapper",
+  "coverage_status": "generated"
+}

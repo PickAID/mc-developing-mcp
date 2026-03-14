@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0347",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/KubeJSReloadListener.java",
+  "symbol": "KubeJSReloadListener",
+  "signature": "onResourceManagerReload; AfterRecipesLoadedKubeEvent",
+  "payload_type": null,
+  "code_example": "// KubeJSReloadListener from KubeJSReloadListener.java\n// Fields: var recipeManager\n// Methods: onResourceManagerReload, AfterRecipesLoadedKubeEvent",
+  "coverage_status": "generated"
+}

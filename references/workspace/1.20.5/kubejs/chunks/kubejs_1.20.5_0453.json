@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0453",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "gui",
+  "source_file": "gui/chest/ChestMenuInventoryClickEvent.java",
+  "symbol": "ChestMenuInventoryClickEvent",
+  "signature": "onClick; ChestMenuInventoryClickEvent; getIndex",
+  "payload_type": null,
+  "code_example": "// ChestMenuInventoryClickEvent from ChestMenuInventoryClickEvent.java\n// Methods: onClick, ChestMenuInventoryClickEvent, getIndex",
+  "coverage_status": "generated"
+}

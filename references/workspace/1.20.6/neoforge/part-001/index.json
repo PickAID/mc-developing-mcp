@@ -1,0 +1,31 @@
+{
+  "part_id": "part-001",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "created_at": "2026-03-12T00:00:00Z",
+  "source_info": {
+    "root": "/Users/agenthome/mc-code-exports/1.20.6/neoforge/sources/",
+    "total_java_files": 867
+  },
+  "categories_covered": [
+    "attachment",
+    "capabilities",
+    "client",
+    "common",
+    "energy",
+    "entity",
+    "event",
+    "fluids",
+    "gametest",
+    "internal",
+    "items",
+    "junit",
+    "logging",
+    "network",
+    "registries",
+    "resource",
+    "server"
+  ],
+  "total_chunks": 25,
+  "status": "generated"
+}

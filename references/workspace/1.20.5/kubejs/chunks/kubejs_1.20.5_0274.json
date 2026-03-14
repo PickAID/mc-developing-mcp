@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0274",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/EnumComponent.java",
+  "symbol": "EnumComponent",
+  "signature": "DynamicRecipeComponent; RecipeExceptionJS; RecipeExceptionJS",
+  "payload_type": null,
+  "code_example": "// EnumComponent from EnumComponent.java\n// Fields: public static final DynamicRecipeComponent DYNAMIC, Object o,  clazz\n// Methods: DynamicRecipeComponent, RecipeExceptionJS, RecipeExceptionJS",
+  "coverage_status": "generated"
+}

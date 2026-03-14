@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0303",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/minecraft/SmithingTransformRecipeSchema.java",
+  "symbol": "SmithingTransformRecipeSchema",
+  "signature": "RecipeSchema",
+  "payload_type": null,
+  "code_example": "// SmithingTransformRecipeSchema from SmithingTransformRecipeSchema.java\n// Fields: RecipeKey<OutputItem> RESULT, RecipeKey<InputItem> TEMPLATE, RecipeKey<InputItem> BASE\n// Methods: RecipeSchema",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-020",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "common",
+  "source_file": "net/neoforged/neoforge/common/CreativeModeTabRegistry.java",
+  "symbols": ["CreativeModeTabRegistry", "CreativeModeTab", "CreativeModeTabSearchRegistry"],
+  "coverage_status": "verified",
+  "topics": ["creative", "tabs", "items", "inventory"],
+  "topic_tags": ["creative-tabs", "items", "inventory"],
+  "content": "CreativeModeTabRegistry allows creating and modifying creative inventory tabs. Mods can create custom tabs, add items to existing tabs, and customize tab display.",
+  "code_example": "import net.neoforged.neoforge.common.CreativeModeTabRegistry;\nimport net.minecraft.world.item.CreativeModeTab;\n\n// Create custom tab\nCreativeModeTab myTab = CreativeModeTab.builder()\n    .title(Component.literal(\"My Mod Items\"))\n    .icon(() -> new ItemStack(MY_ITEM))\n    .displayItems((params, output) -> {\n        output.accept(MY_ITEM);\n        output.accept(MY_BLOCK);\n    })\n    .build();"
+}

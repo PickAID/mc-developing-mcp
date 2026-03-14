@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0589",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/callbacks/BlockStateModifyCallbackJS.java",
+  "symbol": "BlockStateModifyCallbackJS",
+  "signature": "BlockStateModifyCallbackJS; cycle; getState",
+  "payload_type": null,
+  "code_example": "// BlockStateModifyCallbackJS from BlockStateModifyCallbackJS.java\n// Methods: BlockStateModifyCallbackJS, cycle, getState",
+  "coverage_status": "generated"
+}

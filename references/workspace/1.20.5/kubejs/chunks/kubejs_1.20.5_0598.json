@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0598",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/entity/BlockEntityAttachmentType.java",
+  "symbol": "BlockEntityAttachmentType",
+  "signature": "BlockEntityAttachmentType; toString",
+  "payload_type": null,
+  "code_example": "// BlockEntityAttachmentType from BlockEntityAttachmentType.java\n// Fields: public static final Lazy<Map<String, BlockEntityAttachmentType>> ALL, var map, var list\n// Methods: BlockEntityAttachmentType, toString",
+  "coverage_status": "generated"
+}

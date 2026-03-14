@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0496",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "api",
+  "source_file": "bindings/event/ClientEvents.java",
+  "symbol": "ClientEvents",
+  "signature": null,
+  "payload_type": null,
+  "code_example": "// ClientEvents from ClientEvents.java\n// Fields: EventGroup GROUP, add low assets\n\tEventHandler HIGH_ASSETS, EventHandler INIT\n",
+  "coverage_status": "generated"
+}

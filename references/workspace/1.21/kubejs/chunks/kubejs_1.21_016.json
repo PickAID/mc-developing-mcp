@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_016",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "level",
+  "source_file": "LevelKJS.java",
+  "symbols": ["LevelKJS", "level", "registryAccess", "getBlockState", "getFluidState", "getChunk", "setBlock", "destroyBlock", "addEntity", "getEntities", "getNearestPlayer", "getServer", "isClientSide", "isDebug", "getGameTime", "getDayTime", "setDayTime", "getDimension", "getDimensionType"],
+  "coverage_status": "complete"
+}

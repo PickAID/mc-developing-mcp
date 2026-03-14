@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-nbt-002",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "nbt",
+  "source_file": "net/minecraft/nbt/NbtUtils.java",
+  "symbols": [
+    {
+      "name": "NbtUtils",
+      "signature": "class NbtUtils",
+      "description": "NBT utility methods"
+    },
+    {
+      "name": "NbtUtils.readCompound",
+      "signature": "CompoundTag readCompound(Path)",
+      "description": "Read compound from file"
+    },
+    {
+      "name": "NbtUtils.writeCompound",
+      "signature": "void writeCompound(Path, CompoundTag)",
+      "description": "Write compound to file"
+    }
+  ],
+  "code_example": "// Reading/writing NBT files\nPath path = Paths.get(\"data.nbt\");\n\n// Read from file\nCompoundTag nbt = NbtUtils.readCompound(path);\n\n// Write to file\nNbtUtils.writeCompound(path, nbt);",
+  "topic_tags": ["nbt", "files", "io", "persistence"],
+  "coverage_status": "verified"
+}

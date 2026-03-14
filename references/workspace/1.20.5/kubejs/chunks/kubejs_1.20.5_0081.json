@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0081",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/TagLoaderMixin.java",
+  "symbol": "TagLoaderMixin",
+  "signature": "customTags",
+  "payload_type": null,
+  "code_example": "// TagLoaderMixin from TagLoaderMixin.java\n// Fields: , at, technically not an intended use case, but easy enough to fix\n\t\tvar ssm\n// Methods: customTags",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0302",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/minecraft/ShapelessRecipeSchema.java",
+  "symbol": "ShapelessRecipeSchema",
+  "signature": "getSerializationTypeFunction; RecipeSchema",
+  "payload_type": null,
+  "code_example": "// ShapelessRecipeSchema from ShapelessRecipeSchema.java\n// Fields: if this type, RecipeKey<OutputItem> RESULT, RecipeKey<InputItem[]> INGREDIENTS\n// Methods: getSerializationTypeFunction, RecipeSchema",
+  "coverage_status": "generated"
+}

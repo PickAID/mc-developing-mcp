@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_024",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "network",
+  "source_file": "net/minecraftforge/network/NetworkHooks.java",
+  "symbols": ["NetworkHooks", "ConnectionData", "PlayMessages", "NetworkEvent"],
+  "coverage_status": "complete",
+  "description": "Network hooks for custom packet handling",
+  "code_example": "// Register custom payload handler\npublic class MyMod {\n    public static final ResourceLocation CUSTOM_PAYLOAD = \n        new ResourceLocation(MODID, \"custom_payload\");\n    \n    public void onCommonSetup(FMLCommonSetupEvent event) {\n        // Register custom payload\n        PayloadTypeRegistry.playC2S().register(CUSTOM_PAYLOAD, MyPayload.CODEC);\n        \n        // Register handler\n        PlayPayloadRegistrationHandlerHandler.INVOKER.registerPlayPayloadS2CHandler(\n            CUSTOM_PAYLOAD,\n            (payload, context) -> {\n                context.enqueueWork(() -> {\n                    // Handle payload on main thread\n                    handlePayload(payload, context.getPlayer());\n                });\n            }\n        );\n    }\n}\n\n// Listen for connection events\nMinecraftForge.EVENT_BUS.addListener((NetworkEvent.CustomPayloadEvent event) -> {\n    if (CUSTOM_PAYLOAD.equals(event.getPayload().id())) {\n        // Handle custom payload\n    }\n});"
+}

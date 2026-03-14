@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0358",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/tag/TagKubeEvent.java",
+  "symbol": "TagKubeEvent",
+  "signature": "again; TagKubeEvent; getType",
+  "payload_type": null,
+  "code_example": "// TagKubeEvent from TagKubeEvent.java\n// Fields: public static final EventExceptionHandler TAG_EVENT_HANDLER, var stacktrace, var error\n// Methods: again, TagKubeEvent, getType",
+  "coverage_status": "generated"
+}

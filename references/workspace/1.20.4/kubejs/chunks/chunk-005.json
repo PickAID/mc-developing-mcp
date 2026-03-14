@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-005",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ItemBuilder.java",
+  "symbols": ["ItemBuilder", "ItemEventJS", "ItemStackMixin"],
+  "coverage_status": "complete",
+  "description": "Item builder and item events",
+  "topics": ["items", "custom-items", "tools", "armor"]
+}

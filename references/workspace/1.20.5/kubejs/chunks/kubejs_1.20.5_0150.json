@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0150",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/Copyable.java",
+  "symbol": "Copyable",
+  "signature": "copyJS",
+  "payload_type": null,
+  "code_example": "// Copyable from Copyable.java\n// Methods: copyJS",
+  "coverage_status": "generated"
+}

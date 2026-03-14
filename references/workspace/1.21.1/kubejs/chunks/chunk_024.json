@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_024",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/util/Utils.java",
+  "symbols": ["Utils", "ID", "wrap", "parseResourceLocation", "asResourceLocation", "toStack", "toItemStack"],
+  "topic_tags": ["kubejs", "utils", "conversion"],
+  "coverage_status": "verified",
+  "code": "public class Utils {\n\tpublic static ResourceLocation parseResourceLocation(String id) {\n\t\tif (id.contains(\":\")) {\n\t\t\treturn new ResourceLocation(id);\n\t\t}\n\t\treturn new ResourceLocation(KubeJS.MOD_ID, id);\n\t}\n\n\tpublic static ResourceLocation asResourceLocation(Object o) {\n\t\tif (o instanceof ResourceLocation rl) {\n\t\t\treturn rl;\n\t\t} else if (o instanceof String s) {\n\t\t\treturn parseResourceLocation(s);\n\t\t}\n\t\tthrow new IllegalArgumentException(\"Cannot convert \" + o + \" to ResourceLocation\");\n\t}\n\n\tpublic static ItemStack toItemStack(Object o) {\n\t\tif (o instanceof ItemStack is) {\n\t\t\treturn is;\n\t\t} else if (o instanceof String s) {\n\t\t\treturn new ItemStack(Registry.ITEM.get(asResourceLocation(s)));\n\t\t}\n\t\tthrow new IllegalArgumentException(\"Cannot convert \" + o + \" to ItemStack\");\n\t}\n\n\tpublic static Ingredient toIngredient(Object o) {\n\t\tif (o instanceof Ingredient i) {\n\t\t\treturn i;\n\t\t} else if (o instanceof ItemStack is) {\n\t\t\treturn Ingredient.of(is);\n\t\t} else if (o instanceof String s) {\n\t\t\treturn Ingredient.of(toItemStack(s));\n\t\t}\n\t\tthrow new IllegalArgumentException(\"Cannot convert \" + o + \" to Ingredient\");\n\t}\n}",
+  "code_example": "// Utils conversions from Utils.java\n"
+}

@@ -1,0 +1,18 @@
+{
+  "routing_version": "1.0",
+  "part_id": "part-001",
+  "routes": {
+    "/neoforge/registries": "chunks/registries.json",
+    "/neoforge/events": "chunks/events.json",
+    "/neoforge/capabilities": "chunks/capabilities.json",
+    "/neoforge/network": "chunks/network.json",
+    "/neoforge/attachments": "chunks/attachments.json",
+    "/neoforge/client": "chunks/client.json",
+    "/neoforge/server": "chunks/server.json",
+    "/neoforge/entity": "chunks/entity.json",
+    "/neoforge/gametest": "chunks/gametest.json",
+    "/neoforge/energy": "chunks/energy.json",
+    "/neoforge/internal": "chunks/internal.json"
+  },
+  "fallback": "chunks/overview.json"
+}

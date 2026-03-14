@@ -1,0 +1,67 @@
+{
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "part": "part-001",
+  "routes": {
+    "/events": {
+      "description": "NeoForge event system API",
+      "chunk_ids": ["neoforge-001", "neoforge-002", "neoforge-003"],
+      "source_patterns": ["**/event/**/*.java"]
+    },
+    "/registries": {
+      "description": "Registry and DeferredRegister API",
+      "chunk_ids": ["neoforge-004", "neoforge-005", "neoforge-006"],
+      "source_patterns": ["**/registries/**/*.java"]
+    },
+    "/capabilities": {
+      "description": "Capability system for storing data on entities/blocks/items",
+      "chunk_ids": ["neoforge-007", "neoforge-008"],
+      "source_patterns": ["**/capabilities/**/*.java"]
+    },
+    "/network": {
+      "description": "Networking and packet handling",
+      "chunk_ids": ["neoforge-009", "neoforge-010"],
+      "source_patterns": ["**/network/**/*.java"]
+    },
+    "/items": {
+      "description": "Item and inventory handling",
+      "chunk_ids": ["neoforge-011", "neoforge-012"],
+      "source_patterns": ["**/items/**/*.java", "**/capabilities/*Item*.java"]
+    },
+    "/fluids": {
+      "description": "Fluid interaction and handling",
+      "chunk_ids": ["neoforge-013"],
+      "source_patterns": ["**/fluids/**/*.java"]
+    },
+    "/data-components": {
+      "description": "Data component system",
+      "chunk_ids": ["neoforge-014", "neoforge-015"],
+      "source_patterns": ["**/data/*Component*.java", "**/common/*Component*.java"]
+    },
+    "/data-generation": {
+      "description": "Data generation and providers",
+      "chunk_ids": ["neoforge-016", "neoforge-017"],
+      "source_patterns": ["**/data/*Provider*.java", "**/common/data/*.java"]
+    },
+    "/gametest": {
+      "description": "GameTest framework",
+      "chunk_ids": ["neoforge-018"],
+      "source_patterns": ["**/gametest/**/*.java"]
+    },
+    "/common": {
+      "description": "Common utilities and helpers",
+      "chunk_ids": ["neoforge-019", "neoforge-020"],
+      "source_patterns": ["**/common/**/*.java"]
+    },
+    "/client": {
+      "description": "Client-side only classes",
+      "chunk_ids": ["neoforge-021", "neoforge-022"],
+      "source_patterns": ["**/client/**/*.java"]
+    },
+    "/internal": {
+      "description": "Internal implementation classes",
+      "chunk_ids": ["neoforge-023", "neoforge-024", "neoforge-025"],
+      "source_patterns": ["**/internal/**/*.java"]
+    }
+  }
+}

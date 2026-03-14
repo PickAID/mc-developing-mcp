@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0348",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "server",
+  "source_file": "server/CustomCommandKubeEvent.java",
+  "symbol": "CustomCommandKubeEvent",
+  "signature": "CustomCommandKubeEvent; getId; getLevel",
+  "payload_type": null,
+  "code_example": "// CustomCommandKubeEvent from CustomCommandKubeEvent.java\n// Fields:  level,  entity,  blockPos\n// Methods: CustomCommandKubeEvent, getId, getLevel",
+  "coverage_status": "generated"
+}

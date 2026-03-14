@@ -1,0 +1,15 @@
+{
+  "chunk_id": "neoforge-1.21-capabilities-002",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/RegisterCapabilitiesEvent.java",
+  "symbol": "RegisterCapabilitiesEvent",
+  "signature": "public class RegisterCapabilitiesEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "capabilities",
+    "registration"
+  ],
+  "code_example": "// RegisterCapabilitiesEvent from RegisterCapabilitiesEvent.java\n"
+}

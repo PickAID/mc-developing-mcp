@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_016",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "registries",
+  "topic": "registry_holdersets",
+  "source_file": "net/neoforged/neoforge/registries/holdersets",
+  "symbols": ["HolderSetType", "AnyHolderSet", "NotHolderSet", "AndHolderSet", "OrHolderSet"],
+  "topic_tags": ["registries", "holdersets"],
+  "coverage_status": "verified",
+  "line_count": 350,
+  "description": "Holder set types for registry value collections",
+  "code_example": "// HolderSet types from registries/holdersets\n"
+}

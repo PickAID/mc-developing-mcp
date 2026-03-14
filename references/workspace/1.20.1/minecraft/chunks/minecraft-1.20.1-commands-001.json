@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-commands-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "commands",
+  "source_file": "net/minecraft/commands/Commands.java",
+  "symbols": [
+    {
+      "name": "Commands",
+      "signature": "class Commands",
+      "description": "Main command dispatcher class for Minecraft commands"
+    },
+    {
+      "name": "Commands.dispatcher",
+      "signature": "CommandDispatcher<CommandSourceStack> dispatcher",
+      "description": "The Brigadier command dispatcher"
+    },
+    {
+      "name": "Commands.perform",
+      "signature": "int perform(CommandSourceStack source, String command)",
+      "description": "Execute a command from a command string"
+    }
+  ],
+  "code_example": "// Using Commands to register a custom command\npublic class MyMod {\n    public static void registerCommands(Commands commands) {\n        commands.getDispatcher().register(\n            Commands.literal(\"mymod\")\n                .then(Commands.argument(\"value\", IntegerArgumentType.integer())\n                    .executes(context -> {\n                        int value = IntegerArgumentType.getInteger(context, \"value\");\n                        return value;\n                    })\n                )\n        );\n    }\n}",
+  "topic_tags": ["commands", "brigadier", "dispatcher", "registration"],
+  "coverage_status": "verified"
+}

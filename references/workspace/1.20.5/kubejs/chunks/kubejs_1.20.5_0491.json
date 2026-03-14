@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0491",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "api",
+  "source_file": "bindings/UtilsWrapper.java",
+  "symbol": "UtilsWrapper",
+  "signature": "DustParticleOptions; server; getServer",
+  "payload_type": null,
+  "code_example": "// UtilsWrapper from UtilsWrapper.java\n// Fields: DustParticleOptions ERROR_PARTICLE, var pattern, return pattern\n// Methods: DustParticleOptions, server, getServer",
+  "coverage_status": "generated"
+}

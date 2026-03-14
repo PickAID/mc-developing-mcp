@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0563",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/DetectorBlockKubeEvent.java",
+  "symbol": "DetectorBlockKubeEvent",
+  "signature": "DetectorBlockKubeEvent; BlockContainerJS; getDetectorId",
+  "payload_type": null,
+  "code_example": "// DetectorBlockKubeEvent from DetectorBlockKubeEvent.java\n// Fields:  detectorId,  level,  pos\n// Methods: DetectorBlockKubeEvent, BlockContainerJS, getDetectorId",
+  "coverage_status": "generated"
+}

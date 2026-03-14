@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-004",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "registries",
+  "source_file": "net/neoforged/neoforge/registries/DeferredRegister.java",
+  "symbols": ["DeferredRegister", "DeferredRegister.Blocks", "DeferredRegister.Items", "DeferredBlock", "DeferredItem"],
+  "coverage_status": "verified",
+  "topics": ["registries", "registration", "deferred", "blocks", "items"],
+  "topic_tags": ["registries", "deferred", "registration"]
+  "content": "DeferredRegister is the primary way to register blocks, items, and other registry entries in NeoForge. It provides a clean API for mod registration that defers actual registration until the proper game lifecycle phase.\n\nFactory methods:\n- create(Registry<T>, String modId): Create for any registry\n- createBlocks(String modId): Specialized for blocks\n- createItems(String modId): Specialized for items\n\nRegistration methods:\n- register(String name, Supplier<T> supplier): Register with custom factory\n- registerSimpleBlock(String name, BlockBehaviour.Properties): Simple block without custom class",
+  "code_example": "import net.neoforged.neoforge.registries.DeferredRegister;\nimport net.neoforged.neoforge.registries.DeferredBlock;\nimport net.neoforged.neoforge.registries.DeferredItem;\nimport net.minecraft.world.item.BlockItem;\nimport net.minecraft.world.level.block.Block;\n\npublic class MyMod {\n    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);\n    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);\n    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = \n        DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, MODID);\n\n    public static final DeferredBlock<Block> MY_BLOCK = BLOCKS.registerBlock(\"my_block\", \n        MyBlock::new, Block.Properties.create());\n    public static final DeferredItem<BlockItem> MY_ITEM = ITEMS.registerSimpleBlockItem(MY_BLOCK);\n\n    public MyMod(IEventBus modBus) {\n        BLOCKS.register(modBus);\n        ITEMS.register(modBus);\n        BLOCK_ENTITIES.register(modBus);\n    }\n}"
+}

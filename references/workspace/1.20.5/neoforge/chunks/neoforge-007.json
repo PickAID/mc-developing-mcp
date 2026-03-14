@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-007",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "capabilities",
+  "source_file": "net/neoforged/neoforge/capabilities/BlockCapability.java",
+  "symbols": ["BlockCapability", "BlockCapabilityCache", "IBlockCapabilityProvider"],
+  "coverage_status": "verified",
+  "topics": ["capabilities", "blocks", "block_entities", "data_storage"],
+  "topic_tags": ["capabilities", "blocks", "block-entities", "storage"],
+  "content": "BlockCapability provides flexible access to objects stored in blocks or block entities. It replaces the old tile entity capability system with a more modern approach.\n\nKey features:\n- Query capabilities via Level.getCapability()\n- Use BlockCapabilityCache for repeated queries at the same position\n- Register providers in RegisterCapabilitiesEvent",
+  "code_example": "import net.neoforged.neoforge.capabilities.BlockCapability;\nimport net.neoforged.neoforge.capabilities.BlockCapabilityCache;\nimport net.neoforged.neoforge.capabilities.Capabilities;\n\n// Query capability\nIItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, side);\n\n// Use cache for repeated queries\nBlockCapabilityCache<IItemHandler, Direction> cache = BlockCapabilityCache.create(\n    Capabilities.ItemHandler.BLOCK, level, pos, side);\nIItemHandler handler = cache.getCapability();"
+}

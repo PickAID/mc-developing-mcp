@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0062",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/ContainerKJS.java",
+  "symbol": "ContainerKJS",
+  "signature": "return",
+  "payload_type": null,
+  "code_example": "// ContainerKJS from ContainerKJS.java\n// Fields: var stackInSlot,  m, var copy\n// Methods: return",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0136",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/NBTUtils.java",
+  "symbol": "NBTUtils",
+  "signature": "fromTag; toTag; toTag",
+  "payload_type": null,
+  "code_example": "// NBTUtils from NBTUtils.java\n// Fields: ValueUnwrapper VALUE_UNWRAPPER, CompoundTag tag, Tag nbt1\n// Methods: fromTag, toTag, toTag",
+  "coverage_status": "generated"
+}

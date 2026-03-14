@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_023",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/registry/RegistryWrapper.java",
+  "symbols": ["RegistryWrapper", "get", "register", "create", "getOrCreate", "getAll", "keys", "values"],
+  "topic_tags": ["kubejs", "registry"],
+  "coverage_status": "verified",
+  "code": "public class RegistryWrapper<T> {\n\tprivate final Registry<T> registry;\n\tprivate final Map<ResourceLocation, T> runtimeObjects;\n\n\tpublic RegistryWrapper(Registry<T> registry) {\n\t\tthis.registry = registry;\n\t\tthis.runtimeObjects = new HashMap<>();\n\t}\n\n\tpublic T get(ResourceLocation id) {\n\t\treturn registry.get(id);\n\t}\n\n\tpublic void register(ResourceLocation id, T object) {\n\t\tregistry.register(id, object);\n\t}\n\n\tpublic <B extends BuilderBase<T>> B create(ResourceLocation id, Class<B> builderClass) {\n\t\ttry {\n\t\t\tvar constructor = builderClass.getConstructor(ResourceLocation.class);\n\t\t\treturn constructor.newInstance(id);\n\t\t} catch (Exception e) {\n\t\t\tthrow new KubeRuntimeException(\"Failed to create builder: \" + builderClass.getName(), e);\n\t\t}\n\t}\n\n\tpublic Stream<T> getAll() {\n\t\treturn registry.entrySet().stream().map(Holder::value);\n\t}\n\n\tpublic Set<ResourceLocation> keys() {\n\t\treturn registry.keySet();\n\t}\n}",
+  "code_example": "// RegistryWrapper from RegistryWrapper.java\n"
+}

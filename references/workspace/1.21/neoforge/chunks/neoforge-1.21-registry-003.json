@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-registry-003",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "registry",
+  "source_file": "net/neoforged/neoforge/registries/NeoForgeRegistries.java",
+  "symbol": "NeoForgeRegistries",
+  "signature": "public class NeoForgeRegistries",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "registry",
+    "builtin",
+    "neoforge"
+  ],
+  "code_example": "// NeoForgeRegistries from NeoForgeRegistries.java\n"
+}

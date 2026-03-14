@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0102",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/ServerLevelMixin.java",
+  "symbol": "ServerLevelMixin",
+  "signature": "players; getEntities",
+  "payload_type": null,
+  "code_example": "// ServerLevelMixin from ServerLevelMixin.java\n// Fields: var t\n// Methods: players, getEntities",
+  "coverage_status": "generated"
+}

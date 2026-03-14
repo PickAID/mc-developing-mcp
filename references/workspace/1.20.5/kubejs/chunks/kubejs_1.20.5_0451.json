@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0451",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "gui",
+  "source_file": "gui/InventoryKJSSlot.java",
+  "symbol": "InventoryKJSSlot",
+  "signature": "InventoryKJSSlot; super; mayPlace",
+  "payload_type": null,
+  "code_example": "// InventoryKJSSlot from InventoryKJSSlot.java\n// Fields: ItemStack maxAdd, int maxInput, ItemStack currentStack\n// Methods: InventoryKJSSlot, super, mayPlace",
+  "coverage_status": "generated"
+}

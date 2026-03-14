@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0338",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "platform",
+  "source_file": "neoforge/NativeEventWrapper.java",
+  "symbol": "NativeEventWrapper",
+  "signature": "NativeEventWrapper; onEvent; RuntimeException",
+  "payload_type": null,
+  "code_example": "// NativeEventWrapper from NativeEventWrapper.java\n// Fields: Class type\n// Methods: NativeEventWrapper, onEvent, RuntimeException",
+  "coverage_status": "generated"
+}

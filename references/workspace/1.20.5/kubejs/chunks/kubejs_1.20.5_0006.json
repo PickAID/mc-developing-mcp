@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0006",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "misc",
+  "source_file": "KubeJS.java",
+  "symbol": "KubeJS",
+  "signature": "id; ResourceLocation; getStartupScriptManager",
+  "payload_type": null,
+  "code_example": "// KubeJS from KubeJS.java\n// Fields: public static final String MOD_ID, public static final String MOD_NAME, public static final Logger LOGGER\n// Methods: id, ResourceLocation, getStartupScriptManager",
+  "coverage_status": "generated"
+}

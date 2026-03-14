@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0074",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/ItemKJS.java",
+  "symbol": "ItemKJS",
+  "signature": "NoMixinException; NoMixinException; NoMixinException",
+  "payload_type": null,
+  "code_example": "// ItemKJS from ItemKJS.java\n// Fields: var id, return id, var fp\n// Methods: NoMixinException, NoMixinException, NoMixinException",
+  "coverage_status": "generated"
+}

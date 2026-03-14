@@ -1,0 +1,13 @@
+{
+  "chunk_id": "neoforge-010",
+  "version": "1.20.5",
+  "loader": "neoforge",
+  "category": "network",
+  "source_file": "net/neoforged/neoforge/network/event/RegisterPayloadHandlersEvent.java",
+  "symbols": ["RegisterPayloadHandlersEvent", "PayloadRegistration", "ConfigurationConnection"],
+  "coverage_status": "verified",
+  "topics": ["network", "payloads", "registration", "configuration"],
+  "topic_tags": ["networking", "payloads", "registration", "configuration"],
+  "content": "RegisterPayloadHandlersEvent fires to register payload handlers for both Play and Configuration phases. It provides access to the PayloadRegistry for registering custom payloads.",
+  "code_example": "import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;\nimport net.neoforged.neoforge.network.configuration.ConfigurationProtocol;\nimport net.neoforged.neoforge.network.play.PlayProtocol;\n\nNeoForge.EVENT_BUS.addListener((RegisterPayloadHandlersEvent event) -> {\n    event.register(PlayProtocol.class, payloadRegistry -> {\n        payloadRegistry.register(\n            MyPayload.ID,\n            MyPayload::new,\n            (payload, context) -> payload.handle(context)\n        );\n    });\n});"
+}

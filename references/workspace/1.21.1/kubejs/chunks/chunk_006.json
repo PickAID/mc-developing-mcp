@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_006",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "block_builder_interaction",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/block/BlockBuilder.java",
+  "symbols": ["noCollision", "notSolid", "noDrops", "slipperiness", "speedFactor", "jumpFactor", "randomTick", "entityInside", "steppedOn", "fallenOn", "rightClick"],
+  "topic_tags": ["kubejs", "blocks", "interaction", "callbacks"],
+  "coverage_status": "verified",
+  "code": "@Info(\"Makes the block not collide with entities.\")\npublic BlockBuilder noCollision() {\n\tnoCollision = true;\n\treturn this;\n}\n\n@Info(\"Makes the block not be solid.\")\npublic BlockBuilder notSolid() {\n\tnotSolid = true;\n\treturn this;\n}\n\n@Info(\"Change drops of this block\")\npublic BlockBuilder drops(BlockDropSupplier drops) {\n\tthis.drops = drops == null ? BlockDropSupplier.NO_DROPS : drops;\n\treturn this;\n}\n\n@Info(\"Clears all drops for the block.\")\npublic BlockBuilder noDrops() {\n\tdrops = BlockDropSupplier.NO_DROPS;\n\treturn this;\n}\n\n@Info(\"Set how slippery the block is.\")\npublic BlockBuilder slipperiness(float f) {\n\tslipperiness = f;\n\treturn this;\n}\n\n@Info(\"Set how fast you can walk on the block.\")\npublic BlockBuilder speedFactor(float f) {\n\tspeedFactor = f;\n\treturn this;\n}\n\n@Info(\"Set how high you can jump on the block.\")\npublic BlockBuilder jumpFactor(float f) {\n\tjumpFactor = f;\n\treturn this;\n}\n\n@Info(\"Sets random tick callback for this block.\")\npublic BlockBuilder randomTick(@Nullable Consumer<RandomTickCallback> randomTickCallback) {\n\tthis.randomTickCallback = randomTickCallback;\n\treturn this;\n}\n\n@Info(\"Set what happens when an entity is inside the block\")\npublic BlockBuilder entityInside(Consumer<EntityBlockCallback> callbackJS) {\n\tinsideCallback = callbackJS;\n\treturn this;\n}",
+  "code_example": "// Block interaction callbacks from BlockBuilder.java\n"
+}

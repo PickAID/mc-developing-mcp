@@ -1,0 +1,24 @@
+{
+  "chunk_id": "kubejs_1.20.6_0020",
+  "version": "1.20.6",
+  "loader": "kubejs",
+  "category": "net",
+  "source_file": "dev/latvian/mods/kubejs/net/KubeJSNet.java",
+  "symbols": [
+    "field:ADD_STAGE",
+    "field:PAINT",
+    "field:SEND_DATA_FROM_SERVER",
+    "field:RELOAD_STARTUP_SCRIPTS",
+    "field:DISPLAY_SERVER_ERRORS",
+    "field:REMOVE_STAGE",
+    "field:reg",
+    "field:NOTIFICATION",
+    "field:SEND_DATA_FROM_CLIENT",
+    "method:register",
+    "field:SYNC_STAGES",
+    "field:FIRST_CLICK",
+    "field:DISPLAY_CLIENT_ERRORS",
+    "method:type"
+  ],
+  "coverage_status": "indexed"
+}

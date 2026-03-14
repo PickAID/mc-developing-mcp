@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0398",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/ChancedItem.java",
+  "symbol": "ChancedItem",
+  "signature": "ChancedItem; test; getItemOrEmpty",
+  "payload_type": null,
+  "code_example": "// ChancedItem from ChancedItem.java\n// Fields: public static final MapCodec<ChancedItem> CODEC, public static final StreamCodec<RegistryFriendlyByteBuf, ChancedItem> STREAM_CODEC\n// Methods: ChancedItem, test, getItemOrEmpty",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_001",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "KubeJS.java",
+  "symbols": ["MOD_ID", "MOD_NAME", "LOGGER", "MC_VERSION_NUMBER", "MC_VERSION_STRING", "QUERY", "VERSION", "modEventBus", "thisMod", "PROXY", "getStartupScriptManager", "getClientScriptManager", "id"],
+  "coverage_status": "complete"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0126",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/FireworkRocketEntityMixin.java",
+  "symbol": "FireworkRocketEntityMixin",
+  "signature": "setLifetimeKJS",
+  "payload_type": null,
+  "code_example": "// FireworkRocketEntityMixin from FireworkRocketEntityMixin.java\n// Methods: setLifetimeKJS",
+  "coverage_status": "generated"
+}

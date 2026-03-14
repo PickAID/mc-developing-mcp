@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_006",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "fluids",
+  "source_file": "net/minecraftforge/fluids/capability/IFluidHandler.java",
+  "symbols": ["IFluidHandler", "FluidStack", "FluidUtil", "FluidActionResult"],
+  "coverage_status": "complete",
+  "description": "Fluid storage and transfer capabilities",
+  "code_example": "// Define a fluid handler for a tank\npublic class MyFluidTank implements IFluidTank {\n    private FluidStack stack = FluidStack.EMPTY;\n    private int capacity = 1000;\n    \n    @Override\n    public FluidStack getFluid() { return stack; }\n    \n    @Override\n    public int getCapacity() { return capacity; }\n    \n    @Override\n    public boolean isEmpty() { return stack.isEmpty(); }\n    \n    @Override\n    public int fill(FluidStack resource, FluidAction action) {\n        if (resource.isEmpty() || !resource.getFluid().isSame(getFluid().getFluid())) {\n            return 0;\n        }\n        int toFill = Math.min(resource.getAmount(), capacity - stack.getAmount());\n        if (action.execute()) {\n            stack.setAmount(stack.getAmount() + toFill);\n        }\n        return toFill;\n    }\n    \n    @Override\n    public FluidStack drain(FluidStack resource, FluidAction action) {\n        if (resource.isEmpty() || !resource.getFluid().isSame(getFluid().getFluid())) {\n            return FluidStack.EMPTY;\n        }\n        return drain(resource.getAmount(), action);\n    }\n}\n\n// Use FluidUtil to interact with handlers\nFluidUtil.getFluidHandler(itemStack).ifPresent(handler -> {\n    handler.fill(new FluidStack(FluidTypes.WATER, 100), FluidAction.EXECUTE);\n});"
+}

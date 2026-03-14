@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_010",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "registries",
+  "source_file": "net/minecraftforge/registries/ForgeRegistry.java",
+  "symbols": ["ForgeRegistry", "IForgeRegistry", "RegistryBuilder", "RegistryObject"],
+  "coverage_status": "complete",
+  "description": "Custom Forge registry creation and management",
+  "code_example": "// Create a custom registry\npublic static final DeferredRegister<MyObject> MY_OBJECTS = DeferredRegister.create(\n    new ResourceLocation(MODID, \"my_objects\"), MODID\n);\n\n// In your mod constructor\npublic MyMod() {\n    MY_OBJECTS.makeRegistry(() -> new RegistryBuilder<>()\n        .setType(MyObject.class)\n        .setName(new ResourceLocation(MODID, \"my_objects\"))\n        .setDefaultKey(new ResourceLocation(MODID, \"default\"))\n    ).register(FMLJavaModLoadingContext.get().getModEventBus());\n    \n    MY_OBJECTS.register(FMLJavaModLoadingContext.get().getModEventBus());\n}\n\n// Register entries\npublic static final RegistryObject<MyObject> MY_FIRST = MY_OBJECTS.register(\"first\", () -> new MyObject());\n\n// Access registry\nIForgeRegistry<MyObject> registry = RegistryManager.ACTIVE.getRegistry(MyObject.class);\nfor (MyObject obj : registry) {\n    // Iterate through registry\n}"
+}

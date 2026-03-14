@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0232",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/MissingRecipeFunctionException.java",
+  "symbol": "MissingRecipeFunctionException",
+  "signature": "MissingRecipeFunctionException; super",
+  "payload_type": null,
+  "code_example": "// MissingRecipeFunctionException from MissingRecipeFunctionException.java\n// Methods: MissingRecipeFunctionException, super",
+  "coverage_status": "generated"
+}

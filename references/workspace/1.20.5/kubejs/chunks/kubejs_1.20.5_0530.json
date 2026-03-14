@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0530",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "client",
+  "source_file": "client/BuiltinKubeJSClientPlugin.java",
+  "symbol": "BuiltinKubeJSClientPlugin",
+  "signature": "clientInit; registerEvents; registerBindings",
+  "payload_type": null,
+  "code_example": "// BuiltinKubeJSClientPlugin from BuiltinKubeJSClientPlugin.java\n// Fields: var se\n// Methods: clientInit, registerEvents, registerBindings",
+  "coverage_status": "generated"
+}

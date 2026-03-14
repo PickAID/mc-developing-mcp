@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0295",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/RecipeSchema.java",
+  "symbol": "RecipeSchema",
+  "signature": "scripts; validation; RecipeSchema",
+  "payload_type": null,
+  "code_example": "// RecipeSchema from RecipeSchema.java\n// Fields: public static final Function<KubeRecipe, String> DEFAULT_UNIQUE_ID_FUNCTION, var set, int i\n// Methods: scripts, validation, RecipeSchema",
+  "coverage_status": "generated"
+}

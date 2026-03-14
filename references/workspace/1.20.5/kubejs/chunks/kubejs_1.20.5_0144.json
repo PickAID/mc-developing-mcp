@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0144",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "util",
+  "source_file": "util/FluidAmounts.java",
+  "symbol": "FluidAmounts",
+  "signature": null,
+  "payload_type": null,
+  "code_example": "// FluidAmounts from FluidAmounts.java\n// Fields: long BUCKET, long MILLIBUCKET, long B\n",
+  "coverage_status": "generated"
+}

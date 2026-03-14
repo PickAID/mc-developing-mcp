@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.21.1_010",
+  "version": "1.21.1",
+  "loader": "kubejs",
+  "category": "entity_builder",
+  "source_file": "/Users/agenthome/mc-code-exports/1.21.1/kubejs/sources/dev/latvian/mods/kubejs/entity/EntityBuilder.java",
+  "symbols": ["EntityBuilder", "spawnPlacement", "category", "size", "trackingRange", "updateInterval", "summonBack", "defaultAttributes"],
+  "topic_tags": ["kubejs", "entities", "builder"],
+  "coverage_status": "verified",
+  "code": "public class EntityBuilder extends BuilderBase<EntityType<?>> {\n\tpublic transient EntityBuilderFactory factory;\n\tpublic transient Consumer<MutableEntity> initialize;\n\tpublic transient EntityDimensions size;\n\tpublic transient SpawnPlacements.Type spawnPlacement;\n\tpublic transient SpawnCategory category;\n\tpublic transient int trackingRange;\n\tpublic transient int updateInterval;\n\tpublic transient boolean summonBack;\n\tpublic transient List<AttributeModifier> defaultAttributes;\n\n\tpublic EntityBuilder(ResourceLocation id) {\n\t\tsuper(id);\n\t\tthis.size = EntityDimensions.scalable(1.0F, 1.0F);\n\t\tthis.spawnPlacement = SpawnPlacements.Type.NO_RESTRICTIONS;\n\t\tthis.category = SpawnCategory.MISC;\n\t\tthis.trackingRange = 16;\n\t\tthis.updateInterval = 3;\n\t\tthis.summonBack = true;\n\t\tthis.defaultAttributes = new ArrayList<>();\n\t}\n\n\t@Info(\"Sets the spawn placement type for this entity.\")\n\tpublic EntityBuilder spawnPlacement(SpawnPlacements.Type v) {\n\t\tspawnPlacement = v;\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the spawn category for this entity.\")\n\tpublic EntityBuilder category(SpawnCategory v) {\n\t\tcategory = v;\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the entity's size.\")\n\tpublic EntityBuilder size(float width, float height) {\n\t\tsize = EntityDimensions.scalable(width, height);\n\t\treturn this;\n\t}\n\n\t@Info(\"Sets the entity's tracking range.\")\n\tpublic EntityBuilder trackingRange(int v) {\n\t\ttrackingRange = v;\n\t\treturn this;\n\t}",
+  "code_example": "// EntityBuilder fields and methods from EntityBuilder.java\n"
+}

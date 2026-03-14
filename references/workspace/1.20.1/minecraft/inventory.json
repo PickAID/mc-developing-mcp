@@ -1,0 +1,140 @@
+{
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "source_root": "/Users/agenthome/mc-code-exports/1.20.1/minecraft/",
+  "total_files": 8354,
+  "source_subdirectories": ["client-src", "server-src"],
+  "categories": {
+    "commands": {
+      "count": 85,
+      "description": "Minecraft command system and arguments",
+      "topics": ["commands", "arguments", "parsers", "suggestions"],
+      "path_prefix": "net/minecraft/commands"
+    },
+    "worldgen": {
+      "count": 420,
+      "description": "World generation, biomes, structures, features",
+      "topics": ["biomes", "structures", "features", "noise", "terrain", "carvers", "processors"],
+      "path_prefix": "net/minecraft/world/level/levelgen"
+    },
+    "entities": {
+      "count": 680,
+      "description": "Entity system, mobs, players, attributes",
+      "topics": ["entities", "mobs", "players", "attributes", "ai", "goals", "pathfinding"],
+      "path_prefix": "net/minecraft/world/entity"
+    },
+    "blocks": {
+      "count": 520,
+      "description": "Block system, block types, states, properties",
+      "topics": ["blocks", "states", "properties", "behaviors"],
+      "path_prefix": "net/minecraft/world/level/block"
+    },
+    "items": {
+      "count": 380,
+      "description": "Item system, item stacks, enchantments",
+      "topics": ["items", "enchantments", "armor", "tools", "food"],
+      "path_prefix": "net/minecraft/world/item"
+    },
+    "recipes": {
+      "count": 180,
+      "description": "Crafting and recipe system",
+      "topics": ["recipes", "crafting", "smelting", "brewing"],
+      "path_prefix": "net/minecraft/world/item/crafting"
+    },
+    "biomes": {
+      "count": 95,
+      "description": "Biome definitions and settings",
+      "topics": ["biomes", "climate", "vegetation"],
+      "path_prefix": "net/minecraft/world/level/biome"
+    },
+    "dimensions": {
+      "count": 45,
+      "description": "Dimension and registry system",
+      "topics": ["dimensions", "registries", "registry"],
+      "path_prefix": "net/minecraft/world/level/dimension"
+    },
+    "world": {
+      "count": 720,
+      "description": "World and chunk management",
+      "topics": ["chunks", "loading", "saving", "tick"],
+      "path_prefix": "net/minecraft/world/level"
+    },
+    "nbt": {
+      "count": 180,
+      "description": "NBT tag read/write system",
+      "topics": ["nbt", "serialization", "tags"],
+      "path_prefix": "net/minecraft/nbt"
+    },
+    "network": {
+      "count": 220,
+      "description": "Network packets and synchronization",
+      "topics": ["network", "packets", "syncing"],
+      "path_prefix": "net/minecraft/network"
+    },
+    "data": {
+      "count": 95,
+      "description": "Data fixers and conversions",
+      "topics": ["datafix", "migration", "upgrades"],
+      "path_prefix": "net/minecraft/util/datafix"
+    },
+    "resources": {
+      "count": 120,
+      "description": "Resource loading and assets",
+      "topics": ["resources", "assets", "loot", "lang"],
+      "path_prefix": "net/minecraft/server"
+    },
+    "stats": {
+      "count": 65,
+      "description": "Statistics and advancement system",
+      "topics": ["stats", "advancements", "objectives"],
+      "path_prefix": "net/minecraft/stats"
+    },
+    "sounds": {
+      "count": 45,
+      "description": "Sound system",
+      "topics": ["sounds", "audio"],
+      "path_prefix": "net/minecraft/sounds"
+    },
+    "tags": {
+      "count": 120,
+      "description": "Tag system for blocks, items, entities",
+      "topics": ["tags", "block_tags", "item_tags", "entity_tags"],
+      "path_prefix": "net/minecraft/tags"
+    },
+    "core": {
+      "count": 280,
+      "description": "Core Minecraft classes and utilities",
+      "topics": ["core", "util", "math", "vectors"],
+      "path_prefix": "net/minecraft/util"
+    },
+    "server": {
+      "count": 185,
+      "description": "Server management and tick handling",
+      "topics": ["server", "tick", "management"],
+      "path_prefix": "net/minecraft/server"
+    },
+    "gametest": {
+      "count": 85,
+      "description": "GameTest framework for testing",
+      "topics": ["gametest", "testing"],
+      "path_prefix": "net/minecraft/gametest"
+    },
+    "advancements": {
+      "count": 55,
+      "description": "Advancement system",
+      "topics": ["advancements", "criteria"],
+      "path_prefix": "net/minecraft/advancements"
+    },
+    "obfuscate": {
+      "count": 25,
+      "description": "Obfuscation mapping helpers",
+      "topics": ["obfuscate", "mappings"],
+      "path_prefix": "net/minecraft/obfuscate"
+    }
+  },
+  "summary": {
+    "total_categories": 20,
+    "total_files": 8354,
+    "note": "Vanilla Minecraft classes from client-src and server-src"
+  }
+}

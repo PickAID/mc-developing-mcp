@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0268",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/RecipeComponentWithParent.java",
+  "symbol": "RecipeComponentWithParent",
+  "signature": "parentComponent; role; parentComponent",
+  "payload_type": null,
+  "code_example": "// RecipeComponentWithParent from RecipeComponentWithParent.java\n// Methods: parentComponent, role, parentComponent",
+  "coverage_status": "generated"
+}

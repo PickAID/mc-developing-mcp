@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-events-005",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/event/TagsUpdatedEvent.java",
+  "symbol": "TagsUpdatedEvent",
+  "signature": "public class TagsUpdatedEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "tags",
+    "reload",
+    "datapack"
+  ],
+  "code_example": "// TagsUpdatedEvent from TagsUpdatedEvent.java\n"
+}

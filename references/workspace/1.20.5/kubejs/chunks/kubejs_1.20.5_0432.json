@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0432",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/creativetab/CreativeTabIconSupplier.java",
+  "symbol": "CreativeTabIconSupplier",
+  "signature": "Wrapper; get; getIcon",
+  "payload_type": null,
+  "code_example": "// CreativeTabIconSupplier from CreativeTabIconSupplier.java\n// Fields: CreativeTabIconSupplier DEFAULT, var i\n// Methods: Wrapper, get, getIcon",
+  "coverage_status": "generated"
+}

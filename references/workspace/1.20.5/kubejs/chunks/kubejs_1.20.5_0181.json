@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0181",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "stages",
+  "source_file": "stages/Stages.java",
+  "symbol": "Stages",
+  "signature": "getPlayer; addNoUpdate; removeNoUpdate",
+  "payload_type": null,
+  "code_example": "// Stages from Stages.java\n// Fields: var all, var all\n// Methods: getPlayer, addNoUpdate, removeNoUpdate",
+  "coverage_status": "generated"
+}

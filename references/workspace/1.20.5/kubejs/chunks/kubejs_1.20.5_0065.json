@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0065",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/MinecraftEnvironmentKJS.java",
+  "symbol": "MinecraftEnvironmentKJS",
+  "signature": "TickDuration; TickDuration",
+  "payload_type": null,
+  "code_example": "// MinecraftEnvironmentKJS from MinecraftEnvironmentKJS.java\n// Methods: TickDuration, TickDuration",
+  "coverage_status": "generated"
+}

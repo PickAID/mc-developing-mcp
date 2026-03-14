@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk_018",
+  "version": "1.20.1",
+  "loader": "forge",
+  "category": "client",
+  "source_file": "net/minecraftforge/client/event/RenderLevelStageEvent.java",
+  "symbols": ["RenderLevelStageEvent", "RenderHandEvent", "RenderPlayerEvent", "RenderLivingEvent"],
+  "coverage_status": "complete",
+  "description": "Client-side rendering events",
+  "code_example": "// Listen to render events for custom rendering\n@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)\npublic class RenderEventHandler {\n    \n    @SubscribeEvent\n    public static void onRenderLevel(RenderLevelStageEvent event) {\n        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {\n            // Custom rendering after sky\n            Minecraft mc = Minecraft.getInstance();\n            if (mc.player != null) {\n                // Draw custom effects\n            }\n        }\n    }\n    \n    @SubscribeEvent\n    public static void onRenderHand(RenderHandEvent event) {\n        // Modify hand rendering\n    }\n    \n    @SubscribeEvent\n    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {\n        // Modify player rendering before\n        event.setMatrixStack(event.getMatrixStack());\n        event.getPoseStack();\n    }\n    \n    @SubscribeEvent\n    public static void onRenderLiving(RenderLivingEvent.Pre event.getEntity(), \n            event.getRenderer(), event.getModel(), event.getPartialTicks()) {\n        // Custom living entity rendering\n    }\n}"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0292",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/schema/JsonRecipeSchemaType.java",
+  "symbol": "JsonRecipeSchemaType",
+  "signature": "JsonRecipeSchemaType; super",
+  "payload_type": null,
+  "code_example": "// JsonRecipeSchemaType from JsonRecipeSchemaType.java\n// Methods: JsonRecipeSchemaType, super",
+  "coverage_status": "generated"
+}

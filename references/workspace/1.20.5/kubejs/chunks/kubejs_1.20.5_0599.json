@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0599",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/entity/BlockEntityInfo.java",
+  "symbol": "BlockEntityInfo",
+  "signature": "BlockEntityInfo; CompoundTag; initialData",
+  "payload_type": null,
+  "code_example": "// BlockEntityInfo from BlockEntityInfo.java\n// Fields:  initialData,  serverTicker,  clientTicker\n// Methods: BlockEntityInfo, CompoundTag, initialData",
+  "coverage_status": "generated"
+}

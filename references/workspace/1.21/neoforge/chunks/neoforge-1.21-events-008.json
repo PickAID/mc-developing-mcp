@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-events-008",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/client/event/RenderTooltipEvent.java",
+  "symbol": "RenderTooltipEvent",
+  "signature": "public class RenderTooltipEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "client",
+    "rendering",
+    "tooltips"
+  ],
+  "code_example": "// RenderTooltipEvent from RenderTooltipEvent.java\n"
+}

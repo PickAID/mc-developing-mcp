@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0597",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/entity/BlockEntityBuilder.java",
+  "symbol": "BlockEntityBuilder",
+  "signature": "BlockEntityBuilder; super; getRegistryType",
+  "payload_type": null,
+  "code_example": "// BlockEntityBuilder from BlockEntityBuilder.java\n// Methods: BlockEntityBuilder, super, getRegistryType",
+  "coverage_status": "generated"
+}

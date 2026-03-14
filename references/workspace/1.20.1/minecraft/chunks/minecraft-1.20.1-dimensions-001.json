@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-dimensions-001",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "dimensions",
+  "source_file": "net/minecraft/world/level/dimension/LevelStem.java",
+  "symbols": [
+    {
+      "name": "LevelStem",
+      "signature": "class LevelStem",
+      "description": "Dimension configuration"
+    },
+    {
+      "name": "LevelStem.type",
+      "signature": "Holder<DimensionType> type()",
+      "description": "Get dimension type"
+    },
+    {
+      "name": "LevelStem.generator",
+      "signature": "ChunkGenerator generator()",
+      "description": "Get chunk generator"
+    }
+  ],
+  "code_example": "// Working with dimensions\nLevelStem overworld = level.dimensionTypeKey(Registry.DIMENSION_TYPE_REGISTRY);\n\n// Get dimension type\nDimensionType type = levelStem.type().value();\n\n// Check if nether/the end\nboolean isNether = level.dimension() == Level.NETHER;\nboolean isEnd = level.dimension() == Level.END;",
+  "topic_tags": ["dimensions", "dimension_type", "the_nether", "the_end"],
+  "coverage_status": "verified"
+}

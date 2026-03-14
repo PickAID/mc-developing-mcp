@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0182",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "stages",
+  "source_file": "stages/NoStages.java",
+  "symbol": "NoStages",
+  "signature": "NoStages; NoStages; getPlayer",
+  "payload_type": null,
+  "code_example": "// NoStages from NoStages.java\n// Fields: public static final NoStages NULL_INSTANCE\n// Methods: NoStages, NoStages, getPlayer",
+  "coverage_status": "generated"
+}

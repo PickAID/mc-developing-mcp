@@ -1,0 +1,24 @@
+{
+  "chunk_id": "nf-1.21.1-022",
+  "version": "1.21.1",
+  "loader": "neoforge",
+  "category": "internal",
+  "source_files": [
+    "net/neoforged/neoforge/internal/BrandingControl.java",
+    "net/neoforged/neoforge/internal/CommonModLoader.java",
+    "net/neoforged/neoforge/internal/NeoForgeBindings.java",
+    "net/neoforged/neoforge/internal/versions/neoforge/NeoForgeVersion.java",
+    "net/neoforged/neoforge/internal/RegistrationEvents.java"
+  ],
+  "symbols": [
+    "BrandingControl",
+    "CommonModLoader",
+    "NeoForgeBindings",
+    "NeoForgeVersion",
+    "RegistrationEvents"
+  ],
+  "description": "Internal NeoForge hooks",
+  "topic_tags": ["internal", "loader", "branding", "registration"],
+  "code_example": "// Internal loader and branding hooks under net.neoforged.neoforge.internal.*\n",
+  "coverage_status": "verified"
+}

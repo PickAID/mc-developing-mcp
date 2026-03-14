@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0210",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "integration",
+  "source_file": "integration/rei/RemoveREIRecipeKubeEvent.java",
+  "symbol": "RemoveREIRecipeKubeEvent",
+  "signature": "RemoveREIRecipeKubeEvent; getCategories; getDisplays",
+  "payload_type": null,
+  "code_example": "// RemoveREIRecipeKubeEvent from RemoveREIRecipeKubeEvent.java\n// Fields: var catId, var asList\n// Methods: RemoveREIRecipeKubeEvent, getCategories, getDisplays",
+  "coverage_status": "generated"
+}

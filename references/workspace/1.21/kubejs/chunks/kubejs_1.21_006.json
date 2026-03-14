@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_006",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "registry",
+  "source_file": "RegistryType.java",
+  "symbols": ["RegistryType", "key", "baseClass", "type", "KEY_MAP", "TYPE_MAP", "CLASS_MAP", "init", "register", "ofKey", "ofType", "ofClass", "allOfClass", "lookup"],
+  "coverage_status": "complete"
+}

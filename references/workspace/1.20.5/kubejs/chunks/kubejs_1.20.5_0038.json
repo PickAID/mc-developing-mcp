@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0038",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "network",
+  "source_file": "net/ReloadStartupScriptsPayload.java",
+  "symbol": "ReloadStartupScriptsPayload",
+  "signature": "ReloadStartupScriptsPayload; type; handle",
+  "payload_type": null,
+  "code_example": "// ReloadStartupScriptsPayload from ReloadStartupScriptsPayload.java\n// Fields: public static final StreamCodec<ByteBuf, ReloadStartupScriptsPayload> STREAM_CODEC\n// Methods: ReloadStartupScriptsPayload, type, handle",
+  "coverage_status": "generated"
+}

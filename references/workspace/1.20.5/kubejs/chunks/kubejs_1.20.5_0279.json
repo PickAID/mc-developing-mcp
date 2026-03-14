@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0279",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/RecipeComponentBuilderMap.java",
+  "symbol": "RecipeComponentBuilderMap",
+  "signature": "RecipeComponentBuilderMap; RecipeComponentBuilderMap; RecipeComponentBuilderMap",
+  "payload_type": null,
+  "code_example": "// RecipeComponentBuilderMap from RecipeComponentBuilderMap.java\n// Fields: public static final RecipeComponentBuilderMap EMPTY, int i, int i\n// Methods: RecipeComponentBuilderMap, RecipeComponentBuilderMap, RecipeComponentBuilderMap",
+  "coverage_status": "generated"
+}

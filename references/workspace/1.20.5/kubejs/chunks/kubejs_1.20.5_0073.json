@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0073",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "core",
+  "source_file": "core/PlayerSelector.java",
+  "symbol": "PlayerSelector",
+  "signature": "of; identity; uuid",
+  "payload_type": null,
+  "code_example": "// PlayerSelector from PlayerSelector.java\n// Fields: var name, var uuid, var p\n// Methods: of, identity, uuid",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-001",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "events",
+  "source_file": "event/EventJS.java",
+  "symbols": ["EventJS", "StartupEventJS", "EventHandler", "EventGroup", "EventResult"],
+  "coverage_status": "complete",
+  "description": "Core event system classes for KubeJS",
+  "topics": ["events", "lifecycle", "event-handlers"]
+}

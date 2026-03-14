@@ -1,0 +1,140 @@
+{
+  "chunk_id": "kubejs-1.20.1-entities-001",
+  "version": "1.20.1",
+  "loader": "kubejs",
+  "category": "entities",
+  "source_file": "core/EntityKJS.java",
+  "symbols": [
+    {
+      "symbol": "EntityKJS.GameProfile",
+      "signature": "void GameProfile(kjs$self()",
+      "code_example": "// EntityKJS.GameProfile() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Invalid dimension!\")",
+      "code_example": "// EntityKJS.IllegalArgumentException() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Invalid coordinates!\")",
+      "code_example": "// EntityKJS.IllegalArgumentException() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.if",
+      "signature": "void if(Float.isNaN(yaw)",
+      "code_example": "// EntityKJS.if() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(\"Invalid rotation!\")",
+      "code_example": "// EntityKJS.IllegalArgumentException() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.IllegalArgumentException",
+      "signature": "void IllegalArgumentException(e.getRawMessage()",
+      "code_example": "// EntityKJS.IllegalArgumentException() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.EntityArrayList",
+      "signature": "void EntityArrayList(kjs$getLevel()",
+      "code_example": "// EntityKJS.EntityArrayList() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.if",
+      "signature": "void if(kjs$self()",
+      "code_example": "// EntityKJS.if() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.BlockContainerJS",
+      "signature": "void BlockContainerJS(kjs$getLevel()",
+      "code_example": "// EntityKJS.BlockContainerJS() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.CompoundTag",
+      "signature": "void CompoundTag()",
+      "code_example": "// EntityKJS.CompoundTag() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.RayTraceResultJS",
+      "signature": "void RayTraceResultJS(entity, hitResult, distance)",
+      "code_example": "// EntityKJS.RayTraceResultJS() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.NoMixinException",
+      "signature": "void NoMixinException()",
+      "code_example": "// EntityKJS.NoMixinException() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    },
+    {
+      "symbol": "EntityKJS.NoMixinException",
+      "signature": "void NoMixinException()",
+      "code_example": "// EntityKJS.NoMixinException() - see core/EntityKJS.java",
+      "topic_tags": [
+        "entities",
+        "api",
+        "entities"
+      ]
+    }
+  ],
+  "coverage_status": "verified"
+}

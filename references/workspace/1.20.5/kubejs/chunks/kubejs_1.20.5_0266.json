@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0266",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/BlockComponent.java",
+  "symbol": "BlockComponent",
+  "signature": "BlockComponent; BlockComponent; BlockComponent",
+  "payload_type": null,
+  "code_example": "// BlockComponent from BlockComponent.java\n// Fields: public static final RecipeComponent<Block> INPUT, public static final RecipeComponent<Block> OUTPUT, public static final RecipeComponent<Block> BLOCK\n// Methods: BlockComponent, BlockComponent, BlockComponent",
+  "coverage_status": "generated"
+}

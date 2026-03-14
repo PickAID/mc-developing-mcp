@@ -1,0 +1,16 @@
+{
+  "chunk_id": "neoforge-1.21-entities-001",
+  "version": "1.21",
+  "loader": "neoforge",
+  "category": "entities",
+  "source_file": "net/neoforged/neoforge/entity/EntityEvent.java",
+  "symbol": "EntityEvent",
+  "signature": "public class EntityEvent extends Event",
+  "coverage_status": "verified",
+  "topic_tags": [
+    "entities",
+    "events",
+    "life_cycle"
+  ],
+  "code_example": "// EntityEvent from EntityEvent.java\n"
+}

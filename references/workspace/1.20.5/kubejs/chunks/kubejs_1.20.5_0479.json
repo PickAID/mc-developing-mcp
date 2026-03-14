@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0479",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "level",
+  "source_file": "level/BlockContainerJS.java",
+  "symbol": "BlockContainerJS",
+  "signature": "ResourceLocation; BlockContainerJS; BlockContainerJS",
+  "payload_type": null,
+  "code_example": "// BlockContainerJS from BlockContainerJS.java\n// Fields: private static final ResourceLocation AIR_ID,  minecraftLevel,  pos\n// Methods: ResourceLocation, BlockContainerJS, BlockContainerJS",
+  "coverage_status": "generated"
+}

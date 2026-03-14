@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0099",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "mixin",
+  "source_file": "core/mixin/common/WorldOpenFlowsMixin.java",
+  "symbol": "WorldOpenFlowsMixin",
+  "signature": "printServerLogWarning; log",
+  "payload_type": null,
+  "code_example": "// WorldOpenFlowsMixin from WorldOpenFlowsMixin.java\n// Fields: , at,  value, , target\n// Methods: printServerLogWarning, log",
+  "coverage_status": "generated"
+}

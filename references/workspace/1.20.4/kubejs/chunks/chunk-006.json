@@ -1,0 +1,11 @@
+{
+  "chunk_id": "chunk-006",
+  "version": "1.20.4",
+  "loader": "kubejs",
+  "category": "fluid",
+  "source_file": "fluid/FluidBuilder.java",
+  "symbols": ["FluidBuilder", "FluidEventJS"],
+  "coverage_status": "complete",
+  "description": "Fluid builder and fluid events",
+  "topics": ["fluids", "custom-fluids"]
+}

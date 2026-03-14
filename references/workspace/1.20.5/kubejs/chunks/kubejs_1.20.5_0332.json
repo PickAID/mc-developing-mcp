@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0332",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "types",
+  "source_file": "typings/desc/OrDescJS.java",
+  "symbol": "OrDescJS",
+  "signature": "OrDescJS; build; or",
+  "payload_type": null,
+  "code_example": "// OrDescJS from OrDescJS.java\n// Fields: int i, var types1, var types1\n// Methods: OrDescJS, build, or",
+  "coverage_status": "generated"
+}

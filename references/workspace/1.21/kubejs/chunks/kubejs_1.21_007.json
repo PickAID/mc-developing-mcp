@@ -1,0 +1,9 @@
+{
+  "chunk_id": "kubejs_1.21_007",
+  "version": "1.21",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "ItemBuilder.java",
+  "symbols": ["ItemBuilder", "HurtEnemyContext", "components", "maxStackSize", "maxDamage", "burnTime", "containerItem", "subtypes", "rarity", "fireResistant", "glow", "tooltip", "tint", "foodBuilder", "barColor", "barWidth", "nameGetter", "anim", "useDuration", "use", "finishUsing", "releaseUsing", "hurtEnemy", "jukeboxPlayable", "texture", "parentModel", "textureJson", "modelJson", "tool", "itemAttributeModifiers", "createObject", "transformObject", "generateAssets", "component", "maxStackSize", "unstackable", "maxDamage", "burnTime", "containerItem", "subtypes", "rarity", "glow", "tooltip", "color", "texture", "textureJson", "modelJson", "parentModel", "barColor", "barWidth", "name", "food", "fireResistant", "useAnimation", "useDuration", "use", "finishUsing", "releaseUsing", "hurtEnemy", "jukeboxPlayable", "UseCallback", "FinishUsingCallback", "ReleaseUsingCallback", "NameCallback", "createItemProperties"],
+  "coverage_status": "complete"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0577",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "block",
+  "source_file": "block/BlockBrokenKubeEvent.java",
+  "symbol": "BlockBrokenKubeEvent",
+  "signature": "BlockBrokenKubeEvent; getEntity; getBlock",
+  "payload_type": null,
+  "code_example": "// BlockBrokenKubeEvent from BlockBrokenKubeEvent.java\n// Methods: BlockBrokenKubeEvent, getEntity, getBlock",
+  "coverage_status": "generated"
+}

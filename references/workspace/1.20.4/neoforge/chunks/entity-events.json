@@ -1,0 +1,13 @@
+{
+  "chunk_id": "nf-009",
+  "version": "1.20.4",
+  "loader": "neoforge",
+  "category": "events",
+  "source_file": "net/neoforged/neoforge/event/entity/EntityJoinLevelEvent.java",
+  "symbols": ["EntityJoinLevelEvent", "isAddedToLevel", "setResult"],
+  "coverage_status": "complete",
+  "topics": ["entity_spawning", "world_spawn", "entity_loading"],
+  "description": "Fired when an entity is added to a level. Can be used to prevent entity spawning or modify spawn behavior.",
+  "code_example": "// Prevent certain entities from spawning\nNeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {\n    if (event.getEntity() instanceof Creeper && event.getLevel().isNether()) {\n        event.setResult(Event.Result.DENY); // Don't spawn creepers in nether\n    }\n});",
+  "source_citation": "net/neoforged/neoforge/event/entity/EntityJoinLevelEvent.java"
+}

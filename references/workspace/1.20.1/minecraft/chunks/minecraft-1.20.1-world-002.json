@@ -1,0 +1,27 @@
+{
+  "chunk_id": "minecraft-1.20.1-world-002",
+  "version": "1.20.1",
+  "loader": "minecraft",
+  "category": "world",
+  "source_file": "net/minecraft/world/level/chunk/ChunkAccess.java",
+  "symbols": [
+    {
+      "name": "ChunkAccess",
+      "signature": "class ChunkAccess",
+      "description": "Access to a chunk"
+    },
+    {
+      "name": "ChunkAccess.getBlockState",
+      "signature": "BlockState getBlockState(BlockPos)",
+      "description": "Get block in chunk"
+    },
+    {
+      "name": "ChunkAccess.setBlockState",
+      "signature": "BlockState setBlockState(BlockPos, BlockState)",
+      "description": "Set block in chunk"
+    }
+  ],
+  "code_example": "// Working with chunks\nChunkAccess chunk = level.getChunkAt(pos);\n\n// Get block\nBlockState state = chunk.getBlockState(pos);\n\n// Set block (markDirty required)\nchunk.setBlockState(pos, newState);\n\n// Get chunk position\nint chunkX = chunk.getPos().x;\nint chunkZ = chunk.getPos().z;",
+  "topic_tags": ["world", "chunks", "storage", "loading"],
+  "coverage_status": "verified"
+}

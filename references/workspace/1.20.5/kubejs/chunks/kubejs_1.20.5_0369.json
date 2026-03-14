@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0369",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "script",
+  "source_file": "script/PlatformWrapper.java",
+  "symbol": "PlatformWrapper",
+  "signature": "ModInfo; getId; getName",
+  "payload_type": null,
+  "code_example": "// PlatformWrapper from PlatformWrapper.java\n// Fields:  id,  name,  version\n// Methods: ModInfo, getId, getName",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0438",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/custom/ItemToolTierRegistryKubeEvent.java",
+  "symbol": "ItemToolTierRegistryKubeEvent",
+  "signature": "ItemToolTierRegistryKubeEvent; add; MutableToolTier",
+  "payload_type": null,
+  "code_example": "// ItemToolTierRegistryKubeEvent from ItemToolTierRegistryKubeEvent.java\n// Fields: var t\n// Methods: ItemToolTierRegistryKubeEvent, add, MutableToolTier",
+  "coverage_status": "generated"
+}

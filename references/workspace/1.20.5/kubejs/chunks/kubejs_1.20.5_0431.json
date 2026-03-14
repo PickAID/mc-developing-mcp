@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0431",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "item",
+  "source_file": "item/creativetab/KubeJSCreativeTabs.java",
+  "symbol": "KubeJSCreativeTabs",
+  "signature": "init",
+  "payload_type": null,
+  "code_example": "// KubeJSCreativeTabs from KubeJSCreativeTabs.java\n// Fields: public static final DeferredRegister<CreativeModeTab> REGISTER, var is\n// Methods: init",
+  "coverage_status": "generated"
+}

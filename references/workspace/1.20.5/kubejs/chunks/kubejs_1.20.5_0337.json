@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0337",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "platform",
+  "source_file": "neoforge/NeoForgeKubeJSPlugin.java",
+  "symbol": "NeoForgeKubeJSPlugin",
+  "signature": "registerClasses; registerBindings; NativeEventWrapper",
+  "payload_type": null,
+  "code_example": "// NeoForgeKubeJSPlugin from NeoForgeKubeJSPlugin.java\n// Methods: registerClasses, registerBindings, NativeEventWrapper",
+  "coverage_status": "generated"
+}

@@ -1,0 +1,12 @@
+{
+  "chunk_id": "kubejs_1.20.5_0267",
+  "version": "1.20.5",
+  "loader": "kubejs",
+  "category": "recipe",
+  "source_file": "recipe/component/BooleanComponent.java",
+  "symbol": "BooleanComponent",
+  "signature": "BooleanComponent; componentType; componentClass",
+  "payload_type": null,
+  "code_example": "// BooleanComponent from BooleanComponent.java\n// Fields: public static final RecipeComponent<Boolean> BOOLEAN\n// Methods: BooleanComponent, componentType, componentClass",
+  "coverage_status": "generated"
+}

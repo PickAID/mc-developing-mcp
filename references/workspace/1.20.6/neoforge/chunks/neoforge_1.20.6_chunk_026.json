@@ -1,0 +1,14 @@
+{
+  "chunk_id": "neoforge_1.20.6_chunk_026",
+  "version": "1.20.6",
+  "loader": "neoforge",
+  "category": "client",
+  "topic": "client_screens_render",
+  "source_file": "net/neoforged/neoforge/client/event/ScreenEvent.java",
+  "symbols": ["RegisterMenuScreensEvent", "ScreenEvent", "ContainerScreenEvent", "RegisterGuiLayersEvent", "RegisterShadersEvent", "RegisterNamedRenderTypesEvent", "RegisterRenderBuffersEvent"],
+  "topic_tags": ["client", "gui", "screens", "rendering", "shaders"],
+  "coverage_status": "verified",
+  "line_count": 300,
+  "description": "Client UI, screen hooks, render buffer registration, and shader registration",
+  "code_example": "// ScreenEvent and client render hooks from client/event package\n"
+}
