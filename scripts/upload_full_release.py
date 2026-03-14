@@ -187,6 +187,19 @@ def _build_zip(zip_path: Path, include_sources: bool) -> int:
     return total
 
 
+def _read_release_version(version_file: Path) -> str:
+    raw = version_file.read_text(encoding="utf-8").strip()
+    if not raw:
+        return ""
+    if raw.startswith("{"):
+        try:
+            data = json.loads(raw)
+        except Exception:
+            return ""
+        return str(data.get("version", "")).strip()
+    return raw
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -211,7 +224,10 @@ def main() -> int:
         if not version_file.exists():
             print("Error: version.json not found. Use --tag to specify the release tag.")
             return 1
-        version = json.loads(version_file.read_text())["version"]
+        version = _read_release_version(version_file)
+        if not version:
+            print("Error: version.json is empty or invalid. Use --tag to specify the release tag.")
+            return 1
         tag = f"v{version}"
 
     print(f"Target release: {tag}")

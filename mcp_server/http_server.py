@@ -49,6 +49,16 @@ def _load_server_config() -> dict:
     return {}
 
 
+def _read_release_version() -> str:
+    raw = (ROOT / "version.json").read_text(encoding="utf-8").strip()
+    if not raw:
+        return "unknown"
+    if raw.startswith("{"):
+        obj = json.loads(raw)
+        return str(obj.get("version", "unknown")).strip() or "unknown"
+    return raw
+
+
 def make_handler(mcp: MCPServer, api_key: str, version: str) -> type:
     """Return a BaseHTTPRequestHandler class with injected MCPServer state."""
 
@@ -122,7 +132,7 @@ def main() -> int:
     # Read version for health endpoint
     version = "unknown"
     try:
-        version = json.loads((ROOT / "version.json").read_text())["version"]
+        version = _read_release_version()
     except Exception:
         pass
 

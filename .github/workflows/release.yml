@@ -26,7 +26,22 @@ jobs:
       - name: Read version
         id: ver
         run: |
-          VERSION=$(python3 -c "import json; print(json.load(open('version.json'))['version'])")
+          VERSION=$(python3 - <<'PYEOF'
+          import json
+          from pathlib import Path
+
+          raw = Path("version.json").read_text(encoding="utf-8").strip()
+          if raw.startswith("{"):
+              obj = json.loads(raw)
+              print(str(obj.get("version", "")).strip())
+          else:
+              print(raw)
+          PYEOF
+          )
+          if [ -z "$VERSION" ]; then
+            echo "Error: version.json is empty or invalid"
+            exit 1
+          fi
           TAG="${{ github.event.inputs.tag }}"
           if [ -z "$TAG" ]; then TAG="v$VERSION"; fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -114,10 +129,10 @@ jobs:
 
           | File | CI behavior |
           |---|---|
-          | minecraft_sources.sqlite | CI tries to copy from the latest previous release that has this asset |
-          | mc-developing-mcp-full-${TAG}.zip | CI builds and uploads it only if minecraft_sources.sqlite is available |
+          | minecraft_sources.sqlite | CI copies it from the latest previous release that has this asset |
+          | mc-developing-mcp-full-${TAG}.zip | CI builds/uploads it only when minecraft_sources.sqlite is available |
 
-          If no previous release contains minecraft_sources.sqlite (bootstrap case), run this once locally:
+          Bootstrap is local-first. If no previous release has minecraft_sources.sqlite, run this once locally:
 
           ```bash
           python scripts/upload_full_release.py --tag ${TAG}
@@ -142,7 +157,7 @@ jobs:
           LITE_ZIP="mc-developing-mcp-lite-${TAG}.zip"
 
           gh release create "$TAG" \
-            --title "mc-developing-mcp $VERSION" \
+            --title "$VERSION" \
             --notes-file release_notes.md \
             "$LITE_ZIP"
 
@@ -178,12 +193,12 @@ jobs:
 
           if [ -z "$SOURCE_TAG" ]; then
             echo "No previous release contains minecraft_sources.sqlite; skipping full asset upload."
-            echo "Bootstrap once from local machine: python scripts/upload_full_release.py --tag $TAG"
+            echo "Bootstrap must be local-first (one time): python scripts/upload_full_release.py --tag $TAG"
             exit 0
+          else
+            echo "Using minecraft_sources.sqlite from release: $SOURCE_TAG"
+            gh release download "$SOURCE_TAG" --pattern 'minecraft_sources.sqlite' --dir data --clobber
           fi
-
-          echo "Using minecraft_sources.sqlite from release: $SOURCE_TAG"
-          gh release download "$SOURCE_TAG" --pattern 'minecraft_sources.sqlite' --dir data --clobber
 
           python3 - <<'PYEOF'
           import os
