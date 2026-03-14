@@ -15,6 +15,7 @@
   - [方式一：下载 Release 包（推荐）](#方式一下载-release-包推荐)
   - [方式二：克隆源码 + 重建数据库](#方式二克隆源码--重建数据库)
 - [配置 AI 客户端](#配置-ai-客户端)
+- [远程模式（跨设备使用）](#远程模式跨设备使用)
 - [性能模式配置](#性能模式配置)
 - [数据库说明](#数据库说明)
 - [支持的第三方库](#支持的第三方库)
@@ -52,7 +53,9 @@
 ```
 mc-developing-mcp/
 ├── mcp_server/
-│   └── server.py          # MCP 服务主程序（JSON-RPC over stdio）
+│   ├── server.py          # MCP 服务主程序（JSON-RPC over stdio）——本地模式
+│   ├── http_server.py     # HTTP 包装层（服务端设备运行，暴露 /call 接口）
+│   └── remote_proxy.py    # 远程代理（客户端设备运行，转发请求到服务端）
 ├── data/
 │   ├── minecraft_docs.sqlite    # 文档数据库（20MB，已包含在仓库中）
 │   └── minecraft_sources.sqlite # 源码数据库（1.2GB，需单独下载）
@@ -61,7 +64,7 @@ mc-developing-mcp/
 ├── scripts/
 │   └── download_release.py  # 一键下载大型 SQLite 数据库的脚本
 ├── SKILL.md               # AI 使用本服务的查询规则
-├── config.json            # 性能配置文件
+├── config.json            # 性能与远程模式配置文件
 └── version.json           # 版本号（变更时触发 CI/CD 发布）
 ```
 
@@ -196,6 +199,88 @@ python scripts/init_docs_db.py
   }
 }
 ```
+
+---
+
+## 远程模式（跨设备使用）
+
+远程模式允许你在一台**服务端设备**上运行数据库服务，另一台**客户端设备**（如笔记本、低配机器）上只需保留少量文件即可通过网络查询。
+
+```
+服务端设备（有数据库）              客户端设备（无数据库）
+─────────────────────           ─────────────────────
+python http_server.py    ←HTTP→  remote_proxy.py (stdio)
+  data/minecraft_*.sqlite          config.json（含 remote_url）
+  监听 0.0.0.0:8765                AI 客户端（Claude/Cursor 等）
+```
+
+### 服务端设置
+
+**第一步：安装完整包**（含两个 SQLite 数据库）
+
+**第二步：启动 HTTP 服务**
+
+```bash
+# 默认监听 0.0.0.0:8765
+python mcp_server/http_server.py
+
+# 或指定端口
+python mcp_server/http_server.py --port 9000
+```
+
+**第三步（可选）：设置访问密钥**
+
+编辑 `config.json`：
+
+```json
+{
+  "api_key": "your-secret-key",
+  "server_host": "0.0.0.0",
+  "server_port": 8765
+}
+```
+
+---
+
+### 客户端设置（精简安装）
+
+客户端只需以下文件：
+
+```
+mc-developing-mcp/
+├── mcp_server/
+│   └── remote_proxy.py    # 只需此文件
+├── docs/reference/        # 参考文档（可选，供 AI 阅读）
+├── SKILL.md
+└── config.json
+```
+
+**编辑客户端 `config.json`**，填入服务端地址：
+
+```json
+{
+  "remote_url": "http://192.168.1.100:8765",
+  "api_key":    "your-secret-key",
+  "remote_timeout": 30
+}
+```
+
+> `remote_url` 为空字符串 `""` 时，自动切换为本地模式（使用 `server.py`）。
+
+**配置 AI 客户端**（将 `server.py` 替换为 `remote_proxy.py`）：
+
+```json
+{
+  "mcpServers": {
+    "mc-developing-mcp": {
+      "command": "python3",
+      "args": ["/你的路径/mc-developing-mcp/mcp_server/remote_proxy.py"]
+    }
+  }
+}
+```
+
+代理启动时会自动检测服务端连通性，连接失败时会在 AI 客户端日志中输出错误信息。
 
 ---
 

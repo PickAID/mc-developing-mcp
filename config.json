@@ -29,5 +29,12 @@
     "max_search_results": "Maximum results from search(). Default: 200",
     "max_list_package":   "Maximum results from list_package(). Default: 1000",
     "max_search_docs":    "Maximum results from search_docs(). Default: 100"
-  }
+  },
+
+  "_remote_section": "Remote mode — run mcp_server/http_server.py on the server device (has databases), and mcp_server/remote_proxy.py on the client device (no databases). Leave remote_url empty for local mode.",
+  "remote_url":     "",
+  "api_key":        "",
+  "server_host":    "0.0.0.0",
+  "server_port":    8765,
+  "remote_timeout": 30
 }

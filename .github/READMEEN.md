@@ -15,6 +15,7 @@
   - [Option A: Download Release Package (Recommended)](#option-a-download-release-package-recommended)
   - [Option B: Clone + Rebuild Databases](#option-b-clone--rebuild-databases)
 - [Configuring Your AI Client](#configuring-your-ai-client)
+- [Remote Mode (Cross-Device)](#remote-mode)
 - [Performance Modes](#performance-modes)
 - [Database Details](#database-details)
 - [Supported Third-Party Libraries](#supported-third-party-libraries)
@@ -52,7 +53,9 @@ Fuzzy documentation search is handled by **FTS5 full-text indexes**, covering bo
 ```
 mc-developing-mcp/
 ├── mcp_server/
-│   └── server.py          # MCP server (JSON-RPC over stdio)
+│   ├── server.py          # MCP server (JSON-RPC over stdio) — local mode
+│   ├── http_server.py     # HTTP wrapper (run on server device, exposes /call endpoint)
+│   └── remote_proxy.py    # Remote proxy (run on client device, forwards to server)
 ├── data/
 │   ├── minecraft_docs.sqlite    # Docs database (~20MB, included in repo)
 │   └── minecraft_sources.sqlite # Sources database (1.2GB, download separately)
@@ -61,7 +64,7 @@ mc-developing-mcp/
 ├── scripts/
 │   └── download_release.py  # Helper script to download the large SQLite from GitHub Releases
 ├── SKILL.md               # Query rules for AI assistants using this server
-├── config.json            # Performance configuration
+├── config.json            # Performance and remote mode configuration
 └── version.json           # Version file — changes trigger CI/CD release
 ```
 
@@ -196,6 +199,86 @@ In your project's `.cursor/mcp.json` or VS Code settings:
   }
 }
 ```
+
+---
+
+## Remote Mode
+
+Remote mode lets you run the database server on one **server device** while querying from another **client device** — useful when a secondary machine (e.g. laptop) doesn't have the 1.2GB database locally.
+
+```
+Server device (has databases)        Client device (no databases)
+─────────────────────────────       ──────────────────────────────
+python http_server.py        ←HTTP→  remote_proxy.py (stdio)
+  data/minecraft_*.sqlite              config.json (with remote_url)
+  listening on 0.0.0.0:8765           AI client (Claude/Cursor/etc.)
+```
+
+### Server Setup
+
+**Step 1:** Install the full package (both SQLite databases required).
+
+**Step 2:** Start the HTTP server:
+
+```bash
+# Default: listens on 0.0.0.0:8765
+python mcp_server/http_server.py
+
+# Custom port
+python mcp_server/http_server.py --port 9000
+```
+
+**Step 3 (optional):** Set an API key in `config.json`:
+
+```json
+{
+  "api_key":     "your-secret-key",
+  "server_host": "0.0.0.0",
+  "server_port": 8765
+}
+```
+
+---
+
+### Client Setup (Lite Install)
+
+The client device only needs these files:
+
+```
+mc-developing-mcp/
+├── mcp_server/
+│   └── remote_proxy.py    # this file only
+├── docs/reference/        # optional reference docs for AI
+├── SKILL.md
+└── config.json
+```
+
+**Edit `config.json`** on the client with the server's address:
+
+```json
+{
+  "remote_url":     "http://192.168.1.100:8765",
+  "api_key":        "your-secret-key",
+  "remote_timeout": 30
+}
+```
+
+> Setting `remote_url` to an empty string `""` switches back to local mode (uses `server.py`).
+
+**Point your AI client to `remote_proxy.py`** instead of `server.py`:
+
+```json
+{
+  "mcpServers": {
+    "mc-developing-mcp": {
+      "command": "python3",
+      "args": ["/your/path/to/mc-developing-mcp/mcp_server/remote_proxy.py"]
+    }
+  }
+}
+```
+
+The proxy performs a health check at startup and logs errors to the AI client's console if the server is unreachable.
 
 ---
 
