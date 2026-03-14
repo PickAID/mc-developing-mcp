@@ -25,7 +25,9 @@ What is included in the FULL zip:
 
 Requirements:
     - data/minecraft_sources.sqlite must exist locally
-    - GitHub CLI (gh) must be installed and authenticated
+    - One upload method must be available:
+      1) GitHub CLI (gh) installed and authenticated, or
+      2) GITHUB_TOKEN/GH_TOKEN env var with repo write permission
     - Run from the Mc-Skill/ root directory (or any path — script auto-locates root)
 
 Usage:
@@ -35,9 +37,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import sqlite3
 import subprocess
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -49,6 +56,92 @@ BLOCKED_DIRS  = {"sources", ".git", "__pycache__", "reports"}
 BLOCKED_EXTS  = {".pyc", ".pyo", ".sqlite-wal", ".sqlite-shm"}
 # Specific filenames to skip
 BLOCKED_NAMES = {".DS_Store"}
+DEFAULT_REPO = "PickAID/mc-developing-mcp"
+
+
+def _gh_api_json(url: str, token: str, method: str = "GET") -> dict:
+    req = urllib.request.Request(
+        url,
+        method=method,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "mc-developing-mcp-release-uploader",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        data = resp.read()
+    if not data:
+        return {}
+    return json.loads(data.decode("utf-8"))
+
+
+def _upload_with_github_api(tag: str, assets: list[Path]) -> int:
+    token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+    if not token:
+        print("Error: GITHUB_TOKEN or GH_TOKEN is required when gh CLI is unavailable.")
+        return 1
+
+    repo = os.getenv("GITHUB_REPOSITORY", DEFAULT_REPO)
+    release_url = f"https://api.github.com/repos/{repo}/releases/tags/{tag}"
+
+    try:
+        release = _gh_api_json(release_url, token)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        print(f"Error: could not read release {tag} in {repo}: HTTP {e.code}")
+        print(body)
+        return 1
+
+    upload_url_template = release.get("upload_url", "")
+    upload_url = upload_url_template.split("{")[0]
+    if not upload_url:
+        print("Error: release upload_url missing from GitHub API response.")
+        return 1
+
+    existing_assets = {a.get("name"): a.get("id") for a in release.get("assets", [])}
+
+    for asset in assets:
+        name = asset.name
+        asset_id = existing_assets.get(name)
+        if asset_id:
+            delete_url = f"https://api.github.com/repos/{repo}/releases/assets/{asset_id}"
+            try:
+                _gh_api_json(delete_url, token, method="DELETE")
+                print(f"  deleted existing asset: {name}")
+            except urllib.error.HTTPError as e:
+                body = e.read().decode("utf-8", errors="replace")
+                print(f"Error deleting existing asset {name}: HTTP {e.code}")
+                print(body)
+                return 1
+
+        target = f"{upload_url}?name={urllib.parse.quote(name)}"
+        data = asset.read_bytes()
+        req = urllib.request.Request(
+            target,
+            data=data,
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": "mc-developing-mcp-release-uploader",
+                "Content-Type": "application/octet-stream",
+                "Content-Length": str(len(data)),
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=600):
+                print(f"  uploaded: {name}")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")
+            print(f"Error uploading {name}: HTTP {e.code}")
+            print(body)
+            return 1
+
+    print(f"Upload complete via GitHub API: https://github.com/{repo}/releases/tag/{tag}")
+    return 0
 
 
 def _vacuum_db(path: Path) -> None:
@@ -157,26 +250,34 @@ def main() -> int:
     # ── Upload to GitHub Release ───────────────────────────────────────────────
     print(f"\nUploading to GitHub Release {tag}...")
 
-    assets = [str(zip_name), str(sources_db)]
+    assets = [zip_name, sources_db]
     if docs_db.exists():
-        assets.append(str(docs_db))
+        assets.append(docs_db)
 
-    result = subprocess.run(
-        ["gh", "release", "upload", tag, *assets, "--clobber"],
-        cwd=ROOT,
-    )
+    gh_path = shutil.which("gh")
+    if gh_path:
+        result = subprocess.run(
+            [gh_path, "release", "upload", tag, *(str(p) for p in assets), "--clobber"],
+            cwd=ROOT,
+        )
+        upload_code = result.returncode
+    else:
+        print("'gh' not found, falling back to GitHub REST API upload.")
+        upload_code = _upload_with_github_api(tag, assets)
 
     # Clean up local zip regardless of upload result
     if zip_name.exists():
         zip_name.unlink()
         print(f"(removed local {zip_name.name})")
 
-    if result.returncode != 0:
-        print("\nError: 'gh release upload' failed.")
-        print("Make sure 'gh' is installed and you are authenticated: gh auth login")
+    if upload_code != 0:
+        print("\nError: release asset upload failed.")
+        print("Use either:")
+        print("  - gh auth login (if gh is installed), or")
+        print("  - export GITHUB_TOKEN=<token-with-repo-write>")
         return 1
 
-    repo = "PickAID/mc-developing-mcp"
+    repo = os.getenv("GITHUB_REPOSITORY", DEFAULT_REPO)
     print(f"\nDone. Full release assets uploaded:")
     print(f"  https://github.com/{repo}/releases/tag/{tag}")
     return 0

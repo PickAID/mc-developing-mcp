@@ -110,23 +110,21 @@ jobs:
           | mc-developing-mcp-lite-${TAG}.zip | Code + docs DB (no sources DB) | ~30 MB |
           | minecraft_docs.sqlite | Docs database standalone | ~16 MB |
 
-          ### Not uploaded by this workflow
+          ### Large assets (sources DB + full zip)
 
-          | File | Why not in CI upload |
+          | File | CI behavior |
           |---|---|
-          | minecraft_sources.sqlite | Not tracked in git and not present on GitHub runner |
-          | mc-developing-mcp-full-${TAG}.zip | Depends on minecraft_sources.sqlite |
+          | minecraft_sources.sqlite | CI tries to copy from the latest previous release that has this asset |
+          | mc-developing-mcp-full-${TAG}.zip | CI builds and uploads it only if minecraft_sources.sqlite is available |
 
-          > **Note**: Raw Java source files (sources/) are **never** included in any release or zip.
-          > Only pre-built SQLite databases are distributed.
-
-          ### Getting the sources database
-
-          After this automated release runs, upload the full assets locally:
+          If no previous release contains minecraft_sources.sqlite (bootstrap case), run this once locally:
 
           ```bash
           python scripts/upload_full_release.py --tag ${TAG}
           ```
+
+          > **Note**: Raw Java source files (sources/) are **never** included in any release or zip.
+          > Only pre-built SQLite databases are distributed.
 
           ### Quick start
 
@@ -155,5 +153,77 @@ jobs:
 
           rm -f release_notes.md
           echo ""
-          echo "Lite release created. To add the full zip + sources SQLite:"
-          echo "  python scripts/upload_full_release.py --tag $TAG"
+          echo "Lite release created. Next step will try to auto-upload full assets from previous release."
+
+      - name: Upload full assets from previous release (auto-carry)
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.ver.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          TAG="$RELEASE_TAG"
+          mkdir -p data
+
+          SOURCE_TAG=""
+          while IFS= read -r CANDIDATE; do
+            [ -z "$CANDIDATE" ] && continue
+            [ "$CANDIDATE" = "$TAG" ] && continue
+            if gh release view "$CANDIDATE" --json assets --jq '.assets[].name' | grep -qx 'minecraft_sources.sqlite'; then
+              SOURCE_TAG="$CANDIDATE"
+              break
+            fi
+          done < <(gh release list --limit 100 --json tagName --jq '.[].tagName')
+
+          if [ -z "$SOURCE_TAG" ]; then
+            echo "No previous release contains minecraft_sources.sqlite; skipping full asset upload."
+            echo "Bootstrap once from local machine: python scripts/upload_full_release.py --tag $TAG"
+            exit 0
+          fi
+
+          echo "Using minecraft_sources.sqlite from release: $SOURCE_TAG"
+          gh release download "$SOURCE_TAG" --pattern 'minecraft_sources.sqlite' --dir data --clobber
+
+          python3 - <<'PYEOF'
+          import os
+          import zipfile
+          from pathlib import Path
+
+          tag = os.environ['RELEASE_TAG']
+          root = Path('.')
+          zip_name = f'mc-developing-mcp-full-{tag}.zip'
+
+          blocked_dirs = {'sources', '.git', '__pycache__', 'reports'}
+          blocked_exts = {'.pyc', '.pyo', '.sqlite-wal', '.sqlite-shm'}
+          blocked_names = {'.DS_Store'}
+
+          total = 0
+          with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED, compresslevel=1) as zf:
+            for path in sorted(root.rglob('*')):
+              if not path.is_file():
+                continue
+              rel = path.relative_to(root)
+              rel_str = str(rel)
+
+              if rel.parts[0] in blocked_dirs:
+                continue
+              if rel.suffix == '.zip':
+                continue
+              if rel.suffix in blocked_exts:
+                continue
+              if rel.name in blocked_names:
+                continue
+              if '__pycache__' in rel.parts:
+                continue
+
+              zf.write(path, rel_str)
+              total += 1
+
+          size_mb = Path(zip_name).stat().st_size / 1024 / 1024
+          print(f'Created {zip_name}: {total} files, {size_mb:.1f} MB')
+          PYEOF
+
+          gh release upload "$TAG" data/minecraft_sources.sqlite "mc-developing-mcp-full-${TAG}.zip" --clobber
+          rm -f "mc-developing-mcp-full-${TAG}.zip"
+          echo "Uploaded minecraft_sources.sqlite and full zip to $TAG"
