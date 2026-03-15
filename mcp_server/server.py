@@ -224,6 +224,18 @@ _TOOL_SCHEMAS: dict[str, dict[str, object]] = {
         "required": ["version", "loader", "interface_or_class"],
         "additionalProperties": False,
     },
+    "find_usages": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "class_name": {"type": "string"},
+            "ref_type": {"type": "string"},
+            "limit": {"type": "integer"},
+        },
+        "required": ["version", "loader", "class_name"],
+        "additionalProperties": False,
+    },
     "read_source": {
         "type": "object",
         "properties": {
@@ -1002,6 +1014,38 @@ class MCPServer:
                 "rel_path": row["rel_path"],
                 "superclass": row["superclass"],
                 "interfaces": row["interfaces"],
+            }
+            for row in rows
+        ]
+
+    def find_usages(self, params: dict[str, object]) -> list[dict[str, object]]:
+        version, loader = self._require_version_loader(params)
+        class_name = self._require_param(params, "class_name")
+        ref_type = params.get("ref_type")
+        limit = self._parse_limit(params.get("limit"), 50, 500)
+        if ref_type:
+            rows = self._rows(
+                "SELECT sf.rel_path, sf.class_name, sf.package_name, sr.ref_type, sr.target_member "
+                "FROM source_references sr JOIN source_files sf ON sf.id=sr.file_id "
+                "WHERE sr.version=? AND sr.loader=? AND sr.target_class=? AND sr.ref_type=? "
+                "ORDER BY sf.rel_path LIMIT ?",
+                (version, loader, class_name, str(ref_type), limit),
+            )
+        else:
+            rows = self._rows(
+                "SELECT sf.rel_path, sf.class_name, sf.package_name, sr.ref_type, sr.target_member "
+                "FROM source_references sr JOIN source_files sf ON sf.id=sr.file_id "
+                "WHERE sr.version=? AND sr.loader=? AND sr.target_class=? "
+                "ORDER BY sr.ref_type, sf.rel_path LIMIT ?",
+                (version, loader, class_name, limit),
+            )
+        return [
+            {
+                "rel_path": row["rel_path"],
+                "class_name": row["class_name"],
+                "package_name": row["package_name"],
+                "ref_type": row["ref_type"],
+                "target_member": row["target_member"],
             }
             for row in rows
         ]
@@ -2220,6 +2264,7 @@ class MCPServer:
             "get_class_detail": "Return classes/methods/fields/events for one class file.",
             "get_hierarchy": "Get extends chain and implemented interfaces for a class.",
             "find_implementations": "Find classes extending/implementing an interface or base.",
+            "find_usages": "Find all files that reference a class by name (via imports, annotations, field/param/return types). Use to discover where LivingHurtEvent, ItemStack, etc. are used.",
             "read_source": "Read source lines by version/loader/path with optional range.",
             "list_package": "List classes under a package prefix.",
             "kubejs_project_scan": "Scan local KubeJS project and ProbeJS artifacts into an in-memory index.",
@@ -2284,6 +2329,7 @@ class MCPServer:
             "get_class_detail": self.get_class_detail,
             "get_hierarchy": self.get_hierarchy,
             "find_implementations": self.find_implementations,
+            "find_usages": self.find_usages,
             "read_source": self.read_source,
             "list_package": self.list_package,
             "kubejs_project_scan": self.kubejs_project_scan,

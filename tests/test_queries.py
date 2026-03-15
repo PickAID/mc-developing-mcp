@@ -104,7 +104,23 @@ class TestKnownGoodQueries(unittest.TestCase):
         r = self.s.search({"version": "1.20.1", "loader": "kubejs", "query": "RecipesEventJS"})
         self.assertGreater(len(r), 0)
 
-    def test_versions_includes_expected_combos(self):
+    def test_find_usages_returns_list(self):
+        r = self.s.find_usages({"version": "1.20.1", "loader": "forge", "class_name": "LivingHurtEvent"})
+        self.assertIsInstance(r, list)
+        if r:
+            first = r[0]
+            self.assertIn("rel_path", first)
+            self.assertIn("ref_type", first)
+            self.assertIn("class_name", first)
+
+    def test_find_usages_with_ref_type_filter(self):
+        r = self.s.find_usages({"version": "1.20.1", "loader": "forge",
+                                 "class_name": "LivingHurtEvent", "ref_type": "import"})
+        self.assertIsInstance(r, list)
+        for row in r:
+            self.assertEqual(row["ref_type"], "import")
+
+
         r = self.s.versions({})
         pairs = {(row["version"], row["loader"]) for row in r}
         self.assertIn(("1.20.1", "forge"), pairs)

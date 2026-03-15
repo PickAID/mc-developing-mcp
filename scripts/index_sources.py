@@ -222,6 +222,13 @@ class EventInfo:
 
 
 @dataclass
+class ReferenceInfo:
+    target_class: str  # simple name extracted from import/annotation/field type
+    ref_type: str      # 'import', 'annotation', 'field_type', 'param_type', 'return_type'
+    target_member: Optional[str] = None  # method name for calls (future), field name, etc.
+
+
+@dataclass
 class FileInfo:
     rel_path: str
     package_name: str
@@ -231,6 +238,7 @@ class FileInfo:
     methods: List[MethodInfo] = field(default_factory=list)
     fields: List[FieldInfo] = field(default_factory=list)
     events: List[EventInfo] = field(default_factory=list)
+    references: List[ReferenceInfo] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -534,10 +542,53 @@ def extract_file(java_path: Path, source_root: Path) -> Optional[FileInfo]:
                 name=mi.name, line_num=mi.line_num, kind="subscribe_event",
             ))
 
+    seen_refs: set[tuple[str, str]] = set()
+
+    def _add_ref(target: str, ref_type: str) -> None:
+        key = (target, ref_type)
+        if key not in seen_refs and target and not target.startswith("java.lang."):
+            seen_refs.add(key)
+            info.references.append(ReferenceInfo(target_class=target, ref_type=ref_type))
+
+    for import_node in root.named_children:
+        if import_node.type == "import_declaration":
+            import_text = _node_text(src, import_node)
+            parts = import_text.rstrip(";").split(".")
+            if parts:
+                leaf = parts[-1].strip()
+                if leaf and leaf != "*":
+                    _add_ref(leaf, "import")
+
+    for ci in info.classes:
+        for anno in ci.annotations:
+            _add_ref(anno, "annotation")
+        if ci.superclass:
+            _add_ref(ci.superclass, "extends")
+        for iface in ci.interfaces:
+            _add_ref(iface, "implements")
+
+    for mi in info.methods:
+        for anno in mi.annotations:
+            _add_ref(anno, "annotation")
+        if mi.return_type and mi.return_type not in ("void", "boolean", "int", "long", "double", "float", "byte", "short", "char"):
+            base = mi.return_type.split("<")[0].strip().split("[]")[0].strip()
+            if base:
+                _add_ref(base, "return_type")
+        for ptype, _ in mi.params:
+            base = ptype.split("<")[0].strip().split("[]")[0].strip()
+            if base and base not in ("boolean", "int", "long", "double", "float", "byte", "short", "char", "String"):
+                _add_ref(base, "param_type")
+
+    for fi in info.fields:
+        base = fi.field_type.split("<")[0].strip().split("[]")[0].strip()
+        if base and base not in ("boolean", "int", "long", "double", "float", "byte", "short", "char", "String"):
+            _add_ref(base, "field_type")
+
     # Limit sizes for sanity
     info.methods = info.methods[:500]
     info.fields = info.fields[:500]
     info.classes = info.classes[:100]
+    info.references = info.references[:1000]
 
     return info
 
@@ -685,6 +736,18 @@ CREATE VIRTUAL TABLE IF NOT EXISTS source_methods_fts USING fts5(
     content_rowid='id',
     tokenize = 'porter unicode61'
 );
+
+CREATE TABLE IF NOT EXISTS source_references (
+    file_id        INTEGER NOT NULL REFERENCES source_files(id) ON DELETE CASCADE,
+    version        TEXT    NOT NULL,
+    loader         TEXT    NOT NULL,
+    target_class   TEXT    NOT NULL,
+    ref_type       TEXT    NOT NULL,
+    target_member  TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_sref_target  ON source_references (target_class, version, loader);
+CREATE INDEX IF NOT EXISTS idx_sref_file    ON source_references (file_id);
 """
 
 
@@ -699,6 +762,7 @@ class SourceIndexer:
             self.conn.executescript("""
                 DROP TABLE IF EXISTS source_methods_fts;
                 DROP TABLE IF EXISTS source_class_interfaces;
+                DROP TABLE IF EXISTS source_references;
                 DROP TABLE IF EXISTS source_fts;
                 DROP TABLE IF EXISTS source_content;
                 DROP TABLE IF EXISTS source_events;
@@ -820,7 +884,7 @@ class SourceIndexer:
                 "DELETE FROM source_methods_fts WHERE rowid IN "
                 "(SELECT id FROM source_methods WHERE file_id=?)", (file_id,)
             )
-            for tbl in ("source_classes", "source_methods", "source_fields", "source_events", "source_fts", "source_content"):
+            for tbl in ("source_references", "source_classes", "source_methods", "source_fields", "source_events", "source_fts", "source_content"):
                 cur.execute(f"DELETE FROM {tbl} WHERE file_id=?", (file_id,))
 
 
@@ -889,6 +953,12 @@ class SourceIndexer:
                        (file_id, version, loader, name, kind, line_num)
                        VALUES (?,?,?,?,?,?)""",
                     (file_id, version, loader, ev.name, ev.kind, ev.line_num),
+                )
+
+            if info.references:
+                cur.executemany(
+                    "INSERT INTO source_references (file_id, version, loader, target_class, ref_type, target_member) VALUES (?,?,?,?,?,?)",
+                    [(file_id, version, loader, r.target_class, r.ref_type, r.target_member) for r in info.references],
                 )
 
             # FTS5 row
