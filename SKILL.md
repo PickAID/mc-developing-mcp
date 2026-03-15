@@ -109,6 +109,11 @@ Two SQLite databases (AST-indexed, FTS5): `minecraft_sources.sqlite` (76k+ Java 
 - Returns: classes extending/implementing the target
 - Note: param is `interface_or_class`, not `class_name`
 
+#### 11b. `find_usages(version, loader, class_name, ref_type?, limit?)`
+- Returns: files that reference the class: `[{rel_path, class_name, package_name, ref_type, target_member}]`
+- `ref_type` filter: `import`, `annotation`, `extends`, `implements`, `field_type`, `param_type`, `return_type`
+- Use: "where is LivingHurtEvent used?", "which files import ItemStack?"
+
 #### 12. `diff_versions(class_name, version_a, version_b, loader_a?, loader_b?, loader?)`
 - Required: `class_name`, `version_a`, `version_b`
 - Optional: `loader_a` (default `forge`), `loader_b` (default `neoforge`)
@@ -145,6 +150,12 @@ Two SQLite databases (AST-indexed, FTS5): `minecraft_sources.sqlite` (76k+ Java 
 - Use: stable doc reference without fragile numeric id. E.g. `get_doc_page_by_slug("misode", "1.20.1", "misode/1.20.1/loot_table")`
 
 ### Local KubeJS Project Methods
+
+**Available modpack projects** (pass as `project_root`):
+- `sources/modpack/1.20.1/Minecraft-Hunt` — PickAID/Minecraft-Hunt (1.20.1 Forge). Contains server_scripts, client_scripts, startup_scripts.
+- `sources/modpack/1.20.1/海岛寿司店v1.1.1` — Sushi Island (1.20.1)
+- `sources/modpack/1.20.1/奥术咖啡馆 v1.0.2` — Arcane Café (1.20.1)
+- `sources/modpack/1.20.1/Skyblock Burgeria v3.0 hotfix` — Skyblock Burgeria (1.20.1)
 
 #### 19. `kubejs_project_env(project_root?)`
 - Returns: `{project_root, minecraft_version, loader, version_source, loader_source, kubejs_roots}`
@@ -333,7 +344,7 @@ Reference docs in `docs/reference/` for architecture patterns. Key refs:
 
 ## Third-Party Libraries
 
-36 libraries indexed (16 original + 20 KubeJS addons). Use library name as `loader`. Full list: [Third-Party Quick Reference](docs/reference/third-party-quick-ref.md)
+40 libraries indexed (16 original + 20 KubeJS addons + kubejs-create + kubejs-thermal + kubejs-mekanism + fabric-api). Use library name as `loader`. Full list: [Third-Party Quick Reference](docs/reference/third-party-quick-ref.md)
 
 ## Version Routing
 

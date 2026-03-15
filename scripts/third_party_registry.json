@@ -265,12 +265,41 @@
       "versions": {
         "1.20.1": { "ref": "main", "source_dirs": ["auto"] }
       }
-    },
+     },
     {
       "name": "eventjs",
       "repo": "ZZZank/EventJS",
       "versions": {
         "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubejs-create",
+      "repo": "KubeJS-Mods/KubeJS-Create",
+      "versions": {
+        "1.20.1": { "ref": "2001/forge", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubejs-thermal",
+      "repo": "KubeJS-Mods/KubeJS-Thermal",
+      "versions": {
+        "1.20.1": { "ref": "2001", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "kubejs-mekanism",
+      "repo": "KubeJS-Mods/KubeJS-Mekanism",
+      "versions": {
+        "1.20.1": { "ref": "2001", "source_dirs": ["auto"] }
+      }
+    },
+    {
+      "name": "fabric-api",
+      "repo": "FabricMC/fabric",
+      "versions": {
+        "1.20.1": { "ref": "1.20.1", "source_dirs": ["auto"] },
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["auto"] }
       }
     }
   ]
