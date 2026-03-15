@@ -18,7 +18,7 @@ import os
 import sqlite3
 import sys
 from collections import OrderedDict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
@@ -140,6 +140,109 @@ def _load_config() -> ServerConfig:
 
 _CONFIG = _load_config()
 
+_SUPPORTED_PROTOCOL_VERSIONS = ("2025-06-18", "2024-11-05")
+
+_TOOL_SCHEMAS: dict[str, dict[str, object]] = {
+    "versions": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    },
+    "search": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "query": {"type": "string"},
+            "limit": {"type": "integer"},
+        },
+        "required": ["version", "loader", "query"],
+        "additionalProperties": False,
+    },
+    "search_docs": {
+        "type": "object",
+        "properties": {
+            "query": {"type": "string"},
+            "library": {"type": "string"},
+            "version": {"type": "string"},
+            "limit": {"type": "integer"},
+        },
+        "required": ["query"],
+        "additionalProperties": False,
+    },
+    "read_doc": {
+        "type": "object",
+        "properties": {
+            "id": {"type": "integer"},
+        },
+        "required": ["id"],
+        "additionalProperties": False,
+    },
+    "find_class": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "class_name": {"type": "string"},
+        },
+        "required": ["version", "loader", "class_name"],
+        "additionalProperties": False,
+    },
+    "get_class_detail": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "class_name": {"type": "string"},
+        },
+        "required": ["version", "loader", "class_name"],
+        "additionalProperties": False,
+    },
+    "get_hierarchy": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "class_name": {"type": "string"},
+        },
+        "required": ["version", "loader", "class_name"],
+        "additionalProperties": False,
+    },
+    "find_implementations": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "interface_or_class": {"type": "string"},
+        },
+        "required": ["version", "loader", "interface_or_class"],
+        "additionalProperties": False,
+    },
+    "read_source": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "path": {"type": "string"},
+            "start": {"type": "integer"},
+            "end": {"type": "integer"},
+        },
+        "required": ["version", "loader", "path"],
+        "additionalProperties": False,
+    },
+    "list_package": {
+        "type": "object",
+        "properties": {
+            "version": {"type": "string"},
+            "loader": {"type": "string"},
+            "package_prefix": {"type": "string"},
+            "limit": {"type": "integer"},
+        },
+        "required": ["version", "loader", "package_prefix"],
+        "additionalProperties": False,
+    },
+}
+
 
 @dataclass(frozen=True)
 class CorpusInfo:
@@ -255,6 +358,7 @@ class MCPServer:
         self._class_detail_cache = _LRUCache(config.lru_class_detail)
         self._source_cache = _LRUCache(config.lru_source)
         self._hierarchy_cache = _LRUCache(config.lru_hierarchy)
+        self._initialized = False
 
     def _invalidate_statement(self, sql: str) -> None:
         key = _normalize_sql(sql)
@@ -731,17 +835,129 @@ class MCPServer:
             for row in rows
         ]
 
+    def initialize(self, params: dict[str, object]) -> dict[str, object]:
+        requested_obj = params.get("protocolVersion")
+        requested = str(requested_obj).strip() if requested_obj is not None else ""
+        if requested in _SUPPORTED_PROTOCOL_VERSIONS:
+            protocol_version = requested
+        else:
+            protocol_version = _SUPPORTED_PROTOCOL_VERSIONS[0]
+        self._initialized = True
+        return {
+            "protocolVersion": protocol_version,
+            "capabilities": {
+                "tools": {
+                    "listChanged": False,
+                }
+            },
+            "serverInfo": {
+                "name": "minecraft-mcp-service",
+                "version": "0.0.6",
+            },
+        }
+
+    def notifications_initialized(self, params: dict[str, object]) -> None:
+        del params
+        self._initialized = True
+        return None
+
+    def ping(self, params: dict[str, object]) -> dict[str, object]:
+        del params
+        return {}
+
+    def tools_list(self, params: dict[str, object]) -> dict[str, object]:
+        del params
+        tools: list[dict[str, object]] = []
+        descriptions = {
+            "versions": "List available version/loader corpora and indexed file counts.",
+            "search": "Full-text search source classes by version/loader/query.",
+            "search_docs": "Search indexed Minecraft/KubeJS documentation.",
+            "read_doc": "Read one documentation page by search result id.",
+            "find_class": "Find one class by exact class_name in a version/loader.",
+            "get_class_detail": "Return classes/methods/fields/events for one class file.",
+            "get_hierarchy": "Get extends chain and implemented interfaces for a class.",
+            "find_implementations": "Find classes extending/implementing an interface or base.",
+            "read_source": "Read source lines by version/loader/path with optional range.",
+            "list_package": "List classes under a package prefix.",
+        }
+        for name, schema in _TOOL_SCHEMAS.items():
+            tools.append(
+                {
+                    "name": name,
+                    "description": descriptions.get(name, ""),
+                    "inputSchema": schema,
+                }
+            )
+        return {"tools": tools}
+
+    def tools_call(self, params: dict[str, object]) -> dict[str, object]:
+        name = self._require_param(params, "name")
+        arguments_obj = params.get("arguments")
+        arguments = arguments_obj if isinstance(arguments_obj, dict) else {}
+        try:
+            result = self._dispatch(name, arguments)
+            return {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(result, ensure_ascii=False),
+                    }
+                ],
+                "structuredContent": result,
+                "isError": False,
+            }
+        except Exception as exc:
+            return {
+                "content": [{"type": "text", "text": str(exc)}],
+                "isError": True,
+            }
+
+    def _dispatch(self, method: str, params: dict[str, object]) -> object:
+        handlers: dict[str, object] = {
+            "versions": self.versions,
+            "search": self.search,
+            "search_docs": self.search_docs,
+            "read_doc": self.read_doc,
+            "find_class": self.find_class,
+            "get_class_detail": self.get_class_detail,
+            "get_hierarchy": self.get_hierarchy,
+            "find_implementations": self.find_implementations,
+            "read_source": self.read_source,
+            "list_package": self.list_package,
+            "initialize": self.initialize,
+            "ping": self.ping,
+            "tools/list": self.tools_list,
+            "tools/call": self.tools_call,
+            "notifications/initialized": self.notifications_initialized,
+        }
+        handler_obj = handlers.get(method)
+        if handler_obj is None:
+            raise LookupError(f"Unknown method: {method!r}")
+        if not callable(handler_obj):
+            raise LookupError(f"Unknown method: {method!r}")
+        return handler_obj(params)
+
     def handle(self, request: dict[str, object]) -> object:
         method_obj = request.get("method")
         if method_obj is None:
             raise ValueError("method is required")
-        method = str(method_obj)
+        method = str(method_obj).strip()
+        if not method:
+            raise ValueError("method is required")
         params_obj = request.get("params")
         params = params_obj if isinstance(params_obj, dict) else {}
-        handler = getattr(self, method, None)
-        if handler is None or method.startswith("_"):
-            raise ValueError(f"Unknown method: {method!r}")
-        return handler(params)
+        return self._dispatch(method, params)
+
+
+def _jsonrpc_error_response(request_id: object, code: int, message: str, data: object | None = None) -> dict[str, object]:
+    error: dict[str, object] = {"code": code, "message": message}
+    if data is not None:
+        error["data"] = data
+    return {"jsonrpc": "2.0", "id": request_id, "error": error}
+
+
+def _jsonrpc_result_response(request_id: object, result: object) -> dict[str, object]:
+    return {"jsonrpc": "2.0", "id": request_id, "result": result}
 
 
 def main() -> int:
@@ -750,15 +966,39 @@ def main() -> int:
         line = raw_line.strip()
         if not line:
             continue
-        request: dict[str, object]
+        request_id: object = None
         try:
             parsed = json.loads(line)
-            request = parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError as exc:
+            response = _jsonrpc_error_response(None, -32700, "Parse error", {"detail": str(exc)})
+            _ = sys.stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
+            _ = sys.stdout.flush()
+            continue
+        if not isinstance(parsed, dict):
+            response = _jsonrpc_error_response(None, -32600, "Invalid Request")
+            _ = sys.stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
+            _ = sys.stdout.flush()
+            continue
+        request = parsed
+        request_id = request.get("id")
+        try:
             result = server.handle(request)
-            response: dict[str, object] = {"id": request.get("id"), "result": result}
+            if request_id is None:
+                continue
+            response = _jsonrpc_result_response(request_id, result)
+        except LookupError as exc:
+            if request_id is None:
+                continue
+            response = _jsonrpc_error_response(request_id, -32601, "Method not found", {"detail": str(exc)})
+        except ValueError as exc:
+            if request_id is None:
+                continue
+            response = _jsonrpc_error_response(request_id, -32602, "Invalid params", {"detail": str(exc)})
         except Exception as exc:
-            response = {"id": request.get("id") if 'request' in locals() else None, "error": {"message": str(exc)}}
-        _ = sys.stdout.write(json.dumps(response) + "\n")
+            if request_id is None:
+                continue
+            response = _jsonrpc_error_response(request_id, -32603, "Internal error", {"detail": str(exc)})
+        _ = sys.stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
         _ = sys.stdout.flush()
     return 0
 
