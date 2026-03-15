@@ -29,7 +29,7 @@ Two SQLite databases (AST-indexed, FTS5, no vector embeddings): `data/minecraft_
 
 ## MCP Methods
 
-Newline-delimited JSON-RPC over stdin/stdout. **These 10 methods are the only valid methods.**
+Newline-delimited JSON-RPC over stdin/stdout. **These 18 methods are the only valid methods.**
 
 ### Source Methods (8)
 
@@ -90,6 +90,51 @@ Newline-delimited JSON-RPC over stdin/stdout. **These 10 methods are the only va
 - Returns: `{library, version, category, slug, title, content, format, source_url}`
 - Use: retrieve full documentation page content.
 
+### Local KubeJS Project Methods (8)
+
+#### 11. `kubejs_project_env(project_root?)`
+- Optional: `project_root`
+- Returns: `{project_root, minecraft_version, loader, version_source, loader_source, kubejs_roots}`
+- Use: auto-detect local KubeJS environment and version.
+- Default behavior: if `project_root` is omitted, server checks the Prism instance path and defaults version to `1.20.1` when metadata cannot be detected.
+
+#### 12. `kubejs_project_scan(project_root?, max_files?, refresh?)`
+- Optional: `project_root`, `max_files` (default 3000, max 20000), `refresh` (default false)
+- Returns: project structure + symbol summary (`kubejs_roots`, `probe_dirs`, `script_counts`, `resource_counts`, `symbol_count`, `symbol_count_by_kind`, `truncated`)
+- Use: build in-memory index for local KubeJS + ProbeJS artifacts.
+
+#### 13. `kubejs_project_search(query, project_root?, kind?, limit?, max_files?, refresh?)`
+- Required: `query`
+- Optional: `project_root`, `kind`, `limit` (default 50, max 500), `max_files`, `refresh`
+- Returns: symbol hits including functions/methods/properties/snippets/registry items from local ProbeJS/KubeJS project files.
+
+#### 14. `kubejs_project_multi_search(queries, project_root?, kind?, per_query_limit?, max_files?, refresh?)`
+- Required: `queries` (array of query strings)
+- Optional: `project_root`, `kind`, `per_query_limit`, `max_files`, `refresh`
+- Returns: map of query -> hit list; use to reduce MCP round-trips.
+
+#### 15. `kubejs_project_context(project_root?, max_files?, refresh?, sample_queries?, per_query_limit?)`
+- Optional: `project_root`, `max_files`, `refresh`, `sample_queries`, `per_query_limit`
+- Returns: `{env, scan, sample_queries, query_hits}` in one call.
+- Use: fast bootstrap for agents that need full project understanding with minimal tool calls.
+
+#### 16. `kubejs_project_read(path, project_root?, start?, end?)`
+- Required: `path`
+- Optional: `project_root`, `start`, `end`
+- Returns: `{project_root, path, start, end, total_lines, content}`
+- Use: read local KubeJS project file safely (path constrained under project root).
+
+#### 17. `kubejs_project_triage(issue?, queries?, project_root?, max_files?, refresh?, per_query_limit?, max_queries?, top_path_limit?)`
+- Required: one of `issue` or `queries`
+- Optional: `project_root`, `max_files`, `refresh`, `per_query_limit`, `max_queries`, `top_path_limit`
+- Returns: `{queries, env, scan, hits_by_query, top_paths, guidance}` in one call.
+- Use: one-shot issue investigation to reduce repeated search/read MCP loops.
+
+#### 18. `kubejs_datapack_guardrails(project_root?, max_files?, refresh?)`
+- Optional: `project_root`, `max_files`, `refresh`
+- Returns: `{minecraft_version, summary, findings, guidance}` with version-aware registry/worldgen guardrail checks.
+- Use: detect invalid datapack-registry patterns (especially `StartupEvents.registry` misuse) and provide migration guidance across 1.20.x and 1.21.1+.
+
 ### Common Parameter Mistakes
 
 | Mistake | Correct |
@@ -97,6 +142,7 @@ Newline-delimited JSON-RPC over stdin/stdout. **These 10 methods are the only va
 | `find_implementations` with `class_name` | Use `interface_or_class` |
 | `read_source` path prefixed with `sources/` | Use relative path only |
 | `list_package` with `/` separators | Use `.` (Java package format) |
+| Omitting `project_root` for local project tools | Allowed; server auto-detects and defaults safely |
 | Calling `find_event` or `compare_api` | These methods do not exist |
 | Using `name` instead of `class_name` | Param name must be exact |
 
@@ -353,5 +399,3 @@ Detailed references in `docs/reference/`:
 - [Data Generation](docs/reference/data-generation.md) — Provider architecture and datagen bootstrap
 - [Networking Packets](docs/reference/networking-packets.md) — Packet channels, payload codecs, and handler threading
 - [KubeJS Addon Deep Dive](docs/reference/kubejs-addon-deep-dive.md) — EntityJS, LootJS, RenderJS usage patterns and script examples
-
-
