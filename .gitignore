@@ -21,6 +21,9 @@ data/minecraft_docs.sqlite-wal
 
 mc-developing-mcp-full*
 
+# OpenCode AI assistant config (local session state, not project files)
+.opencode/
+
 # Misc
 tmp/
 *.egg-info/
@@ -29,3 +32,4 @@ venv/
 
 # Cached tool JARs (VineFlower, AutoRenamingTool) — re-downloaded automatically
 .decompiler-cache/
+mc-developing-mcp-lite*
