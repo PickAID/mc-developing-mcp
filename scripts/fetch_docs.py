@@ -1479,6 +1479,74 @@ def fetch_kubejs_docs() -> list[DocPage]:
 
 
 # ---------------------------------------------------------------------------
+# Local reference docs — ingest docs/reference/*.md into the DB
+# ---------------------------------------------------------------------------
+REFERENCE_DOCS_DIR = ROOT / "docs" / "reference"
+
+# Mapping from filename stem → (library, version, category, title)
+# Files not listed here are ingested as library="reference", version="all", category="general"
+REFERENCE_DOC_METADATA: dict[str, tuple[str, str, str, str]] = {
+    "coremod-guide":           ("coremod",    "all",   "coremods",      "Coremod Guide: Mixin, MixinExtras, Access Transformers, JS Coremods"),
+    "forge-neoforge-patterns": ("reference",  "all",   "loaders",       "Forge vs NeoForge Patterns Reference"),
+    "mod-structure-lifecycle": ("reference",  "all",   "structure",     "Mod Structure and Lifecycle"),
+    "event-system-catalog":    ("reference",  "all",   "events",        "Event System Catalog"),
+    "kubejs-api-surface":      ("reference",  "all",   "kubejs",        "KubeJS API Surface Reference"),
+    "kubejs-addon-ecosystem":  ("reference",  "all",   "kubejs",        "KubeJS Addon Ecosystem"),
+    "kubejs-addon-deep-dive":  ("reference",  "all",   "kubejs",        "KubeJS Addon Deep Dive"),
+    "blockentity-architecture":("reference",  "all",   "blocks",        "Block Entity Architecture"),
+    "client-server-sides":     ("reference",  "all",   "architecture",  "Client/Server Sides Reference"),
+    "data-generation":         ("reference",  "all",   "datagen",       "Data Generation Reference"),
+    "datapack-structures":     ("reference",  "all",   "datapacks",     "Datapack Structures Reference"),
+    "gui-menu-system":         ("reference",  "all",   "gui",           "GUI and Menu System Reference"),
+    "mutability-contracts":    ("reference",  "all",   "architecture",  "Mutability Contracts Reference"),
+    "networking-packets":      ("reference",  "all",   "networking",    "Networking and Packets Reference"),
+    "rendering-pipeline":      ("reference",  "all",   "rendering",     "Rendering Pipeline Reference"),
+    "third-party-quick-ref":   ("reference",  "all",   "libraries",     "Third-Party Library Quick Reference"),
+    "version-migration-map":   ("reference",  "all",   "migration",     "Version Migration Map"),
+    "worldgen-pipeline":       ("reference",  "all",   "worldgen",      "World Generation Pipeline Reference"),
+}
+
+
+def fetch_local_reference_docs() -> list[DocPage]:
+    """Read all markdown files from docs/reference/ and return as DocPage list."""
+    pages: list[DocPage] = []
+    if not REFERENCE_DOCS_DIR.is_dir():
+        print(f"  WARNING: reference docs dir not found: {REFERENCE_DOCS_DIR}")
+        return pages
+
+    for md_file in sorted(REFERENCE_DOCS_DIR.glob("*.md")):
+        stem = md_file.stem
+        content = md_file.read_text(encoding="utf-8").strip()
+        if not content:
+            continue
+
+        if stem in REFERENCE_DOC_METADATA:
+            library, version, category, title = REFERENCE_DOC_METADATA[stem]
+        else:
+            # Auto-derive title from first heading or filename
+            first_line = content.split("\n", 1)[0]
+            if first_line.startswith("#"):
+                title = first_line.lstrip("#").strip()
+            else:
+                title = stem.replace("-", " ").title()
+            library, version, category = "reference", "all", "general"
+
+        slug = f"reference/{stem}"
+        pages.append({
+            "library":    library,
+            "version":    version,
+            "category":   category,
+            "slug":       slug,
+            "title":      title,
+            "content":    content,
+            "format":     "markdown",
+            "source_url": f"docs/reference/{md_file.name}",
+        })
+
+    return pages
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def main() -> int:
@@ -1486,6 +1554,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Fetch documentation for Minecraft mods")
     parser.add_argument("--library", help="Fetch only this library")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--skip-reference-docs", action="store_true", help="Skip local reference docs ingestion")
     parser.add_argument("--skip-variedmc", action="store_true", help="Skip full variedmc kubejs/datapack ingestion")
     parser.add_argument("--skip-misode", action="store_true", help="Skip misode datapack ingestion")
     parser.add_argument("--skip-modpacks", action="store_true", help="Skip modpack kubejs source ingestion")
@@ -1498,7 +1567,7 @@ def main() -> int:
     args = parser.parse_args()
 
     registry = get_docs_registry()
-    special_libraries = {"kubejs", "datapack", "misode", "kubejs-modpack", "kubejs-modpack-local"}
+    special_libraries = {"kubejs", "datapack", "misode", "kubejs-modpack", "kubejs-modpack-local", "reference", "coremod"}
     if args.library:
         registry = [r for r in registry if r["library"] == args.library]
         if not registry and args.library not in special_libraries:
@@ -1544,10 +1613,25 @@ def main() -> int:
                 print(f"    OK: {count} web doc pages")
                 total_pages += count
 
+    reference_libraries = {"reference", "coremod"}
+    should_fetch_reference_docs = not args.skip_reference_docs and (not args.library or args.library in reference_libraries)
     should_fetch_variedmc = not args.skip_variedmc and (not args.library or args.library in {"kubejs", "datapack"})
     should_fetch_misode = not args.skip_misode and (not args.library or args.library in {"datapack", "misode"})
     should_fetch_modpacks = not args.skip_modpacks and (not args.library or args.library in {"kubejs", "kubejs-modpack"})
     should_fetch_local_modpacks = not args.skip_local_modpacks and (not args.library or args.library in {"kubejs", "kubejs-modpack-local"})
+
+    if should_fetch_reference_docs:
+        print("\nreference docs (local):")
+        if args.dry_run:
+            print("  (dry run)")
+        else:
+            pages = fetch_local_reference_docs()
+            if pages:
+                count = insert_pages(conn, pages) if conn else 0
+                print(f"  OK: {count} reference doc pages")
+                total_pages += count
+            else:
+                print("  no reference docs found")
 
     if should_fetch_variedmc:
         print("\nvariedmc (special):")
