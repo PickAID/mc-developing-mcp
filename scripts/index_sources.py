@@ -665,6 +665,26 @@ CREATE VIRTUAL TABLE IF NOT EXISTS source_fts USING fts5(
     signatures_text,
     tokenize = 'porter unicode61'
 );
+
+CREATE TABLE IF NOT EXISTS source_class_interfaces (
+    class_id       INTEGER NOT NULL REFERENCES source_classes(id) ON DELETE CASCADE,
+    interface_name TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sci_class_id  ON source_class_interfaces (class_id);
+CREATE INDEX IF NOT EXISTS idx_sci_iface     ON source_class_interfaces (interface_name);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS source_methods_fts USING fts5(
+    version       UNINDEXED,
+    loader        UNINDEXED,
+    name,
+    return_type,
+    params,
+    signature,
+    content='source_methods',
+    content_rowid='id',
+    tokenize = 'porter unicode61'
+);
 """
 
 
@@ -677,6 +697,8 @@ class SourceIndexer:
         self.conn = sqlite3.connect(str(db_path))
         if rebuild:
             self.conn.executescript("""
+                DROP TABLE IF EXISTS source_methods_fts;
+                DROP TABLE IF EXISTS source_class_interfaces;
                 DROP TABLE IF EXISTS source_fts;
                 DROP TABLE IF EXISTS source_content;
                 DROP TABLE IF EXISTS source_events;
@@ -788,8 +810,19 @@ class SourceIndexer:
                 file_id = row[0] if row else 0
 
             # Clear old data for this file
+            # Clear source_class_interfaces via class_ids before dropping source_classes
+            cur.execute(
+                "DELETE FROM source_class_interfaces WHERE class_id IN "
+                "(SELECT id FROM source_classes WHERE file_id=?)", (file_id,)
+            )
+            # Clear source_methods_fts via method rowids before dropping source_methods
+            cur.execute(
+                "DELETE FROM source_methods_fts WHERE rowid IN "
+                "(SELECT id FROM source_methods WHERE file_id=?)", (file_id,)
+            )
             for tbl in ("source_classes", "source_methods", "source_fields", "source_events", "source_fts", "source_content"):
                 cur.execute(f"DELETE FROM {tbl} WHERE file_id=?", (file_id,))
+
 
             content_hash = hashlib.sha256(info.content.encode("utf-8")).hexdigest()
             cur.execute(
@@ -797,7 +830,7 @@ class SourceIndexer:
                 (file_id, info.content, content_hash),
             )
 
-            # Classes
+            # Classes + interface junction table
             for ci in info.classes:
                 cur.execute(
                     """INSERT INTO source_classes
@@ -809,8 +842,14 @@ class SourceIndexer:
                      ci.type_params, ",".join(ci.annotations) if ci.annotations else None,
                      ci.line_num, ci.end_line, 1 if ci.is_inner else 0, ci.parent_class),
                 )
+                class_id = cur.lastrowid
+                if class_id and ci.interfaces:
+                    cur.executemany(
+                        "INSERT INTO source_class_interfaces (class_id, interface_name) VALUES (?,?)",
+                        [(class_id, iface) for iface in ci.interfaces if iface.strip()],
+                    )
 
-            # Methods
+            # Methods + FTS
             for mi in info.methods:
                 params_str = ", ".join(f"{t} {n}" for t, n in mi.params)
                 cur.execute(
@@ -823,6 +862,13 @@ class SourceIndexer:
                      ",".join(mi.annotations) if mi.annotations else None,
                      mi.signature, mi.line_num,
                      1 if mi.is_constructor else 0),
+                )
+                method_rowid = cur.lastrowid
+                cur.execute(
+                    """INSERT INTO source_methods_fts
+                       (rowid, name, return_type, params, signature)
+                       VALUES (?,?,?,?,?)""",
+                    (method_rowid, mi.name, mi.return_type, params_str, mi.signature),
                 )
 
             # Fields
