@@ -896,6 +896,11 @@ class MCPServer:
         arguments = arguments_obj if isinstance(arguments_obj, dict) else {}
         try:
             result = self._dispatch(name, arguments)
+            structured_content: dict[str, object]
+            if isinstance(result, dict):
+                structured_content = result
+            else:
+                structured_content = {"result": result}
             return {
                 "content": [
                     {
@@ -903,7 +908,7 @@ class MCPServer:
                         "text": json.dumps(result, ensure_ascii=False),
                     }
                 ],
-                "structuredContent": result,
+                "structuredContent": structured_content,
                 "isError": False,
             }
         except Exception as exc:
