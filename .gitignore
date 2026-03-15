@@ -19,6 +19,8 @@ data/minecraft_sources.sqlite-wal
 data/minecraft_docs.sqlite-shm
 data/minecraft_docs.sqlite-wal
 
+mc-developing-mcp-full*
+
 # Misc
 tmp/
 *.egg-info/
