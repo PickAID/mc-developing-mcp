@@ -10,6 +10,7 @@
 ## Table of Contents
 
 - [What Is This](#what-is-this)
+- [Disclaimer](#disclaimer)
 - [Architecture Overview](#architecture-overview)
 - [Quick Start](#quick-start)
   - [Option A: Download Release Package (Recommended)](#option-a-download-release-package-recommended)
@@ -45,6 +46,32 @@ For Minecraft development queries, SQLite + indexed lookup outperforms vector em
 | Code structure / relational queries | SQL is built for this | Awkward to express |
 
 Fuzzy documentation search is handled by **FTS5 full-text indexes**, covering both exact and semantic lookup needs.
+
+---
+
+## Disclaimer
+
+### Intellectual Property Notice
+
+`mc-developing-mcp` is an indexing and query tool. The SQLite databases distributed with this project contain **structural metadata** (class names, method signatures, field names, documentation text) derived from third-party source code. No original source code is reproduced verbatim in the distributed databases.
+
+All rights to indexed third-party source code, documentation, and assets are fully reserved by their respective copyright holders. A complete list of indexed projects and their owners is provided in the [NOTICE](../NOTICE) file. This project makes no claim of ownership over any third-party intellectual property.
+
+### Relationship to Minecraft / Mojang
+
+Minecraft is a trademark of Mojang Studios, a Microsoft subsidiary. This project is **not affiliated with, endorsed by, or sponsored by Mojang Studios or Microsoft Corporation** in any way. The use of decompiled Minecraft source metadata is consistent with Mojang's modding policies for non-commercial developer tooling. All users of this project are required to comply with the [Minecraft End User License Agreement (EULA)](https://www.minecraft.net/en-us/eula) and Mojang's [Brand and Asset Usage Guidelines](https://www.minecraft.net/en-us/usage-guidelines).
+
+### License Scope
+
+The [MIT License](../LICENSE) in this repository applies **solely** to the original project code: the MCP server (`mcp_server/`), indexing scripts (`scripts/`), and configuration files. It does **not** apply to the indexed third-party source code or documentation, which remain under their respective original licenses as listed in the [NOTICE](../NOTICE) file.
+
+### No Warranty
+
+The indexed databases are provided "as is" without warranty of any kind. The metadata may be incomplete, contain inaccuracies, or become outdated as upstream projects evolve. The project maintainers make no guarantees regarding the correctness, completeness, or fitness for purpose of any query results. Use at your own risk.
+
+### Intended Use
+
+This tool is designed for AI-assisted Minecraft mod development. It is intended to help developers find correct API signatures and event patterns. It is **not intended** for redistribution of source code, commercial exploitation of third-party intellectual property, or any use that violates the license terms of the indexed projects.
 
 ---
 
