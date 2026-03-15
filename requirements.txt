@@ -3,6 +3,7 @@
 # Required for source indexing (scripts/index_sources.py):
 tree-sitter>=0.23.0
 tree-sitter-java>=0.23.0
+pytest>=7.0
 #
 # Core runtime (mcp_server/server.py):
 #   sqlite3 is part of the standard library — no install needed.
