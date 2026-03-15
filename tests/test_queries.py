@@ -120,12 +120,17 @@ class TestKnownGoodQueries(unittest.TestCase):
         for row in r:
             self.assertEqual(row["ref_type"], "import")
 
-
+    def test_versions_has_expected_loaders(self):
         r = self.s.versions({})
         pairs = {(row["version"], row["loader"]) for row in r}
         self.assertIn(("1.20.1", "forge"), pairs)
         self.assertIn(("1.20.1", "kubejs"), pairs)
         self.assertIn(("1.21.1", "neoforge"), pairs)
+
+    def test_list_package_forge_events(self):
+        r = self.s.list_package({"version": "1.20.1", "loader": "forge",
+                                  "package_prefix": "net.minecraftforge.event"})
+        self.assertGreater(len(r), 0)
 
 
 class TestKnownGoodDocsQueries(unittest.TestCase):
@@ -141,11 +146,6 @@ class TestKnownGoodDocsQueries(unittest.TestCase):
         self.assertGreater(len(r), 0)
         self.assertTrue(any("recipe" in row.get("title", "").lower() or "recipe" in row.get("snippet", "").lower()
                             for row in r), "search_docs should return recipe-related docs")
-
-    def test_list_package_forge_events(self):
-        r = self.s.list_package({"version": "1.20.1", "loader": "forge",
-                                  "package_prefix": "net.minecraftforge.event"})
-        self.assertGreater(len(r), 0)
 
 
 if __name__ == "__main__":

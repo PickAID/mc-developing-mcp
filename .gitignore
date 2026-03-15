@@ -26,3 +26,6 @@ tmp/
 *.egg-info/
 .venv/
 venv/
+
+# Cached tool JARs (VineFlower, AutoRenamingTool) — re-downloaded automatically
+.decompiler-cache/

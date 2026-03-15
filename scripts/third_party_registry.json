@@ -5,7 +5,9 @@
       "repo": "bernie-g/geckolib",
       "versions": {
         "1.20.1": { "ref": "1.20.1", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
-        "1.21.1": { "ref": "1.21.1", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
+        "1.21.1": { "ref": "1.21.1", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] },
+        "1.21.4": { "ref": "1.21.4", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] },
+        "1.21.5": { "ref": "1.21.5", "source_dirs": ["common/src/main/java", "neoforge/src/main/java"] }
       }
     },
     {
@@ -35,7 +37,9 @@
       "repo": "architectury/architectury-api",
       "versions": {
         "1.20.1": { "ref": "1.20", "source_dirs": ["common/src/main/java", "forge/src/main/java"] },
-        "1.21.1": { "ref": "1.21", "source_dirs": ["common/src/main/java", "neoforge/src/main/java", "fabric/src/main/java"] }
+        "1.21.1": { "ref": "1.21", "source_dirs": ["common/src/main/java", "neoforge/src/main/java", "fabric/src/main/java"] },
+        "1.21.4": { "ref": "1.21.4", "source_dirs": ["common/src/main/java", "neoforge/src/main/java", "fabric/src/main/java"] },
+        "1.21.5": { "ref": "1.21.5", "source_dirs": ["common/src/main/java", "neoforge/src/main/java", "fabric/src/main/java"] }
       }
     },
     {
