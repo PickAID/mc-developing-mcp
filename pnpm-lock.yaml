@@ -41,6 +41,9 @@ importers:
       '@mcpskill/agent-harness':
         specifier: workspace:*
         version: link:../../packages/agent-harness
+      '@mcpskill/datapack-adapter':
+        specifier: workspace:*
+        version: link:../../packages/datapack-adapter
       '@mcpskill/docs-retrieval':
         specifier: workspace:*
         version: link:../../packages/docs-retrieval

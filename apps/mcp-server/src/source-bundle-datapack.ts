@@ -1,0 +1,202 @@
+import {
+  discoverDatapackContent,
+  listDatapackFiles,
+  readDatapackFile,
+  searchDatapackFiles,
+  type DatapackFileEntry,
+  type DatapackSearchMatch,
+  type DatapackSkippedFile
+} from "@mcpskill/datapack-adapter";
+
+import type {
+  McpServerEvidenceExecutorInput,
+  McpServerEvidenceExecutorResult
+} from "./request-handler.js";
+
+const MAX_QUERIES = 8;
+const MAX_MATCHES = 16;
+const MAX_LISTED_FILES = 32;
+const DATAPACK_BUDGET = {
+  maxFiles: 512,
+  maxBytesPerFile: 64 * 1024
+} as const;
+
+export async function executeMcpServerDatapackFiles(
+  input: McpServerEvidenceExecutorInput
+): Promise<McpServerEvidenceExecutorResult> {
+  if (input.candidate.routeStep !== "datapack_files") {
+    return {
+      matched: false,
+      summary: `datapack_files executor cannot handle ${input.candidate.routeStep}.`
+    };
+  }
+
+  const workspaceRoot =
+    input.requestPlan.requestContext.workspaceContext?.workspaceRoot;
+
+  if (!workspaceRoot) {
+    return {
+      matched: false,
+      summary: "No workspace root available for datapack lookup."
+    };
+  }
+
+  const requestText = input.requestPlan.requestText ?? "";
+  const queries = extractResourceLocationQueries(requestText);
+  const requestedPaths = extractDatapackPathQueries(requestText);
+  const discovery = await discoverDatapackContent(workspaceRoot);
+
+  if (discovery.roots.length === 0) {
+    return {
+      matched: false,
+      summary: "No local datapack or asset roots were discovered."
+    };
+  }
+
+  const reads = await readRequestedDatapackPaths(workspaceRoot, requestedPaths);
+  const search = await searchRequestedResourceLocations(workspaceRoot, queries);
+
+  if (queries.length === 0 && requestedPaths.length === 0) {
+    const listed = await listDatapackFiles(workspaceRoot, {
+      ...DATAPACK_BUDGET,
+      limit: MAX_LISTED_FILES
+    });
+
+    return {
+      matched: listed.entries.length > 0,
+      summary: `Listed ${listed.entries.length} local datapack or asset file(s).`,
+      payload: {
+        source: "datapack_files",
+        workspaceRoot,
+        queries,
+        requestedPaths,
+        discovery,
+        files: listed.entries,
+        skipped: listed.skipped,
+        truncated: listed.truncated
+      }
+    };
+  }
+
+  const matched = reads.files.length > 0 || search.matches.length > 0;
+
+  return {
+    matched,
+    summary: matched
+      ? `Resolved ${reads.files.length + search.matches.length} local datapack evidence item(s).`
+      : "No local datapack files matched the requested paths or resource locations.",
+    payload: {
+      source: "datapack_files",
+      workspaceRoot,
+      queries,
+      requestedPaths,
+      discovery,
+      reads: reads.files,
+      matches: search.matches,
+      skipped: [...reads.skipped, ...search.skipped],
+      truncated: search.truncated
+    }
+  };
+}
+
+function extractResourceLocationQueries(requestText: string): string[] {
+  const matches = requestText.matchAll(
+    /\b[a-z0-9_.-]+:[a-z0-9_.\-\/]+\b/gi
+  );
+
+  return unique([...matches].map((match) => match[0].toLowerCase())).slice(
+    0,
+    MAX_QUERIES
+  );
+}
+
+function extractDatapackPathQueries(requestText: string): string[] {
+  const matches = requestText.matchAll(
+    /\b(?:data|assets)\/[A-Za-z0-9_.-]+\/[^\s'"`<>]+/g
+  );
+
+  return unique([...matches].map((match) => trimTrailingPunctuation(match[0])))
+    .slice(0, MAX_QUERIES);
+}
+
+async function readRequestedDatapackPaths(
+  workspaceRoot: string,
+  requestedPaths: string[]
+): Promise<{ files: DatapackReadEvidence[]; skipped: DatapackSkippedFile[] }> {
+  const files: DatapackReadEvidence[] = [];
+  const skipped: DatapackSkippedFile[] = [];
+
+  for (const relativePath of requestedPaths) {
+    const result = await readDatapackFile(workspaceRoot, relativePath, {
+      ...DATAPACK_BUDGET
+    });
+
+    if (result.file && result.content !== undefined) {
+      files.push({
+        file: result.file,
+        content: result.content
+      });
+    } else if (result.skipped) {
+      skipped.push(result.skipped);
+    }
+  }
+
+  return { files, skipped };
+}
+
+async function searchRequestedResourceLocations(
+  workspaceRoot: string,
+  queries: string[]
+): Promise<{
+  matches: DatapackSearchMatch[];
+  skipped: DatapackSkippedFile[];
+  truncated: boolean;
+}> {
+  const matches = new Map<string, DatapackSearchMatch>();
+  const skipped: DatapackSkippedFile[] = [];
+  let truncated = false;
+
+  for (const query of queries) {
+    const result = await searchDatapackFiles(workspaceRoot, query, {
+      ...DATAPACK_BUDGET
+    });
+
+    for (const match of result.matches) {
+      matches.set(buildMatchKey(match), match);
+      if (matches.size >= MAX_MATCHES) {
+        truncated = true;
+        break;
+      }
+    }
+
+    skipped.push(...result.skipped);
+    truncated ||= result.truncated;
+
+    if (truncated) {
+      break;
+    }
+  }
+
+  return {
+    matches: [...matches.values()],
+    skipped,
+    truncated
+  };
+}
+
+interface DatapackReadEvidence {
+  file: DatapackFileEntry;
+  content: string;
+}
+
+function buildMatchKey(match: DatapackSearchMatch): string {
+  return `${match.file.relativePath}:${match.line}:${match.column}`;
+}
+
+function trimTrailingPunctuation(value: string): string {
+  return value.replace(/[),.;:]+$/g, "");
+}
+
+function unique(values: string[]): string[] {
+  return [...new Set(values)];
+}

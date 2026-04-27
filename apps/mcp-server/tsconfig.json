@@ -8,6 +8,7 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     { "path": "../../packages/agent-harness" },
+    { "path": "../../packages/datapack-adapter" },
     { "path": "../../packages/gradle-adapter" },
     { "path": "../../packages/jar-source-adapter" },
     { "path": "../../packages/kubejs-language-service" },

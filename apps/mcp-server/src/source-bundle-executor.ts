@@ -23,6 +23,7 @@ import {
   type GradleSourceArchiveDiscoveryOptions
 } from "./gradle-source-archive-lookup.js";
 import { resolveGradleDependencyArchiveLookup } from "./gradle-dependency-archive-lookup.js";
+import { executeMcpServerDatapackFiles } from "./source-bundle-datapack.js";
 
 export interface McpServerSourceBundleExecutorOptions {
   runtimeRoot: string;
@@ -44,6 +45,10 @@ export function buildMcpServerSourceBundleExecutor(
   return async (
     input: McpServerEvidenceExecutorInput
   ): Promise<McpServerEvidenceExecutorResult> => {
+    if (input.candidate.routeStep === "datapack_files") {
+      return executeMcpServerDatapackFiles(input);
+    }
+
     if (input.candidate.routeStep !== "workspace_source") {
       return (
         options.fallbackExecutor?.(input) ?? {
