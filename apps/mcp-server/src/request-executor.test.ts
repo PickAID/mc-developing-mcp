@@ -1,0 +1,172 @@
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { deflateRawSync } from "node:zlib";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import { buildMcpServerBootstrap } from "./bootstrap.js";
+import { executeMcpServerRequest } from "./request-executor.js";
+
+const tempRoots: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(
+    tempRoots.splice(0).map((root) => rm(root, { recursive: true, force: true }))
+  );
+});
+
+describe("executeMcpServerRequest", () => {
+  it("chains crash log signals into mod archive class ownership lookup", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createCrashModpackWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "The server crashes on startup; inspect latest.log and mods."
+    });
+
+    expect(result.executions).toMatchObject([
+      {
+        candidateId: "candidate-1-log_files",
+        routeStep: "log_files",
+        preferredTool: "workspace.analyze",
+        status: "context",
+        attempted: true,
+        payload: {
+          source: "workspace_analyze",
+          signals: {
+            actionableClassReferences: ["com.example.problem.CrashHandler"]
+          }
+        }
+      },
+      {
+        candidateId: "candidate-2-mod_archive_content",
+        routeStep: "mod_archive_content",
+        preferredTool: "context.query",
+        status: "selected",
+        attempted: true,
+        payload: {
+          source: "mod_archive_content",
+          mode: "class_owner",
+          requestedClasses: ["com.example.problem.CrashHandler"],
+          matches: [
+            {
+              binaryName: "com.example.problem.CrashHandler",
+              relativePath: "com/example/problem/CrashHandler.class",
+              sourceArchive: expect.stringContaining("mods/problem-mod.jar")
+            }
+          ]
+        }
+      }
+    ]);
+    expect(result.selectedEvidence).toMatchObject({
+      candidateId: "candidate-2-mod_archive_content"
+    });
+    expect(result.trace).toMatchObject({
+      selectedCandidateId: "candidate-2-mod_archive_content",
+      failedCandidateIds: []
+    });
+  });
+});
+
+async function createCrashModpackWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-crash-modpack-");
+
+  await writeText(
+    join(workspaceRoot, "logs", "latest.log"),
+    [
+      "[Server thread/ERROR] [minecraft/]: java.lang.IllegalStateException: crash",
+      "\tat com.example.problem.CrashHandler.tick(CrashHandler.java:42)",
+      ""
+    ].join("\n")
+  );
+  await writeBinary(
+    join(workspaceRoot, "mods", "problem-mod.jar"),
+    createZip([
+      {
+        name: "com/example/problem/CrashHandler.class",
+        content: Buffer.from([0xca, 0xfe, 0xba, 0xbe]),
+        compressionMethod: 0
+      }
+    ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createTempRoot(prefix: string): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), prefix));
+
+  tempRoots.push(root);
+  return root;
+}
+
+async function writeText(path: string, content: string): Promise<void> {
+  await mkdir(join(path, ".."), { recursive: true });
+  await writeFile(path, content);
+}
+
+async function writeBinary(path: string, content: Buffer): Promise<void> {
+  await mkdir(join(path, ".."), { recursive: true });
+  await writeFile(path, content);
+}
+
+interface ZipFixtureEntry {
+  name: string;
+  content: string | Buffer;
+  compressionMethod: 0 | 8;
+}
+
+function createZip(entries: ZipFixtureEntry[]): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let localOffset = 0;
+
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = Buffer.isBuffer(entry.content)
+      ? entry.content
+      : Buffer.from(entry.content);
+    const compressed =
+      entry.compressionMethod === 8 ? deflateRawSync(content) : content;
+    const localHeader = Buffer.alloc(30);
+    const centralHeader = Buffer.alloc(46);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt16LE(entry.compressionMethod, 8);
+    localHeader.writeUInt32LE(compressed.length, 18);
+    localHeader.writeUInt32LE(content.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt16LE(entry.compressionMethod, 10);
+    centralHeader.writeUInt32LE(compressed.length, 20);
+    centralHeader.writeUInt32LE(content.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(localOffset, 42);
+
+    localParts.push(localHeader, name, compressed);
+    centralParts.push(centralHeader, name);
+    localOffset += localHeader.length + name.length + compressed.length;
+  }
+
+  const centralDirectory = Buffer.concat(centralParts);
+  const localFiles = Buffer.concat(localParts);
+  const eocd = Buffer.alloc(22);
+
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(centralDirectory.length, 12);
+  eocd.writeUInt32LE(localFiles.length, 16);
+
+  return Buffer.concat([localFiles, centralDirectory, eocd]);
+}

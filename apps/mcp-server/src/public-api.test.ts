@@ -6,7 +6,8 @@ describe("@mcpskill/mcp-server public api", () => {
   it("keeps the package entrypoint progressive and minimal", () => {
     expect(Object.keys(publicApi).sort()).toEqual([
       "buildMcpServerBootstrap",
-      "buildMcpServerRequestPlan"
+      "buildMcpServerRequestPlan",
+      "executeMcpServerRequest"
     ]);
   });
 });
