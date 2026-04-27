@@ -24,6 +24,7 @@ import {
 } from "./gradle-source-archive-lookup.js";
 import { resolveGradleDependencyArchiveLookup } from "./gradle-dependency-archive-lookup.js";
 import { executeMcpServerDatapackFiles } from "./source-bundle-datapack.js";
+import { resolveMcpServerWorkspaceSource } from "./source-bundle-workspace.js";
 
 export interface McpServerSourceBundleExecutorOptions {
   runtimeRoot: string;
@@ -59,6 +60,11 @@ export function buildMcpServerSourceBundleExecutor(
     }
 
     if (input.candidate.provenance !== "vanilla_source") {
+      const workspaceSourceResult = await resolveMcpServerWorkspaceSource(input);
+      if (workspaceSourceResult) {
+        return workspaceSourceResult;
+      }
+
       const gradleSourceResult = await resolveGradleSourceArchiveReference(
         options,
         input

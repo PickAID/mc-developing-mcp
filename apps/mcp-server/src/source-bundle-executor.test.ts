@@ -58,7 +58,7 @@ describe("buildMcpServerSourceBundleExecutor", () => {
     });
   });
 
-  it("returns unmatched when source.bundle request text does not target vanilla source", async () => {
+  it("reads local build files when source.bundle request text targets Gradle context", async () => {
     const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-bundle-"));
     const workspaceRoot = await createForgeWorkspace();
     const bootstrap = await buildMcpServerBootstrap({
@@ -86,9 +86,19 @@ describe("buildMcpServerSourceBundleExecutor", () => {
         evidencePlan,
         requestPlan
       })
-    ).resolves.toEqual({
-      matched: false,
-      summary: "No vanilla source request detected for source.bundle."
+    ).resolves.toMatchObject({
+      matched: true,
+      summary: "Resolved 1 local workspace source file(s).",
+      payload: {
+        source: "workspace_source",
+        references: [
+          {
+            relativePath: "build.gradle",
+            kind: "gradle",
+            content: expect.stringContaining("net.minecraftforge.gradle")
+          }
+        ]
+      }
     });
   });
 
