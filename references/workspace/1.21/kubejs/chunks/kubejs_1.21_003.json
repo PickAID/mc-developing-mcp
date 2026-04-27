@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_003",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "properties",
-  "source_file": "CommonProperties.java",
-  "symbols": ["CommonProperties", "instance", "get", "reload", "hideServerScriptErrors", "serverOnly", "announceReload", "packMode", "saveDevPropertiesInConfig", "allowAsyncStreams", "matchJsonRecipes", "ignoreCustomUniqueRecipeIds", "startupErrorGUI", "startupErrorReportUrl", "removeSlotLimit", "defaultMaxStackSize", "creativeModeTabIcon", "creativeModeTabName", "setPackMode", "getCreativeModeTabName", "getMaxSlotSize", "getMaxStackSize"],
-  "coverage_status": "complete"
-}

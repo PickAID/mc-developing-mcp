@@ -1,0 +1,5 @@
+{
+  "items": ["minecraft:stone", "minecraft:dirt"],
+  "recipes": ["minecraft:stonecutting"],
+  "registries": ["minecraft:item"]
+}

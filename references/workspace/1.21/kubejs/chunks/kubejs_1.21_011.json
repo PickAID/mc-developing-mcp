@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_011",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "event",
-  "source_file": "KubeStartupEvent.java",
-  "symbols": ["KubeStartupEvent", "BASIC", "registry", "items", "blocks", "fluids", "recipes", "tags", "levelSeed"],
-  "coverage_status": "complete"
-}

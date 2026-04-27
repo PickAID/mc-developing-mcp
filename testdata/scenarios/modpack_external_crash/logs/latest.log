@@ -1,0 +1,3 @@
+[Render thread/ERROR] [minecraft/]: java.lang.IllegalStateException: com.example.external.SomeExternalClass.handle failed
+	at com.example.external.SomeExternalClass.handle(SomeExternalClass.java:42)
+	at com.example.project.LocalCaller.call(LocalCaller.java:18)

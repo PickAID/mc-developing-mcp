@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_010",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "entity",
-  "source_file": "EntitySpawnedKubeEvent.java",
-  "symbols": ["EntitySpawnedKubeEvent", "entity", "level", "server"],
-  "coverage_status": "complete"
-}

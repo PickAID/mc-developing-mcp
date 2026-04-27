@@ -1,0 +1,24 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/shared-types" },
+    { "path": "./packages/package-registry" },
+    { "path": "./packages/jar-source-adapter" },
+    { "path": "./packages/source-index" },
+    { "path": "./packages/datapack-adapter" },
+    { "path": "./packages/gradle-adapter" },
+    { "path": "./packages/java-jdtls-adapter" },
+    { "path": "./packages/kubejs-types-adapter" },
+    { "path": "./packages/kubejs-language-service" },
+    { "path": "./packages/eval-harness" },
+    { "path": "./packages/workspace-detector" },
+    { "path": "./packages/runtime-manager" },
+    { "path": "./packages/agent-harness" },
+    { "path": "./packages/source-package-manager" },
+    { "path": "./packages/vanilla-source-adapter" },
+    { "path": "./packages/docs-retrieval" },
+    { "path": "./packages/service-profile" },
+    { "path": "./apps/agent-runtime" },
+    { "path": "./apps/mcp-server" }
+  ]
+}

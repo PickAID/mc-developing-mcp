@@ -1,0 +1,2 @@
+Contract-only harness fixture.
+Represents a workspace where required core docs are unavailable while optional datasets may still exist.

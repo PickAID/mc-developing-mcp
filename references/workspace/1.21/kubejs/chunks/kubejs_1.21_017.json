@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_017",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "player",
-  "source_file": "PlayerKJS.java",
-  "symbols": ["PlayerKJS", "player", "getMainHandItem", "getOffHandItem", "getInventory", "getArmor", "getEquipped", "isCreative", "isSpectator", "isSneaking", "isSprinting", "isSwimming", "isUsingItem", "getUseItem", "getUseItemRemainingTicks", "getScore", "getExperienceLevel", "getTotalExperience", "getFoodData", "getHealth", "getMaxHealth", "getHunger", "getSaturation", "getExhaustion", "getAirSupply", "getMaxAirSupply", "giveItem", "dropItem", "clearItem", "getPotionEffects", "addEffect", "removeEffect", "hasEffect", "getEffect", "getBedLocation", "getSpawnPoint", "setSpawnPoint", "getDirection", "getYaw", "getPitch", "getRotation", "getEyePosition", "getPosition", "getBlockPosition", "teleport", "sendMessage", "playSound", "swingHand", "attack", "canFly", "setFlying", "getFlightSpeed", "setFlightSpeed"],
-  "coverage_status": "complete"
-}

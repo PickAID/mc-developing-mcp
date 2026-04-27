@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../shared-types" },
+    { "path": "../workspace-detector" },
+    { "path": "../gradle-adapter" },
+    { "path": "../jar-source-adapter" },
+    { "path": "../java-jdtls-adapter" },
+    { "path": "../kubejs-types-adapter" },
+    { "path": "../datapack-adapter" }
+  ]
+}

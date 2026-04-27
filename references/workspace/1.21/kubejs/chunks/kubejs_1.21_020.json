@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_020",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "integration",
-  "source_file": "KubeJSPlugins.java",
-  "symbols": ["KubeJSPlugins", "plugins", "load", "forEachPlugin", "getPlugin", "hasPlugin", "init", "initStartup", "initCommon", "initServer", "initClient"],
-  "coverage_status": "complete"
-}

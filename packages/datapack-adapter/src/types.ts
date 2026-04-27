@@ -1,0 +1,84 @@
+export type DatapackDomain = "data" | "assets";
+
+export type DataKind =
+  | "functions"
+  | "recipes"
+  | "tags"
+  | "loot_tables"
+  | "advancements"
+  | "predicates"
+  | "damage_type"
+  | "worldgen"
+  | "other";
+
+export type AssetKind =
+  | "lang"
+  | "models"
+  | "textures"
+  | "sounds"
+  | "blockstates"
+  | "other";
+
+export type DatapackKind = DataKind | AssetKind;
+
+export interface DatapackRoot {
+  absolutePath: string;
+  hasPackMcmeta: boolean;
+  hasData: boolean;
+  hasAssets: boolean;
+}
+
+export interface DatapackDiscovery {
+  roots: DatapackRoot[];
+  namespaces: string[];
+  dataKinds: DataKind[];
+  assetKinds: AssetKind[];
+}
+
+export interface DatapackFileEntry {
+  absolutePath: string;
+  relativePath: string;
+  namespace: string;
+  kind: DatapackKind;
+  domain: DatapackDomain;
+  sizeBytes: number;
+}
+
+export type DatapackSkipReason = "unreadable" | "binary" | "too-large";
+
+export interface DatapackSkippedFile {
+  absolutePath: string;
+  relativePath: string;
+  reason: DatapackSkipReason;
+}
+
+export interface DatapackBudget {
+  limit?: number;
+  maxFiles?: number;
+  maxBytesPerFile?: number;
+}
+
+export interface DatapackFileList {
+  entries: DatapackFileEntry[];
+  skipped: DatapackSkippedFile[];
+  truncated: boolean;
+}
+
+export interface DatapackSearchMatch {
+  file: DatapackFileEntry;
+  line: number;
+  column: number;
+  preview: string;
+}
+
+export interface DatapackSearchResult {
+  matches: DatapackSearchMatch[];
+  skipped: DatapackSkippedFile[];
+  truncated: boolean;
+}
+
+export interface DatapackReadResult {
+  file?: DatapackFileEntry;
+  content?: string;
+  skipped?: DatapackSkippedFile;
+}

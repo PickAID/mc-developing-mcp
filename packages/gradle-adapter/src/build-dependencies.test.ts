@@ -1,0 +1,117 @@
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+import {
+  extractGradleDeclaredDependencies,
+  readGradleDeclaredDependencies
+} from "./build-dependencies.js";
+
+describe("extractGradleDeclaredDependencies", () => {
+  it("extracts common Groovy and Kotlin dependency notations", () => {
+    expect(
+      extractGradleDeclaredDependencies(`
+        dependencies {
+          implementation "org.widgets:widget-api:1.0.0"
+          modImplementation("com.example:example-lib:2.0.0")
+          api(group = "net.minecraftforge", name = "eventbus", version = "6.2.33")
+        }
+      `)
+    ).toEqual([
+      {
+        group: "org.widgets",
+        artifact: "widget-api",
+        version: "1.0.0",
+        notation: "org.widgets:widget-api:1.0.0"
+      },
+      {
+        group: "com.example",
+        artifact: "example-lib",
+        version: "2.0.0",
+        notation: "com.example:example-lib:2.0.0"
+      },
+      {
+        group: "net.minecraftforge",
+        artifact: "eventbus",
+        version: "6.2.33",
+        notation: "net.minecraftforge:eventbus:6.2.33"
+      }
+    ]);
+  });
+});
+
+describe("readGradleDeclaredDependencies", () => {
+  it("reads dependency declarations from build.gradle and build.gradle.kts", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
+
+    await writeGradleFile(
+      workspaceRoot,
+      "build.gradle",
+      'dependencies { implementation "org.widgets:widget-api:1.0.0" }\n'
+    );
+    await writeGradleFile(
+      workspaceRoot,
+      "build.gradle.kts",
+      'dependencies { modImplementation("com.example:example-lib:2.0.0") }\n'
+    );
+
+    await expect(
+      readGradleDeclaredDependencies({ workspaceRoot })
+    ).resolves.toMatchObject([
+      {
+        group: "org.widgets",
+        artifact: "widget-api",
+        sourceFile: "build.gradle"
+      },
+      {
+        group: "com.example",
+        artifact: "example-lib",
+        sourceFile: "build.gradle.kts"
+      }
+    ]);
+  });
+
+  it("resolves version catalog aliases used by Gradle build files", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
+
+    await writeGradleFile(
+      workspaceRoot,
+      "build.gradle.kts",
+      "dependencies { implementation(libs.forge.eventbus) }\n"
+    );
+    await writeGradleFile(
+      workspaceRoot,
+      "gradle/libs.versions.toml",
+      [
+        "[versions]",
+        "forgeEventbus = \"6.2.33\"",
+        "",
+        "[libraries]",
+        "forge-eventbus = { module = \"net.minecraftforge:eventbus\", version.ref = \"forgeEventbus\" }"
+      ].join("\n")
+    );
+
+    await expect(
+      readGradleDeclaredDependencies({ workspaceRoot })
+    ).resolves.toContainEqual({
+      group: "net.minecraftforge",
+      artifact: "eventbus",
+      version: "6.2.33",
+      notation: "net.minecraftforge:eventbus:6.2.33",
+      sourceFile: "build.gradle.kts"
+    });
+  });
+});
+
+async function writeGradleFile(
+  workspaceRoot: string,
+  fileName: string,
+  content: string
+): Promise<void> {
+  const targetPath = join(workspaceRoot, fileName);
+
+  await mkdir(dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, content);
+}

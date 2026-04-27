@@ -1,0 +1,22 @@
+{
+  "name": "@mcpskill/source-package-manager",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "tsc -b ../shared-types ../jar-source-adapter ../source-index . && vitest run --root ../.. packages/source-package-manager/src/confirmation.test.ts packages/source-package-manager/src/executor.test.ts packages/source-package-manager/src/install.test.ts"
+  },
+  "dependencies": {
+    "@mcpskill/jar-source-adapter": "workspace:*",
+    "@mcpskill/source-index": "workspace:*",
+    "@mcpskill/shared-types": "workspace:*"
+  }
+}

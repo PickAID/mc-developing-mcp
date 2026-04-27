@@ -1,0 +1,26 @@
+{
+  "name": "@mcpskill/service-profile",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "tsc -b ../shared-types ../workspace-detector ../gradle-adapter ../jar-source-adapter ../java-jdtls-adapter ../kubejs-types-adapter ../datapack-adapter . && vitest run --root ../.. packages/service-profile/src/profile.test.ts"
+  },
+  "dependencies": {
+    "@mcpskill/datapack-adapter": "workspace:*",
+    "@mcpskill/gradle-adapter": "workspace:*",
+    "@mcpskill/jar-source-adapter": "workspace:*",
+    "@mcpskill/java-jdtls-adapter": "workspace:*",
+    "@mcpskill/kubejs-types-adapter": "workspace:*",
+    "@mcpskill/shared-types": "workspace:*",
+    "@mcpskill/workspace-detector": "workspace:*"
+  }
+}

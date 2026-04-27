@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../../packages/agent-harness" },
+    { "path": "../../packages/gradle-adapter" },
+    { "path": "../../packages/jar-source-adapter" },
+    { "path": "../../packages/kubejs-language-service" },
+    { "path": "../../packages/kubejs-types-adapter" },
+    { "path": "../../packages/runtime-manager" },
+    { "path": "../../packages/service-profile" },
+    { "path": "../../packages/source-package-manager" },
+    { "path": "../../packages/shared-types" },
+    { "path": "../../packages/vanilla-source-adapter" },
+    { "path": "../../packages/workspace-detector" }
+  ]
+}

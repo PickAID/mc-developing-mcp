@@ -1,0 +1,48 @@
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+import { discoverDeclaredDependencyBinaryArchives } from "./dependency-binary-archives.js";
+
+describe("discoverDeclaredDependencyBinaryArchives", () => {
+  it("locates binary jars directly from declared Gradle dependency coordinates", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-dep-bin-workspace-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-dep-bin-home-"));
+    const binaryJar = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "org.widgets",
+      "widget-api",
+      "1.0.0",
+      "hash",
+      "widget-api-1.0.0.jar"
+    );
+
+    await writeFile(
+      join(workspaceRoot, "build.gradle"),
+      'dependencies { implementation "org.widgets:widget-api:1.0.0" }\n'
+    );
+    await mkdir(join(binaryJar, ".."), { recursive: true });
+    await writeFile(binaryJar, Buffer.from("not a real jar"));
+
+    await expect(
+      discoverDeclaredDependencyBinaryArchives({
+        workspaceRoot,
+        gradleUserHome,
+        includeDefaultGradleUserHome: false
+      })
+    ).resolves.toEqual([
+      {
+        archivePath: binaryJar,
+        source: "gradle-cache",
+        confidence: "high",
+        reason:
+          "declared Gradle dependency org.widgets:widget-api:1.0.0 in build.gradle"
+      }
+    ]);
+  });
+});

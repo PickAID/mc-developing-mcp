@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_019",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "util",
-  "source_file": "UtilsJS.java",
-  "symbols": ["UtilsJS", "getUniqueId", "getObjectType", "toList", "toMap", "toString", "toNumber", "toBoolean", "toResourceLocation", "toColor", "toVec3", "toAABB", "toBlockPos", "toDirection", "toIngredient", "toItemStack", "toFluidStack", "toEntityType", "toSoundEvent", "toParticleType", "toPotion", "toMobEffect", "toEnchantment", "toRecipe", "toMapColor", "toSoundType", "toRenderType", "toTextColor"],
-  "coverage_status": "complete"
-}

@@ -1,0 +1,23 @@
+{
+  "name": "@mcpskill/agent-runtime",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@mcpskill/agent-harness": "workspace:*",
+    "@mcpskill/runtime-manager": "workspace:*",
+    "@mcpskill/shared-types": "workspace:*",
+    "@mcpskill/workspace-detector": "workspace:*"
+  }
+}

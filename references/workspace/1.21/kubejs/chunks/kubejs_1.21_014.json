@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_014",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "client",
-  "source_file": "ClientProperties.java",
-  "symbols": ["ClientProperties", "instance", "get", "reload", "hideErrors", "logAddedRecipes", "logRemovedRecipes", "logModifiedRecipes", "logChangesInChat", "logRecipeDebug", "showChangesInChat", "showRecipeErrors", "renderDebugOverlays", "displayErrorScreen", "creativeTabIconTexture", "tooltipBackgroundType", "tooltipTitleFormat", "tooltipFormat", "itemTooltipFormat", "fluidTooltipFormat"],
-  "coverage_status": "complete"
-}

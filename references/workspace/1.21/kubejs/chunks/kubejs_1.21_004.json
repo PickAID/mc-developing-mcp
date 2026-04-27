@@ -1,9 +1,0 @@
-{
-  "chunk_id": "kubejs_1.21_004",
-  "version": "1.21",
-  "loader": "kubejs",
-  "category": "properties",
-  "source_file": "DevProperties.java",
-  "symbols": ["DevProperties", "instance", "get", "reload", "virtualPackOutput", "logRegistryTypes", "logRegistryEventObjects", "logAddedRecipes", "logRemovedRecipes", "logModifiedRecipes", "logSkippedRecipes", "logRecipeDebug", "logSkippedTags", "logErroringRecipes", "logErroringParsedRecipes", "logInvalidRecipeHandlers", "logSkippedPlugins", "logGeneratedData", "logEventErrorStackTrace", "logChangesInChat", "strictTags", "alwaysCaptureErrors", "reloadOnFileSave", "kubedexSound"],
-  "coverage_status": "complete"
-}

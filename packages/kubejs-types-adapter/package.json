@@ -1,0 +1,17 @@
+{
+  "name": "@mcpskill/kubejs-types-adapter",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "tsc -b . && vitest run --root ../.. packages/kubejs-types-adapter/src/discovery.test.ts packages/kubejs-types-adapter/src/summary.test.ts packages/kubejs-types-adapter/src/summary-filter.test.ts"
+  }
+}
