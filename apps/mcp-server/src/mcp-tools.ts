@@ -91,7 +91,10 @@ async function executeMcpDevelopTool(
     const input = mcpDevelopInputSchema.parse(rawInput);
     const runtimeRoot = resolveRuntimeRoot(input, options);
     const workspaceRoot = resolveWorkspaceRoot(input, options);
-    const prismRoot = input.prismRoot ?? options.env?.MCPSKILL_PRISM_ROOT;
+    const prismRoot =
+      input.prismRoot ??
+      options.env?.MCPSKILL_PRISM_ROOT ??
+      process.env.MCPSKILL_PRISM_ROOT;
     const bootstrap = await buildMcpServerBootstrap({
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
@@ -130,6 +133,7 @@ function resolveRuntimeRoot(
   return (
     input.runtimeRoot ??
     options.env?.MCPSKILL_RUNTIME_ROOT ??
+    process.env.MCPSKILL_RUNTIME_ROOT ??
     join(homedir(), ".cache", "mc-developing-mcp", "runtime")
   );
 }
@@ -141,6 +145,7 @@ function resolveWorkspaceRoot(
   return (
     input.workspaceRoot ??
     options.env?.MCPSKILL_WORKSPACE_ROOT ??
+    process.env.MCPSKILL_WORKSPACE_ROOT ??
     options.cwd ??
     process.cwd()
   );
