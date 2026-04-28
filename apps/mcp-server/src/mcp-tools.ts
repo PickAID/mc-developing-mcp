@@ -11,6 +11,10 @@ import {
   type McpServerRequestExecutorResult
 } from "./request-executor.js";
 import { buildMcpDevelopStructuredContent } from "./mcp-structured-content.js";
+import {
+  createMcpJavaDiagnosticsRuntime,
+  type McpJavaDiagnosticsRuntime
+} from "./java-diagnostics-runtime.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -63,12 +67,22 @@ export interface McpToolRuntimeOptions {
   env?: Partial<NodeJS.ProcessEnv>;
   cwd?: string;
   lspDiagnostics?: LspDiagnosticRegistry;
+  javaDiagnosticsRuntime?: McpJavaDiagnosticsRuntime;
 }
 
 export function registerMcpServerTools(
   registry: McpToolRegistry,
   options: McpToolRuntimeOptions = {}
 ): void {
+  const runtimeOptions = {
+    ...options,
+    javaDiagnosticsRuntime:
+      options.javaDiagnosticsRuntime ??
+      createMcpJavaDiagnosticsRuntime({
+        env: options.env as NodeJS.ProcessEnv | undefined
+      })
+  };
+
   registry.registerTool(
     MC_DEVELOP_TOOL_NAME,
     {
@@ -82,7 +96,7 @@ export function registerMcpServerTools(
         openWorldHint: false
       }
     },
-    (input) => executeMcpDevelopTool(input, options)
+    (input) => executeMcpDevelopTool(input, runtimeOptions)
   );
 }
 
@@ -102,10 +116,13 @@ async function executeMcpDevelopTool(
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
     });
+    const lspDiagnostics =
+      options.lspDiagnostics ??
+      (await resolveJavaDiagnostics(input, options, workspaceRoot));
     const result = await executeMcpServerRequest({
       bootstrap,
       requestText: input.requestText,
-      lspDiagnostics: options.lspDiagnostics
+      lspDiagnostics
     });
 
     return {
@@ -128,6 +145,26 @@ async function executeMcpDevelopTool(
       ]
     };
   }
+}
+
+async function resolveJavaDiagnostics(
+  input: McpDevelopToolInput,
+  options: McpToolRuntimeOptions,
+  workspaceRoot: string
+): Promise<LspDiagnosticRegistry | undefined> {
+  if (!options.javaDiagnosticsRuntime) {
+    return undefined;
+  }
+  if (!shouldPrepareJavaDiagnostics(input.requestText)) {
+    return undefined;
+  }
+
+  const prepared = await options.javaDiagnosticsRuntime.prepare({
+    workspaceRoot,
+    requestText: input.requestText
+  });
+
+  return prepared.diagnostics;
 }
 
 function resolveRuntimeRoot(
@@ -184,6 +221,12 @@ function buildMcpDevelopToolDescription(): string {
     "It treats KubeJS as Minecraft scripting instead of generic JavaScript, checks ProbeJS/d.ts context when available, and can inspect Gradle files, Java sources, datapack data/assets, logs, and mod JAR contents.",
     "Return value includes a compact text summary plus structured route/evidence data for follow-up reasoning."
   ].join(" ");
+}
+
+function shouldPrepareJavaDiagnostics(requestText: string): boolean {
+  return /(?:compile error|compilation error|cannot resolve|cannot be resolved|unresolved symbol|unresolved import|missing symbol|diagnostic|diagnostics|javac|type mismatch|method undefined|编译|诊断|找不到符号|无法解析)/i.test(
+    requestText
+  );
 }
 
 function toStructuredContent(

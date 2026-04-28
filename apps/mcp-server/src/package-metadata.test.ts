@@ -13,5 +13,8 @@ describe("@mcpskill/mcp-server package metadata", () => {
     });
     expect(packageJson.scripts?.test).toContain("stdio-subprocess.test.ts");
     expect(packageJson.scripts?.test).toContain("mcp-structured-content.test.ts");
+    expect(packageJson.scripts?.test).toContain(
+      "java-diagnostics-runtime.test.ts"
+    );
   });
 });

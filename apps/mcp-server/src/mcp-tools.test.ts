@@ -12,6 +12,7 @@ import {
   registerMcpServerTools,
   type McpToolHandler
 } from "./mcp-tools.js";
+import type { McpJavaDiagnosticsRuntime } from "./java-diagnostics-runtime.js";
 
 const tempRoots: string[] = [];
 
@@ -137,6 +138,84 @@ describe("registerMcpServerTools", () => {
           }
         }
       ]
+    });
+  });
+
+  it("uses the Java diagnostics runtime when direct diagnostics are not injected", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mcp-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+    const diagnostics = createLspDiagnosticRegistry();
+    const javaDiagnosticsRuntime: McpJavaDiagnosticsRuntime = {
+      async prepare(input) {
+        diagnostics.publish({
+          uri: pathToFileURL(
+            join(
+              input.workspaceRoot,
+              "src",
+              "main",
+              "java",
+              "example",
+              "Broken.java"
+            )
+          ).href,
+          diagnostics: [
+            {
+              message: "RegistryObject cannot be resolved to a type",
+              severity: 1,
+              range: {
+                start: { line: 11, character: 4 },
+                end: { line: 11, character: 18 }
+              },
+              source: "jdtls"
+            }
+          ]
+        });
+
+        return {
+          status: "ready",
+          diagnostics,
+          syncedFiles: [
+            join(
+              input.workspaceRoot,
+              "src",
+              "main",
+              "java",
+              "example",
+              "Broken.java"
+            )
+          ],
+          profileStatus: "ready"
+        };
+      },
+      async stopAll() {}
+    };
+
+    registerMcpServerTools(registry, { javaDiagnosticsRuntime });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Fix the compile error: cannot resolve symbol RegistryObject.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        contextCandidateIds: ["candidate-1-java_diagnostics"],
+        selectedCandidateId: "candidate-2-workspace_source"
+      },
+      selectedEvidence: {
+        payload: {
+          source: "workspace_source",
+          references: [
+            {
+              symbol: "example.Broken",
+              relativePath: "src/main/java/example/Broken.java"
+            }
+          ]
+        }
+      }
     });
   });
 });
