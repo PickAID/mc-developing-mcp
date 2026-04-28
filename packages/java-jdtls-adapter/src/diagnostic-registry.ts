@@ -11,7 +11,9 @@ export interface LspDiagnosticRegistryOptions {
 export interface LspDiagnosticRegistry {
   publish(params: LspPublishDiagnosticsParams): void;
   snapshot(): LspPublishDiagnosticsParams[];
-  drainPending(): LspPublishDiagnosticsParams[];
+  drainPending(
+    filter?: (params: LspPublishDiagnosticsParams) => boolean
+  ): LspPublishDiagnosticsParams[];
   clear(uri?: string): void;
 }
 
@@ -25,15 +27,25 @@ export function createLspDiagnosticRegistry(
     options.maxDiagnosticsPerFile ?? DEFAULT_MAX_DIAGNOSTICS_PER_FILE;
   const maxTotalDiagnostics =
     options.maxTotalDiagnostics ?? DEFAULT_MAX_TOTAL_DIAGNOSTICS;
-  const byUri = new Map<string, LspDiagnostic[]>();
+  const byUri = new Map<string, StoredDiagnostics>();
   const pendingUris = new Set<string>();
 
   return {
     publish(params) {
-      byUri.set(
-        params.uri,
-        limitDiagnostics(dedupeDiagnostics(params.diagnostics), maxDiagnosticsPerFile)
+      const dedupedDiagnostics = dedupeDiagnostics(params.diagnostics);
+      const diagnostics = limitDiagnostics(
+        dedupedDiagnostics,
+        maxDiagnosticsPerFile
       );
+
+      byUri.set(params.uri, {
+        diagnostics,
+        originalDiagnosticCount: dedupedDiagnostics.length,
+        omittedDiagnosticCount: Math.max(
+          0,
+          dedupedDiagnostics.length - diagnostics.length
+        )
+      });
       pendingUris.add(params.uri);
       enforceTotalBudget(byUri, maxTotalDiagnostics);
     },
@@ -42,11 +54,19 @@ export function createLspDiagnosticRegistry(
       return mapToSnapshot(byUri);
     },
 
-    drainPending() {
-      const result = mapToSnapshot(
+    drainPending(filter) {
+      const pending = mapToSnapshot(
         new Map([...byUri].filter(([uri]) => pendingUris.has(uri)))
       );
-      pendingUris.clear();
+      const result = filter ? pending.filter(filter) : pending;
+
+      if (filter) {
+        for (const entry of result) {
+          pendingUris.delete(entry.uri);
+        }
+      } else {
+        pendingUris.clear();
+      }
 
       return result;
     },
@@ -88,32 +108,48 @@ function limitDiagnostics(
 }
 
 function enforceTotalBudget(
-  byUri: Map<string, LspDiagnostic[]>,
+  byUri: Map<string, StoredDiagnostics>,
   maxTotalDiagnostics: number
 ): void {
   let remaining = maxTotalDiagnostics;
 
   for (const uri of [...byUri.keys()].sort()) {
-    const diagnostics = byUri.get(uri) ?? [];
-    const kept = diagnostics.slice(0, Math.max(0, remaining));
+    const entry = byUri.get(uri);
+    if (!entry) {
+      continue;
+    }
+
+    const kept = entry.diagnostics.slice(0, Math.max(0, remaining));
     remaining -= kept.length;
 
     if (kept.length === 0) {
       byUri.delete(uri);
     } else {
-      byUri.set(uri, kept);
+      byUri.set(uri, {
+        ...entry,
+        diagnostics: kept,
+        omittedDiagnosticCount:
+          entry.omittedDiagnosticCount + entry.diagnostics.length - kept.length
+      });
     }
   }
 }
 
 function mapToSnapshot(
-  byUri: Map<string, LspDiagnostic[]>
+  byUri: Map<string, StoredDiagnostics>
 ): LspPublishDiagnosticsParams[] {
   return [...byUri.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
-    .map(([uri, diagnostics]) => ({
+    .map(([uri, entry]) => ({
       uri,
-      diagnostics: [...diagnostics]
+      diagnostics: [...entry.diagnostics],
+      ...(entry.omittedDiagnosticCount > 0
+        ? {
+            truncated: true,
+            originalDiagnosticCount: entry.originalDiagnosticCount,
+            omittedDiagnosticCount: entry.omittedDiagnosticCount
+          }
+        : {})
     }));
 }
 
@@ -136,4 +172,10 @@ function diagnosticKey(diagnostic: LspDiagnostic): string {
     code: diagnostic.code,
     source: diagnostic.source
   });
+}
+
+interface StoredDiagnostics {
+  diagnostics: LspDiagnostic[];
+  originalDiagnosticCount: number;
+  omittedDiagnosticCount: number;
 }

@@ -2,6 +2,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { LspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
 import { z } from "zod";
 
 import { buildMcpServerBootstrap } from "./bootstrap.js";
@@ -61,6 +62,7 @@ export interface McpToolRegistry {
 export interface McpToolRuntimeOptions {
   env?: Partial<NodeJS.ProcessEnv>;
   cwd?: string;
+  lspDiagnostics?: LspDiagnosticRegistry;
 }
 
 export function registerMcpServerTools(
@@ -102,7 +104,8 @@ async function executeMcpDevelopTool(
     });
     const result = await executeMcpServerRequest({
       bootstrap,
-      requestText: input.requestText
+      requestText: input.requestText,
+      lspDiagnostics: options.lspDiagnostics
     });
 
     return {

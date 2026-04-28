@@ -1,7 +1,15 @@
 import { open, stat } from "node:fs/promises";
+import { isAbsolute, relative } from "node:path";
+import { fileURLToPath } from "node:url";
+import type {
+  LspDiagnostic,
+  LspDiagnosticRegistry,
+  LspPublishDiagnosticsParams
+} from "@mcpskill/java-jdtls-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,
+  McpServerEvidenceExecutor,
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
 
@@ -17,9 +25,30 @@ const IGNORED_ACTIONABLE_PREFIXES = [
   "com.mojang."
 ];
 
+export interface McpServerWorkspaceAnalyzeExecutorOptions {
+  lspDiagnostics?: LspDiagnosticRegistry;
+}
+
+export function buildMcpServerWorkspaceAnalyzeExecutor(
+  options: McpServerWorkspaceAnalyzeExecutorOptions = {}
+): McpServerEvidenceExecutor {
+  return (input) => executeWorkspaceAnalyze(input, options);
+}
+
 export async function executeMcpServerWorkspaceAnalyze(
   input: McpServerEvidenceExecutorInput
 ): Promise<McpServerEvidenceExecutorResult> {
+  return executeWorkspaceAnalyze(input, {});
+}
+
+async function executeWorkspaceAnalyze(
+  input: McpServerEvidenceExecutorInput,
+  options: McpServerWorkspaceAnalyzeExecutorOptions
+): Promise<McpServerEvidenceExecutorResult> {
+  if (input.candidate.routeStep === "java_diagnostics") {
+    return executeJavaDiagnosticsAnalyze(input, options);
+  }
+
   if (input.candidate.routeStep !== "log_files") {
     return {
       matched: false,
@@ -52,6 +81,74 @@ export async function executeMcpServerWorkspaceAnalyze(
       truncated: analyzedLogs.some((log) => log.summary.truncated)
     }
   };
+}
+
+function executeJavaDiagnosticsAnalyze(
+  input: McpServerEvidenceExecutorInput,
+  options: McpServerWorkspaceAnalyzeExecutorOptions
+): McpServerEvidenceExecutorResult {
+  if (!options.lspDiagnostics) {
+    return {
+      matched: false,
+      summary: "No Java LSP diagnostic registry is attached."
+    };
+  }
+
+  const workspaceRoot =
+    input.requestPlan.requestContext.workspaceContext?.descriptor.root;
+  if (!workspaceRoot) {
+    return {
+      matched: false,
+      summary: "No workspace root is available for Java LSP diagnostics."
+    };
+  }
+
+  const pending = options.lspDiagnostics.drainPending((entry) =>
+    isFileUriInsideWorkspace(entry.uri, workspaceRoot)
+  );
+  const files = pending
+    .filter((entry) => entry.diagnostics.length > 0)
+    .map(toDiagnosticFile);
+  const totalDiagnostics = files.reduce(
+    (total, file) => total + file.diagnosticCount,
+    0
+  );
+
+  if (totalDiagnostics === 0) {
+    return {
+      matched: false,
+      summary: "No pending Java LSP diagnostics were available."
+    };
+  }
+
+  return {
+    matched: true,
+    summary: `Drained ${totalDiagnostics} pending Java LSP diagnostic(s) from ${files.length} file(s).`,
+    payload: {
+      source: "workspace_analyze",
+      mode: "java_diagnostics",
+      totalDiagnostics,
+      files,
+      truncated: files.some((file) => file.truncated)
+    }
+  };
+}
+
+function isFileUriInsideWorkspace(uri: string, workspaceRoot: string): boolean {
+  let filePath: string;
+
+  try {
+    filePath = fileURLToPath(uri);
+  } catch {
+    return false;
+  }
+
+  const relativePath = relative(workspaceRoot, filePath);
+  return (
+    relativePath.length > 0 &&
+    !relativePath.startsWith("..") &&
+    !isAbsolute(relativePath)
+  );
 }
 
 function collectLogPaths(input: McpServerEvidenceExecutorInput): string[] {
@@ -150,6 +247,45 @@ function mergeLogSignals(logs: AnalyzedLogFile[]): CrashSignals {
   };
 }
 
+function toDiagnosticFile(entry: LspPublishDiagnosticsParams): DiagnosticFile {
+  return {
+    uri: entry.uri,
+    diagnosticCount: entry.diagnostics.length,
+    diagnostics: entry.diagnostics.map(toCompactDiagnostic),
+    truncated: entry.truncated === true,
+    originalDiagnosticCount: entry.originalDiagnosticCount,
+    omittedDiagnosticCount: entry.omittedDiagnosticCount
+  };
+}
+
+function toCompactDiagnostic(diagnostic: LspDiagnostic): CompactDiagnostic {
+  return {
+    message: diagnostic.message,
+    severity: diagnosticSeverity(diagnostic.severity),
+    line: diagnostic.range ? diagnostic.range.start.line + 1 : undefined,
+    character: diagnostic.range
+      ? diagnostic.range.start.character + 1
+      : undefined,
+    code: diagnostic.code,
+    source: diagnostic.source
+  };
+}
+
+function diagnosticSeverity(severity: number | undefined): string {
+  switch (severity) {
+    case 1:
+      return "error";
+    case 2:
+      return "warning";
+    case 3:
+      return "information";
+    case 4:
+      return "hint";
+    default:
+      return "unknown";
+  }
+}
+
 function isActionableClass(className: string): boolean {
   return !IGNORED_ACTIONABLE_PREFIXES.some((prefix) =>
     className.startsWith(prefix)
@@ -183,4 +319,22 @@ interface CrashStackFrame {
   methodName: string;
   sourceFile: string;
   lineNumber?: number;
+}
+
+interface DiagnosticFile {
+  uri: string;
+  diagnosticCount: number;
+  diagnostics: CompactDiagnostic[];
+  truncated: boolean;
+  originalDiagnosticCount?: number;
+  omittedDiagnosticCount?: number;
+}
+
+interface CompactDiagnostic {
+  message: string;
+  severity: string;
+  line?: number;
+  character?: number;
+  code?: string | number;
+  source?: string;
 }

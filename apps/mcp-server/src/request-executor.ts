@@ -4,6 +4,7 @@ import type {
 } from "@mcpskill/shared-types";
 import type { DocsPackageSelectionResult } from "@mcpskill/docs-retrieval";
 import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
+import type { LspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
 import {
   buildLocalSourcePackageRecipeExecutor,
   type SourcePackageRecipeExecutor
@@ -21,7 +22,7 @@ import {
   buildMcpServerSourceBundleExecutor,
   type McpServerSourceBundleExecutorOptions
 } from "./source-bundle-executor.js";
-import { executeMcpServerWorkspaceAnalyze } from "./workspace-analyze-executor.js";
+import { buildMcpServerWorkspaceAnalyzeExecutor } from "./workspace-analyze-executor.js";
 import type { McpServerEvidenceExecutor } from "./request-handler.js";
 import {
   buildContextExecution,
@@ -52,6 +53,7 @@ export interface McpServerRequestExecutorOptions {
   sourceBundle?: McpServerRequestSourceBundleOptions;
   contextQuery?: McpServerContextQueryExecutorOptions;
   modArchiveContentCache?: ArchiveContentCache;
+  lspDiagnostics?: LspDiagnosticRegistry;
 }
 
 export type McpServerRequestSourceBundleOptions = Omit<
@@ -84,7 +86,9 @@ function buildDefaultExecutors(
   options: McpServerRequestExecutorOptions
 ): Partial<Record<AgentRuntimeToolName, McpServerEvidenceExecutor>> {
   return {
-    "workspace.analyze": executeMcpServerWorkspaceAnalyze,
+    "workspace.analyze": buildMcpServerWorkspaceAnalyzeExecutor({
+      lspDiagnostics: options.lspDiagnostics
+    }),
     "source.bundle": buildMcpServerSourceBundleExecutor({
       ...options.sourceBundle,
       runtimeRoot: options.bootstrap.runtimePolicy.runtimeRoot,

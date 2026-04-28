@@ -1,9 +1,11 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { deflateRawSync } from "node:zlib";
 
 import { afterEach, describe, expect, it } from "vitest";
+import { createLspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
 
 import { buildMcpServerBootstrap } from "./bootstrap.js";
 import { executeMcpServerRequest } from "./request-executor.js";
@@ -72,6 +74,79 @@ describe("executeMcpServerRequest", () => {
       failedCandidateIds: []
     });
   });
+
+  it("uses Java LSP diagnostics as context before selecting workspace source evidence", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+    const diagnostics = createLspDiagnosticRegistry();
+    const seenQueries: string[] = [];
+    diagnostics.publish({
+      uri: pathToFileURL(
+        join(workspaceRoot, "src", "main", "java", "example", "Broken.java")
+      ).href,
+      diagnostics: [
+        {
+          message: "RegistryObject cannot be resolved to a type",
+          severity: 1,
+          range: {
+            start: { line: 11, character: 4 },
+            end: { line: 11, character: 18 }
+          },
+          source: "jdtls"
+        }
+      ]
+    });
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "Fix the compile error: cannot resolve symbol RegistryObject.",
+      lspDiagnostics: diagnostics,
+      executors: {
+        "source.bundle": ({ candidate }) => {
+          seenQueries.push(candidate.queryHint ?? "");
+          return {
+            matched: true,
+            summary: "Selected source using diagnostic context.",
+            payload: {
+              source: "workspace_source",
+              queryHint: candidate.queryHint
+            }
+          };
+        }
+      }
+    });
+
+    expect(result.executions).toMatchObject([
+      {
+        candidateId: "candidate-1-java_diagnostics",
+        routeStep: "java_diagnostics",
+        status: "context",
+        payload: {
+          mode: "java_diagnostics",
+          totalDiagnostics: 1
+        }
+      },
+      {
+        candidateId: "candidate-2-workspace_source",
+        routeStep: "workspace_source",
+        status: "selected"
+      }
+    ]);
+    expect(seenQueries[0]).toContain(
+      "Java diagnostics: Broken.java:12:5 RegistryObject cannot be resolved to a type"
+    );
+    expect(seenQueries[0]).toContain(
+      "Java diagnostic source files: src/main/java/example/Broken.java"
+    );
+    expect(result.trace).toMatchObject({
+      contextCandidateIds: ["candidate-1-java_diagnostics"],
+      selectedCandidateId: "candidate-2-workspace_source"
+    });
+  });
 });
 
 async function createCrashModpackWorkspace(): Promise<string> {
@@ -94,6 +169,21 @@ async function createCrashModpackWorkspace(): Promise<string> {
         compressionMethod: 0
       }
     ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createJavaWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-java-diagnostics-");
+
+  await writeText(
+    join(workspaceRoot, "build.gradle"),
+    'plugins { id "java" }\n'
+  );
+  await writeText(
+    join(workspaceRoot, "src", "main", "java", "example", "Broken.java"),
+    "package example;\nclass Broken {}\n"
   );
 
   return workspaceRoot;

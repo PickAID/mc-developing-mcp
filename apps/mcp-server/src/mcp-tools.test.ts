@@ -1,9 +1,11 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { deflateRawSync } from "node:zlib";
 
 import { afterEach, describe, expect, it } from "vitest";
+import { createLspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
 
 import {
   MC_DEVELOP_TOOL_NAME,
@@ -71,6 +73,72 @@ describe("registerMcpServerTools", () => {
     expect(result.structuredContent).not.toHaveProperty("requestPlan");
     expect(result.structuredContent).not.toHaveProperty("evidencePlan");
   });
+
+  it("returns pending Java LSP diagnostics as context through the high-level tool", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mcp-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+    const diagnostics = createLspDiagnosticRegistry();
+    diagnostics.publish({
+      uri: pathToFileURL(
+        join(workspaceRoot, "src", "main", "java", "example", "Broken.java")
+      ).href,
+      diagnostics: [
+        {
+          message: "RegistryObject cannot be resolved to a type",
+          severity: 1,
+          range: {
+            start: { line: 11, character: 4 },
+            end: { line: 11, character: 18 }
+          },
+          source: "jdtls"
+        }
+      ]
+    });
+
+    registerMcpServerTools(registry, { lspDiagnostics: diagnostics });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Fix the compile error: cannot resolve symbol RegistryObject.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.content[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining("Context: candidate-1-java_diagnostics")
+    });
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        contextCandidateIds: ["candidate-1-java_diagnostics"],
+        selectedCandidateId: "candidate-2-workspace_source"
+      },
+      executions: [
+        {
+          candidateId: "candidate-1-java_diagnostics",
+          payload: {
+            mode: "java_diagnostics",
+            totalDiagnostics: 1
+          }
+        },
+        {
+          candidateId: "candidate-2-workspace_source",
+          payload: {
+            source: "workspace_source",
+            references: [
+              {
+                kind: "java",
+                symbol: "example.Broken",
+                relativePath: "src/main/java/example/Broken.java"
+              }
+            ]
+          }
+        }
+      ]
+    });
+  });
 });
 
 function createCapturingRegistry(): CapturingRegistry {
@@ -104,6 +172,28 @@ async function createCrashModpackWorkspace(): Promise<string> {
         compressionMethod: 0
       }
     ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createJavaWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-mcp-java-");
+
+  await writeText(
+    join(workspaceRoot, "build.gradle"),
+    'plugins { id "java" }\n'
+  );
+  await writeText(
+    join(workspaceRoot, "src", "main", "java", "example", "Broken.java"),
+    [
+      "package example;",
+      "",
+      "class Broken {",
+      "  RegistryObject<?> value;",
+      "}",
+      ""
+    ].join("\n")
   );
 
   return workspaceRoot;

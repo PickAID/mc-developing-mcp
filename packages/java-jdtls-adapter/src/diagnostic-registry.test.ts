@@ -68,10 +68,44 @@ describe("createLspDiagnosticRegistry", () => {
     expect(registry.snapshot()).toEqual([
       {
         uri: "file:///workspace/A.java",
+        truncated: true,
+        originalDiagnosticCount: 3,
+        omittedDiagnosticCount: 1,
         diagnostics: [diagnostic("error", 1), diagnostic("warning", 2)]
       },
       {
         uri: "file:///workspace/B.java",
+        truncated: true,
+        originalDiagnosticCount: 2,
+        omittedDiagnosticCount: 1,
+        diagnostics: [diagnostic("b-error", 1)]
+      }
+    ]);
+  });
+
+  it("can drain only pending diagnostics accepted by a filter", () => {
+    const registry = createLspDiagnosticRegistry();
+
+    registry.publish({
+      uri: "file:///workspace-a/A.java",
+      diagnostics: [diagnostic("a-error", 1)]
+    });
+    registry.publish({
+      uri: "file:///workspace-b/B.java",
+      diagnostics: [diagnostic("b-error", 1)]
+    });
+
+    expect(
+      registry.drainPending((entry) => entry.uri.includes("workspace-a"))
+    ).toEqual([
+      {
+        uri: "file:///workspace-a/A.java",
+        diagnostics: [diagnostic("a-error", 1)]
+      }
+    ]);
+    expect(registry.drainPending()).toEqual([
+      {
+        uri: "file:///workspace-b/B.java",
         diagnostics: [diagnostic("b-error", 1)]
       }
     ]);

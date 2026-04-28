@@ -29,6 +29,9 @@ export interface JdtlsInitializeResult {
 export interface LspPublishDiagnosticsParams {
   uri: string;
   diagnostics: LspDiagnostic[];
+  truncated?: boolean;
+  originalDiagnosticCount?: number;
+  omittedDiagnosticCount?: number;
 }
 
 export interface LspDiagnostic {

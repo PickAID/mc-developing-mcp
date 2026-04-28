@@ -11,6 +11,7 @@
     { "path": "../../packages/datapack-adapter" },
     { "path": "../../packages/gradle-adapter" },
     { "path": "../../packages/jar-source-adapter" },
+    { "path": "../../packages/java-jdtls-adapter" },
     { "path": "../../packages/kubejs-language-service" },
     { "path": "../../packages/kubejs-types-adapter" },
     { "path": "../../packages/runtime-manager" },

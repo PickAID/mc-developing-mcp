@@ -215,6 +215,45 @@ describe("buildMcpServerEvidencePlan", () => {
       ]
     });
   });
+
+  it("adds Java diagnostics evidence before source for compile error requests", async () => {
+    const workspaceRoot = await createForgeWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot: "/tmp/mcpskill-runtime",
+      workspace: { workspaceRoot }
+    });
+
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Fix the compile error: cannot resolve symbol RegistryObject."
+    );
+
+    expect(buildMcpServerEvidencePlan(requestPlan)).toMatchObject({
+      candidates: [
+        {
+          id: "candidate-1-java_diagnostics",
+          routeStep: "java_diagnostics",
+          provenance: "java_diagnostics",
+          preferredTool: "workspace.analyze",
+          estimatedCost: "low",
+          reliability: "high",
+          reason: "Inspect pending Java LSP diagnostics before source or docs."
+        },
+        {
+          id: "candidate-2-workspace_source",
+          provenance: "workspace_source"
+        },
+        {
+          id: "candidate-3-docs_lookup",
+          provenance: "docs"
+        }
+      ],
+      trace: {
+        routeSteps: ["java_diagnostics", "workspace_source", "docs_lookup"],
+        fallbackCandidateIds: ["candidate-3-docs_lookup"]
+      }
+    });
+  });
 });
 
 function resolveScenarioPath(name: string): string {

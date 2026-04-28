@@ -111,6 +111,9 @@ function compactValue(
   if (typeof value === "string") {
     return compactString(value, budget.maxStringLength, stats);
   }
+  if (typeof value === "undefined") {
+    return undefined;
+  }
   if (typeof value !== "object") {
     return String(value);
   }

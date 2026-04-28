@@ -43,7 +43,10 @@ export type AgentRuntimeRouteStep =
   | "datapack_files"
   | "docs_lookup";
 
-export type AgentRuntimeTaskRouteStep = AgentRuntimeRouteStep | "log_files";
+export type AgentRuntimeTaskRouteStep =
+  | AgentRuntimeRouteStep
+  | "log_files"
+  | "java_diagnostics";
 
 export type AgentRuntimeDefaultRoutePlan =
   | {
@@ -119,6 +122,7 @@ export interface AgentRuntimeAuthoringPolicy {
 export type AgentRuntimeTaskIntentId =
   | "workspace_default"
   | "crash_triage"
+  | "java_diagnostics"
   | "kubejs_authoring"
   | "datapack_lookup";
 

@@ -1,13 +1,18 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
+import { createLspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
 
 import { buildMcpServerBootstrap } from "./bootstrap.js";
 import { buildMcpServerEvidencePlan } from "./evidence-plan.js";
 import { buildMcpServerRequestPlan } from "./request-plan.js";
-import { executeMcpServerWorkspaceAnalyze } from "./workspace-analyze-executor.js";
+import {
+  buildMcpServerWorkspaceAnalyzeExecutor,
+  executeMcpServerWorkspaceAnalyze
+} from "./workspace-analyze-executor.js";
 
 const tempRoots: string[] = [];
 
@@ -75,6 +80,81 @@ describe("executeMcpServerWorkspaceAnalyze", () => {
       }
     });
   });
+
+  it("drains pending Java LSP diagnostics into compact workspace evidence", async () => {
+    const workspaceRoot = await createCrashWorkspace("not a crash log\n");
+    const registry = createLspDiagnosticRegistry();
+    const workspaceUri = pathToFileURL(
+      join(workspaceRoot, "src", "main", "java", "example", "Broken.java")
+    ).href;
+    const externalUri = pathToFileURL(
+      join(tmpdir(), "other-workspace", "src", "main", "java", "Other.java")
+    ).href;
+
+    registry.publish({
+      uri: workspaceUri,
+      diagnostics: [
+        diagnostic("RegistryObject cannot be resolved to a type", 1),
+        diagnostic("Unused import", 3)
+      ]
+    });
+    registry.publish({
+      uri: externalUri,
+      diagnostics: [diagnostic("External workspace error", 1)]
+    });
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Fix the compile error: cannot resolve symbol RegistryObject."
+    );
+    const candidate = input.evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "java_diagnostics"
+    );
+
+    if (!candidate) {
+      throw new Error("Expected java_diagnostics candidate.");
+    }
+
+    await expect(
+      buildMcpServerWorkspaceAnalyzeExecutor({
+        lspDiagnostics: registry
+      })({ ...input, candidate })
+    ).resolves.toMatchObject({
+      matched: true,
+      summary: "Drained 2 pending Java LSP diagnostic(s) from 1 file(s).",
+      payload: {
+        source: "workspace_analyze",
+        mode: "java_diagnostics",
+        totalDiagnostics: 2,
+        files: [
+          {
+            uri: workspaceUri,
+            diagnosticCount: 2,
+            diagnostics: [
+              {
+                message: "RegistryObject cannot be resolved to a type",
+                severity: "error",
+                line: 2,
+                character: 1
+              },
+              {
+                message: "Unused import",
+                severity: "information",
+                line: 4,
+                character: 1
+              }
+            ]
+          }
+        ],
+        truncated: false
+      }
+    });
+    expect(registry.drainPending()).toEqual([
+      {
+        uri: externalUri,
+        diagnostics: [diagnostic("External workspace error", 1)]
+      }
+    ]);
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
@@ -84,12 +164,10 @@ async function createExecutorInput(workspaceRoot: string, requestText: string) {
   });
   const requestPlan = buildMcpServerRequestPlan(bootstrap, requestText);
   const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
-  const candidate = evidencePlan.candidates.find(
-    (entry) => entry.routeStep === "log_files"
-  );
+  const candidate = evidencePlan.candidates[0];
 
   if (!candidate) {
-    throw new Error("Expected log_files candidate.");
+    throw new Error("Expected at least one evidence candidate.");
   }
 
   return { candidate, evidencePlan, requestPlan };
@@ -107,4 +185,16 @@ async function createCrashWorkspace(logText: string): Promise<string> {
 async function writeText(path: string, content: string): Promise<void> {
   await mkdir(join(path, ".."), { recursive: true });
   await writeFile(path, content);
+}
+
+function diagnostic(message: string, severity: number) {
+  return {
+    message,
+    severity,
+    range: {
+      start: { line: severity, character: 0 },
+      end: { line: severity, character: 1 }
+    },
+    source: "jdtls"
+  };
 }

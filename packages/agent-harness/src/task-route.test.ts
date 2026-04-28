@@ -290,6 +290,43 @@ describe("buildHarnessTaskRoute", () => {
       preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
     });
   });
+
+  it("routes Java diagnostics requests through LSP diagnostics before source and docs", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "docs_lookup"]
+          },
+          facts: {
+            ...createFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            javaSourceRootCount: 1
+          }
+        }),
+        "Fix the compile error: cannot resolve symbol RegistryObject."
+      )
+    ).toEqual({
+      intent: {
+        id: "java_diagnostics",
+        confidence: "high",
+        reasons: [
+          "request text mentions Java compile or diagnostic keywords",
+          "workspace snapshot exposes Java source or Gradle signals"
+        ]
+      },
+      reasons: [
+        "Java diagnostics should inspect LSP diagnostics before source or docs"
+      ],
+      steps: ["java_diagnostics", "workspace_source", "docs_lookup"],
+      preferredTools: ["workspace.analyze", "source.bundle", "context.query"]
+    });
+  });
 });
 
 function createSnapshot(

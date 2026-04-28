@@ -1,5 +1,14 @@
 import { readFile, stat } from "node:fs/promises";
-import { basename, join, relative, sep } from "node:path";
+import {
+  basename,
+  isAbsolute,
+  join,
+  normalize,
+  relative,
+  resolve,
+  sep
+} from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -87,12 +96,28 @@ async function readRequestedJavaSources(
   const classNames = extractJavaClassReferences(input.requestText);
   const paths = new Map<string, { path: string; symbol: string }>();
 
+  for (const sourcePath of extractRequestedJavaSourcePaths(input.requestText)) {
+    const resolvedPath = resolveRequestedWorkspacePath(
+      workspaceRoot,
+      sourcePath
+    );
+    if (!resolvedPath) {
+      continue;
+    }
+
+    paths.set(resolvedPath, {
+      path: resolvedPath,
+      symbol: deriveJavaSymbol(resolvedPath, input.javaSourceRoots)
+    });
+  }
+
   for (const className of classNames) {
     const sourceRelativePath = `${className.replace(/\$.+$/, "").replaceAll(".", "/")}.java`;
 
     for (const sourceRoot of input.javaSourceRoots) {
-      paths.set(`${sourceRoot}:${sourceRelativePath}`, {
-        path: join(sourceRoot, sourceRelativePath),
+      const sourcePath = join(sourceRoot, sourceRelativePath);
+      paths.set(sourcePath, {
+        path: sourcePath,
         symbol: className
       });
     }
@@ -186,6 +211,52 @@ function extractJavaClassReferences(requestText: string): string[] {
     .slice(0, MAX_REFERENCES);
 }
 
+function extractRequestedJavaSourcePaths(requestText: string): string[] {
+  const matches = requestText.matchAll(
+    /(?:file:\/\/\/[^\s,;`"')]+?\.java|(?:\/|[A-Za-z0-9_.-]+\/)[^\s,;`"')]*?[A-Za-z_$][\w$]*\.java)\b/g
+  );
+
+  return [...new Set([...matches].map((match) => match[0]))].slice(
+    0,
+    MAX_REFERENCES
+  );
+}
+
+function resolveRequestedWorkspacePath(
+  workspaceRoot: string,
+  requestedPath: string
+): string | undefined {
+  let filePath = requestedPath;
+
+  if (requestedPath.startsWith("file://")) {
+    try {
+      filePath = fileURLToPath(requestedPath);
+    } catch {
+      return undefined;
+    }
+  }
+
+  const absolutePath = normalize(
+    isAbsolute(filePath) ? filePath : resolve(workspaceRoot, filePath)
+  );
+
+  return isWithin(workspaceRoot, absolutePath) ? absolutePath : undefined;
+}
+
+function deriveJavaSymbol(filePath: string, javaSourceRoots: string[]): string {
+  for (const sourceRoot of javaSourceRoots) {
+    if (!isWithin(sourceRoot, filePath)) {
+      continue;
+    }
+
+    return toPosixPath(relative(sourceRoot, filePath))
+      .replace(/\.java$/u, "")
+      .replaceAll("/", ".");
+  }
+
+  return basename(filePath).replace(/\.java$/u, "");
+}
+
 function isIgnoredClass(className: string): boolean {
   return IGNORED_CLASS_PREFIXES.some((prefix) => className.startsWith(prefix));
 }
@@ -210,6 +281,16 @@ function isBinary(content: Buffer): boolean {
 
 function toPosixPath(path: string): string {
   return sep === "/" ? path : path.split(sep).join("/");
+}
+
+function isWithin(parentPath: string, childPath: string): boolean {
+  const relativePath = relative(parentPath, childPath);
+
+  return (
+    relativePath.length > 0 &&
+    !relativePath.startsWith("..") &&
+    !isAbsolute(relativePath)
+  );
 }
 
 type WorkspaceSourceKind = "gradle" | "java";

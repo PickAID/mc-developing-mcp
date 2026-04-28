@@ -106,6 +106,30 @@ describe("detectHarnessTaskIntent", () => {
       ]
     });
   });
+
+  it("detects Java diagnostics requests when the workspace has Java sources", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "java-mod",
+          facts: {
+            ...createFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            javaSourceRootCount: 1
+          }
+        }),
+        "Fix the compile error: cannot resolve symbol RegistryObject in this class."
+      )
+    ).toEqual({
+      id: "java_diagnostics",
+      confidence: "high",
+      reasons: [
+        "request text mentions Java compile or diagnostic keywords",
+        "workspace snapshot exposes Java source or Gradle signals"
+      ]
+    });
+  });
 });
 
 function createSnapshot(

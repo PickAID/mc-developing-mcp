@@ -61,9 +61,49 @@ describe("buildMcpDevelopStructuredContent", () => {
       }
     });
   });
+
+  it("omits undefined payload fields instead of stringifying them", () => {
+    const result = createExecutorResult({
+      payload: {
+        source: "workspace_analyze",
+        mode: "java_diagnostics",
+        files: [
+          {
+            uri: "file:///workspace/Broken.java",
+            diagnostics: [
+              {
+                message: "RegistryObject cannot be resolved",
+                code: undefined
+              }
+            ]
+          }
+        ]
+      }
+    });
+    const content = buildMcpDevelopStructuredContent(result);
+
+    expect(
+      JSON.stringify(content.selectedEvidence)
+    ).not.toContain('"undefined"');
+    expect(content.selectedEvidence).toMatchObject({
+      payload: {
+        files: [
+          {
+            diagnostics: [
+              {
+                message: "RegistryObject cannot be resolved"
+              }
+            ]
+          }
+        ]
+      }
+    });
+  });
 });
 
-function createExecutorResult(): McpServerRequestExecutorResult {
+function createExecutorResult(
+  overrides: Partial<McpServerRequestExecutorResult["executions"][number]> = {}
+): McpServerRequestExecutorResult {
   const contextExecution = {
     candidateId: "candidate-1-log_files",
     routeStep: "log_files",
@@ -98,7 +138,7 @@ function createExecutorResult(): McpServerRequestExecutorResult {
     attempted: true,
     status: "selected",
     summary: "Found ProbeJS snippets.",
-    payload: {
+    payload: overrides.payload ?? {
       source: "probejs_types",
       snippets: [
         { label: "server.recipes" },
@@ -107,7 +147,8 @@ function createExecutorResult(): McpServerRequestExecutorResult {
       ],
       documentation:
         "This ProbeJS documentation block is intentionally long and should be truncated."
-    }
+    },
+    ...overrides
   };
 
   return {

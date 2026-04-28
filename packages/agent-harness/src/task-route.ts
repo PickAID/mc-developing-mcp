@@ -47,6 +47,20 @@ export function buildHarnessTaskRoute(
         ),
         preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
       };
+    case "java_diagnostics":
+      return {
+        intent,
+        reasons: [
+          snapshot.facts.hasModArchives
+            ? "Java diagnostics should inspect LSP diagnostics before source, mod jars, or docs"
+            : "Java diagnostics should inspect LSP diagnostics before source or docs"
+        ],
+        steps: withModArchiveContent(
+          ["java_diagnostics", "workspace_source", "docs_lookup"],
+          snapshot.facts.hasModArchives
+        ),
+        preferredTools: ["workspace.analyze", "source.bundle", "context.query"]
+      };
     case "datapack_lookup":
       return {
         intent,

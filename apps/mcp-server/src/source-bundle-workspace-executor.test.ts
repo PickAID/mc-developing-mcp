@@ -81,6 +81,38 @@ describe("source.bundle workspace source execution", () => {
       }
     });
   });
+
+  it("reads local Java source for requested source file paths", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createJavaModWorkspace();
+    const input = await createWorkspaceSourceInput(
+      runtimeRoot,
+      workspaceRoot,
+      "Java diagnostic source files: src/main/java/com/example/project/LocalCaller.java"
+    );
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    await expect(executor(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "workspace_source",
+        mode: "local_files",
+        references: [
+          {
+            relativePath: "src/main/java/com/example/project/LocalCaller.java",
+            kind: "java",
+            symbol: "com.example.project.LocalCaller",
+            content: expect.stringContaining("class LocalCaller")
+          }
+        ]
+      }
+    });
+  });
 });
 
 async function createWorkspaceSourceInput(

@@ -6,6 +6,7 @@ import type {
 
 export type McpServerEvidenceProvenance =
   | "logs"
+  | "java_diagnostics"
   | "workspace_source"
   | "vanilla_source"
   | "mod_archive_content"
@@ -75,6 +76,20 @@ function buildCandidate(
   );
 
   switch (routeStep) {
+    case "java_diagnostics":
+      return {
+        id: buildCandidateId(priority, routeStep),
+        priority,
+        tier: "primary",
+        routeStep,
+        provenance: "java_diagnostics",
+        preferredTool: "workspace.analyze",
+        estimatedCost: "low",
+        reliability: "high",
+        reason: "Inspect pending Java LSP diagnostics before source or docs.",
+        pathHints: collectWorkspaceSourceHints(descriptor, workspaceRoot),
+        queryHint: requestPlan.requestText
+      };
     case "log_files":
       return {
         id: buildCandidateId(priority, routeStep),

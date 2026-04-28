@@ -49,6 +49,25 @@ const DATAPACK_KEYWORDS = [
   "世界生成"
 ];
 
+const JAVA_DIAGNOSTIC_KEYWORDS = [
+  "compile error",
+  "compilation error",
+  "cannot resolve",
+  "cannot be resolved",
+  "unresolved symbol",
+  "unresolved import",
+  "missing symbol",
+  "diagnostic",
+  "diagnostics",
+  "javac",
+  "type mismatch",
+  "method undefined",
+  "编译",
+  "诊断",
+  "找不到符号",
+  "无法解析"
+];
+
 export function detectHarnessTaskIntent(
   snapshot: AgentRuntimeHarnessSnapshot,
   requestText?: string
@@ -84,6 +103,20 @@ export function detectHarnessTaskIntent(
       reasons: [
         "request text mentions KubeJS scripting keywords",
         "workspace snapshot exposes KubeJS or ProbeJS signals"
+      ]
+    };
+  }
+
+  if (
+    matchesAny(normalized, JAVA_DIAGNOSTIC_KEYWORDS) &&
+    (snapshot.facts.hasJavaSource || snapshot.facts.hasGradle)
+  ) {
+    return {
+      id: "java_diagnostics",
+      confidence: "high",
+      reasons: [
+        "request text mentions Java compile or diagnostic keywords",
+        "workspace snapshot exposes Java source or Gradle signals"
       ]
     };
   }

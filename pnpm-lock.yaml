@@ -53,6 +53,9 @@ importers:
       '@mcpskill/jar-source-adapter':
         specifier: workspace:*
         version: link:../../packages/jar-source-adapter
+      '@mcpskill/java-jdtls-adapter':
+        specifier: workspace:*
+        version: link:../../packages/java-jdtls-adapter
       '@mcpskill/kubejs-language-service':
         specifier: workspace:*
         version: link:../../packages/kubejs-language-service
