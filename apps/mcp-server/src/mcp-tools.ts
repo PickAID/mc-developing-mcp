@@ -9,6 +9,7 @@ import {
   executeMcpServerRequest,
   type McpServerRequestExecutorResult
 } from "./request-executor.js";
+import { buildMcpDevelopStructuredContent } from "./mcp-structured-content.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -185,40 +186,7 @@ function buildMcpDevelopToolDescription(): string {
 function toStructuredContent(
   result: McpServerRequestExecutorResult
 ): Record<string, unknown> {
-  const snapshot = result.requestPlan.requestContext.harnessSnapshot;
-  const compact = {
-    appId: result.appId,
-    requestText: result.requestPlan.requestText,
-    workspace: {
-      root: snapshot.workspaceRoot,
-      kind: snapshot.workspaceKind,
-      currentRuntime: snapshot.currentRuntime,
-      facts: snapshot.facts
-    },
-    trace: result.trace,
-    executions: result.executions.map(toCompactExecution),
-    selectedEvidence: result.selectedEvidence
-      ? toCompactExecution(result.selectedEvidence)
-      : undefined
-  };
-
-  return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
-}
-
-function toCompactExecution(
-  execution: McpServerRequestExecutorResult["executions"][number]
-) {
-  return {
-    candidateId: execution.candidateId,
-    routeStep: execution.routeStep,
-    preferredTool: execution.preferredTool,
-    status: execution.status,
-    attempted: execution.attempted,
-    summary: execution.summary,
-    pathHints: execution.pathHints,
-    queryHint: execution.queryHint,
-    payload: execution.payload
-  };
+  return buildMcpDevelopStructuredContent(result);
 }
 
 function formatToolError(error: unknown): string {

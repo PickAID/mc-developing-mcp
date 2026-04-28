@@ -12,5 +12,6 @@ describe("@mcpskill/mcp-server package metadata", () => {
       "mc-developing-mcp": "./dist/stdio.js"
     });
     expect(packageJson.scripts?.test).toContain("stdio-subprocess.test.ts");
+    expect(packageJson.scripts?.test).toContain("mcp-structured-content.test.ts");
   });
 });
