@@ -7,6 +7,7 @@ describe("@mcpskill/mcp-server public api", () => {
     expect(Object.keys(publicApi).sort()).toEqual([
       "buildMcpServerBootstrap",
       "buildMcpServerRequestPlan",
+      "createMcpSkillServer",
       "executeMcpServerRequest"
     ]);
   });
