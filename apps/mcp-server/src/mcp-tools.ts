@@ -13,6 +13,7 @@ import {
 import { buildMcpDevelopStructuredContent } from "./mcp-structured-content.js";
 import {
   createMcpJavaDiagnosticsRuntime,
+  type McpJavaDiagnosticsPreparation,
   type McpJavaDiagnosticsRuntime
 } from "./java-diagnostics-runtime.js";
 
@@ -116,13 +117,16 @@ async function executeMcpDevelopTool(
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
     });
+    const javaDiagnosticsPreparation = options.lspDiagnostics
+      ? undefined
+      : await resolveJavaDiagnosticsPreparation(input, options, workspaceRoot);
     const lspDiagnostics =
-      options.lspDiagnostics ??
-      (await resolveJavaDiagnostics(input, options, workspaceRoot));
+      options.lspDiagnostics ?? javaDiagnosticsPreparation?.diagnostics;
     const result = await executeMcpServerRequest({
       bootstrap,
       requestText: input.requestText,
-      lspDiagnostics
+      lspDiagnostics,
+      javaDiagnosticsPreparation
     });
 
     return {
@@ -147,11 +151,11 @@ async function executeMcpDevelopTool(
   }
 }
 
-async function resolveJavaDiagnostics(
+async function resolveJavaDiagnosticsPreparation(
   input: McpDevelopToolInput,
   options: McpToolRuntimeOptions,
   workspaceRoot: string
-): Promise<LspDiagnosticRegistry | undefined> {
+): Promise<McpJavaDiagnosticsPreparation | undefined> {
   if (!options.javaDiagnosticsRuntime) {
     return undefined;
   }
@@ -159,12 +163,10 @@ async function resolveJavaDiagnostics(
     return undefined;
   }
 
-  const prepared = await options.javaDiagnosticsRuntime.prepare({
+  return options.javaDiagnosticsRuntime.prepare({
     workspaceRoot,
     requestText: input.requestText
   });
-
-  return prepared.diagnostics;
 }
 
 function resolveRuntimeRoot(

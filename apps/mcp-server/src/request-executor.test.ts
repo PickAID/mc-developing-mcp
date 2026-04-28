@@ -147,6 +147,43 @@ describe("executeMcpServerRequest", () => {
       selectedCandidateId: "candidate-2-workspace_source"
     });
   });
+
+  it("keeps Java diagnostics runtime unavailability in the evidence chain", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+    const diagnostics = createLspDiagnosticRegistry();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "Fix the compile error: cannot resolve symbol RegistryObject.",
+      lspDiagnostics: diagnostics,
+      javaDiagnosticsPreparation: {
+        status: "unavailable",
+        diagnostics,
+        syncedFiles: [],
+        profileStatus: "missing_jdtls",
+        reason: "Java LSP profile is missing_jdtls."
+      }
+    });
+
+    expect(result.executions[0]).toMatchObject({
+      candidateId: "candidate-1-java_diagnostics",
+      routeStep: "java_diagnostics",
+      status: "skipped",
+      summary: "Java diagnostics unavailable: Java LSP profile is missing_jdtls.",
+      payload: {
+        status: "unavailable",
+        profileStatus: "missing_jdtls",
+        reason: "Java LSP profile is missing_jdtls.",
+        totalDiagnostics: 0
+      }
+    });
+    expect(result.trace.contextCandidateIds).toEqual([]);
+  });
 });
 
 async function createCrashModpackWorkspace(): Promise<string> {

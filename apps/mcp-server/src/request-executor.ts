@@ -23,6 +23,7 @@ import {
   type McpServerSourceBundleExecutorOptions
 } from "./source-bundle-executor.js";
 import { buildMcpServerWorkspaceAnalyzeExecutor } from "./workspace-analyze-executor.js";
+import type { McpJavaDiagnosticsPreparation } from "./java-diagnostics-runtime.js";
 import type { McpServerEvidenceExecutor } from "./request-handler.js";
 import {
   buildContextExecution,
@@ -54,6 +55,7 @@ export interface McpServerRequestExecutorOptions {
   contextQuery?: McpServerContextQueryExecutorOptions;
   modArchiveContentCache?: ArchiveContentCache;
   lspDiagnostics?: LspDiagnosticRegistry;
+  javaDiagnosticsPreparation?: McpJavaDiagnosticsPreparation;
 }
 
 export type McpServerRequestSourceBundleOptions = Omit<
@@ -87,7 +89,8 @@ function buildDefaultExecutors(
 ): Partial<Record<AgentRuntimeToolName, McpServerEvidenceExecutor>> {
   return {
     "workspace.analyze": buildMcpServerWorkspaceAnalyzeExecutor({
-      lspDiagnostics: options.lspDiagnostics
+      lspDiagnostics: options.lspDiagnostics,
+      javaDiagnosticsPreparation: options.javaDiagnosticsPreparation
     }),
     "source.bundle": buildMcpServerSourceBundleExecutor({
       ...options.sourceBundle,

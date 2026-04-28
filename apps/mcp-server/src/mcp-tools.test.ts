@@ -218,6 +218,54 @@ describe("registerMcpServerTools", () => {
       }
     });
   });
+
+  it("returns Java diagnostics runtime unavailability in structured content", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mcp-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+    const diagnostics = createLspDiagnosticRegistry();
+    const javaDiagnosticsRuntime: McpJavaDiagnosticsRuntime = {
+      async prepare() {
+        return {
+          status: "unavailable",
+          diagnostics,
+          syncedFiles: [],
+          profileStatus: "missing_jdtls",
+          reason: "Java LSP profile is missing_jdtls."
+        };
+      },
+      async stopAll() {}
+    };
+
+    registerMcpServerTools(registry, { javaDiagnosticsRuntime });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Fix the compile error: cannot resolve symbol RegistryObject.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["java_diagnostics", "workspace_source", "docs_lookup"],
+        contextCandidateIds: []
+      },
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          candidateId: "candidate-1-java_diagnostics",
+          status: "skipped",
+          summary:
+            "Java diagnostics unavailable: Java LSP profile is missing_jdtls.",
+          payload: expect.objectContaining({
+            status: "unavailable",
+            profileStatus: "missing_jdtls",
+            reason: "Java LSP profile is missing_jdtls."
+          })
+        })
+      ])
+    });
+  });
 });
 
 function createCapturingRegistry(): CapturingRegistry {

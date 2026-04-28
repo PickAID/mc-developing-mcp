@@ -12,6 +12,7 @@ import type {
   McpServerEvidenceExecutor,
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
+import type { McpJavaDiagnosticsPreparation } from "./java-diagnostics-runtime.js";
 
 const MAX_LOG_FILES = 4;
 const MAX_LOG_BYTES = 256 * 1024;
@@ -27,6 +28,7 @@ const IGNORED_ACTIONABLE_PREFIXES = [
 
 export interface McpServerWorkspaceAnalyzeExecutorOptions {
   lspDiagnostics?: LspDiagnosticRegistry;
+  javaDiagnosticsPreparation?: McpJavaDiagnosticsPreparation;
 }
 
 export function buildMcpServerWorkspaceAnalyzeExecutor(
@@ -87,6 +89,23 @@ function executeJavaDiagnosticsAnalyze(
   input: McpServerEvidenceExecutorInput,
   options: McpServerWorkspaceAnalyzeExecutorOptions
 ): McpServerEvidenceExecutorResult {
+  if (options.javaDiagnosticsPreparation?.status === "unavailable") {
+    return {
+      matched: false,
+      summary: `Java diagnostics unavailable: ${options.javaDiagnosticsPreparation.reason}`,
+      payload: {
+        source: "workspace_analyze",
+        mode: "java_diagnostics",
+        status: "unavailable",
+        profileStatus: options.javaDiagnosticsPreparation.profileStatus,
+        reason: options.javaDiagnosticsPreparation.reason,
+        totalDiagnostics: 0,
+        files: [],
+        truncated: false
+      }
+    };
+  }
+
   if (!options.lspDiagnostics) {
     return {
       matched: false,

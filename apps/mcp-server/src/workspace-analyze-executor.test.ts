@@ -155,6 +155,48 @@ describe("executeMcpServerWorkspaceAnalyze", () => {
       }
     ]);
   });
+
+  it("reports Java diagnostics runtime unavailability before falling back", async () => {
+    const workspaceRoot = await createCrashWorkspace("not a crash log\n");
+    const registry = createLspDiagnosticRegistry();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Fix the compile error: cannot resolve symbol RegistryObject."
+    );
+    const candidate = input.evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "java_diagnostics"
+    );
+
+    if (!candidate) {
+      throw new Error("Expected java_diagnostics candidate.");
+    }
+
+    await expect(
+      buildMcpServerWorkspaceAnalyzeExecutor({
+        lspDiagnostics: registry,
+        javaDiagnosticsPreparation: {
+          status: "unavailable",
+          diagnostics: registry,
+          syncedFiles: [],
+          profileStatus: "missing_jdtls",
+          reason: "Java LSP profile is missing_jdtls."
+        }
+      })({ ...input, candidate })
+    ).resolves.toMatchObject({
+      matched: false,
+      summary: "Java diagnostics unavailable: Java LSP profile is missing_jdtls.",
+      payload: {
+        source: "workspace_analyze",
+        mode: "java_diagnostics",
+        status: "unavailable",
+        profileStatus: "missing_jdtls",
+        reason: "Java LSP profile is missing_jdtls.",
+        totalDiagnostics: 0,
+        files: [],
+        truncated: false
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
