@@ -148,6 +148,72 @@ describe("executeMcpServerRequest", () => {
     });
   });
 
+  it("reads the exact Java source file referenced by a diagnostic URI", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createMultiModuleJavaWorkspace();
+    const diagnostics = createLspDiagnosticRegistry();
+    diagnostics.publish({
+      uri: pathToFileURL(
+        join(
+          workspaceRoot,
+          "module-a",
+          "src",
+          "main",
+          "java",
+          "example",
+          "Broken.java"
+        )
+      ).href,
+      diagnostics: [
+        {
+          message: "RegistryObject cannot be resolved to a type",
+          severity: 1,
+          range: {
+            start: { line: 4, character: 10 },
+            end: { line: 4, character: 24 }
+          },
+          source: "jdtls"
+        }
+      ]
+    });
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "Fix the compile error: cannot resolve symbol RegistryObject.",
+      lspDiagnostics: diagnostics
+    });
+
+    expect(result.executions).toMatchObject([
+      {
+        candidateId: "candidate-1-java_diagnostics",
+        routeStep: "java_diagnostics",
+        status: "context"
+      },
+      {
+        candidateId: "candidate-2-workspace_source",
+        routeStep: "workspace_source",
+        status: "selected",
+        payload: {
+          source: "workspace_source",
+          references: [
+            {
+              relativePath: "module-a/src/main/java/example/Broken.java",
+              kind: "java",
+              content: expect.stringContaining("class Broken")
+            }
+          ]
+        }
+      }
+    ]);
+    expect(result.trace.selectedCandidateId).toBe(
+      "candidate-2-workspace_source"
+    );
+  });
+
   it("keeps Java diagnostics runtime unavailability in the evidence chain", async () => {
     const runtimeRoot = await createTempRoot("mcpskill-runtime-");
     const workspaceRoot = await createJavaWorkspace();
@@ -221,6 +287,40 @@ async function createJavaWorkspace(): Promise<string> {
   await writeText(
     join(workspaceRoot, "src", "main", "java", "example", "Broken.java"),
     "package example;\nclass Broken {}\n"
+  );
+
+  return workspaceRoot;
+}
+
+async function createMultiModuleJavaWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-java-multimodule-");
+
+  await writeText(
+    join(workspaceRoot, "settings.gradle"),
+    'include "module-a"\n'
+  );
+  await writeText(
+    join(workspaceRoot, "build.gradle"),
+    'plugins { id "java" apply false }\n'
+  );
+  await writeText(
+    join(
+      workspaceRoot,
+      "module-a",
+      "src",
+      "main",
+      "java",
+      "example",
+      "Broken.java"
+    ),
+    [
+      "package example;",
+      "",
+      "final class Broken {",
+      "  private RegistryObject<?> missing;",
+      "}",
+      ""
+    ].join("\n")
   );
 
   return workspaceRoot;

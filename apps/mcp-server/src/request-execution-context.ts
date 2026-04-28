@@ -177,9 +177,20 @@ function extractJavaDiagnosticSourcePaths(payload: unknown): string[] {
 
   return payload.files
     .map((file) =>
-      isRecord(file) ? formatDiagnosticSourcePath(file.uri) : undefined
+      isRecord(file) ? extractDiagnosticSourcePath(file) : undefined
     )
     .filter((value): value is string => value !== undefined);
+}
+
+function extractDiagnosticSourcePath(
+  file: Record<string, unknown>
+): string | undefined {
+  const relativePath = file.relativePath;
+  if (typeof relativePath === "string" && relativePath.length > 0) {
+    return relativePath;
+  }
+
+  return formatDiagnosticSourcePath(file.uri);
 }
 
 function formatDiagnosticSummary(
@@ -221,9 +232,12 @@ function formatDiagnosticSourcePath(uri: unknown): string | undefined {
   }
 
   const decoded = decodeUri(uri);
-  const sourcePath = extractKnownJavaSourcePath(decoded);
 
-  return sourcePath ?? (uri.startsWith("file://") ? uri : undefined);
+  if (uri.startsWith("file://")) {
+    return uri;
+  }
+
+  return extractKnownJavaSourcePath(decoded);
 }
 
 function decodeUri(uri: string): string {

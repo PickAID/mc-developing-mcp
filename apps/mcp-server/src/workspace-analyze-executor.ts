@@ -1,5 +1,5 @@
 import { open, stat } from "node:fs/promises";
-import { isAbsolute, relative } from "node:path";
+import { isAbsolute, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
   LspDiagnostic,
@@ -127,7 +127,7 @@ function executeJavaDiagnosticsAnalyze(
   );
   const files = pending
     .filter((entry) => entry.diagnostics.length > 0)
-    .map(toDiagnosticFile);
+    .map((entry) => toDiagnosticFile(entry, workspaceRoot));
   const totalDiagnostics = files.reduce(
     (total, file) => total + file.diagnosticCount,
     0
@@ -266,15 +266,43 @@ function mergeLogSignals(logs: AnalyzedLogFile[]): CrashSignals {
   };
 }
 
-function toDiagnosticFile(entry: LspPublishDiagnosticsParams): DiagnosticFile {
+function toDiagnosticFile(
+  entry: LspPublishDiagnosticsParams,
+  workspaceRoot: string
+): DiagnosticFile {
   return {
     uri: entry.uri,
+    relativePath: fileUriToWorkspaceRelativePath(entry.uri, workspaceRoot),
     diagnosticCount: entry.diagnostics.length,
     diagnostics: entry.diagnostics.map(toCompactDiagnostic),
     truncated: entry.truncated === true,
     originalDiagnosticCount: entry.originalDiagnosticCount,
     omittedDiagnosticCount: entry.omittedDiagnosticCount
   };
+}
+
+function fileUriToWorkspaceRelativePath(
+  uri: string,
+  workspaceRoot: string
+): string | undefined {
+  let filePath: string;
+
+  try {
+    filePath = fileURLToPath(uri);
+  } catch {
+    return undefined;
+  }
+
+  const relativePath = relative(workspaceRoot, filePath);
+  if (
+    relativePath.length === 0 ||
+    relativePath.startsWith("..") ||
+    isAbsolute(relativePath)
+  ) {
+    return undefined;
+  }
+
+  return sep === "/" ? relativePath : relativePath.split(sep).join("/");
 }
 
 function toCompactDiagnostic(diagnostic: LspDiagnostic): CompactDiagnostic {
@@ -342,6 +370,7 @@ interface CrashStackFrame {
 
 interface DiagnosticFile {
   uri: string;
+  relativePath?: string;
   diagnosticCount: number;
   diagnostics: CompactDiagnostic[];
   truncated: boolean;
