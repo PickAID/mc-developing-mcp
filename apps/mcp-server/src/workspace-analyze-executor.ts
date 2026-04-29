@@ -68,13 +68,16 @@ async function executeWorkspaceAnalyze(
 
   const analyzedLogs = await Promise.all(logPaths.map(analyzeLogFile));
   const signals = mergeLogSignals(analyzedLogs);
-  const matched = signals.actionableClassReferences.length > 0;
+  const matched =
+    signals.actionableClassReferences.length > 0 ||
+    signals.resourceLocations.length > 0 ||
+    signals.resourcePaths.length > 0;
 
   return {
     matched,
     summary: matched
-      ? `Extracted ${signals.actionableClassReferences.length} actionable crash class reference(s) from ${analyzedLogs.length} log file(s).`
-      : `Analyzed ${analyzedLogs.length} log file(s), but no actionable crash class references were found.`,
+      ? formatCrashSignalSummary(signals, analyzedLogs.length)
+      : `Analyzed ${analyzedLogs.length} log file(s), but no actionable crash signals were found.`,
     payload: {
       source: "workspace_analyze",
       mode: "log_files",
@@ -196,8 +199,7 @@ async function analyzeLogFile(path: string): Promise<AnalyzedLogFile> {
         path,
         sizeBytes: details.size,
         readBytes,
-        signalCount:
-          parsed.exceptionClasses.length + parsed.classReferences.length,
+        signalCount: countCrashSignals(parsed),
         truncated: offset > 0
       },
       signals: parsed
@@ -207,8 +209,19 @@ async function analyzeLogFile(path: string): Promise<AnalyzedLogFile> {
   }
 }
 
+function countCrashSignals(signals: CrashSignals): number {
+  return (
+    signals.exceptionClasses.length +
+    signals.classReferences.length +
+    signals.resourceLocations.length +
+    signals.resourcePaths.length
+  );
+}
+
 function parseCrashSignals(content: string): CrashSignals {
   const exceptionClasses = unique(extractExceptionClasses(content));
+  const resourceLocations = unique(extractResourceLocations(content));
+  const resourcePaths = unique(extractResourcePaths(content));
   const stackFrames = content
     .split(/\r?\n/)
     .map(parseStackFrame)
@@ -219,6 +232,8 @@ function parseCrashSignals(content: string): CrashSignals {
 
   return {
     exceptionClasses,
+    resourceLocations,
+    resourcePaths,
     classReferences,
     actionableClassReferences,
     stackFrames: stackFrames.filter((frame) => isActionableClass(frame.className))
@@ -228,6 +243,37 @@ function parseCrashSignals(content: string): CrashSignals {
 function extractExceptionClasses(content: string): string[] {
   const matches = content.matchAll(
     /\b((?:[a-z_][\w$]*\.)+[A-Z][\w$]*(?:Exception|Error))(?::|\s|$)/g
+  );
+
+  return [...matches].map((match) => match[1]).filter(Boolean);
+}
+
+function extractResourceLocations(content: string): string[] {
+  const matches = content.matchAll(
+    /#?\b([a-z0-9_.-]+:[a-z0-9_./-]+)\b/g
+  );
+
+  return [...matches]
+    .filter((match) => isLikelyResourceLocationMatch(content, match))
+    .map((match) => match[1])
+    .filter(Boolean);
+}
+
+function isLikelyResourceLocationMatch(
+  content: string,
+  match: RegExpMatchArray
+): boolean {
+  const value = match[1];
+  const matchIndex = match.index ?? 0;
+  const previous = matchIndex > 0 ? content[matchIndex - 1] : "";
+  const path = value.split(":")[1] ?? "";
+
+  return previous !== "." && /[a-z_/-]/.test(path);
+}
+
+function extractResourcePaths(content: string): string[] {
+  const matches = content.matchAll(
+    /\b((?:data|assets)\/[a-z0-9_.-]+\/[a-z0-9_./-]+\.(?:json|mcmeta|txt|toml|lang))\b/g
   );
 
   return [...matches].map((match) => match[1]).filter(Boolean);
@@ -260,10 +306,34 @@ function mergeLogSignals(logs: AnalyzedLogFile[]): CrashSignals {
     exceptionClasses: unique(
       logs.flatMap((log) => log.signals.exceptionClasses)
     ),
+    resourceLocations: unique(
+      logs.flatMap((log) => log.signals.resourceLocations)
+    ),
+    resourcePaths: unique(logs.flatMap((log) => log.signals.resourcePaths)),
     classReferences,
     actionableClassReferences: classReferences.filter(isActionableClass),
     stackFrames
   };
+}
+
+function formatCrashSignalSummary(
+  signals: CrashSignals,
+  logCount: number
+): string {
+  if (
+    signals.actionableClassReferences.length > 0 &&
+    signals.resourceLocations.length === 0 &&
+    signals.resourcePaths.length === 0
+  ) {
+    return `Extracted ${signals.actionableClassReferences.length} actionable crash class reference(s) from ${logCount} log file(s).`;
+  }
+
+  const signalCount =
+    signals.actionableClassReferences.length +
+    signals.resourceLocations.length +
+    signals.resourcePaths.length;
+
+  return `Extracted ${signalCount} actionable crash signal(s) from ${logCount} log file(s).`;
 }
 
 function toDiagnosticFile(
@@ -356,6 +426,8 @@ interface AnalyzedLogFile {
 
 interface CrashSignals {
   exceptionClasses: string[];
+  resourceLocations: string[];
+  resourcePaths: string[];
   classReferences: string[];
   actionableClassReferences: string[];
   stackFrames: CrashStackFrame[];

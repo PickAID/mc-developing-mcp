@@ -75,6 +75,55 @@ describe("executeMcpServerRequest", () => {
     });
   });
 
+  it("chains crash log resource ids into mod archive data and asset search", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createCrashResourceModpackWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "The server crashes during datapack loading; inspect latest.log and mods."
+    });
+
+    expect(result.executions).toMatchObject([
+      {
+        candidateId: "candidate-1-log_files",
+        routeStep: "log_files",
+        status: "context",
+        payload: {
+          source: "workspace_analyze",
+          signals: {
+            resourceLocations: ["demo:gear"]
+          }
+        }
+      },
+      {
+        candidateId: "candidate-2-mod_archive_content",
+        routeStep: "mod_archive_content",
+        status: "selected",
+        payload: {
+          source: "mod_archive_content",
+          matches: [
+            {
+              sourceArchive: expect.stringContaining("mods/content-mod.jar"),
+              entry: {
+                domain: "data",
+                relativePath: "data/demo/recipes/gear.json"
+              },
+              preview: expect.stringContaining("demo:gear")
+            }
+          ]
+        }
+      }
+    ]);
+    expect(result.selectedEvidence).toMatchObject({
+      candidateId: "candidate-2-mod_archive_content"
+    });
+  });
+
   it("uses Java LSP diagnostics as context before selecting workspace source evidence", async () => {
     const runtimeRoot = await createTempRoot("mcpskill-runtime-");
     const workspaceRoot = await createJavaWorkspace();
@@ -270,6 +319,36 @@ async function createCrashModpackWorkspace(): Promise<string> {
         name: "com/example/problem/CrashHandler.class",
         content: Buffer.from([0xca, 0xfe, 0xba, 0xbe]),
         compressionMethod: 0
+      }
+    ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createCrashResourceModpackWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-crash-resource-modpack-");
+
+  await writeText(
+    join(workspaceRoot, "logs", "latest.log"),
+    [
+      "[Server thread/ERROR] [minecraft/]: Failed to load recipe demo:gear",
+      "com.google.gson.JsonSyntaxException: Unknown item id demo:gear",
+      ""
+    ].join("\n")
+  );
+  await writeBinary(
+    join(workspaceRoot, "mods", "content-mod.jar"),
+    createZip([
+      {
+        name: "data/demo/recipes/gear.json",
+        content: "{\"result\":\"demo:gear\"}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/lang/en_us.json",
+        content: "{\"item.demo.gear\":\"Gear\"}\n",
+        compressionMethod: 8
       }
     ])
   );

@@ -9,12 +9,20 @@ import type {
 
 export interface RequestExecutionContext {
   classReferences: string[];
+  resourceLocations: string[];
+  resourcePaths: string[];
   javaDiagnostics: string[];
   javaSourcePaths: string[];
 }
 
 export function createRequestExecutionContext(): RequestExecutionContext {
-  return { classReferences: [], javaDiagnostics: [], javaSourcePaths: [] };
+  return {
+    classReferences: [],
+    resourceLocations: [],
+    resourcePaths: [],
+    javaDiagnostics: [],
+    javaSourcePaths: []
+  };
 }
 
 export function prepareExecutorInput(
@@ -51,7 +59,7 @@ export function shouldUseAsContext(
   }
 
   if (candidate.routeStep === "log_files") {
-    return extractActionableClassReferences(result.payload).length > 0;
+    return extractCrashLogContextQueries(result.payload).length > 0;
   }
 
   if (candidate.routeStep === "java_diagnostics") {
@@ -68,6 +76,14 @@ export function rememberContext(
   context.classReferences = unique([
     ...context.classReferences,
     ...extractActionableClassReferences(payload)
+  ]);
+  context.resourceLocations = unique([
+    ...context.resourceLocations,
+    ...extractResourceLocations(payload)
+  ]);
+  context.resourcePaths = unique([
+    ...context.resourcePaths,
+    ...extractResourcePaths(payload)
   ]);
   context.javaDiagnostics = unique([
     ...context.javaDiagnostics,
@@ -114,12 +130,26 @@ function buildContextTexts(context: RequestExecutionContext): string[] {
     ...(context.classReferences.length > 0
       ? [`Crash log class references: ${context.classReferences.join(", ")}`]
       : []),
+    ...(context.resourceLocations.length > 0
+      ? [`Crash log resource references: ${context.resourceLocations.join(", ")}`]
+      : []),
+    ...(context.resourcePaths.length > 0
+      ? [`Crash log resource paths: ${context.resourcePaths.join(", ")}`]
+      : []),
     ...(context.javaDiagnostics.length > 0
       ? [`Java diagnostics: ${context.javaDiagnostics.join("; ")}`]
       : []),
     ...(context.javaSourcePaths.length > 0
       ? [`Java diagnostic source files: ${context.javaSourcePaths.join(", ")}`]
       : [])
+  ];
+}
+
+function extractCrashLogContextQueries(payload: unknown): string[] {
+  return [
+    ...extractActionableClassReferences(payload),
+    ...extractResourceLocations(payload),
+    ...extractResourcePaths(payload)
   ];
 }
 
@@ -136,6 +166,40 @@ function extractActionableClassReferences(payload: unknown): string[] {
   return signals.actionableClassReferences.filter(
     (value): value is string => typeof value === "string" && value.length > 0
   );
+}
+
+function extractResourceLocations(payload: unknown): string[] {
+  const signals = extractWorkspaceAnalyzeSignals(payload);
+
+  if (!signals || !Array.isArray(signals.resourceLocations)) {
+    return [];
+  }
+
+  return signals.resourceLocations.filter(
+    (value): value is string => typeof value === "string" && value.length > 0
+  );
+}
+
+function extractResourcePaths(payload: unknown): string[] {
+  const signals = extractWorkspaceAnalyzeSignals(payload);
+
+  if (!signals || !Array.isArray(signals.resourcePaths)) {
+    return [];
+  }
+
+  return signals.resourcePaths.filter(
+    (value): value is string => typeof value === "string" && value.length > 0
+  );
+}
+
+function extractWorkspaceAnalyzeSignals(
+  payload: unknown
+): Record<string, unknown> | undefined {
+  if (!isRecord(payload) || payload.source !== "workspace_analyze") {
+    return undefined;
+  }
+
+  return isRecord(payload.signals) ? payload.signals : undefined;
 }
 
 function extractJavaDiagnosticSummaries(payload: unknown): string[] {
