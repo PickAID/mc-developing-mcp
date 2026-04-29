@@ -6,7 +6,7 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建，以及实际 MCP 返回值验证。这让整合包外部 mod JAR 的资产、数据包内容、类归属和崩溃排查路线更接近可长期使用的底层服务，而不是每次重新扫描。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建，以及实际 MCP 返回值验证。这让整合包外部 mod JAR 的资产、数据包内容、类归属和崩溃排查路线更接近可长期使用的底层服务，而不是每次重新扫描。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Git state after latest mod archive cache work: clean at `7d0c2f4`
+- Git state after latest mod archive cache work: clean at `1b8d492`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 94 test files and 289 tests
+- Latest full verification: `pnpm test` passed with 95 test files and 291 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -36,6 +36,7 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `5015aca feat(jar-source): cache mod archive inventory inspections`
 - `0344164 feat(jar-source): persist mod archive inventory cache`
 - `7d0c2f4 feat(mcp-server): refresh mod archive inventory cache`
+- `1b8d492 feat(jar-source): persist mod archive entry index`
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -70,6 +71,8 @@ Implemented:
 - Invalid cached docs artifacts are reported through compact `mdmDocs` diagnostics without failing the whole request.
 - Mod archive inventory requests are persisted in runtime SQLite at `runtimeRoot/caches/mod-archives/mod-archive-inventory.sqlite`.
 - Mod archive inventory cache validity uses workspace root, archive limits, nested archive limits, archive relative paths, sizes, and mtimes.
+- Mod archive entry index persists data/assets/java/class entry paths and sizes into the same runtime SQLite cache.
+- MCP inventory payloads expose compact entry index counts/cache state with `limit: 0`, avoiding full path dumps.
 - Natural-language refresh requests rebuild the SQLite mod archive inventory cache.
 - Stale mod archive fingerprints rebuild inventory instead of returning old content summaries.
 - Public MCP tool count remains one.
@@ -113,6 +116,7 @@ Completed:
 - JarJar nested archive batch reads
 - Mod archive inventory summary with data/assets/class/java counts
 - SQLite-backed persistent mod archive inventory cache
+- SQLite-backed persistent mod archive entry index
 - Explicit mod archive inventory refresh and stale rebuild behavior
 
 Still incomplete:
@@ -121,7 +125,7 @@ Still incomplete:
 - broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
-- persistent derived indexes beyond mod archive inventory, such as item/registry/recipe summaries and crash-triage lookup tables
+- persistent derived indexes beyond entry paths, such as class-owner lookup tables, item/registry/recipe summaries, and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
@@ -202,3 +206,5 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-29-mod-archive-persistent-inventory-verification.md`
 
 `docs/reviews/2026-04-29-mod-archive-refresh-stale-verification.md`
+
+`docs/reviews/2026-04-30-mod-archive-entry-index-verification.md`
