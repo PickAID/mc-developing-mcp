@@ -189,6 +189,37 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
+  it("lists selected domains from JarJar nested archives", async () => {
+    const workspaceRoot = await createJarJarWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "List data entries in META-INF/jarjar/nested-content.jar! from mods/outer-mod.jar."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      summary: "Listed 1 nested mod archive entrie(s).",
+      payload: {
+        source: "mod_archive_content",
+        mode: "list_nested",
+        sourceArchive: expect.stringContaining("mods/outer-mod.jar"),
+        embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+        embeddedArchiveMetadata: {
+          loader: "fabric",
+          modId: "nested_content"
+        },
+        domains: ["data"],
+        entries: [
+          {
+            domain: "data",
+            relativePath: "data/demo/recipes/nested_gear.json"
+          }
+        ],
+        truncated: false
+      }
+    });
+  });
+
   it("reuses an injected cache across repeated list requests", async () => {
     const workspaceRoot = await createModArchiveWorkspace();
     const input = await createExecutorInput(

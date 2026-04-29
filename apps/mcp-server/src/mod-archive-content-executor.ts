@@ -22,6 +22,10 @@ import {
   extractNestedArchiveEntryPath,
   readSelectedNestedEntry
 } from "./mod-archive-nested-read.js";
+import {
+  extractNestedArchiveListPath,
+  listSelectedNestedEntries
+} from "./mod-archive-nested-list.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_LIST_ENTRIES = 64;
@@ -118,6 +122,15 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const listDomains = extractListDomains(requestText);
+  const nestedListPath = extractNestedArchiveListPath(requestText);
+  if (listDomains && nestedListPath && selectedArchive) {
+    return listSelectedNestedEntries({
+      sourceArchive: selectedArchive.archivePath,
+      embeddedArchivePath: nestedListPath,
+      domains: listDomains
+    });
+  }
+
   if (listDomains && selectedArchive) {
     return listSelectedEntries({
       sourceArchive: selectedArchive.archivePath,

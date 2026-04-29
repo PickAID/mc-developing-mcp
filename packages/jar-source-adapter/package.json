@@ -12,6 +12,6 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. packages/jar-source-adapter/src/java-source-archive.test.ts packages/jar-source-adapter/src/archive-content.test.ts packages/jar-source-adapter/src/archive-set.test.ts packages/jar-source-adapter/src/class-owner.test.ts packages/jar-source-adapter/src/mod-archives.test.ts packages/jar-source-adapter/src/nested-archive-read.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. packages/jar-source-adapter/src/java-source-archive.test.ts packages/jar-source-adapter/src/archive-content.test.ts packages/jar-source-adapter/src/archive-set.test.ts packages/jar-source-adapter/src/class-owner.test.ts packages/jar-source-adapter/src/mod-archives.test.ts packages/jar-source-adapter/src/nested-archive-list.test.ts packages/jar-source-adapter/src/nested-archive-read.test.ts"
   }
 }
