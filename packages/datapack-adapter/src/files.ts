@@ -41,7 +41,7 @@ export async function listDatapackFiles(
           continue;
         }
 
-        if (budget.limit !== undefined && entries.length >= budget.limit) {
+        if (!withinEntryLimit(entries, budget)) {
           truncated = true;
           break;
         }
@@ -57,10 +57,47 @@ export async function listDatapackFiles(
     if (truncated) {
       break;
     }
+
+    if (contentRoot.hasPackMcmeta) {
+      const metadataResult = await appendPackMetadataEntry({
+        contentRoot: contentRoot.absolutePath,
+        entries,
+        skipped,
+        budget,
+        visitedFiles
+      });
+      visitedFiles = metadataResult.visitedFiles;
+      truncated = metadataResult.truncated;
+    }
   }
 
   entries.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
   return { entries, skipped, truncated };
+}
+
+async function appendPackMetadataEntry(input: {
+  contentRoot: string;
+  entries: DatapackFileEntry[];
+  skipped: DatapackSkippedFile[];
+  budget: DatapackBudget;
+  visitedFiles: number;
+}): Promise<{ visitedFiles: number; truncated: boolean }> {
+  const visitedFiles = input.visitedFiles + 1;
+  if (input.budget.maxFiles !== undefined && visitedFiles > input.budget.maxFiles) {
+    return { visitedFiles, truncated: true };
+  }
+
+  const absolutePath = join(input.contentRoot, "pack.mcmeta");
+  const entry = await createEntry(input.contentRoot, absolutePath);
+  if (entry !== undefined && withinEntryLimit(input.entries, input.budget)) {
+    input.entries.push(entry);
+    return { visitedFiles, truncated: false };
+  }
+  if (entry === undefined) {
+    input.skipped.push(createSkipped(input.contentRoot, absolutePath, "unreadable"));
+    return { visitedFiles, truncated: false };
+  }
+  return { visitedFiles, truncated: true };
 }
 
 export async function searchDatapackFiles(
@@ -153,6 +190,10 @@ async function* walkFiles(directory: string): AsyncGenerator<string> {
 
 async function createEntry(root: string, absolutePath: string): Promise<DatapackFileEntry | undefined> {
   const relativePath = relativePosix(root, absolutePath);
+  if (isPackMetadataPath(relativePath)) {
+    return createPackMetadataEntry(absolutePath, relativePath);
+  }
+
   const segments = relativePath.split("/");
   const domain = segments[0] as DatapackDomain | undefined;
 
@@ -182,6 +223,40 @@ async function createEntry(root: string, absolutePath: string): Promise<Datapack
   } catch {
     return undefined;
   }
+}
+
+async function createPackMetadataEntry(
+  absolutePath: string,
+  relativePath: string
+): Promise<DatapackFileEntry | undefined> {
+  try {
+    const fileStat = await stat(absolutePath);
+    if (!fileStat.isFile()) {
+      return undefined;
+    }
+
+    return {
+      absolutePath,
+      relativePath,
+      namespace: "",
+      kind: "pack_metadata",
+      domain: "assets",
+      sizeBytes: fileStat.size
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function isPackMetadataPath(relativePath: string): boolean {
+  return relativePath === "pack.mcmeta" || relativePath === "pack.png";
+}
+
+function withinEntryLimit(
+  entries: DatapackFileEntry[],
+  budget: DatapackBudget
+): boolean {
+  return budget.limit === undefined || entries.length < budget.limit;
 }
 
 async function readTextEntry(

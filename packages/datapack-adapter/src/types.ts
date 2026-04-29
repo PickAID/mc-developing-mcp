@@ -12,11 +12,21 @@ export type DataKind =
   | "other";
 
 export type AssetKind =
+  | "atlases"
+  | "blockstates"
+  | "equipment"
+  | "font"
+  | "items"
   | "lang"
   | "models"
-  | "textures"
+  | "pack_metadata"
+  | "particles"
+  | "post_effect"
+  | "shaders"
   | "sounds"
-  | "blockstates"
+  | "texts"
+  | "textures"
+  | "waypoint_style"
   | "other";
 
 export type DatapackKind = DataKind | AssetKind;

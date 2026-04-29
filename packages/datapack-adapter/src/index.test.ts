@@ -78,6 +78,73 @@ describe("datapack-adapter", () => {
     expect(discovered.assetKinds).toEqual(["models"]);
   });
 
+  it("classifies vanilla asset format roots with resource-level granularity", async () => {
+    const root = await createTempRoot("vanilla-asset-kinds");
+
+    await writeFixture(root, "pack.mcmeta", JSON.stringify({ pack: { pack_format: 65 } }));
+    await writeFixture(root, "assets/demo/atlases/blocks.json", "{}\n");
+    await writeFixture(root, "assets/demo/blockstates/gear.json", "{}\n");
+    await writeFixture(root, "assets/demo/equipment/chainmail.json", "{}\n");
+    await writeFixture(root, "assets/demo/font/default.json", "{}\n");
+    await writeFixture(root, "assets/demo/items/gear.json", "{}\n");
+    await writeFixture(root, "assets/demo/lang/en_us.json", "{}\n");
+    await writeFixture(root, "assets/demo/models/item/gear.json", "{}\n");
+    await writeFixture(root, "assets/demo/particles/spark.json", "{}\n");
+    await writeFixture(root, "assets/demo/post_effect/blur.json", "{}\n");
+    await writeFixture(root, "assets/demo/shaders/core/demo.vsh", "void main() {}\n");
+    await writeFixture(root, "assets/demo/sounds.json", "{}\n");
+    await writeFixture(root, "assets/demo/texts/splashes.txt", "hello\n");
+    await writeFixture(root, "assets/demo/textures/item/gear.png", Buffer.from([1, 2, 3]));
+    await writeFixture(root, "assets/demo/waypoint_style/default.json", "{}\n");
+    await writeFixture(root, "assets/demo/custom_format/example.json", "{}\n");
+
+    const discovered = await discoverDatapackContent(root);
+    const files = await listDatapackFiles(root);
+
+    expect(discovered.assetKinds).toEqual([
+      "atlases",
+      "blockstates",
+      "equipment",
+      "font",
+      "items",
+      "lang",
+      "models",
+      "other",
+      "particles",
+      "post_effect",
+      "shaders",
+      "sounds",
+      "texts",
+      "textures",
+      "waypoint_style"
+    ]);
+    expect(files.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relativePath: "pack.mcmeta",
+          domain: "assets",
+          kind: "pack_metadata"
+        }),
+        expect.objectContaining({
+          relativePath: "assets/demo/items/gear.json",
+          kind: "items"
+        }),
+        expect.objectContaining({
+          relativePath: "assets/demo/post_effect/blur.json",
+          kind: "post_effect"
+        }),
+        expect.objectContaining({
+          relativePath: "assets/demo/waypoint_style/default.json",
+          kind: "waypoint_style"
+        }),
+        expect.objectContaining({
+          relativePath: "assets/demo/custom_format/example.json",
+          kind: "other"
+        })
+      ])
+    );
+  });
+
   it("lists structured data and asset files with budget limits", async () => {
     const root = await createTempRoot("datapack-list");
 

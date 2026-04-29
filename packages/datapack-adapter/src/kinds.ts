@@ -12,11 +12,21 @@ const DATA_KINDS = new Set<DataKind>([
 ]);
 
 const ASSET_KINDS = new Set<AssetKind>([
+  "atlases",
+  "blockstates",
+  "equipment",
+  "font",
+  "items",
   "lang",
   "models",
-  "textures",
+  "pack_metadata",
+  "particles",
+  "post_effect",
+  "shaders",
   "sounds",
-  "blockstates"
+  "texts",
+  "textures",
+  "waypoint_style"
 ]);
 
 export function classifyKind(domain: DatapackDomain, segment: string | undefined): DatapackKind {
@@ -26,7 +36,19 @@ export function classifyKind(domain: DatapackDomain, segment: string | undefined
       : "other";
   }
 
-  return segment !== undefined && ASSET_KINDS.has(segment as AssetKind)
-    ? (segment as AssetKind)
+  const normalizedSegment = normalizeAssetSegment(segment);
+
+  return normalizedSegment !== undefined &&
+    ASSET_KINDS.has(normalizedSegment as AssetKind)
+    ? (normalizedSegment as AssetKind)
     : "other";
+}
+
+function normalizeAssetSegment(segment: string | undefined): string | undefined {
+  if (segment === "sounds.json") {
+    return "sounds";
+  }
+  return segment === "gpu_warnlist.json" || segment === "regional_compliancies.json"
+    ? "pack_metadata"
+    : segment;
 }
