@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Latest implementation state before this progress update: clean at `e85c430`
+- Latest implementation state before this progress update: clean at `083d18c`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 99 test files and 307 tests
+- Latest full verification: `pnpm test` passed with 99 test files and 309 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -48,7 +48,8 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `0ae2e54 feat(datapack): trace resource asset references`
 - `e71ec56 feat(harness): route assets-only resources`
 - `e85c430 feat(jar-source): summarize vanilla asset entries`
-- current progress update: explicit resource reference tracing inside selected mod archives
+- `083d18c feat(jar-source): trace archive resource references`
+- current progress update: explicit resource reference tracing inside selected nested JarJar archives
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -88,6 +89,7 @@ Implemented:
 - MCP inventory payloads expose compact entry index counts/cache state with `limit: 0`, avoiding full path dumps.
 - MCP inventory payloads expose `assetResourceSummary` as counts-only metadata when supported asset resources exist, including `assetEntryCount`, UI-focused count, and per-kind counts.
 - MCP mod archive content executor can explicitly trace JAR-internal blockstate/model/texture references without extracting archives or reading binary texture content into payloads.
+- MCP mod archive content executor can explicitly trace nested JarJar blockstate/model/texture references through `nested.jar!/assets/...` requests without extracting archives or reading binary texture content into payloads.
 - Loose workspace/resource-pack `assets/**` classification now covers vanilla asset categories including atlases, blockstates, equipment, font, items, lang, models, particles, post_effect, shaders, sounds, texts, textures, waypoint_style, and pack metadata.
 - Datapack/resource adapter now exposes compact summaries with counts by domain, kind, and namespace.
 - MCP datapack/resource executor now includes counts-only `resourceSummary` metadata in evidence payloads.
@@ -146,6 +148,7 @@ Completed:
 - Counts-only mod archive asset evidence summary for selected resource kinds
 - Counts-only mod archive vanilla asset evidence summary for blockstates, models, textures, lang, and related roots
 - Explicit mod archive resource reference trace for selected blockstate/model asset paths
+- Explicit nested JarJar resource reference trace for selected `nested.jar!/assets/...` blockstate/model asset paths
 - Vanilla-aware loose `assets/**` kind classification
 - Counts-only local datapack/resource summary metadata
 - Explicit loose resource reference trace for blockstate/model/texture chains
@@ -158,7 +161,7 @@ Still incomplete:
 - broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
-- persistent derived indexes beyond class paths and selected/local asset summaries, such as item/registry/recipe summaries and crash-triage lookup tables
+- persistent derived indexes beyond class paths and selected/local asset summaries, such as item/registry/recipe summaries, nested resource reference lookup tables, and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
@@ -202,7 +205,7 @@ Priority:
 
 1. Expand docs retrieval packages beyond the first required cached docs artifact.
 2. Expand remote/local resource install semantics with confirmation for large/private/generated packages.
-3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset summaries into data, recipes, datapack content, full resource evidence, and crash-triage lookup tables.
+3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset summaries into data, recipes, datapack content, nested resource reference indexes, full resource evidence, and crash-triage lookup tables.
 4. Improve Gradle workspace model extraction.
 5. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
 6. Add migration analysis for Java/KubeJS/datapack version moves.

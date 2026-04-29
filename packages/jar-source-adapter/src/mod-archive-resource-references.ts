@@ -4,6 +4,8 @@ import {
   type ArchiveContentCache,
   type ArchiveContentSkippedEntry
 } from "./archive-content.js";
+import { listNestedArchiveContent } from "./nested-archive-list.js";
+import { readNestedArchiveContentFile } from "./nested-archive-read.js";
 
 export type ModArchiveResourceReferenceKind =
   | "blockstates"
@@ -30,6 +32,7 @@ export interface ModArchiveResourceReference {
 
 export interface ModArchiveResourceReferenceTrace {
   sourceArchive: string;
+  embeddedArchivePath?: string;
   startPaths: string[];
   references: ModArchiveResourceReference[];
   unresolved: ModArchiveResourceReference[];
@@ -58,13 +61,93 @@ export async function traceModArchiveResourceReferences(input: {
     listed.entries.map((entry) => entry.relativePath)
   );
   const startPaths = unique(input.startPaths).filter(isTraceableAssetPath);
+  const trace = await traceResourceReferences({
+    entriesByPath,
+    startPaths,
+    maxDepth: input.maxDepth,
+    maxReferences: input.maxReferences,
+    readContent: async (path) => {
+      const result = await readArchiveContentFile({
+        sourceArchive: input.sourceArchive,
+        relativePath: path,
+        maxBytes: input.maxBytesPerFile ?? DEFAULT_MAX_BYTES,
+        cache: input.cache
+      });
+      return {
+        content: result.content,
+        skipped: result.skipped
+      };
+    },
+    truncated: listed.truncated
+  });
+
+  return {
+    sourceArchive: input.sourceArchive,
+    ...trace
+  };
+}
+
+export async function traceNestedModArchiveResourceReferences(input: {
+  sourceArchive: string;
+  embeddedArchivePath: string;
+  startPaths: string[];
+  maxDepth?: number;
+  maxReferences?: number;
+  maxBytesPerFile?: number;
+}): Promise<ModArchiveResourceReferenceTrace> {
+  const listed = await listNestedArchiveContent({
+    sourceArchive: input.sourceArchive,
+    embeddedArchivePath: input.embeddedArchivePath,
+    domains: ["assets"]
+  });
+  const entriesByPath = new Set(
+    listed.entries.map((entry) => entry.relativePath)
+  );
+  const startPaths = unique(input.startPaths).filter(isTraceableAssetPath);
+  const trace = await traceResourceReferences({
+    entriesByPath,
+    startPaths,
+    maxDepth: input.maxDepth,
+    maxReferences: input.maxReferences,
+    readContent: async (path) => {
+      const result = await readNestedArchiveContentFile({
+        sourceArchive: input.sourceArchive,
+        embeddedArchivePath: input.embeddedArchivePath,
+        relativePath: path,
+        maxBytes: input.maxBytesPerFile ?? DEFAULT_MAX_BYTES
+      });
+      return {
+        content: result.content,
+        skipped: result.skipped
+      };
+    },
+    truncated: listed.truncated
+  });
+
+  return {
+    sourceArchive: input.sourceArchive,
+    embeddedArchivePath: listed.embeddedArchivePath,
+    ...trace
+  };
+}
+
+async function traceResourceReferences(input: {
+  entriesByPath: Set<string>;
+  startPaths: string[];
+  maxDepth?: number;
+  maxReferences?: number;
+  readContent: (
+    path: string
+  ) => Promise<{ content?: string; skipped?: ArchiveContentSkippedEntry }>;
+  truncated: boolean;
+}): Promise<Omit<ModArchiveResourceReferenceTrace, "sourceArchive" | "embeddedArchivePath">> {
   const references: ModArchiveResourceReference[] = [];
   const skipped: ArchiveContentSkippedEntry[] = [];
   const visited = new Set<string>();
-  const queue = startPaths.map((path) => ({ depth: 0, path }));
+  const queue = input.startPaths.map((path) => ({ depth: 0, path }));
   const maxDepth = input.maxDepth ?? DEFAULT_MAX_DEPTH;
   const maxReferences = input.maxReferences ?? DEFAULT_MAX_REFERENCES;
-  let truncated = listed.truncated;
+  let truncated = input.truncated;
 
   while (queue.length > 0) {
     const item = queue.shift();
@@ -73,12 +156,7 @@ export async function traceModArchiveResourceReferences(input: {
     }
 
     visited.add(item.path);
-    const read = await readArchiveContentFile({
-      sourceArchive: input.sourceArchive,
-      relativePath: item.path,
-      maxBytes: input.maxBytesPerFile ?? DEFAULT_MAX_BYTES,
-      cache: input.cache
-    });
+    const read = await input.readContent(item.path);
     if (read.skipped) {
       skipped.push(read.skipped);
       continue;
@@ -93,7 +171,7 @@ export async function traceModArchiveResourceReferences(input: {
       continue;
     }
 
-    for (const reference of collectReferences(item.path, parsed.value, entriesByPath)) {
+    for (const reference of collectReferences(item.path, parsed.value, input.entriesByPath)) {
       references.push(reference);
 
       if (
@@ -116,8 +194,7 @@ export async function traceModArchiveResourceReferences(input: {
   }
 
   return {
-    sourceArchive: input.sourceArchive,
-    startPaths,
+    startPaths: input.startPaths,
     references,
     unresolved: references.filter((reference) => reference.status === "missing"),
     skipped,

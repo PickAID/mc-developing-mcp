@@ -38,7 +38,10 @@ import {
   readSelectedEntries,
   readSelectedEntry
 } from "./mod-archive-entry-operations.js";
-import { traceSelectedModArchiveResourceReferences } from "./mod-archive-resource-references.js";
+import {
+  traceSelectedModArchiveResourceReferences,
+  traceSelectedNestedModArchiveResourceReferences
+} from "./mod-archive-resource-references.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_MATCHES = 12;
@@ -143,6 +146,15 @@ export async function executeMcpServerModArchiveContent(
 
   const nestedEntryPath = nestedEntryPathRequest.requests[0];
   if (nestedEntryPath && selectedArchive) {
+    const nestedResourceTrace = await traceSelectedNestedModArchiveResourceReferences({
+      sourceArchive: selectedArchive.archivePath,
+      embeddedArchivePath: nestedEntryPath.embeddedArchivePath,
+      requestText
+    });
+    if (nestedResourceTrace) {
+      return nestedResourceTrace;
+    }
+
     return readSelectedNestedEntry({
       sourceArchive: selectedArchive.archivePath,
       request: nestedEntryPath

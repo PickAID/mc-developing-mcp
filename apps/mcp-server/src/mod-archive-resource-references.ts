@@ -1,6 +1,7 @@
 import {
   readModArchiveMetadata,
   traceModArchiveResourceReferences,
+  traceNestedModArchiveResourceReferences,
   type ArchiveContentCache,
   type ModArchiveResourceReference,
   type ModArchiveResourceReferenceTrace
@@ -48,6 +49,48 @@ export async function traceSelectedModArchiveResourceReferences(input: {
   };
 }
 
+export async function traceSelectedNestedModArchiveResourceReferences(input: {
+  sourceArchive: string;
+  embeddedArchivePath: string;
+  requestText?: string;
+}): Promise<McpServerEvidenceExecutorResult | undefined> {
+  const startPaths = extractNestedTraceableAssetPaths(
+    input.embeddedArchivePath,
+    input.requestText
+  );
+  if (
+    startPaths.length === 0 ||
+    !mentionsResourceReferenceTrace(input.requestText)
+  ) {
+    return undefined;
+  }
+
+  const trace = await traceNestedModArchiveResourceReferences({
+    sourceArchive: input.sourceArchive,
+    embeddedArchivePath: input.embeddedArchivePath,
+    startPaths,
+    maxReferences: MAX_REFERENCE_TRACE_ENTRIES
+  });
+
+  return {
+    matched: trace.references.length > 0,
+    summary:
+      trace.references.length > 0
+        ? `Traced ${trace.references.length} nested mod archive resource reference(s).`
+        : "No nested mod archive resource references were traced.",
+    payload: {
+      source: "mod_archive_content",
+      mode: "resource_reference_trace_nested",
+      sourceArchive: input.sourceArchive,
+      embeddedArchivePath: trace.embeddedArchivePath,
+      archiveMetadata: await readModArchiveMetadata(input.sourceArchive).catch(
+        () => undefined
+      ),
+      resourceReferenceTrace: toCompactResourceReferenceTrace(trace)
+    }
+  };
+}
+
 function toCompactResourceReferenceTrace(
   trace: ModArchiveResourceReferenceTrace
 ) {
@@ -87,6 +130,25 @@ function extractTraceableAssetPaths(requestText?: string): string[] {
     .slice(0, 8);
 }
 
+function extractNestedTraceableAssetPaths(
+  embeddedArchivePath: string,
+  requestText?: string
+): string[] {
+  if (!requestText) {
+    return [];
+  }
+
+  const escapedArchivePath = escapeRegExp(embeddedArchivePath);
+  const matches = requestText.matchAll(
+    new RegExp(
+      `\\b${escapedArchivePath}!/(assets/[A-Za-z0-9_.-]+/(?:blockstates|models)/[A-Za-z0-9_./+$-]+\\.json)\\b`,
+      "g"
+    )
+  );
+  return unique([...matches].map((match) => match[1].replace(/[),.;:]+$/g, "")))
+    .slice(0, 8);
+}
+
 function mentionsResourceReferenceTrace(requestText?: string): boolean {
   return requestText !== undefined &&
     /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i.test(
@@ -96,4 +158,8 @@ function mentionsResourceReferenceTrace(requestText?: string): boolean {
 
 function unique<T>(values: T[]): T[] {
   return [...new Set(values)];
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

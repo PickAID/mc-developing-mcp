@@ -55,6 +55,34 @@ describe("mod archive resource reference tracing", () => {
       }
     });
   });
+
+  it("returns compact explicit trace payloads for nested mod archive assets", async () => {
+    const workspaceRoot = await createNestedWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      [
+        "Trace references for",
+        "META-INF/jarjar/nested-content.jar!/assets/demo/blockstates/gear.json",
+        "from mods/outer-mod.jar."
+      ].join(" ")
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "mod_archive_content",
+        mode: "resource_reference_trace_nested",
+        embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+        resourceReferenceTrace: {
+          tokenPolicy: "explicit_trace",
+          startPaths: ["assets/demo/blockstates/gear.json"],
+          referenceCount: 2,
+          unresolvedCount: 0,
+          truncated: false
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
@@ -101,6 +129,51 @@ async function createWorkspace(): Promise<string> {
         name: "assets/demo/textures/block/gear.png",
         content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
         compressionMethod: 0
+      }
+    ])
+  );
+  return workspaceRoot;
+}
+
+async function createNestedWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-nested-trace-mcp-"));
+  const nestedArchive = createZip([
+    {
+      name: "fabric.mod.json",
+      content: JSON.stringify({ id: "nested_content", version: "1.0.0" }),
+      compressionMethod: 0
+    },
+    {
+      name: "assets/demo/blockstates/gear.json",
+      content: "{\"variants\":{\"\":{\"model\":\"demo:block/gear\"}}}\n",
+      compressionMethod: 0
+    },
+    {
+      name: "assets/demo/models/block/gear.json",
+      content: "{\"textures\":{\"all\":\"demo:block/gear\"}}\n",
+      compressionMethod: 8
+    },
+    {
+      name: "assets/demo/textures/block/gear.png",
+      content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+      compressionMethod: 0
+    }
+  ]);
+
+  tempRoots.push(workspaceRoot);
+  await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+  await writeFile(
+    join(workspaceRoot, "mods", "outer-mod.jar"),
+    createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({ id: "outer_mod", version: "1.0.0" }),
+        compressionMethod: 0
+      },
+      {
+        name: "META-INF/jarjar/nested-content.jar",
+        content: nestedArchive,
+        compressionMethod: 8
       }
     ])
   );

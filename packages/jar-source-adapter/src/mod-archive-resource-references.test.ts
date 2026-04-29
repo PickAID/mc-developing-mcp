@@ -5,7 +5,10 @@ import { deflateRawSync } from "node:zlib";
 
 import { describe, expect, it } from "vitest";
 
-import { traceModArchiveResourceReferences } from "./mod-archive-resource-references.js";
+import {
+  traceModArchiveResourceReferences,
+  traceNestedModArchiveResourceReferences
+} from "./mod-archive-resource-references.js";
 
 describe("traceModArchiveResourceReferences", () => {
   it("traces blockstate models and model textures inside a mod archive", async () => {
@@ -75,6 +78,68 @@ describe("traceModArchiveResourceReferences", () => {
           status: "missing"
         }
       ],
+      skipped: [],
+      truncated: false
+    });
+  });
+
+  it("traces blockstate models and model textures inside nested mod archives", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-nested-resource-trace-"));
+    const archivePath = join(runtimeRoot, "outer-mod.jar");
+    const nestedArchive = createZip([
+      {
+        name: "assets/demo/blockstates/gear.json",
+        content: "{\"variants\":{\"\":{\"model\":\"demo:block/gear\"}}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/models/block/gear.json",
+        content: "{\"textures\":{\"all\":\"demo:block/gear\"}}\n",
+        compressionMethod: 8
+      },
+      {
+        name: "assets/demo/textures/block/gear.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      }
+    ]);
+
+    await writeFile(
+      archivePath,
+      createZip([
+        {
+          name: "META-INF/jarjar/nested-content.jar",
+          content: nestedArchive,
+          compressionMethod: 8
+        }
+      ])
+    );
+
+    await expect(
+      traceNestedModArchiveResourceReferences({
+        sourceArchive: archivePath,
+        embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+        startPaths: ["assets/demo/blockstates/gear.json"]
+      })
+    ).resolves.toMatchObject({
+      sourceArchive: archivePath,
+      embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+      startPaths: ["assets/demo/blockstates/gear.json"],
+      references: [
+        {
+          fromPath: "assets/demo/blockstates/gear.json",
+          relation: "blockstate_model",
+          toPath: "assets/demo/models/block/gear.json",
+          status: "resolved"
+        },
+        {
+          fromPath: "assets/demo/models/block/gear.json",
+          relation: "model_texture",
+          toPath: "assets/demo/textures/block/gear.png",
+          status: "resolved"
+        }
+      ],
+      unresolved: [],
       skipped: [],
       truncated: false
     });
