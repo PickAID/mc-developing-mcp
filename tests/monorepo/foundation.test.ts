@@ -19,6 +19,7 @@ describe("workspace foundation", () => {
       "packages/shared-types/package.json",
       "packages/runtime-manager/package.json",
       "packages/source-package-manager/package.json",
+      "packages/resource-registry/package.json",
       "packages/vanilla-source-adapter/package.json",
       "packages/agent-harness/package.json",
       "packages/eval-harness/package.json",

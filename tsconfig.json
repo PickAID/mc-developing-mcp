@@ -15,6 +15,7 @@
     { "path": "./packages/runtime-manager" },
     { "path": "./packages/agent-harness" },
     { "path": "./packages/source-package-manager" },
+    { "path": "./packages/resource-registry" },
     { "path": "./packages/vanilla-source-adapter" },
     { "path": "./packages/docs-retrieval" },
     { "path": "./packages/service-profile" },
