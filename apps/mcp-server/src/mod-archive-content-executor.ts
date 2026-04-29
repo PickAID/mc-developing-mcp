@@ -3,6 +3,7 @@ import {
   discoverModArchives,
   extractJavaClassReferences,
   findArchiveSetClassOwners,
+  findCachedModArchiveClassOwners,
   readModArchiveMetadata,
   searchArchiveSetContent,
   type ArchiveContentCache,
@@ -185,9 +186,12 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const classOwnerResult = await lookupClassOwners({
+    workspaceRoot,
     archivePaths: archives.archives.map((archive) => archive.archivePath),
     requestText,
-    cache: options.cache
+    cache: options.cache,
+    databasePath: options.inventoryDatabasePath,
+    refresh: shouldRefreshModArchiveInventory(requestText)
   });
   if (classOwnerResult) {
     return classOwnerResult;
@@ -233,9 +237,12 @@ export async function executeMcpServerModArchiveContent(
 }
 
 async function lookupClassOwners(input: {
+  workspaceRoot: string;
   archivePaths: string[];
   requestText?: string;
   cache?: ArchiveContentCache;
+  databasePath?: string;
+  refresh?: boolean;
 }): Promise<McpServerEvidenceExecutorResult | undefined> {
   const requestedClasses = extractJavaClassReferences(input.requestText, {
     ignoredPackagePrefixes: CLASS_OWNER_IGNORED_PACKAGE_PREFIXES,
@@ -246,30 +253,49 @@ async function lookupClassOwners(input: {
     return undefined;
   }
 
-  const result = await findArchiveSetClassOwners({
-    sourceArchives: input.archivePaths,
-    classNames: requestedClasses,
-    maxArchives: DEFAULT_MAX_ARCHIVES,
-    maxMatches: DEFAULT_MAX_MATCHES,
-    cache: input.cache
-  });
+  const result = input.databasePath
+    ? await findCachedModArchiveClassOwners({
+        workspaceRoot: input.workspaceRoot,
+        databasePath: input.databasePath,
+        classNames: requestedClasses,
+        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxMatches: DEFAULT_MAX_MATCHES,
+        refresh: input.refresh
+      })
+    : await findArchiveSetClassOwners({
+        sourceArchives: input.archivePaths,
+        classNames: requestedClasses,
+        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxMatches: DEFAULT_MAX_MATCHES,
+        cache: input.cache
+      });
 
-  if (result.matches.length === 0) {
+  const resolvedResult = result.matches.length > 0
+    ? result
+    : await findArchiveSetClassOwners({
+        sourceArchives: input.archivePaths,
+        classNames: requestedClasses,
+        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxMatches: DEFAULT_MAX_MATCHES,
+        cache: input.cache
+      });
+
+  if (resolvedResult.matches.length === 0) {
     return undefined;
   }
-  const matches = await attachArchiveMetadata(result.matches);
+  const matches = await attachArchiveMetadata(resolvedResult.matches);
 
   return {
     matched: true,
-    summary: `Located ${result.matches.length} class owner match(es) in mod archives.`,
+    summary: `Located ${resolvedResult.matches.length} class owner match(es) in mod archives.`,
     payload: {
       source: "mod_archive_content",
       mode: "class_owner",
       requestedClasses,
       matches,
-      searchedArchives: result.searchedArchives,
-      cache: result.cache,
-      truncated: result.truncated
+      searchedArchives: resolvedResult.searchedArchives,
+      cache: resolvedResult.cache,
+      truncated: resolvedResult.truncated
     }
   };
 }

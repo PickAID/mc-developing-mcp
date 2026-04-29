@@ -13,6 +13,7 @@ export type ArchiveClassOwnerMatchKind = "exact" | "nested";
 
 export interface ArchiveClassOwnerMatch {
   sourceArchive: string;
+  archiveRelativePath?: string;
   requestedClassName: string;
   binaryName: string;
   relativePath: string;
