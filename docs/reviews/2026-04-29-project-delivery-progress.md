@@ -6,7 +6,7 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建，以及实际 MCP 返回值验证。这让整合包外部 mod JAR 的资产、数据包内容、类归属和崩溃排查路线更接近可长期使用的底层服务，而不是每次重新扫描。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一块实现：mod archive asset evidence summary 现在能分类 selected GUI-related asset paths，并返回 counts-only MCP metadata。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Git state after latest mod archive cache work: clean at `4bab68d`
+- Latest implementation state before this progress update: clean at `dd6b176`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 97 test files and 293 tests
+- Latest full verification: `pnpm test` passed with 97 test files and 295 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -38,6 +38,10 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `7d0c2f4 feat(mcp-server): refresh mod archive inventory cache`
 - `1b8d492 feat(jar-source): persist mod archive entry index`
 - `4bab68d feat(jar-source): use entry index for class owners`
+- `07b8734 feat(jar-source): classify mod archive asset entries`
+- `3403433 feat(mcp-server): summarize mod archive asset resources`
+- `6f047fa test(service-profile): guard guidance scope`
+- `dd6b176 docs: record resource-pack asset evidence verification`
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -73,10 +77,13 @@ Implemented:
 - Mod archive inventory requests are persisted in runtime SQLite at `runtimeRoot/caches/mod-archives/mod-archive-inventory.sqlite`.
 - Mod archive inventory cache validity uses workspace root, archive limits, nested archive limits, archive relative paths, sizes, and mtimes.
 - Mod archive entry index persists data/assets/java/class entry paths and sizes into the same runtime SQLite cache.
+- Mod archive entry index persists selected asset kinds for GUI textures, GUI sprites, atlases, fonts, and lang files.
 - MCP inventory payloads expose compact entry index counts/cache state with `limit: 0`, avoiding full path dumps.
+- MCP inventory payloads expose `assetResourceSummary` as counts-only metadata when supported asset resources exist.
 - Class owner lookup uses the persistent entry index first and falls back to the existing JarJar scanner when needed.
 - Natural-language refresh requests rebuild the SQLite mod archive inventory cache.
 - Stale mod archive fingerprints rebuild inventory instead of returning old content summaries.
+- Runtime service-profile tests prevent long UI/design methodology from entering guidance.
 - Public MCP tool count remains one.
 - File size guard passes: no source/test JSON/JS/TS file above 500 lines.
 - Go residue guard passes: no Go files or Go module files remain.
@@ -90,7 +97,7 @@ Not implemented in this slice:
 
 ## Completion Estimate
 ### MCP Core Capability
-Estimated completion: 80-84%.
+Estimated completion: 82-86%.
 
 Completed:
 
@@ -121,6 +128,8 @@ Completed:
 - SQLite-backed persistent mod archive entry index
 - SQLite-backed class owner lookup for top-level mod classes with JarJar fallback
 - Explicit mod archive inventory refresh and stale rebuild behavior
+- Counts-only mod archive asset evidence summary for selected resource kinds
+- Runtime guidance boundary guard for resource/UI scope
 
 Still incomplete:
 
@@ -128,7 +137,7 @@ Still incomplete:
 - broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
-- persistent derived indexes beyond class paths, such as item/registry/recipe summaries and crash-triage lookup tables
+- persistent derived indexes beyond class paths and selected asset summaries, such as item/registry/recipe summaries and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
@@ -172,7 +181,7 @@ Priority:
 
 1. Expand docs retrieval packages beyond the first required cached docs artifact.
 2. Expand remote/local resource install semantics with confirmation for large/private/generated packages.
-3. Expand persistent modpack JAR indexes beyond inventory into class ownership, assets, data, recipes, datapack content, and crash-triage lookup tables.
+3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset summaries into data, recipes, datapack content, full resource evidence, and crash-triage lookup tables.
 4. Improve Gradle workspace model extraction.
 5. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
 6. Add migration analysis for Java/KubeJS/datapack version moves.
@@ -213,3 +222,5 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-30-mod-archive-entry-index-verification.md`
 
 `docs/reviews/2026-04-30-mod-archive-class-owner-index-verification.md`
+
+`docs/reviews/2026-04-30-resource-pack-asset-evidence-verification.md`
