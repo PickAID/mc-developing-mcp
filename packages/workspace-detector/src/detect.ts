@@ -92,7 +92,7 @@ function buildReasons(
     reasons.push("detected runtime mod jars");
   }
   if (scan.hasDatapack) {
-    reasons.push("detected datapack content");
+    reasons.push("detected datapack or resource-pack content");
   }
   if (hasPrismHint) {
     reasons.push("matched PrismLauncher instance layout");

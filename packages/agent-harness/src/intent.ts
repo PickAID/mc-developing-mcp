@@ -35,6 +35,8 @@ const KUBEJS_KEYWORDS = [
 const DATAPACK_KEYWORDS = [
   "datapack",
   "data pack",
+  "resource pack",
+  "resource-pack",
   "pack.mcmeta",
   "worldgen",
   "loot table",
@@ -45,7 +47,14 @@ const DATAPACK_KEYWORDS = [
   "dimension",
   "configured_feature",
   "placed_feature",
+  "blockstate",
+  "blockstates",
+  "block model",
+  "item model",
+  "texture",
+  "textures",
   "数据包",
+  "资源包",
   "世界生成"
 ];
 
@@ -121,17 +130,28 @@ export function detectHarnessTaskIntent(
     };
   }
 
+  const datapackOrResourceRequest =
+    matchesAny(normalized, DATAPACK_KEYWORDS) ||
+    mentionsDatapackOrResourcePath(normalized);
+
   if (
-    matchesAny(normalized, DATAPACK_KEYWORDS) &&
+    datapackOrResourceRequest &&
     (snapshot.facts.hasDatapack || snapshot.facts.datapackRootCount > 0)
   ) {
+    const assetRequest = mentionsDatapackOrResourcePath(normalized);
+
     return {
       id: "datapack_lookup",
       confidence: "high",
-      reasons: [
-        "request text mentions datapack or worldgen keywords",
-        "workspace snapshot exposes datapack content"
-      ]
+      reasons: assetRequest
+        ? [
+            "request text mentions datapack or resource-pack keywords",
+            "workspace snapshot exposes datapack or resource-pack content"
+          ]
+        : [
+            "request text mentions datapack or worldgen keywords",
+            "workspace snapshot exposes datapack content"
+          ]
     };
   }
 
@@ -151,4 +171,8 @@ export function detectHarnessTaskIntentFromSnapshot(
 
 function matchesAny(requestText: string, keywords: string[]): boolean {
   return keywords.some((keyword) => requestText.includes(keyword));
+}
+
+function mentionsDatapackOrResourcePath(requestText: string): boolean {
+  return /\b(?:data|assets)\/[a-z0-9_.-]+\/[a-z0-9_./-]+/.test(requestText);
 }

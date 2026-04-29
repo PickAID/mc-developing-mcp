@@ -107,6 +107,29 @@ describe("detectHarnessTaskIntent", () => {
     });
   });
 
+  it("detects resource asset lookup requests from assets paths", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "datapack-workspace",
+          facts: {
+            ...createFacts(),
+            hasDatapack: true,
+            datapackRootCount: 1
+          }
+        }),
+        "Trace references for assets/demo/blockstates/gear.json."
+      )
+    ).toEqual({
+      id: "datapack_lookup",
+      confidence: "high",
+      reasons: [
+        "request text mentions datapack or resource-pack keywords",
+        "workspace snapshot exposes datapack or resource-pack content"
+      ]
+    });
+  });
+
   it("detects Java diagnostics requests when the workspace has Java sources", () => {
     expect(
       detectHarnessTaskIntent(

@@ -227,6 +227,72 @@ describe("source.bundle datapack execution", () => {
     expect(result.payload?.resourceSummary).not.toHaveProperty("files");
     expect(result.payload?.resourceSummary).not.toHaveProperty("references");
   });
+
+  it("routes assets-only resource roots to reference tracing without pack metadata", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-assets-only-");
+
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "blockstates", "gear.json"),
+      JSON.stringify({ variants: { "": { model: "demo:block/gear" } } })
+    );
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "models", "block", "gear.json"),
+      JSON.stringify({ textures: { all: "demo:block/gear" } })
+    );
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "textures", "block", "gear.png"),
+      Buffer.from([1, 2, 3])
+    );
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Trace references for assets/demo/blockstates/gear.json."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    await expect(
+      executor({
+        candidate,
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        resourceSummary: {
+          tokenPolicy: "counts_only",
+          byDomain: {
+            assets: 3
+          }
+        },
+        resourceReferenceTrace: {
+          tokenPolicy: "explicit_trace",
+          startPaths: ["assets/demo/blockstates/gear.json"],
+          referenceCount: 2,
+          unresolvedCount: 0
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

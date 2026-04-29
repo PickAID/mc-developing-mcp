@@ -126,20 +126,25 @@ async function findDatapackRoots(
 ): Promise<string[]> {
   const datapackRoots: string[] = [];
 
-  if ((await pathIsFile(join(root, "pack.mcmeta"))) || (await pathIsDirectory(join(root, "data")))) {
+  if (await hasDatapackOrResourceContent(root)) {
     datapackRoots.push(root);
   }
 
   for (const resourceRoot of resourceRoots) {
-    if (
-      (await pathIsFile(join(resourceRoot, "pack.mcmeta"))) ||
-      (await pathIsDirectory(join(resourceRoot, "data")))
-    ) {
+    if (await hasDatapackOrResourceContent(resourceRoot)) {
       datapackRoots.push(resourceRoot);
     }
   }
 
   return uniquePaths(datapackRoots);
+}
+
+async function hasDatapackOrResourceContent(root: string): Promise<boolean> {
+  return (
+    (await pathIsFile(join(root, "pack.mcmeta"))) ||
+    (await pathIsDirectory(join(root, "data"))) ||
+    (await pathIsDirectory(join(root, "assets")))
+  );
 }
 
 async function findLogPaths(root: string): Promise<string[]> {

@@ -124,6 +124,22 @@ describe("detectWorkspace", () => {
     expect(detected.currentRuntime.loader).toBeUndefined();
   });
 
+  it("detects assets-only resource pack roots without pack.mcmeta", async () => {
+    const root = createTempRoot("resource-assets-only");
+
+    mkdirSync(join(root, "assets", "demo", "models", "item"), { recursive: true });
+    writeFileSync(
+      join(root, "assets", "demo", "models", "item", "gear.json"),
+      "{}\n"
+    );
+
+    const detected = await detectWorkspace(root);
+
+    expect(detected.hasDatapack).toBe(true);
+    expect(detected.datapackRoots).toEqual([root]);
+    expect(detected.reasons).toContain("detected datapack or resource-pack content");
+  });
+
   it("keeps prism instance layout as low-confidence hint only", async () => {
     const prismRoot = createTempRoot("prism-root");
     const minecraftRoot = join(
