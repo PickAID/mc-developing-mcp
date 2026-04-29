@@ -28,10 +28,10 @@ describe("createMcpSkillServer", () => {
       expect(tools.tools[0]).toMatchObject({
         title: "Minecraft Development Assistant",
         annotations: {
-          readOnlyHint: true,
+          readOnlyHint: false,
           destructiveHint: false,
           idempotentHint: true,
-          openWorldHint: false
+          openWorldHint: true
         }
       });
     } finally {

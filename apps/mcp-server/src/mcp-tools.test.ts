@@ -36,10 +36,10 @@ describe("registerMcpServerTools", () => {
       config: {
         title: "Minecraft Development Assistant",
         annotations: {
-          readOnlyHint: true,
+          readOnlyHint: false,
           destructiveHint: false,
           idempotentHint: true,
-          openWorldHint: false
+          openWorldHint: true
         }
       }
     });

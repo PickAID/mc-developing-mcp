@@ -3,6 +3,10 @@ import { join } from "node:path";
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { LspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
+import type {
+  MdmArtifactFetch,
+  MdmReleaseFetch
+} from "@mcpskill/resource-registry";
 import { z } from "zod";
 
 import { buildMcpServerBootstrap } from "./bootstrap.js";
@@ -23,8 +27,33 @@ import {
 import {
   buildMcpServerRequestContextWithServiceProfile
 } from "./service-profile-context.js";
+import {
+  installMdmReleasePackage,
+  type McpMdmReleaseInstallResult
+} from "./mdm-release-install.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
+
+const mdmReleaseInstallSchema = z
+  .object({
+    manifestUrl: z
+      .string()
+      .url()
+      .optional()
+      .describe("Optional remote MDM release manifest URL."),
+    manifestPath: z
+      .string()
+      .optional()
+      .describe("Optional local mdm-release-manifest.json path."),
+    packageId: z.string().min(1).describe("MDM release package id to cache."),
+    downloadPolicy: z
+      .enum(["disabled", "allowed"])
+      .optional()
+      .describe("Defaults to disabled; allowed performs the explicit download.")
+  })
+  .refine((value) => Boolean(value.manifestUrl) !== Boolean(value.manifestPath), {
+    message: "Provide exactly one of mdmReleaseInstall.manifestUrl or manifestPath."
+  });
 
 const mcpDevelopInputSchema = z.object({
   requestText: z
@@ -42,7 +71,10 @@ const mcpDevelopInputSchema = z.object({
   prismRoot: z
     .string()
     .optional()
-    .describe("Optional PrismLauncher root when the workspace is a Prism instance.")
+    .describe("Optional PrismLauncher root when the workspace is a Prism instance."),
+  mdmReleaseInstall: mdmReleaseInstallSchema
+    .optional()
+    .describe("Optional explicit MDM Release artifact cache request.")
 });
 
 export const mcpDevelopInputShape = mcpDevelopInputSchema.shape;
@@ -76,6 +108,9 @@ export interface McpToolRuntimeOptions {
   cwd?: string;
   lspDiagnostics?: LspDiagnosticRegistry;
   javaDiagnosticsRuntime?: McpJavaDiagnosticsRuntime;
+  mdmReleaseManifestFetch?: MdmReleaseFetch;
+  mdmArtifactFetch?: MdmArtifactFetch;
+  mdmReleaseNow?: () => string;
 }
 
 export function registerMcpServerTools(
@@ -98,10 +133,10 @@ export function registerMcpServerTools(
       description: buildMcpDevelopToolDescription(),
       inputSchema: mcpDevelopInputShape,
       annotations: {
-        readOnlyHint: true,
+        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: false
+        openWorldHint: true
       }
     },
     (input) => executeMcpDevelopTool(input, runtimeOptions)
@@ -122,10 +157,27 @@ async function executeMcpDevelopTool(
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
     });
-    const mdmResources = await buildMdmResourceStatusContext({
+    let mdmResources = await buildMdmResourceStatusContext({
       runtimeRoot,
       mdmSourcesRoot: env.MDM_SOURCES_ROOT
     });
+    const mdmReleaseInstall = input.mdmReleaseInstall
+      ? await installMdmReleasePackage({
+          runtimeRoot,
+          request: input.mdmReleaseInstall,
+          manifestFetch: options.mdmReleaseManifestFetch,
+          artifactFetch: options.mdmArtifactFetch,
+          now: options.mdmReleaseNow
+        })
+      : undefined;
+
+    if (shouldRefreshMdmResourceStatus(mdmReleaseInstall)) {
+      mdmResources = await buildMdmResourceStatusContext({
+        runtimeRoot,
+        mdmSourcesRoot: env.MDM_SOURCES_ROOT
+      });
+    }
+
     const requestContext =
       await buildMcpServerRequestContextWithServiceProfile(bootstrap, {
         requestText: input.requestText,
@@ -151,10 +203,13 @@ async function executeMcpDevelopTool(
       content: [
         {
           type: "text",
-          text: formatMcpDevelopResultText(result)
+          text: formatMcpDevelopResultText(result, mdmReleaseInstall)
         }
       ],
-      structuredContent: toStructuredContent(result, mdmResources)
+      structuredContent: toStructuredContent(result, {
+        mdmResources,
+        mdmReleaseInstall
+      })
     };
   } catch (error) {
     return {
@@ -220,7 +275,8 @@ function resolveWorkspaceRoot(
 }
 
 function formatMcpDevelopResultText(
-  result: McpServerRequestExecutorResult
+  result: McpServerRequestExecutorResult,
+  mdmReleaseInstall?: McpMdmReleaseInstallResult
 ): string {
   const selected = result.selectedEvidence;
   const lines = [
@@ -237,6 +293,11 @@ function formatMcpDevelopResultText(
   if (selected?.summary) {
     lines.push(`Summary: ${selected.summary}`);
   }
+  if (mdmReleaseInstall) {
+    lines.push(
+      `MDM release install: ${mdmReleaseInstall.status} (${mdmReleaseInstall.packageId})`
+    );
+  }
 
   return lines.join("\n");
 }
@@ -246,6 +307,7 @@ function buildMcpDevelopToolDescription(): string {
     "Use before guessing Minecraft modding code, KubeJS scripts, datapack JSON, Gradle dependencies, or modpack crash causes.",
     "This single progressive tool detects the workspace, applies the harness route, and chooses local evidence before optional docs.",
     "It treats KubeJS as Minecraft scripting instead of generic JavaScript, checks ProbeJS/d.ts context when available, and can inspect Gradle files, Java sources, datapack data/assets, logs, and mod JAR contents.",
+    "It can cache MDM Release artifacts only when mdmReleaseInstall.downloadPolicy is explicitly allowed; otherwise it returns a confirmation requirement.",
     "Return value includes a compact text summary plus structured route/evidence data for follow-up reasoning."
   ].join(" ");
 }
@@ -258,9 +320,21 @@ function shouldPrepareJavaDiagnostics(requestText: string): boolean {
 
 function toStructuredContent(
   result: McpServerRequestExecutorResult,
-  mdmResources?: MdmResourceStatusContext
+  options: {
+    mdmResources?: MdmResourceStatusContext;
+    mdmReleaseInstall?: McpMdmReleaseInstallResult;
+  }
 ): Record<string, unknown> {
-  return buildMcpDevelopStructuredContent(result, { mdmResources });
+  return buildMcpDevelopStructuredContent(result, options);
+}
+
+function shouldRefreshMdmResourceStatus(
+  mdmReleaseInstall: McpMdmReleaseInstallResult | undefined
+): boolean {
+  return (
+    mdmReleaseInstall?.status === "downloaded" ||
+    mdmReleaseInstall?.status === "ready"
+  );
 }
 
 function formatToolError(error: unknown): string {
