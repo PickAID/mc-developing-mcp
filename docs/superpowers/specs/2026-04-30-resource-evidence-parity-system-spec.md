@@ -8,6 +8,8 @@ This spec extends `2026-04-30-resource-pack-ui-boundary-and-evidence-spec.md`.
 
 The boundary spec prevents MCP runtime scope creep into UI/design methodology. This spec defines the positive requirement: `assets/**` resource evidence is a first-class Minecraft development domain, with the same seriousness as datapack `data/**` evidence.
 
+Detailed vanilla asset format coverage, including current observed client JAR categories and Blockbench `.bbmodel` interop, is defined in `docs/superpowers/specs/2026-04-30-vanilla-asset-format-coverage-spec.md`.
+
 The important distinction is:
 
 - resource support is core infrastructure;
@@ -446,6 +448,7 @@ Any implementation of this spec must prove:
 - What is the legal and technical path for on-demand vanilla asset acquisition?
 
 ## References
+- `docs/superpowers/specs/2026-04-30-vanilla-asset-format-coverage-spec.md`
 - `docs/superpowers/specs/2026-04-30-resource-pack-ui-boundary-and-evidence-spec.md`
 - `docs/superpowers/specs/2026-04-26-agentic-bottom-layer-services-design.md`
 - `docs/superpowers/specs/2026-04-19-mdm-sources-registry-and-mcp-cache-design.md`
