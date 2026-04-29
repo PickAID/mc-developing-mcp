@@ -3,7 +3,9 @@ import {
   listDatapackFiles,
   readDatapackFile,
   searchDatapackFiles,
+  summarizeDatapackFiles,
   type DatapackFileEntry,
+  type DatapackFileSummary,
   type DatapackSearchMatch,
   type DatapackSkippedFile
 } from "@mcpskill/datapack-adapter";
@@ -55,6 +57,10 @@ export async function executeMcpServerDatapackFiles(
 
   const reads = await readRequestedDatapackPaths(workspaceRoot, requestedPaths);
   const search = await searchRequestedResourceLocations(workspaceRoot, queries);
+  const resourceSummary = await summarizeDatapackFiles(workspaceRoot, {
+    ...DATAPACK_BUDGET
+  });
+  const compactResourceSummary = toCompactResourceSummary(resourceSummary);
 
   if (queries.length === 0 && requestedPaths.length === 0) {
     const listed = await listDatapackFiles(workspaceRoot, {
@@ -71,6 +77,7 @@ export async function executeMcpServerDatapackFiles(
         queries,
         requestedPaths,
         discovery,
+        resourceSummary: compactResourceSummary,
         files: listed.entries,
         skipped: listed.skipped,
         truncated: listed.truncated
@@ -91,11 +98,25 @@ export async function executeMcpServerDatapackFiles(
       queries,
       requestedPaths,
       discovery,
+      resourceSummary: compactResourceSummary,
       reads: reads.files,
       matches: search.matches,
       skipped: [...reads.skipped, ...search.skipped],
       truncated: search.truncated
     }
+  };
+}
+
+function toCompactResourceSummary(summary: DatapackFileSummary) {
+  return {
+    tokenPolicy: "counts_only" as const,
+    rootCount: summary.rootCount,
+    entryCount: summary.entryCount,
+    byDomain: summary.byDomain,
+    byKind: summary.byKind,
+    byNamespace: summary.byNamespace,
+    skippedCount: summary.skipped.length,
+    truncated: summary.truncated
   };
 }
 

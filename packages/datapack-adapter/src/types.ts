@@ -74,6 +74,16 @@ export interface DatapackFileList {
   truncated: boolean;
 }
 
+export interface DatapackFileSummary {
+  rootCount: number;
+  entryCount: number;
+  byDomain: Partial<Record<DatapackDomain, number>>;
+  byKind: Partial<Record<DatapackKind, number>>;
+  byNamespace: Record<string, number>;
+  skipped: DatapackSkippedFile[];
+  truncated: boolean;
+}
+
 export interface DatapackSearchMatch {
   file: DatapackFileEntry;
   line: number;

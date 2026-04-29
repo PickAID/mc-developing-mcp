@@ -80,6 +80,71 @@ describe("source.bundle datapack execution", () => {
       }
     });
   });
+
+  it("includes compact data and asset summaries for local resource roots", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-resource-workspace-");
+
+    await writeText(join(workspaceRoot, "pack.mcmeta"), "{}\n");
+    await writeText(join(workspaceRoot, "data", "demo", "recipes", "gear.json"), "{}\n");
+    await writeText(join(workspaceRoot, "assets", "demo", "items", "gear.json"), "{}\n");
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "models", "item", "gear.json"),
+      "{}\n"
+    );
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "List local datapack and resource asset evidence."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    await expect(
+      executor({
+        candidate,
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "datapack_files",
+        resourceSummary: {
+          tokenPolicy: "counts_only",
+          rootCount: 1,
+          entryCount: 4,
+          byDomain: {
+            assets: 3,
+            data: 1
+          },
+          byKind: {
+            items: 1,
+            models: 1,
+            pack_metadata: 1,
+            recipes: 1
+          }
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

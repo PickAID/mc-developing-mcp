@@ -8,7 +8,8 @@ import {
   discoverDatapackContent,
   listDatapackFiles,
   readDatapackFile,
-  searchDatapackFiles
+  searchDatapackFiles,
+  summarizeDatapackFiles
 } from "./index.js";
 
 const tempRoots: string[] = [];
@@ -174,6 +175,42 @@ describe("datapack-adapter", () => {
     expect(files.entries.every((entry) => entry.absolutePath.startsWith(root))).toBe(true);
     expect(files.truncated).toBe(true);
     expect(files.skipped).toEqual([]);
+  });
+
+  it("summarizes data and resource evidence without path lists", async () => {
+    const root = await createTempRoot("datapack-summary");
+
+    await writeFixture(root, "pack.mcmeta", "{}\n");
+    await writeFixture(root, "data/demo/recipes/a.json", "{}\n");
+    await writeFixture(root, "data/demo/tags/items/x.json", "{}\n");
+    await writeFixture(root, "assets/demo/items/gear.json", "{}\n");
+    await writeFixture(root, "assets/demo/models/item/gear.json", "{}\n");
+    await writeFixture(root, "assets/demo/textures/item/gear.png", Buffer.from([1, 2, 3]));
+
+    const summary = await summarizeDatapackFiles(root);
+
+    expect(summary).toEqual({
+      rootCount: 1,
+      entryCount: 6,
+      byDomain: {
+        assets: 4,
+        data: 2
+      },
+      byKind: {
+        items: 1,
+        models: 1,
+        pack_metadata: 1,
+        recipes: 1,
+        tags: 1,
+        textures: 1
+      },
+      byNamespace: {
+        "": 1,
+        demo: 5
+      },
+      skipped: [],
+      truncated: false
+    });
   });
 
   it("searches text files while skipping binary and oversized content", async () => {

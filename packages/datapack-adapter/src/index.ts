@@ -2,7 +2,8 @@ export { discoverDatapackContent } from "./discovery.js";
 export {
   listDatapackFiles,
   readDatapackFile,
-  searchDatapackFiles
+  searchDatapackFiles,
+  summarizeDatapackFiles
 } from "./files.js";
 export type {
   AssetKind,
@@ -12,6 +13,7 @@ export type {
   DatapackDomain,
   DatapackFileEntry,
   DatapackFileList,
+  DatapackFileSummary,
   DatapackKind,
   DatapackReadResult,
   DatapackRoot,

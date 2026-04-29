@@ -9,6 +9,7 @@ import type {
   DatapackDomain,
   DatapackFileEntry,
   DatapackFileList,
+  DatapackFileSummary,
   DatapackReadResult,
   DatapackSearchResult,
   DatapackSkippedFile
@@ -73,6 +74,33 @@ export async function listDatapackFiles(
 
   entries.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
   return { entries, skipped, truncated };
+}
+
+export async function summarizeDatapackFiles(
+  root: string,
+  budget: DatapackBudget = {}
+): Promise<DatapackFileSummary> {
+  const roots = await discoverRoots(root);
+  const listed = await listDatapackFiles(root, budget);
+  const byDomain: DatapackFileSummary["byDomain"] = {};
+  const byKind: DatapackFileSummary["byKind"] = {};
+  const byNamespace: DatapackFileSummary["byNamespace"] = {};
+
+  for (const entry of listed.entries) {
+    byDomain[entry.domain] = (byDomain[entry.domain] ?? 0) + 1;
+    byKind[entry.kind] = (byKind[entry.kind] ?? 0) + 1;
+    byNamespace[entry.namespace] = (byNamespace[entry.namespace] ?? 0) + 1;
+  }
+
+  return {
+    rootCount: roots.length,
+    entryCount: listed.entries.length,
+    byDomain,
+    byKind,
+    byNamespace,
+    skipped: listed.skipped,
+    truncated: listed.truncated
+  };
 }
 
 async function appendPackMetadataEntry(input: {
