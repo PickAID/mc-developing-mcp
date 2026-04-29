@@ -257,6 +257,26 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes explicit mod archive inventory requests even before archives exist", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createSnapshot(),
+        "List mod archive inventory and JarJar nested jars for this modpack."
+      )
+    ).toMatchObject({
+      intent: {
+        id: "workspace_default",
+        confidence: "low"
+      },
+      reasons: [
+        "request explicitly asks for mod archive inventory",
+        "fall back to the default workspace route when no specialized intent is detected"
+      ],
+      steps: ["mod_archive_content", "docs_lookup"],
+      preferredTools: ["context.query", "workspace.analyze"]
+    });
+  });
+
   it("keeps vanilla source questions on source-side evidence before docs", () => {
     expect(
       buildHarnessTaskRoute(

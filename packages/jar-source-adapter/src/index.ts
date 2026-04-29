@@ -4,6 +4,7 @@ export * from "./java-source-archive.js";
 export * from "./archive-content.js";
 export * from "./archive-set.js";
 export * from "./class-owner.js";
+export * from "./mod-archive-inventory.js";
 export * from "./mod-archives.js";
 export * from "./nested-archive.js";
 export * from "./nested-archive-list.js";

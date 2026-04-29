@@ -13,6 +13,7 @@ export function buildHarnessTaskRoute(
 ): AgentRuntimeTaskRoute {
   const intent = detectHarnessTaskIntent(snapshot, requestText);
   const vanillaSourceRequest = mentionsVanillaSourceRequest(requestText);
+  const modArchiveInventoryRequest = mentionsModArchiveInventoryRequest(requestText);
 
   switch (intent.id) {
     case "crash_triage":
@@ -80,10 +81,17 @@ export function buildHarnessTaskRoute(
                 "request targets net.minecraft vanilla source and should stay on source-side evidence before docs"
               ]
             : []),
+          ...(modArchiveInventoryRequest
+            ? ["request explicitly asks for mod archive inventory"]
+            : []),
           "fall back to the default workspace route when no specialized intent is detected"
         ],
-        steps: [...snapshot.routePlan.steps],
-        preferredTools: deriveDefaultTools(snapshot)
+        steps: modArchiveInventoryRequest
+          ? withExplicitModArchiveContent(snapshot.routePlan.steps)
+          : [...snapshot.routePlan.steps],
+        preferredTools: modArchiveInventoryRequest
+          ? ["context.query", "workspace.analyze"]
+          : deriveDefaultTools(snapshot)
       };
   }
 }
@@ -106,6 +114,27 @@ function withModArchiveContent(
     "mod_archive_content",
     ...steps.slice(docsIndex)
   ];
+}
+
+function withExplicitModArchiveContent(
+  steps: AgentRuntimeTaskRouteStep[]
+): AgentRuntimeTaskRouteStep[] {
+  if (steps.includes("mod_archive_content")) {
+    return steps;
+  }
+
+  const docsIndex = steps.indexOf("docs_lookup");
+  if (docsIndex >= 0) {
+    return [
+      ...steps.slice(0, docsIndex),
+      "mod_archive_content",
+      ...steps.slice(docsIndex)
+    ];
+  }
+
+  return steps.length === 0
+    ? ["mod_archive_content", "docs_lookup"]
+    : [...steps, "mod_archive_content"];
 }
 
 export function buildHarnessTaskRouteFromSnapshot(
@@ -136,4 +165,16 @@ function mentionsVanillaSourceRequest(requestText?: string): boolean {
   }
 
   return /\bnet\.minecraft(?:\.[A-Za-z_][A-Za-z0-9_]*)+\b/.test(requestText);
+}
+
+function mentionsModArchiveInventoryRequest(requestText?: string): boolean {
+  if (!requestText) {
+    return false;
+  }
+
+  const normalizedText = requestText.toLowerCase();
+  return (
+    /\b(inventory|index|summary|清单|索引|概览)\b/i.test(requestText) &&
+    /\b(mod|mods|jar|jars|jarjar|archive|archives)\b/.test(normalizedText)
+  );
 }

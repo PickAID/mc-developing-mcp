@@ -220,6 +220,87 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
+  it("summarizes mod archive inventory with nested JarJar metadata", async () => {
+    const workspaceRoot = await createJarJarWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "List mod archive inventory and JarJar nested jars for this modpack."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      summary: "Listed 1 mod archive inventory entrie(s).",
+      payload: {
+        source: "mod_archive_content",
+        mode: "inventory",
+        archiveCount: 1,
+        archives: [
+          {
+            relativePath: "mods/outer-mod.jar",
+            archiveMetadata: {
+              loader: "fabric",
+              modId: "outer_mod"
+            },
+            nestedArchives: [
+              {
+                embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+                embeddedArchiveMetadata: {
+                  loader: "fabric",
+                  modId: "nested_content"
+                }
+              }
+            ]
+          }
+        ],
+        truncated: false
+      }
+    });
+  });
+
+  it("returns a stable empty inventory payload when no mod jars exist", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-empty-mods-"));
+    tempRoots.push(workspaceRoot);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "List mod archive inventory and JarJar nested jars for this modpack."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      summary: "Listed 0 mod archive inventory entrie(s).",
+      payload: {
+        source: "mod_archive_content",
+        mode: "inventory",
+        archives: [],
+        archiveCount: 0,
+        truncated: false
+      }
+    });
+  });
+
+  it("reuses an injected cache across repeated inventory requests", async () => {
+    const workspaceRoot = await createJarJarWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "List mod archive inventory and JarJar nested jars for this modpack."
+    );
+    const cache = createArchiveContentCache();
+    const executor = createMcpServerModArchiveContentExecutor({ cache });
+
+    await expect(executor(input)).resolves.toMatchObject({
+      payload: {
+        mode: "inventory",
+        cache: { centralDirectoryHits: 0, centralDirectoryMisses: 1 }
+      }
+    });
+    await expect(executor(input)).resolves.toMatchObject({
+      payload: {
+        mode: "inventory",
+        cache: { centralDirectoryHits: 1, centralDirectoryMisses: 0 }
+      }
+    });
+  });
+
   it("reuses an injected cache across repeated list requests", async () => {
     const workspaceRoot = await createModArchiveWorkspace();
     const input = await createExecutorInput(
@@ -324,6 +405,15 @@ async function createJarJarWorkspace(): Promise<string> {
   await writeBinary(
     join(workspaceRoot, "mods", "outer-mod.jar"),
     createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "outer_mod",
+          name: "Outer Mod",
+          version: "1.0.0"
+        }),
+        compressionMethod: 0
+      },
       {
         name: "META-INF/jarjar/nested-content.jar",
         content: nestedJar,

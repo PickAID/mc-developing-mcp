@@ -26,6 +26,10 @@ import {
   extractNestedArchiveListPath,
   listSelectedNestedEntries
 } from "./mod-archive-nested-list.js";
+import {
+  isModArchiveInventoryRequest,
+  listModArchiveInventory
+} from "./mod-archive-inventory.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_LIST_ENTRIES = 64;
@@ -94,6 +98,13 @@ export async function executeMcpServerModArchiveContent(
   });
   const requestText = input.candidate.queryHint ?? input.requestPlan.requestText;
   const queries = extractModArchiveQueries(requestText);
+
+  if (isModArchiveInventoryRequest(requestText)) {
+    return listModArchiveInventory({
+      executorInput: input,
+      cache: options.cache
+    });
+  }
 
   if (archives.archives.length === 0) {
     return {
