@@ -12,6 +12,6 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. packages/resource-registry/src/local-registry.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
   }
 }
