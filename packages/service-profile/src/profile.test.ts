@@ -150,6 +150,10 @@ describe("buildMinecraftServiceProfile", () => {
     expect(profile.guidance).toContain(
       "Use discovered mod jar data/assets/source content for external mod evidence before assuming it is absent."
     );
+    for (const entry of profile.guidance) {
+      expect(entry.length).toBeLessThanOrEqual(160);
+      expect(entry).not.toMatch(/nine-slice|grid|dynamic-window/i);
+    }
     expect(formatServiceProfilePrompt(profile)).toContain(
       "Java LSP: ready, implemented=definition,references,hover,workspaceSymbol,diagnostics"
     );
