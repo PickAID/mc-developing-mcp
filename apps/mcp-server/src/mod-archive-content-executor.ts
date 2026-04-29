@@ -18,6 +18,10 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
+import {
+  extractNestedArchiveEntryPath,
+  readSelectedNestedEntry
+} from "./mod-archive-nested-read.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_LIST_ENTRIES = 64;
@@ -96,6 +100,14 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const selectedArchive = selectArchive(archives.archives, requestText);
+  const nestedEntryPath = extractNestedArchiveEntryPath(requestText);
+  if (nestedEntryPath && selectedArchive) {
+    return readSelectedNestedEntry({
+      sourceArchive: selectedArchive.archivePath,
+      request: nestedEntryPath
+    });
+  }
+
   const entryPath = extractArchiveEntryPath(requestText);
   if (entryPath && selectedArchive) {
     return readSelectedEntry({

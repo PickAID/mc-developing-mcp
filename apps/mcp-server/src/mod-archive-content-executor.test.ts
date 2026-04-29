@@ -161,6 +161,34 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
+  it("reads selected files from JarJar nested archives", async () => {
+    const workspaceRoot = await createJarJarWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Read META-INF/jarjar/nested-content.jar!/data/demo/recipes/nested_gear.json from mods/outer-mod.jar."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      summary: "Read data/demo/recipes/nested_gear.json from nested mod archive.",
+      payload: {
+        source: "mod_archive_content",
+        mode: "read_nested",
+        sourceArchive: expect.stringContaining("mods/outer-mod.jar"),
+        embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+        embeddedArchiveMetadata: {
+          loader: "fabric",
+          modId: "nested_content"
+        },
+        entry: {
+          domain: "data",
+          relativePath: "data/demo/recipes/nested_gear.json"
+        },
+        content: "{\"result\":\"demo:nested_gear\"}\n"
+      }
+    });
+  });
+
   it("reuses an injected cache across repeated list requests", async () => {
     const workspaceRoot = await createModArchiveWorkspace();
     const input = await createExecutorInput(

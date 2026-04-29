@@ -15,9 +15,10 @@ import {
   readModArchiveMetadataFromBuffer,
   type ModArchiveMetadata
 } from "./mod-archives.js";
-
-const DEFAULT_MAX_NESTED_ARCHIVES = 16;
-const DEFAULT_MAX_NESTED_ARCHIVE_BYTES = 32 * 1024 * 1024;
+import {
+  DEFAULT_MAX_NESTED_ARCHIVE_BYTES,
+  DEFAULT_MAX_NESTED_ARCHIVES
+} from "./nested-archive-limits.js";
 
 export interface NestedArchiveContentSearchMatch
   extends ArchiveContentSearchMatch {
