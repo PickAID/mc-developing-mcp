@@ -30,12 +30,28 @@ describe("buildModArchiveInventory", () => {
             modId: "outer_mod",
             name: "Outer Mod"
           },
+          contentSummary: {
+            fileCount: 4,
+            byDomain: {
+              java: 1,
+              data: 1,
+              assets: 1,
+              class: 1
+            }
+          },
           nestedArchives: [
             {
               embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
               embeddedArchiveMetadata: {
                 loader: "fabric",
                 modId: "nested_content"
+              },
+              contentSummary: {
+                fileCount: 2,
+                byDomain: {
+                  data: 1,
+                  assets: 1
+                }
               }
             }
           ]
@@ -88,6 +104,16 @@ async function createInventoryWorkspace(input: {
       name: "fabric.mod.json",
       content: JSON.stringify({ id: "nested_content", version: "2.0.0" }),
       compressionMethod: 0
+    },
+    {
+      name: "data/demo/recipes/nested_gear.json",
+      content: "{\"result\":\"demo:nested_gear\"}\n",
+      compressionMethod: 0
+    },
+    {
+      name: "assets/demo/lang/en_us.json",
+      content: "{\"item.demo.nested_gear\":\"Nested Gear\"}\n",
+      compressionMethod: 8
     }
   ]);
 
@@ -103,6 +129,26 @@ async function createInventoryWorkspace(input: {
           name: "Outer Mod",
           version: "1.0.0"
         }),
+        compressionMethod: 0
+      },
+      {
+        name: "data/demo/tags/items/gears.json",
+        content: "{\"values\":[\"demo:gear\"]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/lang/en_us.json",
+        content: "{\"item.demo.gear\":\"Gear\"}\n",
+        compressionMethod: 8
+      },
+      {
+        name: "com/example/OuterMod.java",
+        content: "package com.example;\npublic class OuterMod {}\n",
+        compressionMethod: 8
+      },
+      {
+        name: "com/example/OuterMod.class",
+        content: Buffer.from([0xca, 0xfe, 0xba, 0xbe]),
         compressionMethod: 0
       },
       ...createNestedArchiveEntries(nestedJar, input.nestedArchiveCount ?? 1)

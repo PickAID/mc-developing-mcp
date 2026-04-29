@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 import type { ArchiveContentCache } from "./archive-content-cache.js";
+import type { ArchiveContentDomain } from "./archive-content.js";
 import {
   discoverModArchives,
   readModArchiveMetadataFromBuffer,
@@ -17,13 +18,20 @@ import { DEFAULT_MAX_NESTED_ARCHIVE_BYTES } from "./nested-archive-limits.js";
 
 export interface ModArchiveInventoryEntry extends ModArchiveCandidate {
   archiveMetadata?: ModArchiveMetadata;
+  contentSummary: ModArchiveContentSummary;
   nestedArchives: NestedModArchiveInventoryEntry[];
 }
 
 export interface NestedModArchiveInventoryEntry {
   embeddedArchivePath: string;
   embeddedArchiveMetadata?: ModArchiveMetadata;
+  contentSummary?: ModArchiveContentSummary;
   sizeBytes: number;
+}
+
+export interface ModArchiveContentSummary {
+  fileCount: number;
+  byDomain: Record<ArchiveContentDomain, number>;
 }
 
 export interface ModArchiveInventoryResult {
@@ -103,6 +111,7 @@ async function inspectArchive(input: {
     archive: {
       ...input.archive,
       archiveMetadata: readMetadataSafely(archiveBuffer),
+      contentSummary: summarizeContentEntries(directory.entries),
       nestedArchives: nested.entries
     },
     truncated: nested.truncated
@@ -151,6 +160,7 @@ function readNestedArchives(input: {
     return [{
       embeddedArchivePath,
       embeddedArchiveMetadata: readMetadataSafely(content),
+      contentSummary: summarizeBufferContent(content),
       sizeBytes: entry.uncompressedSize
     }];
   });
@@ -159,6 +169,59 @@ function readNestedArchives(input: {
     entries,
     truncated: nestedEntries.length > maxNestedArchives
   };
+}
+
+function summarizeBufferContent(
+  archiveBuffer: Buffer
+): ModArchiveContentSummary | undefined {
+  try {
+    return summarizeContentEntries(readZipCentralDirectory(archiveBuffer));
+  } catch {
+    return undefined;
+  }
+}
+
+function summarizeContentEntries(entries: ZipEntry[]): ModArchiveContentSummary {
+  const byDomain: Record<ArchiveContentDomain, number> = {
+    java: 0,
+    data: 0,
+    assets: 0,
+    class: 0
+  };
+
+  for (const entry of entries) {
+    if (entry.name.endsWith("/")) {
+      continue;
+    }
+
+    const relativePath = normalizeArchivePath(entry.name);
+    const domain = relativePath
+      ? classifyArchiveContentDomain(relativePath)
+      : undefined;
+    if (domain) {
+      byDomain[domain] += 1;
+    }
+  }
+
+  return {
+    fileCount: byDomain.java + byDomain.data + byDomain.assets + byDomain.class,
+    byDomain
+  };
+}
+
+function classifyArchiveContentDomain(
+  relativePath: string
+): ArchiveContentDomain | undefined {
+  if (relativePath.endsWith(".java")) {
+    return "java";
+  }
+  if (relativePath.endsWith(".class")) {
+    return "class";
+  }
+  if (relativePath.startsWith("data/")) {
+    return "data";
+  }
+  return relativePath.startsWith("assets/") ? "assets" : undefined;
 }
 
 function readMetadataSafely(archive: Buffer): ModArchiveMetadata | undefined {
