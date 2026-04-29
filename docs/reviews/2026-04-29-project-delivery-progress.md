@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Git state after latest mod archive cache work: clean at `1b8d492`
+- Git state after latest mod archive cache work: clean at `4bab68d`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 95 test files and 291 tests
+- Latest full verification: `pnpm test` passed with 97 test files and 293 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -37,6 +37,7 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `0344164 feat(jar-source): persist mod archive inventory cache`
 - `7d0c2f4 feat(mcp-server): refresh mod archive inventory cache`
 - `1b8d492 feat(jar-source): persist mod archive entry index`
+- `4bab68d feat(jar-source): use entry index for class owners`
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -73,6 +74,7 @@ Implemented:
 - Mod archive inventory cache validity uses workspace root, archive limits, nested archive limits, archive relative paths, sizes, and mtimes.
 - Mod archive entry index persists data/assets/java/class entry paths and sizes into the same runtime SQLite cache.
 - MCP inventory payloads expose compact entry index counts/cache state with `limit: 0`, avoiding full path dumps.
+- Class owner lookup uses the persistent entry index first and falls back to the existing JarJar scanner when needed.
 - Natural-language refresh requests rebuild the SQLite mod archive inventory cache.
 - Stale mod archive fingerprints rebuild inventory instead of returning old content summaries.
 - Public MCP tool count remains one.
@@ -117,6 +119,7 @@ Completed:
 - Mod archive inventory summary with data/assets/class/java counts
 - SQLite-backed persistent mod archive inventory cache
 - SQLite-backed persistent mod archive entry index
+- SQLite-backed class owner lookup for top-level mod classes with JarJar fallback
 - Explicit mod archive inventory refresh and stale rebuild behavior
 
 Still incomplete:
@@ -125,7 +128,7 @@ Still incomplete:
 - broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
-- persistent derived indexes beyond entry paths, such as class-owner lookup tables, item/registry/recipe summaries, and crash-triage lookup tables
+- persistent derived indexes beyond class paths, such as item/registry/recipe summaries and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
@@ -208,3 +211,5 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-29-mod-archive-refresh-stale-verification.md`
 
 `docs/reviews/2026-04-30-mod-archive-entry-index-verification.md`
+
+`docs/reviews/2026-04-30-mod-archive-class-owner-index-verification.md`
