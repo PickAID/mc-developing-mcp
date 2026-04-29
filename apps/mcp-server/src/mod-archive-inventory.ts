@@ -1,7 +1,9 @@
 import {
   buildModArchiveInventory,
+  buildCachedModArchiveInventory,
   type ArchiveContentCache
 } from "@mcpskill/jar-source-adapter";
+import { join } from "node:path";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -10,6 +12,17 @@ import type {
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_NESTED_ARCHIVES = 16;
+
+export function resolveModArchiveInventoryDatabasePath(
+  runtimeRoot: string
+): string {
+  return join(
+    runtimeRoot,
+    "caches",
+    "mod-archives",
+    "mod-archive-inventory.sqlite"
+  );
+}
 
 export function isModArchiveInventoryRequest(requestText?: string): boolean {
   if (!requestText) {
@@ -26,6 +39,7 @@ export function isModArchiveInventoryRequest(requestText?: string): boolean {
 export async function listModArchiveInventory(input: {
   executorInput: McpServerEvidenceExecutorInput;
   cache?: ArchiveContentCache;
+  databasePath?: string;
 }): Promise<McpServerEvidenceExecutorResult> {
   const workspaceRoot =
     input.executorInput.requestPlan.requestContext.workspaceContext?.workspaceRoot;
@@ -36,12 +50,21 @@ export async function listModArchiveInventory(input: {
     };
   }
 
-  const result = await buildModArchiveInventory({
-    workspaceRoot,
-    maxArchives: DEFAULT_MAX_ARCHIVES,
-    maxNestedArchives: DEFAULT_MAX_NESTED_ARCHIVES,
-    cache: input.cache
-  });
+  const result = input.databasePath
+    ? await buildCachedModArchiveInventory({
+        workspaceRoot,
+        databasePath: input.databasePath,
+        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxNestedArchives: DEFAULT_MAX_NESTED_ARCHIVES,
+        buildInventory: (options) =>
+          buildModArchiveInventory({ ...options, cache: input.cache })
+      })
+    : await buildModArchiveInventory({
+        workspaceRoot,
+        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxNestedArchives: DEFAULT_MAX_NESTED_ARCHIVES,
+        cache: input.cache
+      });
 
   return {
     matched: true,

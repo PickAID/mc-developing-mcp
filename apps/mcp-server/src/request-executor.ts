@@ -105,6 +105,7 @@ function buildDefaultExecutors(
     }),
     "context.query": buildMcpServerContextQueryExecutor({
       ...options.contextQuery,
+      runtimeRoot: options.bootstrap.runtimePolicy.runtimeRoot,
       modArchiveContentCache:
         options.contextQuery?.modArchiveContentCache ??
         options.modArchiveContentCache

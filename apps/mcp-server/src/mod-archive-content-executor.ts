@@ -27,7 +27,8 @@ import {
 } from "./mod-archive-nested-list.js";
 import {
   isModArchiveInventoryRequest,
-  listModArchiveInventory
+  listModArchiveInventory,
+  resolveModArchiveInventoryDatabasePath
 } from "./mod-archive-inventory.js";
 import {
   extractArchiveEntryPathRequest,
@@ -66,15 +67,22 @@ const QUERY_STOP_WORDS = new Set([
 
 export interface McpServerModArchiveContentExecutorOptions {
   cache?: ArchiveContentCache;
+  inventoryDatabasePath?: string;
+  runtimeRoot?: string;
 }
 
 export function createMcpServerModArchiveContentExecutor(
   options: McpServerModArchiveContentExecutorOptions = {}
 ) {
   const cache = options.cache ?? createArchiveContentCache();
+  const inventoryDatabasePath =
+    options.inventoryDatabasePath ??
+    (options.runtimeRoot
+      ? resolveModArchiveInventoryDatabasePath(options.runtimeRoot)
+      : undefined);
 
   return (input: McpServerEvidenceExecutorInput) =>
-    executeMcpServerModArchiveContent(input, { cache });
+    executeMcpServerModArchiveContent(input, { cache, inventoryDatabasePath });
 }
 
 export async function executeMcpServerModArchiveContent(
@@ -106,7 +114,8 @@ export async function executeMcpServerModArchiveContent(
   if (isModArchiveInventoryRequest(requestText)) {
     return listModArchiveInventory({
       executorInput: input,
-      cache: options.cache
+      cache: options.cache,
+      databasePath: options.inventoryDatabasePath
     });
   }
 

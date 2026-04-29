@@ -13,9 +13,11 @@ import type {
 export interface McpServerContextQueryExecutorOptions {
   probejsTypesExecutor?: McpServerEvidenceExecutor;
   modArchiveContentCache?: ArchiveContentCache;
+  modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
   docsRecords?: DocsPackageRecord[];
   fallbackExecutor?: McpServerEvidenceExecutor;
+  runtimeRoot?: string;
 }
 
 export function buildMcpServerContextQueryExecutor(
@@ -24,7 +26,9 @@ export function buildMcpServerContextQueryExecutor(
   const modArchiveContentExecutor =
     options.modArchiveContentExecutor ??
     createMcpServerModArchiveContentExecutor({
-      cache: options.modArchiveContentCache
+      cache: options.modArchiveContentCache,
+      inventoryDatabasePath: options.modArchiveInventoryDatabasePath,
+      runtimeRoot: options.runtimeRoot
     });
 
   return (
