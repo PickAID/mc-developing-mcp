@@ -4,7 +4,7 @@
 
 **Goal:** Build the first real `mdm-sources` -> release artifact -> MCP resource cache loop while keeping the MCP public surface to one `mc_develop` tool.
 
-**Execution status (2026-04-30):** local delivery-closure loop complete. MCP commits through `7fd6839`; `mdm-sources` commits through `51cf66f`. Final verification is recorded in `docs/reviews/2026-04-30-mdm-delivery-closure-verification.md`.
+**Execution status (2026-04-30):** local delivery-closure loop complete and extended with explicit MDM release install, cached docs resource lookup, and compact docs-resource diagnostics. MCP commits through `18341e5`; `mdm-sources` commits through `ccfe2dc`. Verification is recorded in `docs/reviews/2026-04-30-mdm-delivery-closure-verification.md`, `docs/reviews/2026-04-29-mcp-mdm-release-install-verification.md`, `docs/reviews/2026-04-29-mdm-docs-resource-lookup-verification.md`, and `docs/reviews/2026-04-29-mdm-docs-resource-diagnostics-verification.md`.
 
 **Architecture:** `mdm-sources` owns source manifests, registry files, validation, and release artifact generation. `mc-developing-mcp` owns resource registry reading, artifact cache state, checksum validation, and runtime status injection. The first slice proves the loop with local filesystem artifacts before adding remote GitHub release fetching.
 
@@ -13,7 +13,7 @@
 ---
 
 ## Repo Roots
-- MCP worktree: `/private/tmp/mc-developing-mcp-skill-update`
+- MCP worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Resource repo: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
 
 ## File Structure

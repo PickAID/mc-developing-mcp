@@ -10,24 +10,29 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 
 ## Current Repository State
 ### MCP
-- Worktree: `/private/tmp/mc-developing-mcp-skill-update`
+- Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Git state after delivery closure commits: clean before docs update, then docs update pending this commit
+- Git state after diagnostics and worktree migration: clean at `18341e5`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 79 test files and 247 tests
-- Latest MCP package verification: `pnpm --filter @mcpskill/mcp-server test` passed with 28 test files and 75 tests
+- Latest full verification after moving to the fixed worktree: `pnpm test` passed with 84 test files and 262 tests
+- Latest targeted diagnostics verification: 4 test files and 9 tests passed
 
-Recent MCP delivery-closure commits:
+Recent MCP resource and diagnostics commits:
 
 - `0783dfc feat(resource-registry): read local mdm registries`
 - `aff046f feat(resource-registry): summarize mdm cache status`
 - `7fd6839 feat(mcp-server): inject mdm resource status`
+- `fef95a8 feat(resource-registry): read mdm release manifests`
+- `cca9050 feat(resource-registry): cache mdm release artifacts`
+- `e112f8c feat(mcp-server): install mdm release artifacts on request`
+- `ad5729e feat(mcp-server): use cached mdm docs resources`
+- `18341e5 feat(mcp-server): report mdm docs resource diagnostics`
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
 - Branch: `main`
-- Remote state: `origin/main [gone]`
+- Remote state: `origin/main`
 - Git state after verification: clean
 
 Committed baseline:
@@ -36,8 +41,9 @@ Committed baseline:
 - `7485169 feat: validate mdm resource packages`
 - `2e2b894 feat: add required core docs package`
 - `51cf66f feat: build local mdm resource releases`
+- `ccfe2dc feat: publish mdm resource release artifacts`
 
-Do not push `mdm-sources` until the target remote branch is confirmed.
+The `mdm-sources` baseline and release artifact workflow now have a remote branch.
 
 ## Delivery Closure Status
 Status: complete for the local loop.
@@ -50,16 +56,19 @@ Implemented:
 - MCP runtime cache layout and cache state read/write helpers.
 - MCP resource status summary with `ready`, `missing_required`, `missing_optional`, and `invalid_checksum`.
 - `mc_develop` structured content now includes `mdmResources` when `MDM_SOURCES_ROOT` is configured.
+- `mc_develop` can install an MDM release artifact on request only when `mdmReleaseInstall.downloadPolicy` is explicitly `allowed`.
+- The install flow supports local manifest paths and manifest URLs, verifies SHA-256, and writes runtime cache state.
+- Cached `.mdm-resource.json` docs artifacts are loaded into docs retrieval without treating markdown as runtime content.
+- Invalid cached docs artifacts are reported through compact `mdmDocs` diagnostics without failing the whole request.
 - Public MCP tool count remains one.
 - File size guard passes: no source/test JSON/JS/TS file above 500 lines.
 - Go residue guard passes: no Go files or Go module files remain.
 
 Not implemented in this slice:
 
-- Remote release download/install.
-- GitHub release distribution for resource packages.
+- Published GitHub Release workflow automation and retention policy.
 - User confirmation flow for large/private/generated local packages.
-- Resource-backed docs search replacement.
+- Full resource-backed docs search replacement beyond the first required docs package.
 - Real-world LostCivilization/PrismLauncher full scenario validation.
 
 ## Completion Estimate
@@ -85,11 +94,14 @@ Completed:
 - SQLite source index build/query/read
 - structured content payload budgeting
 - MDM local registry/cache/status integration
+- MDM release manifest read/install/cache flow
+- MDM docs resource loading into docs retrieval
+- Compact MDM docs resource diagnostics
 
 Still incomplete:
 
-- remote resource package download and checksum install flow
-- docs retrieval from external resource package indexes
+- published release workflow and package retention policy
+- broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
 - concentrated real-world scenario testing
@@ -107,13 +119,14 @@ Completed:
 - deterministic local release artifact builder
 - local release artifact metadata written into registry
 - CI validation workflow
+- release artifact publication metadata baseline
 
 Still incomplete:
 
-- remote release publication and retention policy
+- GitHub Release automation and retention policy
 - package compatibility policy
 - split package catalog for docs, libraries, content mods, generated indexes, and local/private derived packages
-- MCP download/install/clear/list commands or internal flows
+- MCP clear/list/status UX beyond current structured status and explicit install flow
 - resource package signing or stronger provenance model
 - real package payload expansion beyond the first required core docs package
 
@@ -132,8 +145,8 @@ Now that delivery closure is complete, return to MCP capability completion.
 
 Priority:
 
-1. Connect docs retrieval to resource packages instead of only built-in records.
-2. Add remote/local resource install semantics with confirmation for large/private/generated packages.
+1. Expand docs retrieval packages beyond the first required cached docs artifact.
+2. Expand remote/local resource install semantics with confirmation for large/private/generated packages.
 3. Improve modpack JAR indexing for class ownership, assets, data, recipes, and datapack content.
 4. Improve Gradle workspace model extraction.
 5. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.

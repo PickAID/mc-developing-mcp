@@ -23,11 +23,11 @@ This spec defines the sequencing so future work does not become another long cha
 ### MCP Server
 Current branch:
 
-- Repository worktree: `/private/tmp/mc-developing-mcp-skill-update`
+- Repository worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote branch: `origin/skill-update`
 - Public MCP surface: one progressive tool, `mc_develop`
-- Current full verification: `pnpm test` passes with 79 test files and 247 tests
+- Current full verification: `pnpm test` passes with 84 test files and 262 tests
 
 Implemented core capabilities:
 
@@ -43,19 +43,23 @@ Implemented core capabilities:
 - JDTLS runtime, diagnostics bridge, lifecycle cleanup, and diagnostic-source path bridge
 - On-demand vanilla source package installation through local recipes
 - SQLite source index build/query/read primitives
+- MDM release manifest read/install/cache flow with explicit download confirmation
+- MDM docs resource loading and compact diagnostics in `mc_develop` structured content
 
 ### `mdm-sources`
 Current repository:
 
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
-- Git state: no initial commit yet
-- Files: `index.json`, `modules/core-docs/module.json`, `modules/docs-search/module.json`, `modules/jar-content-index/module.json`
+- Branch: `main`
+- Remote state: `origin/main`
+- Git state: committed baseline plus release artifact publication metadata
+- Files: package schemas, registry metadata, validation tooling, local release tooling, and the first required core docs resource package
 
 Current gaps:
 
-- Remote release publication is not configured
-- MCP remote download/install is not implemented
-- Resource-backed docs retrieval is not connected yet
+- GitHub Release workflow automation and retention policy are not finished
+- MCP install UX is still minimal and request-driven
+- Resource-backed docs retrieval is connected for cached docs artifacts, but the package catalog is still minimal
 - Package catalog only contains the first required core docs package
 
 ## Deliverability Levels
