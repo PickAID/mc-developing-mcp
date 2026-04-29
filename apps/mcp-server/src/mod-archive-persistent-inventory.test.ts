@@ -128,6 +128,41 @@ describe("persistent mod archive inventory", () => {
       }
     });
   });
+
+  it("summarizes selected asset resources without dumping paths", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+    const workspaceRoot = await createAssetWorkspace();
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "List mod archive inventory and resource-pack GUI assets."
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "inventory",
+        assetResourceSummary: {
+          tokenPolicy: "counts_only",
+          uiAssetCount: 4,
+          byKind: {
+            gui_texture: 1,
+            gui_sprite: 1,
+            atlas: 1,
+            font: 1
+          }
+        }
+      }
+    });
+    expect(JSON.stringify(result.selectedEvidence?.payload)).not.toContain(
+      "textures/gui/widgets.png"
+    );
+  });
 });
 
 async function createWorkspace(): Promise<string> {
@@ -146,6 +181,45 @@ async function createWorkspace(): Promise<string> {
       {
         name: "data/demo/recipes/gear.json",
         content: "{\"result\":\"demo:gear\"}\n",
+        compressionMethod: 0
+      }
+    ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createAssetWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-mcp-assets-"));
+  tempRoots.push(workspaceRoot);
+
+  await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+  await writeFile(
+    join(workspaceRoot, "mods", "asset-mod.jar"),
+    createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({ id: "asset_mod", version: "1.0.0" }),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/gui/widgets.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/gui/sprites/button/normal.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/atlases/gui.json",
+        content: "{\"sources\":[]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/font/ui.json",
+        content: "{\"providers\":[]}\n",
         compressionMethod: 0
       }
     ])

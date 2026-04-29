@@ -90,6 +90,13 @@ export async function listModArchiveInventory(input: {
         refresh: input.refresh
       })
     : undefined;
+  const assetResourceSummary =
+    entryIndex && entryIndex.assetSummary.uiAssetCount > 0
+      ? {
+          ...entryIndex.assetSummary,
+          tokenPolicy: "counts_only" as const
+        }
+      : undefined;
 
   return {
     matched: true,
@@ -105,7 +112,8 @@ export async function listModArchiveInventory(input: {
               entryCount: entryIndex.entryCount,
               truncated: entryIndex.truncated,
               cache: entryIndex.cache
-            }
+            },
+            ...(assetResourceSummary ? { assetResourceSummary } : {})
           }
         : {})
     }
