@@ -26,6 +26,21 @@ export interface ReadNestedArchiveContentFileResult {
   skipped?: ArchiveContentSkippedEntry;
 }
 
+export interface ReadNestedArchiveContentFileEntry {
+  requestedPath: string;
+  entry?: ArchiveContentEntry;
+  content?: string;
+  skipped?: ArchiveContentSkippedEntry;
+}
+
+export interface ReadNestedArchiveContentFilesResult {
+  sourceArchive: string;
+  embeddedArchivePath: string;
+  embeddedArchiveMetadata?: ModArchiveMetadata;
+  files: ReadNestedArchiveContentFileEntry[];
+  skipped?: ArchiveContentSkippedEntry;
+}
+
 export async function readNestedArchiveContentFile(input: {
   sourceArchive: string;
   embeddedArchivePath: string;
@@ -33,24 +48,50 @@ export async function readNestedArchiveContentFile(input: {
   maxBytes?: number;
   maxNestedArchiveBytes?: number;
 }): Promise<ReadNestedArchiveContentFileResult> {
+  const result = await readNestedArchiveContentFiles({
+    ...input,
+    relativePaths: [input.relativePath]
+  });
+  const file = result.files[0];
+
+  return {
+    sourceArchive: result.sourceArchive,
+    embeddedArchivePath: result.embeddedArchivePath,
+    embeddedArchiveMetadata: result.embeddedArchiveMetadata,
+    entry: file?.entry,
+    content: file?.content,
+    skipped: pickSingleFileSkip(result, file)
+  };
+}
+
+export async function readNestedArchiveContentFiles(input: {
+  sourceArchive: string;
+  embeddedArchivePath: string;
+  relativePaths: string[];
+  maxBytes?: number;
+  maxNestedArchiveBytes?: number;
+}): Promise<ReadNestedArchiveContentFilesResult> {
   const outer = await readFile(input.sourceArchive);
   const embeddedArchivePath = normalizeArchivePath(input.embeddedArchivePath);
-  const relativePath = normalizeArchivePath(input.relativePath);
-  if (!embeddedArchivePath || !relativePath) {
-    return skippedResult(input, input.relativePath, "not-found");
+  if (!embeddedArchivePath) {
+    return skippedFilesResult(input, input.embeddedArchivePath, "not-found");
   }
 
   const nestedEntry = readZipCentralDirectory(outer).find((entry) => {
     return normalizeArchivePath(entry.name) === embeddedArchivePath;
   });
   if (!nestedEntry) {
-    return skippedResult(input, relativePath, "not-found");
+    return skippedFilesResult(
+      { ...input, embeddedArchivePath },
+      embeddedArchivePath,
+      "not-found"
+    );
   }
   if (
     nestedEntry.uncompressedSize >
     (input.maxNestedArchiveBytes ?? DEFAULT_MAX_NESTED_ARCHIVE_BYTES)
   ) {
-    return skippedResult(
+    return skippedFilesResult(
       { ...input, embeddedArchivePath },
       embeddedArchivePath,
       "too-large"
@@ -61,51 +102,96 @@ export async function readNestedArchiveContentFile(input: {
   const embeddedArchiveMetadata = readNestedMetadata(nested);
   const nestedDirectory = readNestedDirectory(nested);
   if (!nestedDirectory) {
-    return skippedResult(
-      input,
-      relativePath,
+    return skippedFilesResult(
+      { ...input, embeddedArchivePath },
+      embeddedArchivePath,
       "not-found",
       embeddedArchiveMetadata
     );
   }
 
-  const contentEntry = nestedDirectory.find((entry) => {
-    return normalizeArchivePath(entry.name) === relativePath;
+  const entriesByPath = new Map(
+    nestedDirectory.flatMap((entry) => {
+      const path = normalizeArchivePath(entry.name);
+      return path ? [[path, entry] as const] : [];
+    })
+  );
+  const files = input.relativePaths.map((requestedPath) => {
+    return readNestedContentEntry({
+      requestedPath,
+      nested,
+      entriesByPath,
+      maxBytes: input.maxBytes
+    });
   });
-  if (!contentEntry) {
-    return skippedResult(
-      input,
-      relativePath,
-      "not-found",
-      embeddedArchiveMetadata
-    );
-  }
-
-  const entry = toContentEntry(relativePath, contentEntry.uncompressedSize);
-  if (!entry || entry.domain === "class") {
-    return skippedResult(input, relativePath, "binary", embeddedArchiveMetadata);
-  }
-  if (entry.sizeBytes > (input.maxBytes ?? 65_536)) {
-    return skippedResult(
-      input,
-      relativePath,
-      "too-large",
-      embeddedArchiveMetadata
-    );
-  }
-
-  const content = readZipEntryContent(nested, contentEntry);
-  if (content.includes(0)) {
-    return skippedResult(input, relativePath, "binary", embeddedArchiveMetadata);
-  }
 
   return {
     sourceArchive: input.sourceArchive,
     embeddedArchivePath,
     embeddedArchiveMetadata,
+    files
+  };
+}
+
+function readNestedContentEntry(input: {
+  requestedPath: string;
+  nested: Buffer;
+  entriesByPath: Map<string, ZipEntry>;
+  maxBytes?: number;
+}): ReadNestedArchiveContentFileEntry {
+  const relativePath = normalizeArchivePath(input.requestedPath);
+  if (!relativePath) {
+    return {
+      requestedPath: input.requestedPath,
+      skipped: { relativePath: input.requestedPath, reason: "not-found" }
+    };
+  }
+
+  const contentEntry = input.entriesByPath.get(relativePath);
+  if (!contentEntry) {
+    return skippedFile(input.requestedPath, relativePath, "not-found");
+  }
+
+  const entry = toContentEntry(relativePath, contentEntry.uncompressedSize);
+  if (!entry || entry.domain === "class") {
+    return skippedFile(input.requestedPath, relativePath, "binary");
+  }
+  if (entry.sizeBytes > (input.maxBytes ?? 65_536)) {
+    return skippedFile(input.requestedPath, relativePath, "too-large");
+  }
+
+  const content = readZipEntryContent(input.nested, contentEntry);
+  if (content.includes(0)) {
+    return skippedFile(input.requestedPath, relativePath, "binary");
+  }
+
+  return {
+    requestedPath: relativePath,
     entry,
     content: content.toString("utf-8")
   };
+}
+
+function skippedFile(
+  requestedPath: string,
+  relativePath: string,
+  reason: ArchiveContentSkippedEntry["reason"]
+): ReadNestedArchiveContentFileEntry {
+  return {
+    requestedPath,
+    skipped: { relativePath, reason }
+  };
+}
+
+function pickSingleFileSkip(
+  result: ReadNestedArchiveContentFilesResult,
+  file: ReadNestedArchiveContentFileEntry | undefined
+): ArchiveContentSkippedEntry | undefined {
+  if (result.skipped?.reason === "too-large") {
+    return result.skipped;
+  }
+
+  return file?.skipped ?? result.skipped;
 }
 
 function readNestedMetadata(archive: Buffer): ModArchiveMetadata | undefined {
@@ -124,19 +210,26 @@ function readNestedDirectory(archive: Buffer): ZipEntry[] | undefined {
   }
 }
 
-function skippedResult(
+function skippedFilesResult(
   input: {
     sourceArchive: string;
     embeddedArchivePath: string;
+    relativePaths: string[];
   },
   relativePath: string,
   reason: ArchiveContentSkippedEntry["reason"],
   embeddedArchiveMetadata?: ModArchiveMetadata
-): ReadNestedArchiveContentFileResult {
+): ReadNestedArchiveContentFilesResult {
   return {
     sourceArchive: input.sourceArchive,
     embeddedArchivePath: input.embeddedArchivePath,
     embeddedArchiveMetadata,
+    files: input.relativePaths.map((requestedPath) => {
+      return {
+        requestedPath,
+        skipped: { relativePath: requestedPath, reason }
+      };
+    }),
     skipped: { relativePath, reason }
   };
 }

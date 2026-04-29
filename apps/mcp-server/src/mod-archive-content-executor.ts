@@ -17,7 +17,8 @@ import type {
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
 import {
-  extractNestedArchiveEntryPath,
+  extractNestedArchiveEntryPathRequest,
+  readSelectedNestedEntries,
   readSelectedNestedEntry
 } from "./mod-archive-nested-read.js";
 import {
@@ -118,7 +119,16 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const selectedArchive = selectArchive(archives.archives, requestText);
-  const nestedEntryPath = extractNestedArchiveEntryPath(requestText);
+  const nestedEntryPathRequest = extractNestedArchiveEntryPathRequest(requestText);
+  if (nestedEntryPathRequest.requests.length > 1 && selectedArchive) {
+    return readSelectedNestedEntries({
+      sourceArchive: selectedArchive.archivePath,
+      requests: nestedEntryPathRequest.requests,
+      truncated: nestedEntryPathRequest.truncated
+    });
+  }
+
+  const nestedEntryPath = nestedEntryPathRequest.requests[0];
   if (nestedEntryPath && selectedArchive) {
     return readSelectedNestedEntry({
       sourceArchive: selectedArchive.archivePath,
