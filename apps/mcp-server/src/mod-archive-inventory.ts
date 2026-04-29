@@ -91,7 +91,7 @@ export async function listModArchiveInventory(input: {
       })
     : undefined;
   const assetResourceSummary =
-    entryIndex && entryIndex.assetSummary.uiAssetCount > 0
+    entryIndex && entryIndex.assetSummary.assetEntryCount > 0
       ? {
           ...entryIndex.assetSummary,
           tokenPolicy: "counts_only" as const

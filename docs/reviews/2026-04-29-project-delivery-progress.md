@@ -6,7 +6,7 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 selected GUI-related asset paths，loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata，显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata，显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Latest implementation state before this progress update: clean at `0ae2e54`
+- Latest implementation state before this progress update: clean at `e71ec56`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 97 test files and 303 tests
+- Latest full verification: `pnpm test` passed with 97 test files and 305 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -46,7 +46,8 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `0e6a148 feat(mcp-server): summarize local resource evidence`
 - `265ef96 docs: record local resource evidence summary verification`
 - `0ae2e54 feat(datapack): trace resource asset references`
-- current progress update: assets-only resource-pack routing without `pack.mcmeta`
+- `e71ec56 feat(harness): route assets-only resources`
+- current progress update: vanilla asset summaries from mod archive indexes
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -82,9 +83,9 @@ Implemented:
 - Mod archive inventory requests are persisted in runtime SQLite at `runtimeRoot/caches/mod-archives/mod-archive-inventory.sqlite`.
 - Mod archive inventory cache validity uses workspace root, archive limits, nested archive limits, archive relative paths, sizes, and mtimes.
 - Mod archive entry index persists data/assets/java/class entry paths and sizes into the same runtime SQLite cache.
-- Mod archive entry index persists selected asset kinds for GUI textures, GUI sprites, atlases, fonts, and lang files.
+- Mod archive entry index persists selected asset kinds for GUI textures, GUI sprites, and vanilla asset roots such as blockstates, models, textures, atlases, fonts, items, lang, shaders, sounds, texts, and waypoint styles.
 - MCP inventory payloads expose compact entry index counts/cache state with `limit: 0`, avoiding full path dumps.
-- MCP inventory payloads expose `assetResourceSummary` as counts-only metadata when supported asset resources exist.
+- MCP inventory payloads expose `assetResourceSummary` as counts-only metadata when supported asset resources exist, including `assetEntryCount`, UI-focused count, and per-kind counts.
 - Loose workspace/resource-pack `assets/**` classification now covers vanilla asset categories including atlases, blockstates, equipment, font, items, lang, models, particles, post_effect, shaders, sounds, texts, textures, waypoint_style, and pack metadata.
 - Datapack/resource adapter now exposes compact summaries with counts by domain, kind, and namespace.
 - MCP datapack/resource executor now includes counts-only `resourceSummary` metadata in evidence payloads.
@@ -141,6 +142,7 @@ Completed:
 - SQLite-backed class owner lookup for top-level mod classes with JarJar fallback
 - Explicit mod archive inventory refresh and stale rebuild behavior
 - Counts-only mod archive asset evidence summary for selected resource kinds
+- Counts-only mod archive vanilla asset evidence summary for blockstates, models, textures, lang, and related roots
 - Vanilla-aware loose `assets/**` kind classification
 - Counts-only local datapack/resource summary metadata
 - Explicit loose resource reference trace for blockstate/model/texture chains
@@ -246,3 +248,5 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-30-resource-reference-trace-verification.md`
 
 `docs/reviews/2026-04-30-assets-only-resource-route-verification.md`
+
+`docs/reviews/2026-04-30-mod-archive-vanilla-asset-summary-verification.md`

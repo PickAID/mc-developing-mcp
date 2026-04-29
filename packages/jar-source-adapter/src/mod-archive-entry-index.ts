@@ -12,6 +12,7 @@ import {
 import {
   classifyModArchiveAssetKind,
   createEmptyModArchiveAssetSummary,
+  isUiModArchiveAssetKind,
   parseModArchiveAssetKind,
   type ModArchiveAssetKind,
   type ModArchiveAssetSummary
@@ -400,8 +401,13 @@ function readAssetSummary(
     }
   }
 
+  const entries = Object.entries(byKind) as Array<[ModArchiveAssetKind, number]>;
+
   return {
-    uiAssetCount: Object.values(byKind).reduce((sum, count) => sum + count, 0),
+    assetEntryCount: entries.reduce((sum, [, count]) => sum + count, 0),
+    uiAssetCount: entries
+      .filter(([assetKind]) => isUiModArchiveAssetKind(assetKind))
+      .reduce((sum, [, count]) => sum + count, 0),
     byKind
   };
 }

@@ -2,15 +2,45 @@ export type ModArchiveAssetKind =
   | "gui_texture"
   | "gui_sprite"
   | "atlas"
+  | "blockstates"
+  | "equipment"
   | "font"
-  | "lang";
+  | "items"
+  | "lang"
+  | "models"
+  | "particles"
+  | "post_effect"
+  | "shaders"
+  | "sounds"
+  | "texts"
+  | "textures"
+  | "waypoint_style";
 
 export interface ModArchiveAssetSummary {
+  assetEntryCount: number;
   uiAssetCount: number;
   byKind: Partial<Record<ModArchiveAssetKind, number>>;
 }
 
 const ASSET_KINDS = new Set<ModArchiveAssetKind>([
+  "gui_texture",
+  "gui_sprite",
+  "atlas",
+  "blockstates",
+  "equipment",
+  "font",
+  "items",
+  "lang",
+  "models",
+  "particles",
+  "post_effect",
+  "shaders",
+  "sounds",
+  "texts",
+  "textures",
+  "waypoint_style"
+]);
+const UI_ASSET_KINDS = new Set<ModArchiveAssetKind>([
   "gui_texture",
   "gui_sprite",
   "atlas",
@@ -33,9 +63,11 @@ export function classifyModArchiveAssetKind(
   if (/^assets\/[^/]+\/font\/.+\.json$/i.test(relativePath)) {
     return "font";
   }
-  return /^assets\/[^/]+\/lang\/.+\.json$/i.test(relativePath)
-    ? "lang"
-    : undefined;
+  if (/^assets\/[^/]+\/lang\/.+\.json$/i.test(relativePath)) {
+    return "lang";
+  }
+
+  return parseModArchiveAssetKind(relativePath.split("/")[2]);
 }
 
 export function parseModArchiveAssetKind(
@@ -48,7 +80,12 @@ export function parseModArchiveAssetKind(
 
 export function createEmptyModArchiveAssetSummary(): ModArchiveAssetSummary {
   return {
+    assetEntryCount: 0,
     uiAssetCount: 0,
     byKind: {}
   };
+}
+
+export function isUiModArchiveAssetKind(assetKind: ModArchiveAssetKind): boolean {
+  return UI_ASSET_KINDS.has(assetKind);
 }

@@ -163,6 +163,44 @@ describe("persistent mod archive inventory", () => {
       "textures/gui/widgets.png"
     );
   });
+
+  it("summarizes vanilla asset roots from mod archives without dumping paths", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+    const workspaceRoot = await createAssetWorkspace();
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "List mod archive inventory and resource assets."
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "inventory",
+        assetResourceSummary: {
+          tokenPolicy: "counts_only",
+          assetEntryCount: 7,
+          byKind: {
+            atlas: 1,
+            blockstates: 1,
+            font: 1,
+            gui_sprite: 1,
+            gui_texture: 1,
+            models: 1,
+            textures: 1
+          }
+        }
+      }
+    });
+    expect(JSON.stringify(result.selectedEvidence?.payload)).not.toContain(
+      "assets/demo/models/block/gear.json"
+    );
+  });
 });
 
 async function createWorkspace(): Promise<string> {
@@ -220,6 +258,21 @@ async function createAssetWorkspace(): Promise<string> {
       {
         name: "assets/demo/font/ui.json",
         content: "{\"providers\":[]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/blockstates/gear.json",
+        content: "{\"variants\":{\"\":{\"model\":\"demo:block/gear\"}}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/models/block/gear.json",
+        content: "{\"textures\":{\"all\":\"demo:block/gear\"}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/block/gear.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
         compressionMethod: 0
       }
     ])

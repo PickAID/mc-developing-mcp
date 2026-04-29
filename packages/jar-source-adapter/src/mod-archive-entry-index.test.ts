@@ -152,6 +152,49 @@ describe("queryCachedModArchiveEntries", () => {
       truncated: true
     });
   });
+
+  it("summarizes vanilla asset roots from mod archives without path dumping", async () => {
+    const workspaceRoot = await createWorkspace([
+      {
+        name: "assets/demo/blockstates/gear.json",
+        content: "{\"variants\":{\"\":{\"model\":\"demo:block/gear\"}}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/models/block/gear.json",
+        content: "{\"textures\":{\"all\":\"demo:block/gear\"}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/block/gear.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      }
+    ]);
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
+
+    const result = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["assets"],
+      limit: 0
+    });
+
+    expect(result).toMatchObject({
+      entries: [],
+      assetSummary: {
+        assetEntryCount: 4,
+        uiAssetCount: 1,
+        byKind: {
+          blockstates: 1,
+          lang: 1,
+          models: 1,
+          textures: 1
+        }
+      },
+      truncated: true
+    });
+  });
 });
 
 async function createWorkspace(
