@@ -31,6 +31,7 @@ import {
   installMdmReleasePackage,
   type McpMdmReleaseInstallResult
 } from "./mdm-release-install.js";
+import { loadMdmDocsRecordsFromStatus } from "./mdm-docs-records.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -178,6 +179,7 @@ async function executeMcpDevelopTool(
       });
     }
 
+    const mdmDocsRecords = await loadMdmDocsRecordsFromStatus(mdmResources);
     const requestContext =
       await buildMcpServerRequestContextWithServiceProfile(bootstrap, {
         requestText: input.requestText,
@@ -196,7 +198,10 @@ async function executeMcpDevelopTool(
       requestText: input.requestText,
       requestContext,
       lspDiagnostics,
-      javaDiagnosticsPreparation
+      javaDiagnosticsPreparation,
+      contextQuery: {
+        docsRecords: mdmDocsRecords
+      }
     });
 
     return {

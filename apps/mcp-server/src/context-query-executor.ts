@@ -1,4 +1,5 @@
 import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
+import type { DocsPackageRecord } from "@mcpskill/docs-retrieval";
 
 import { executeMcpServerDocsLookup } from "./docs-lookup-executor.js";
 import { createMcpServerModArchiveContentExecutor } from "./mod-archive-content-executor.js";
@@ -13,6 +14,7 @@ export interface McpServerContextQueryExecutorOptions {
   probejsTypesExecutor?: McpServerEvidenceExecutor;
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
+  docsRecords?: DocsPackageRecord[];
   fallbackExecutor?: McpServerEvidenceExecutor;
 }
 
@@ -30,7 +32,9 @@ export function buildMcpServerContextQueryExecutor(
   ): McpServerEvidenceExecutorResult | Promise<McpServerEvidenceExecutorResult> => {
     switch (input.candidate.routeStep) {
       case "docs_lookup":
-        return executeMcpServerDocsLookup(input);
+        return executeMcpServerDocsLookup(input, {
+          resourceRecords: options.docsRecords
+        });
       case "probejs_types":
         return (
           options.probejsTypesExecutor?.(input) ??

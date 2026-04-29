@@ -1,4 +1,7 @@
-import { searchSelectedDocsPackages } from "@mcpskill/docs-retrieval";
+import {
+  searchSelectedDocsPackages,
+  type DocsPackageRecord
+} from "@mcpskill/docs-retrieval";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -6,29 +9,27 @@ import type {
 } from "./request-handler.js";
 
 export function executeMcpServerDocsLookup(
-  input: McpServerEvidenceExecutorInput
+  input: McpServerEvidenceExecutorInput,
+  options: McpServerDocsLookupOptions = {}
 ): McpServerEvidenceExecutorResult {
   const queryText = input.candidate.queryHint ?? input.requestPlan.requestText ?? "";
-  const docsSelection = input.docsSelection;
-
-  if (!docsSelection) {
-    return {
-      matched: false,
-      summary: "No docs packages were selected for docs lookup.",
-      payload: {
-        source: "docs_lookup",
-        queryText,
-        selectedPackageIds: [],
-        hits: []
+  const docsSelection =
+    input.docsSelection ??
+    {
+      selections: [],
+      trace: {
+        registryPackageIds: [],
+        taskIntentId: input.requestPlan.trace.taskIntent.id,
+        routeStep: input.candidate.routeStep,
+        rejectedPackages: []
       }
     };
-  }
-
+  const resourceRecords = options.resourceRecords ?? [];
   const selectedPackageIds = docsSelection.selections.map(
     (selection) => selection.packageId
   );
 
-  if (selectedPackageIds.length === 0) {
+  if (selectedPackageIds.length === 0 && resourceRecords.length === 0) {
     return {
       matched: false,
       summary: "No docs packages were selected for docs lookup.",
@@ -43,7 +44,8 @@ export function executeMcpServerDocsLookup(
 
   const result = searchSelectedDocsPackages({
     queryText,
-    docsSelection
+    docsSelection,
+    resourceRecords
   });
 
   if (result.hits.length === 0) {
@@ -71,4 +73,8 @@ export function executeMcpServerDocsLookup(
       trace: result.trace
     }
   };
+}
+
+export interface McpServerDocsLookupOptions {
+  resourceRecords?: DocsPackageRecord[];
 }

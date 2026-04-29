@@ -224,6 +224,52 @@ describe("mc_develop mdm resource status", () => {
       readFile(structured.mdmReleaseInstall?.state?.artifactPath ?? "", "utf-8")
     ).resolves.toBe(body);
   });
+
+  it("uses newly cached MDM docs resources during docs lookup", async () => {
+    const registry = createCapturingRegistry();
+    const release = await createMdmReleaseOut(mdmDocsArtifactBody());
+    const mdmSourcesRoot = await createMdmSourcesRoot({
+      artifactName: release.artifactName,
+      sha256: release.sha256,
+      sizeBytes: release.sizeBytes
+    });
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-runtime-"));
+    const workspaceRoot = await createWorkspaceRoot();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "In KubeJS 1.20.1, explain offline resource status and ProbeJS.",
+      runtimeRoot,
+      workspaceRoot,
+      mdmReleaseInstall: {
+        manifestPath: release.manifestPath,
+        packageId: "core-docs-required",
+        downloadPolicy: "allowed"
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: {
+        routeStep: "docs_lookup",
+        payload: {
+          hits: expect.arrayContaining([
+            expect.objectContaining({
+              entryId: "offline-resource-status",
+              packageId: "core-docs-required"
+            })
+          ])
+        }
+      }
+    });
+  });
 });
 
 function createCapturingRegistry(): CapturingRegistry {
@@ -322,6 +368,37 @@ async function writeJson(path: string, value: unknown): Promise<void> {
 
 function hashText(body: string): string {
   return createHash("sha256").update(body).digest("hex");
+}
+
+function mdmDocsArtifactBody(): string {
+  return JSON.stringify({
+    schemaVersion: 1,
+    package: {
+      id: "core-docs-required",
+      artifactType: "docs"
+    },
+    payload: {
+      "core-docs.json": {
+        repoPath: "packages/core/docs/required/payload/core-docs.json",
+        content: JSON.stringify({
+          schemaVersion: 1,
+          entries: [
+            {
+              id: "offline-resource-status",
+              title: "Offline Resource Status",
+              summary:
+                "Missing optional packages are degraded capability, not fatal failure.",
+              searchTerms: [
+                "offline resource status",
+                "resource package",
+                "degraded capability"
+              ]
+            }
+          ]
+        })
+      }
+    }
+  });
 }
 
 interface MdmTestRelease {

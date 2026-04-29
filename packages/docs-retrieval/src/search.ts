@@ -16,6 +16,7 @@ export interface SearchSelectedDocsPackagesInput {
   queryText?: string;
   docsSelection: DocsPackageSelectionResult;
   limit?: number;
+  resourceRecords?: DocsPackageRecord[];
 }
 
 export interface SearchSelectedDocsPackagesResult {
@@ -24,6 +25,7 @@ export interface SearchSelectedDocsPackagesResult {
     queryText: string;
     selectedPackageIds: string[];
     candidateEntryIds: string[];
+    resourceEntryIds: string[];
     matchedEntryIds: string[];
   };
 }
@@ -39,7 +41,9 @@ export function searchSelectedDocsPackages(
   const candidateRecords = BUILTIN_DOCS_RECORDS.filter((record) =>
     selectedPackageIds.includes(record.packageId)
   );
-  const hits = candidateRecords
+  const resourceRecords = input.resourceRecords ?? [];
+  const allRecords = [...candidateRecords, ...resourceRecords];
+  const hits = allRecords
     .map((record) => buildHit(record, normalizedQuery))
     .filter((hit): hit is DocsSearchHit => hit !== undefined)
     .sort((left, right) => {
@@ -57,6 +61,7 @@ export function searchSelectedDocsPackages(
       queryText,
       selectedPackageIds,
       candidateEntryIds: candidateRecords.map((record) => record.entryId),
+      resourceEntryIds: resourceRecords.map((record) => record.entryId),
       matchedEntryIds: hits.map((hit) => hit.entryId)
     }
   };
