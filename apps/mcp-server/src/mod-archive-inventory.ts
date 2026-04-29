@@ -1,6 +1,7 @@
 import {
   buildModArchiveInventory,
   buildCachedModArchiveInventory,
+  queryCachedModArchiveEntries,
   type ArchiveContentCache
 } from "@mcpskill/jar-source-adapter";
 import { join } from "node:path";
@@ -80,6 +81,15 @@ export async function listModArchiveInventory(input: {
         maxNestedArchives: DEFAULT_MAX_NESTED_ARCHIVES,
         cache: input.cache
       });
+  const entryIndex = input.databasePath
+    ? await queryCachedModArchiveEntries({
+        workspaceRoot,
+        databasePath: input.databasePath,
+        maxArchives: DEFAULT_MAX_ARCHIVES,
+        limit: 0,
+        refresh: input.refresh
+      })
+    : undefined;
 
   return {
     matched: true,
@@ -87,7 +97,17 @@ export async function listModArchiveInventory(input: {
     payload: {
       source: "mod_archive_content",
       mode: "inventory",
-      ...result
+      ...result,
+      ...(entryIndex
+        ? {
+            entryIndex: {
+              archiveCount: entryIndex.archiveCount,
+              entryCount: entryIndex.entryCount,
+              truncated: entryIndex.truncated,
+              cache: entryIndex.cache
+            }
+          }
+        : {})
     }
   };
 }

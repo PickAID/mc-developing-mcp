@@ -1,0 +1,409 @@
+import { createHash } from "node:crypto";
+import { mkdir, readFile, stat } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { dirname, normalize, resolve } from "node:path";
+
+import type { ArchiveContentDomain } from "./archive-content.js";
+import {
+  normalizeArchivePath,
+  readZipCentralDirectory,
+  type ZipEntry
+} from "./java-source-archive.js";
+import { discoverModArchives } from "./mod-archives.js";
+
+export interface ModArchiveIndexedEntry {
+  sourceArchive: string;
+  archiveRelativePath: string;
+  embeddedArchivePath?: string;
+  relativePath: string;
+  domain: ArchiveContentDomain;
+  sizeBytes: number;
+}
+
+export interface ModArchiveEntryIndexCacheMetadata {
+  databasePath: string;
+  archiveFingerprintCount: number;
+  archiveHits: number;
+  archiveMisses: number;
+  archiveStale: number;
+  archiveRefreshes: number;
+}
+
+export interface QueryCachedModArchiveEntriesResult {
+  entries: ModArchiveIndexedEntry[];
+  archiveCount: number;
+  entryCount: number;
+  truncated: boolean;
+  cache: ModArchiveEntryIndexCacheMetadata;
+}
+
+interface SqliteStatement {
+  all(...parameters: unknown[]): Record<string, unknown>[];
+  get(...parameters: unknown[]): Record<string, unknown> | undefined;
+  run(...parameters: unknown[]): unknown;
+}
+
+interface SqliteDatabase {
+  exec(sql: string): void;
+  prepare(sql: string): SqliteStatement;
+  close(): void;
+}
+
+interface ArchiveFingerprint {
+  sourceArchive: string;
+  archiveRelativePath: string;
+  sizeBytes: number;
+  mtimeMs: number;
+}
+
+interface IndexedArchive {
+  archiveKey: string;
+  fingerprint: ArchiveFingerprint;
+}
+
+const CACHE_SCHEMA_VERSION = 1;
+const DEFAULT_DOMAINS: ArchiveContentDomain[] = [
+  "java",
+  "data",
+  "assets",
+  "class"
+];
+const require = createRequire(import.meta.url);
+
+export async function queryCachedModArchiveEntries(input: {
+  workspaceRoot: string;
+  databasePath: string;
+  domains?: ArchiveContentDomain[];
+  maxArchives?: number;
+  limit?: number;
+  refresh?: boolean;
+}): Promise<QueryCachedModArchiveEntriesResult> {
+  const databasePath = normalize(resolve(input.databasePath));
+  const workspaceRoot = normalize(resolve(input.workspaceRoot));
+  const discovered = await discoverModArchives({
+    workspaceRoot,
+    maxArchives: input.maxArchives
+  });
+  const fingerprints = await Promise.all(
+    discovered.archives.map(async (archive) => {
+      const details = await stat(archive.archivePath);
+      return {
+        sourceArchive: normalize(resolve(archive.archivePath)),
+        archiveRelativePath: archive.relativePath,
+        sizeBytes: details.size,
+        mtimeMs: Math.floor(details.mtimeMs)
+      };
+    })
+  );
+  const cacheMetadata: ModArchiveEntryIndexCacheMetadata = {
+    databasePath,
+    archiveFingerprintCount: fingerprints.length,
+    archiveHits: 0,
+    archiveMisses: 0,
+    archiveStale: 0,
+    archiveRefreshes: 0
+  };
+
+  await mkdir(dirname(databasePath), { recursive: true });
+  const database = openDatabase(databasePath);
+
+  try {
+    initializeSchema(database);
+    const indexedArchives: IndexedArchive[] = [];
+
+    for (const fingerprint of fingerprints) {
+      indexedArchives.push(
+        await ensureArchiveIndexed(database, {
+          fingerprint,
+          refresh: input.refresh,
+          cacheMetadata
+        })
+      );
+    }
+
+    const query = readIndexedEntries(database, {
+      archiveKeys: indexedArchives.map((archive) => archive.archiveKey),
+      domains: input.domains ?? DEFAULT_DOMAINS,
+      limit: normalizeLimit(input.limit)
+    });
+
+    return {
+      entries: query.entries,
+      archiveCount: indexedArchives.length,
+      entryCount: query.totalCount,
+      truncated: discovered.truncated || query.truncated,
+      cache: cacheMetadata
+    };
+  } finally {
+    database.close();
+  }
+}
+
+async function ensureArchiveIndexed(
+  database: SqliteDatabase,
+  input: {
+    fingerprint: ArchiveFingerprint;
+    refresh?: boolean;
+    cacheMetadata: ModArchiveEntryIndexCacheMetadata;
+  }
+): Promise<IndexedArchive> {
+  const fingerprintJson = stableJson({
+    schemaVersion: CACHE_SCHEMA_VERSION,
+    ...input.fingerprint
+  });
+  const archiveKey = createHash("sha256").update(fingerprintJson).digest("hex");
+  const cached = database
+    .prepare(
+      "SELECT archive_key, fingerprint_json FROM mod_archive_entry_index_archives WHERE source_archive = ?"
+    )
+    .get(input.fingerprint.sourceArchive);
+
+  if (
+    !input.refresh &&
+    cached?.fingerprint_json === fingerprintJson &&
+    typeof cached.archive_key === "string"
+  ) {
+    input.cacheMetadata.archiveHits += 1;
+    return { archiveKey: cached.archive_key, fingerprint: input.fingerprint };
+  }
+
+  if (input.refresh) {
+    input.cacheMetadata.archiveRefreshes += 1;
+  } else if (cached) {
+    input.cacheMetadata.archiveStale += 1;
+  } else {
+    input.cacheMetadata.archiveMisses += 1;
+  }
+
+  await writeArchiveIndex(database, {
+    archiveKey,
+    fingerprintJson,
+    oldArchiveKey:
+      typeof cached?.archive_key === "string" ? cached.archive_key : undefined,
+    fingerprint: input.fingerprint,
+    entries: await readIndexableEntries(input.fingerprint.sourceArchive)
+  });
+
+  return { archiveKey, fingerprint: input.fingerprint };
+}
+
+async function writeArchiveIndex(
+  database: SqliteDatabase,
+  input: {
+    archiveKey: string;
+    oldArchiveKey?: string;
+    fingerprintJson: string;
+    fingerprint: ArchiveFingerprint;
+    entries: Array<Omit<ModArchiveIndexedEntry, "sourceArchive" | "archiveRelativePath">>;
+  }
+): Promise<void> {
+  database.exec("BEGIN");
+  try {
+    if (input.oldArchiveKey) {
+      database
+        .prepare("DELETE FROM mod_archive_entry_index_entries WHERE archive_key = ?")
+        .run(input.oldArchiveKey);
+    }
+    database
+      .prepare("DELETE FROM mod_archive_entry_index_entries WHERE archive_key = ?")
+      .run(input.archiveKey);
+    database
+      .prepare(
+        [
+          "INSERT INTO mod_archive_entry_index_archives",
+          "(source_archive, archive_key, archive_relative_path, fingerprint_json, indexed_at)",
+          "VALUES (?, ?, ?, ?, ?)",
+          "ON CONFLICT(source_archive) DO UPDATE SET",
+          "archive_key = excluded.archive_key,",
+          "archive_relative_path = excluded.archive_relative_path,",
+          "fingerprint_json = excluded.fingerprint_json,",
+          "indexed_at = excluded.indexed_at"
+        ].join(" ")
+      )
+      .run(
+        input.fingerprint.sourceArchive,
+        input.archiveKey,
+        input.fingerprint.archiveRelativePath,
+        input.fingerprintJson,
+        Date.now()
+      );
+
+    const insertEntry = database.prepare(
+      [
+        "INSERT INTO mod_archive_entry_index_entries",
+        "(archive_key, source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, size_bytes)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?)"
+      ].join(" ")
+    );
+    for (const entry of input.entries) {
+      insertEntry.run(
+        input.archiveKey,
+        input.fingerprint.sourceArchive,
+        input.fingerprint.archiveRelativePath,
+        entry.embeddedArchivePath ?? "",
+        entry.relativePath,
+        entry.domain,
+        entry.sizeBytes
+      );
+    }
+    database.exec("COMMIT");
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+async function readIndexableEntries(
+  sourceArchive: string
+): Promise<Array<Omit<ModArchiveIndexedEntry, "sourceArchive" | "archiveRelativePath">>> {
+  const archive = await readFile(sourceArchive);
+  return collectIndexableEntries(readZipCentralDirectory(archive));
+}
+
+function collectIndexableEntries(
+  entries: ZipEntry[]
+): Array<Omit<ModArchiveIndexedEntry, "sourceArchive" | "archiveRelativePath">> {
+  return entries
+    .flatMap((entry) => {
+      if (entry.name.endsWith("/")) {
+        return [];
+      }
+
+      const relativePath = normalizeArchivePath(entry.name);
+      const domain = relativePath
+        ? classifyArchiveContentDomain(relativePath)
+        : undefined;
+      if (!relativePath || !domain) {
+        return [];
+      }
+
+      return [{
+        relativePath,
+        domain,
+        sizeBytes: entry.uncompressedSize
+      }];
+    })
+    .sort((left, right) => left.relativePath.localeCompare(right.relativePath));
+}
+
+function readIndexedEntries(
+  database: SqliteDatabase,
+  input: {
+    archiveKeys: string[];
+    domains: ArchiveContentDomain[];
+    limit: number;
+  }
+): {
+  entries: ModArchiveIndexedEntry[];
+  totalCount: number;
+  truncated: boolean;
+} {
+  if (input.archiveKeys.length === 0 || input.domains.length === 0) {
+    return { entries: [], totalCount: 0, truncated: false };
+  }
+
+  const archivePlaceholders = input.archiveKeys.map(() => "?").join(", ");
+  const domainPlaceholders = input.domains.map(() => "?").join(", ");
+  const filterSql = [
+    `WHERE archive_key IN (${archivePlaceholders})`,
+    `AND domain IN (${domainPlaceholders})`
+  ].join(" ");
+  const filterParameters = [...input.archiveKeys, ...input.domains];
+  const countRow = database
+    .prepare(
+      `SELECT COUNT(*) AS total_count FROM mod_archive_entry_index_entries ${filterSql}`
+    )
+    .get(...filterParameters);
+  const rows = database
+    .prepare(
+      [
+        "SELECT source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, size_bytes",
+        "FROM mod_archive_entry_index_entries",
+        filterSql,
+        "ORDER BY archive_relative_path, embedded_archive_path, relative_path",
+        "LIMIT ?"
+      ].join(" ")
+    )
+    .all(...filterParameters, input.limit + 1);
+  const entries = rows.slice(0, input.limit).map(rowToIndexedEntry);
+
+  return {
+    entries,
+    totalCount: Number(countRow?.total_count ?? 0),
+    truncated: rows.length > input.limit
+  };
+}
+
+function rowToIndexedEntry(row: Record<string, unknown>): ModArchiveIndexedEntry {
+  const embeddedArchivePath =
+    typeof row.embedded_archive_path === "string" && row.embedded_archive_path
+      ? row.embedded_archive_path
+      : undefined;
+
+  return {
+    sourceArchive: String(row.source_archive),
+    archiveRelativePath: String(row.archive_relative_path),
+    embeddedArchivePath,
+    relativePath: String(row.relative_path),
+    domain: row.domain as ArchiveContentDomain,
+    sizeBytes: Number(row.size_bytes)
+  };
+}
+
+function classifyArchiveContentDomain(
+  relativePath: string
+): ArchiveContentDomain | undefined {
+  if (relativePath.endsWith(".java")) {
+    return "java";
+  }
+  if (relativePath.endsWith(".class")) {
+    return "class";
+  }
+  if (relativePath.startsWith("data/")) {
+    return "data";
+  }
+  return relativePath.startsWith("assets/") ? "assets" : undefined;
+}
+
+function initializeSchema(database: SqliteDatabase): void {
+  database.exec(`
+    PRAGMA journal_mode = DELETE;
+
+    CREATE TABLE IF NOT EXISTS mod_archive_entry_index_archives (
+      source_archive TEXT PRIMARY KEY,
+      archive_key TEXT NOT NULL,
+      archive_relative_path TEXT NOT NULL,
+      fingerprint_json TEXT NOT NULL,
+      indexed_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS mod_archive_entry_index_entries (
+      archive_key TEXT NOT NULL,
+      source_archive TEXT NOT NULL,
+      archive_relative_path TEXT NOT NULL,
+      embedded_archive_path TEXT NOT NULL,
+      relative_path TEXT NOT NULL,
+      domain TEXT NOT NULL,
+      size_bytes INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_mod_archive_entry_index_entries_lookup
+      ON mod_archive_entry_index_entries(archive_key, domain, relative_path);
+  `);
+}
+
+function openDatabase(databasePath: string): SqliteDatabase {
+  const sqlite = require("node:sqlite") as {
+    DatabaseSync: new (path: string) => SqliteDatabase;
+  };
+
+  return new sqlite.DatabaseSync(databasePath);
+}
+
+function normalizeLimit(limit: number | undefined): number {
+  return Math.max(0, Math.floor(limit ?? Number.MAX_SAFE_INTEGER - 1));
+}
+
+function stableJson(value: unknown): string {
+  return JSON.stringify(value);
+}

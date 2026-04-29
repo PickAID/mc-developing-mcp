@@ -4,8 +4,7 @@ import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildMcpServerBootstrap } from "./bootstrap.js";
-import { executeMcpServerRequest } from "./request-executor.js";
+import { queryCachedModArchiveEntries } from "./mod-archive-entry-index.js";
 
 const tempRoots: string[] = [];
 
@@ -15,126 +14,109 @@ afterEach(async () => {
   );
 });
 
-describe("persistent mod archive inventory", () => {
-  it("reuses the runtime SQLite inventory cache across MCP requests", async () => {
-    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+describe("queryCachedModArchiveEntries", () => {
+  it("reuses a SQLite entry index when archive fingerprints match", async () => {
     const workspaceRoot = await createWorkspace();
-    tempRoots.push(runtimeRoot);
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
 
-    const bootstrap = await buildMcpServerBootstrap({
-      runtimeRoot,
-      workspace: { workspaceRoot }
+    const first = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["data", "assets"]
     });
-    const requestText =
-      "List mod archive inventory and JarJar nested jars for this modpack.";
+    const second = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["data"]
+    });
 
-    const first = await executeMcpServerRequest({ bootstrap, requestText });
-    const second = await executeMcpServerRequest({ bootstrap, requestText });
-
-    expect(first.selectedEvidence).toMatchObject({
-      payload: {
-        mode: "inventory",
-        persistentCache: {
-          hit: false,
-          reason: "miss",
-          archiveFingerprintCount: 1
+    expect(first).toMatchObject({
+      entries: [
+        {
+          archiveRelativePath: "mods/content-mod.jar",
+          relativePath: "assets/demo/lang/en_us.json",
+          domain: "assets"
         },
-        entryIndex: {
-          entryCount: 1,
-          cache: {
-            archiveHits: 0,
-            archiveMisses: 1,
-            archiveStale: 0
-          }
+        {
+          archiveRelativePath: "mods/content-mod.jar",
+          relativePath: "data/demo/recipes/gear.json",
+          domain: "data"
         }
+      ],
+      cache: {
+        archiveHits: 0,
+        archiveMisses: 1,
+        archiveStale: 0
       }
     });
-    expect(second.selectedEvidence).toMatchObject({
-      payload: {
-        mode: "inventory",
-        persistentCache: {
-          hit: true,
-          reason: "hit",
-          archiveFingerprintCount: 1
-        },
-        entryIndex: {
-          entryCount: 1,
-          cache: {
-            archiveHits: 1,
-            archiveMisses: 0,
-            archiveStale: 0
-          }
+    expect(second).toMatchObject({
+      entries: [
+        {
+          archiveRelativePath: "mods/content-mod.jar",
+          relativePath: "data/demo/recipes/gear.json",
+          domain: "data"
         }
+      ],
+      cache: {
+        archiveHits: 1,
+        archiveMisses: 0,
+        archiveStale: 0
       }
     });
   });
 
-  it("refreshes the runtime SQLite inventory cache when requested", async () => {
-    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+  it("rebuilds a stale SQLite entry index when archive fingerprints change", async () => {
     const workspaceRoot = await createWorkspace();
-    tempRoots.push(runtimeRoot);
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
 
-    const bootstrap = await buildMcpServerBootstrap({
-      runtimeRoot,
-      workspace: { workspaceRoot }
-    });
-
-    await executeMcpServerRequest({
-      bootstrap,
-      requestText: "List mod archive inventory for this modpack."
-    });
-
-    const refreshed = await executeMcpServerRequest({
-      bootstrap,
-      requestText: "Refresh the mod archive inventory cache for this modpack."
-    });
-    const cachedAgain = await executeMcpServerRequest({
-      bootstrap,
-      requestText: "List mod archive inventory for this modpack."
-    });
-
-    expect(refreshed.selectedEvidence).toMatchObject({
-      payload: {
-        mode: "inventory",
-        persistentCache: {
-          hit: false,
-          reason: "refresh",
-          archiveFingerprintCount: 1
-        },
-        entryIndex: {
-          entryCount: 1,
-          cache: {
-            archiveHits: 0,
-            archiveRefreshes: 1
-          }
-        }
+    await queryCachedModArchiveEntries({ workspaceRoot, databasePath });
+    await writeContentMod(workspaceRoot, [
+      {
+        name: "data/demo/recipes/plate.json",
+        content: "{\"result\":\"demo:plate\"}\n",
+        compressionMethod: 0
       }
+    ]);
+
+    const rebuilt = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["data"]
     });
-    expect(cachedAgain.selectedEvidence).toMatchObject({
-      payload: {
-        mode: "inventory",
-        persistentCache: {
-          hit: true,
-          reason: "hit",
-          archiveFingerprintCount: 1
+
+    expect(rebuilt).toMatchObject({
+      entryCount: 2,
+      entries: [
+        {
+          relativePath: "data/demo/recipes/gear.json",
+          domain: "data"
         },
-        entryIndex: {
-          entryCount: 1,
-          cache: {
-            archiveHits: 1,
-            archiveRefreshes: 0
-          }
+        {
+          relativePath: "data/demo/recipes/plate.json",
+          domain: "data"
         }
+      ],
+      cache: {
+        archiveHits: 0,
+        archiveMisses: 0,
+        archiveStale: 1
       }
     });
   });
 });
 
 async function createWorkspace(): Promise<string> {
-  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-mcp-persistent-"));
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-entry-index-"));
   tempRoots.push(workspaceRoot);
-
   await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+  await writeContentMod(workspaceRoot);
+  return workspaceRoot;
+}
+
+async function writeContentMod(
+  workspaceRoot: string,
+  extraEntries: ZipFixtureEntry[] = []
+): Promise<void> {
   await writeFile(
     join(workspaceRoot, "mods", "content-mod.jar"),
     createZip([
@@ -147,11 +129,15 @@ async function createWorkspace(): Promise<string> {
         name: "data/demo/recipes/gear.json",
         content: "{\"result\":\"demo:gear\"}\n",
         compressionMethod: 0
-      }
+      },
+      {
+        name: "assets/demo/lang/en_us.json",
+        content: "{\"item.demo.gear\":\"Gear\"}\n",
+        compressionMethod: 8
+      },
+      ...extraEntries
     ])
   );
-
-  return workspaceRoot;
 }
 
 interface ZipFixtureEntry {
