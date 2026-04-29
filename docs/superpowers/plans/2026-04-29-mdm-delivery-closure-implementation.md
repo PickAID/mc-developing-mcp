@@ -4,6 +4,8 @@
 
 **Goal:** Build the first real `mdm-sources` -> release artifact -> MCP resource cache loop while keeping the MCP public surface to one `mc_develop` tool.
 
+**Execution status (2026-04-30):** local delivery-closure loop complete. MCP commits through `7fd6839`; `mdm-sources` commits through `51cf66f`. Final verification is recorded in `docs/reviews/2026-04-30-mdm-delivery-closure-verification.md`.
+
 **Architecture:** `mdm-sources` owns source manifests, registry files, validation, and release artifact generation. `mc-developing-mcp` owns resource registry reading, artifact cache state, checksum validation, and runtime status injection. The first slice proves the loop with local filesystem artifacts before adding remote GitHub release fetching.
 
 **Tech Stack:** TypeScript monorepo, pnpm, Vitest, Node `fs/promises`, JSON manifests, local tar/zip artifact fixtures, sibling repo `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`, existing `@mcpskill/package-registry`, `@mcpskill/runtime-manager`, and `@mcpskill/source-package-manager` patterns.

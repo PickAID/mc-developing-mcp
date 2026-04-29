@@ -1,7 +1,7 @@
 # Delivery Closure And Full Completion Spec
 Date: 2026-04-29
 Author: m1hono
-Status: Draft for implementation planning
+Status: Delivery closure local loop implemented; Phase 2 feature completion remains
 Scope: `mc-developing-mcp` `skill-update` branch, sibling `mdm-sources` repository, local `mdm-resources` runtime cache
 
 ## Purpose
@@ -27,7 +27,7 @@ Current branch:
 - Branch: `skill-update`
 - Remote branch: `origin/skill-update`
 - Public MCP surface: one progressive tool, `mc_develop`
-- Current full verification: `pnpm test` passes with 74 test files and 236 tests
+- Current full verification: `pnpm test` passes with 79 test files and 247 tests
 
 Implemented core capabilities:
 
@@ -53,13 +53,10 @@ Current repository:
 
 Current gaps:
 
-- No committed baseline
-- No package schema
-- No generated registry
-- No release workflow
-- No release artifacts
-- No MCP resource client
-- No MCP-side download/cache/checksum integration
+- Remote release publication is not configured
+- MCP remote download/install is not implemented
+- Resource-backed docs retrieval is not connected yet
+- Package catalog only contains the first required core docs package
 
 ## Deliverability Levels
 ### Alpha Deliverable
@@ -157,6 +154,8 @@ Optional package categories:
 ### Phase 1: Delivery Closure
 Deliver a working package/release/cache loop.
 
+Status: complete for the local filesystem loop.
+
 Exit criteria:
 
 - `mdm-sources` has an initial commit and validation tests.
@@ -202,16 +201,16 @@ Exit criteria:
 - Install instructions can be followed from a clean checkout.
 
 ## Acceptance Checklist
-- [ ] `mdm-sources` has a committed baseline with package schema and registry.
-- [ ] `mdm-sources` validation can run locally without external services.
-- [ ] Local release artifact generation produces checksummed artifacts.
-- [ ] MCP can read a local registry path and cache at least one artifact.
-- [ ] MCP can run with resources absent and explain degraded capability.
-- [ ] MCP public surface remains one tool, `mc_develop`.
-- [ ] Required vs optional packages are explicit in metadata and user-facing output.
-- [ ] Private/generated user caches remain outside `mdm-sources`.
-- [ ] Full MCP test suite passes.
-- [ ] Real output review markdown exists for the delivery loop.
+- [x] `mdm-sources` has a committed baseline with package schema and registry.
+- [x] `mdm-sources` validation can run locally without external services.
+- [x] Local release artifact generation produces checksummed artifacts.
+- [x] MCP can read a local registry path and validate at least one cached artifact state.
+- [x] MCP can run with resources absent and explain degraded capability.
+- [x] MCP public surface remains one tool, `mc_develop`.
+- [x] Required vs optional packages are explicit in metadata and user-facing output.
+- [x] Private/generated user caches remain outside `mdm-sources`.
+- [x] Full MCP test suite passes.
+- [x] Real output review markdown exists for the delivery loop.
 
 ## Risks
 - `mdm-sources` may become confused with a Skill if markdown docs are treated as first-class runtime content. Mitigation: use structured package manifests and generated indexes; markdown can be source material only when explicitly packaged.

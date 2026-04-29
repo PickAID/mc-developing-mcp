@@ -1,34 +1,70 @@
 # Project Delivery Progress
-Date: 2026-04-29
+Date: 2026-04-30
 Author: m1hono
 Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `mdm-resources`
 
 ## Executive Summary
-当前项目已经不是空壳。MCP 底层能力完成度较高，尤其是 Java/KubeJS/Gradle/JAR/Datapack/source package/JDTLS 这些关键底层已经有测试和真实输出 review。
+本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-但项目还没有进入可交付状态，因为 `mdm-sources/mdm-resources` 的资源包发布、下载、校验、缓存和用户可理解的状态闭环还没打通。下一步应先做交付闭环切片，然后再继续开发剩余功能到接近 100%，最后集中做真实环境测试与 UX 收敛。
+当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
 ## Current Repository State
 ### MCP
 - Worktree: `/private/tmp/mc-developing-mcp-skill-update`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Git state when this progress was written: clean
+- Git state after delivery closure commits: clean before docs update, then docs update pending this commit
 - Public MCP surface: one tool, `mc_develop`
-- Latest known full verification: `pnpm test` passed with 74 test files and 236 tests
+- Latest full verification: `pnpm test` passed with 79 test files and 247 tests
+- Latest MCP package verification: `pnpm --filter @mcpskill/mcp-server test` passed with 28 test files and 75 tests
+
+Recent MCP delivery-closure commits:
+
+- `0783dfc feat(resource-registry): read local mdm registries`
+- `aff046f feat(resource-registry): summarize mdm cache status`
+- `7fd6839 feat(mcp-server): inject mdm resource status`
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
-- Git state when inspected: no initial commit yet
-- Existing files:
-  - `index.json`
-  - `modules/core-docs/module.json`
-  - `modules/docs-search/module.json`
-  - `modules/jar-content-index/module.json`
+- Branch: `main`
+- Remote state: `origin/main [gone]`
+- Git state after verification: clean
+
+Committed baseline:
+
+- `8c30ae8 chore: initialize mdm sources baseline`
+- `7485169 feat: validate mdm resource packages`
+- `2e2b894 feat: add required core docs package`
+- `51cf66f feat: build local mdm resource releases`
+
+Do not push `mdm-sources` until the target remote branch is confirmed.
+
+## Delivery Closure Status
+Status: complete for the local loop.
+
+Implemented:
+
+- `mdm-sources` baseline, schema, registry, validation, required core docs package, local release builder, and validation workflow.
+- Deterministic `.mdm-resource.json` local artifact for `core-docs-required`.
+- MCP `@mcpskill/resource-registry` package for local registry reading.
+- MCP runtime cache layout and cache state read/write helpers.
+- MCP resource status summary with `ready`, `missing_required`, `missing_optional`, and `invalid_checksum`.
+- `mc_develop` structured content now includes `mdmResources` when `MDM_SOURCES_ROOT` is configured.
+- Public MCP tool count remains one.
+- File size guard passes: no source/test JSON/JS/TS file above 500 lines.
+- Go residue guard passes: no Go files or Go module files remain.
+
+Not implemented in this slice:
+
+- Remote release download/install.
+- GitHub release distribution for resource packages.
+- User confirmation flow for large/private/generated local packages.
+- Resource-backed docs search replacement.
+- Real-world LostCivilization/PrismLauncher full scenario validation.
 
 ## Completion Estimate
 ### MCP Core Capability
-Estimated completion: 65-70%.
+Estimated completion: 75-80%.
 
 Completed:
 
@@ -48,81 +84,63 @@ Completed:
 - local source package installation
 - SQLite source index build/query/read
 - structured content payload budgeting
+- MDM local registry/cache/status integration
 
-Not complete:
+Still incomplete:
 
-- `mdm-resources` registry/cache status integration
-- remote resource package download and checksum verification
-- docs retrieval from external package indexes
+- remote resource package download and checksum install flow
+- docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
 ### `mdm-sources` / `mdm-resources`
-Estimated completion: 10-15%.
+Estimated completion: 35-40%.
 
 Completed:
 
-- Skeleton repository exists.
-- Legacy module manifest concept exists.
-- Earlier design/spec exists in MCP docs.
+- committed baseline
+- package schema and registry schema
+- local validation tooling
+- required core docs package
+- deterministic local release artifact builder
+- local release artifact metadata written into registry
+- CI validation workflow
 
-Not complete:
+Still incomplete:
 
-- initial commit
-- package schema
-- generated registry
-- validation tooling
-- release artifact tooling
-- release workflow
-- real package payloads
-- MCP registry client
-- MCP cache status
-- MCP checksum/install loop
+- remote release publication and retention policy
+- package compatibility policy
+- split package catalog for docs, libraries, content mods, generated indexes, and local/private derived packages
+- MCP download/install/clear/list commands or internal flows
+- resource package signing or stronger provenance model
+- real package payload expansion beyond the first required core docs package
 
 ### Overall Deliverability
-Estimated alpha deliverability: 50-55%.
+Estimated alpha deliverability: 65-70%.
 
 Interpretation:
 
-- The MCP has enough internal capability to become useful soon.
-- The project is not yet deliverable because package/resource distribution is not real.
-- A focused delivery closure slice should raise alpha deliverability significantly without requiring every feature to be complete.
+- Local alpha loop is real and verified.
+- MCP can explain whether required/optional resource packages are ready or missing.
+- The system is not public-deliverable until remote package acquisition and UX docs are finished.
 
 ## Recommended Sequence
-### Step 1: Delivery Closure Slice
-Plan: `docs/superpowers/plans/2026-04-29-mdm-delivery-closure-implementation.md`
-
-Goal:
-
-- Commit `mdm-sources` baseline.
-- Add package schema and validation.
-- Add one required core package.
-- Build local release artifacts.
-- Add MCP resource registry reader.
-- Add MCP cache/status summary.
-- Surface resource status through existing `mc_develop` structured content.
-
-Expected result:
-
-- Alpha-ready delivery loop.
-- MCP can explain resource availability.
-- `mdm-sources` stops being a loose skeleton and becomes a real package source repo.
-
-### Step 2: Continue Feature Completion To Near 100%
-Do this only after Step 1.
+### Step 1: Feature Completion To Near 100%
+Now that delivery closure is complete, return to MCP capability completion.
 
 Priority:
 
 1. Connect docs retrieval to resource packages instead of only built-in records.
-2. Improve modpack JAR indexing for class ownership, assets, data, recipes, and datapack content.
-3. Improve Gradle workspace model extraction.
-4. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
-5. Add migration analysis for Java/KubeJS/datapack version moves.
-6. Harden JDTLS setup guidance and fallback behavior.
+2. Add remote/local resource install semantics with confirmation for large/private/generated packages.
+3. Improve modpack JAR indexing for class ownership, assets, data, recipes, and datapack content.
+4. Improve Gradle workspace model extraction.
+5. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
+6. Add migration analysis for Java/KubeJS/datapack version moves.
+7. Harden JDTLS setup guidance and fallback behavior.
 
-### Step 3: Concentrated Testing And UX
+### Step 2: Concentrated Testing And UX
 Do this after feature-completion work stabilizes.
 
 Priority:
@@ -139,15 +157,13 @@ Priority:
 ## Delivery Timeline Estimate
 If work continues at the current pace:
 
-- Alpha delivery closure: about 1 week.
+- Local alpha delivery closure: complete.
 - Beta replacement for day-to-day MC development: about 2-3 weeks.
-- Public-quality delivery with resource release workflow and UX docs: about 4-6 weeks.
+- Public-quality delivery with remote resource releases and UX docs: about 4-6 weeks.
 
-These estimates assume the next slice stays focused. If feature expansion continues before the resource delivery loop is closed, the timeline becomes less predictable.
+The next risk is scope expansion. Keep the next phase feature-focused and continue using review docs with real outputs.
 
-## Immediate Decision
-Proceed with:
+## Verification Reference
+Detailed verification output is recorded in:
 
-`docs/superpowers/plans/2026-04-29-mdm-delivery-closure-implementation.md`
-
-After it completes, update this progress document and then resume feature development toward full capability before the final UX/testing phase.
+`docs/reviews/2026-04-30-mdm-delivery-closure-verification.md`
