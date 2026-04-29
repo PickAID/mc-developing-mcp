@@ -9,7 +9,8 @@ import {
   listDatapackFiles,
   readDatapackFile,
   searchDatapackFiles,
-  summarizeDatapackFiles
+  summarizeDatapackFiles,
+  traceDatapackResourceReferences
 } from "./index.js";
 
 const tempRoots: string[] = [];
@@ -289,6 +290,72 @@ describe("datapack-adapter", () => {
       readDatapackFile(root, "assets/demo/lang/en_us.json", { maxBytesPerFile: 100 })
     ).resolves.toMatchObject({
       content: '{ "item.demo.nested": "Nested" }\n'
+    });
+  });
+
+  it("traces blockstate model and model texture references without reading binary content", async () => {
+    const root = await createTempRoot("datapack-resource-trace");
+
+    await writeFixture(
+      root,
+      "assets/demo/blockstates/gear.json",
+      JSON.stringify({ variants: { "": { model: "demo:block/gear" } } })
+    );
+    await writeFixture(
+      root,
+      "assets/demo/models/block/gear.json",
+      JSON.stringify({
+        textures: {
+          all: "demo:block/gear",
+          particle: "demo:block/missing"
+        }
+      })
+    );
+    await writeFixture(root, "assets/demo/textures/block/gear.png", Buffer.from([1, 2, 3]));
+
+    const trace = await traceDatapackResourceReferences(root, {
+      paths: ["assets/demo/blockstates/gear.json"]
+    });
+
+    expect(trace).toMatchObject({
+      startPaths: ["assets/demo/blockstates/gear.json"],
+      references: [
+        {
+          fromPath: "assets/demo/blockstates/gear.json",
+          fromKind: "blockstates",
+          relation: "blockstate_model",
+          value: "demo:block/gear",
+          toPath: "assets/demo/models/block/gear.json",
+          toKind: "models",
+          status: "resolved"
+        },
+        {
+          fromPath: "assets/demo/models/block/gear.json",
+          fromKind: "models",
+          relation: "model_texture",
+          value: "demo:block/gear",
+          toPath: "assets/demo/textures/block/gear.png",
+          toKind: "textures",
+          status: "resolved"
+        },
+        {
+          fromPath: "assets/demo/models/block/gear.json",
+          fromKind: "models",
+          relation: "model_texture",
+          value: "demo:block/missing",
+          toPath: "assets/demo/textures/block/missing.png",
+          toKind: "textures",
+          status: "missing"
+        }
+      ],
+      unresolved: [
+        {
+          toPath: "assets/demo/textures/block/missing.png",
+          status: "missing"
+        }
+      ],
+      skipped: [],
+      truncated: false
     });
   });
 });

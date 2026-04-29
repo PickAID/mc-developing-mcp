@@ -145,6 +145,88 @@ describe("source.bundle datapack execution", () => {
       }
     });
   });
+
+  it("traces explicit resource asset references without adding paths to the summary", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-resource-trace-");
+
+    await writeText(join(workspaceRoot, "pack.mcmeta"), "{}\n");
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "blockstates", "gear.json"),
+      JSON.stringify({ variants: { "": { model: "demo:block/gear" } } })
+    );
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "models", "block", "gear.json"),
+      JSON.stringify({ textures: { all: "demo:block/gear" } })
+    );
+    await writeText(
+      join(workspaceRoot, "assets", "demo", "textures", "block", "gear.png"),
+      Buffer.from([1, 2, 3])
+    );
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Trace local datapack resource references for assets/demo/blockstates/gear.json."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    const result = await executor({
+      candidate,
+      evidencePlan,
+      requestPlan
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "datapack_files",
+        resourceSummary: {
+          tokenPolicy: "counts_only"
+        },
+        resourceReferenceTrace: {
+          tokenPolicy: "explicit_trace",
+          startPaths: ["assets/demo/blockstates/gear.json"],
+          referenceCount: 2,
+          unresolvedCount: 0,
+          references: [
+            {
+              fromPath: "assets/demo/blockstates/gear.json",
+              relation: "blockstate_model",
+              toPath: "assets/demo/models/block/gear.json",
+              status: "resolved"
+            },
+            {
+              fromPath: "assets/demo/models/block/gear.json",
+              relation: "model_texture",
+              toPath: "assets/demo/textures/block/gear.png",
+              status: "resolved"
+            }
+          ],
+          truncated: false
+        }
+      }
+    });
+    expect(result.payload?.resourceSummary).not.toHaveProperty("files");
+    expect(result.payload?.resourceSummary).not.toHaveProperty("references");
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {
@@ -154,7 +236,7 @@ async function createTempRoot(prefix: string): Promise<string> {
   return root;
 }
 
-async function writeText(path: string, content: string): Promise<void> {
+async function writeText(path: string, content: string | Buffer): Promise<void> {
   await mkdir(join(path, ".."), { recursive: true });
   await writeFile(path, content);
 }

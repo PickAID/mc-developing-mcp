@@ -5,6 +5,7 @@ export {
   searchDatapackFiles,
   summarizeDatapackFiles
 } from "./files.js";
+export { traceDatapackResourceReferences } from "./resource-references.js";
 export type {
   AssetKind,
   DataKind,
@@ -16,6 +17,11 @@ export type {
   DatapackFileSummary,
   DatapackKind,
   DatapackReadResult,
+  DatapackResourceReference,
+  DatapackResourceReferenceRelation,
+  DatapackResourceReferenceStatus,
+  DatapackResourceReferenceTrace,
+  DatapackResourceReferenceTraceOptions,
   DatapackRoot,
   DatapackSearchMatch,
   DatapackSearchResult,

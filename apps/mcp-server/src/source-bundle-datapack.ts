@@ -4,8 +4,11 @@ import {
   readDatapackFile,
   searchDatapackFiles,
   summarizeDatapackFiles,
+  traceDatapackResourceReferences,
   type DatapackFileEntry,
   type DatapackFileSummary,
+  type DatapackResourceReference,
+  type DatapackResourceReferenceTrace,
   type DatapackSearchMatch,
   type DatapackSkippedFile
 } from "@mcpskill/datapack-adapter";
@@ -18,6 +21,7 @@ import type {
 const MAX_QUERIES = 8;
 const MAX_MATCHES = 16;
 const MAX_LISTED_FILES = 32;
+const MAX_REFERENCE_TRACE_ENTRIES = 24;
 const DATAPACK_BUDGET = {
   maxFiles: 512,
   maxBytesPerFile: 64 * 1024
@@ -61,6 +65,11 @@ export async function executeMcpServerDatapackFiles(
     ...DATAPACK_BUDGET
   });
   const compactResourceSummary = toCompactResourceSummary(resourceSummary);
+  const resourceReferenceTrace = await traceRequestedResourceReferences({
+    workspaceRoot,
+    requestText,
+    requestedPaths
+  });
 
   if (queries.length === 0 && requestedPaths.length === 0) {
     const listed = await listDatapackFiles(workspaceRoot, {
@@ -101,10 +110,36 @@ export async function executeMcpServerDatapackFiles(
       resourceSummary: compactResourceSummary,
       reads: reads.files,
       matches: search.matches,
+      ...(resourceReferenceTrace ? { resourceReferenceTrace } : {}),
       skipped: [...reads.skipped, ...search.skipped],
       truncated: search.truncated
     }
   };
+}
+
+async function traceRequestedResourceReferences(input: {
+  workspaceRoot: string;
+  requestText: string;
+  requestedPaths: string[];
+}) {
+  const startPaths = input.requestedPaths.filter((path) =>
+    isTraceableAssetPath(path)
+  );
+
+  if (
+    startPaths.length === 0 ||
+    !mentionsResourceReferenceTrace(input.requestText)
+  ) {
+    return undefined;
+  }
+
+  const trace = await traceDatapackResourceReferences(input.workspaceRoot, {
+    ...DATAPACK_BUDGET,
+    paths: startPaths,
+    maxReferences: MAX_REFERENCE_TRACE_ENTRIES
+  });
+
+  return toCompactResourceReferenceTrace(trace);
 }
 
 function toCompactResourceSummary(summary: DatapackFileSummary) {
@@ -117,6 +152,33 @@ function toCompactResourceSummary(summary: DatapackFileSummary) {
     byNamespace: summary.byNamespace,
     skippedCount: summary.skipped.length,
     truncated: summary.truncated
+  };
+}
+
+function toCompactResourceReferenceTrace(
+  trace: DatapackResourceReferenceTrace
+) {
+  return {
+    tokenPolicy: "explicit_trace" as const,
+    startPaths: trace.startPaths,
+    referenceCount: trace.references.length,
+    unresolvedCount: trace.unresolved.length,
+    references: trace.references.map(toCompactResourceReference),
+    unresolved: trace.unresolved.map(toCompactResourceReference),
+    skippedCount: trace.skipped.length,
+    truncated: trace.truncated
+  };
+}
+
+function toCompactResourceReference(reference: DatapackResourceReference) {
+  return {
+    fromPath: reference.fromPath,
+    fromKind: reference.fromKind,
+    relation: reference.relation,
+    value: reference.value,
+    toPath: reference.toPath,
+    toKind: reference.toKind,
+    status: reference.status
   };
 }
 
@@ -138,6 +200,16 @@ function extractDatapackPathQueries(requestText: string): string[] {
 
   return unique([...matches].map((match) => trimTrailingPunctuation(match[0])))
     .slice(0, MAX_QUERIES);
+}
+
+function mentionsResourceReferenceTrace(requestText: string): boolean {
+  return /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i.test(
+    requestText
+  );
+}
+
+function isTraceableAssetPath(path: string): boolean {
+  return /^assets\/[^/]+\/(?:blockstates|models)\//.test(path);
 }
 
 async function readRequestedDatapackPaths(

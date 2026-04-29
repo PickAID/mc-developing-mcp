@@ -102,3 +102,34 @@ export interface DatapackReadResult {
   content?: string;
   skipped?: DatapackSkippedFile;
 }
+
+export type DatapackResourceReferenceRelation =
+  | "blockstate_model"
+  | "model_parent"
+  | "model_texture";
+
+export type DatapackResourceReferenceStatus = "resolved" | "missing";
+
+export interface DatapackResourceReference {
+  fromPath: string;
+  fromKind: DatapackKind;
+  relation: DatapackResourceReferenceRelation;
+  value: string;
+  toPath: string;
+  toKind: DatapackKind;
+  status: DatapackResourceReferenceStatus;
+}
+
+export interface DatapackResourceReferenceTraceOptions extends DatapackBudget {
+  paths?: string[];
+  maxDepth?: number;
+  maxReferences?: number;
+}
+
+export interface DatapackResourceReferenceTrace {
+  startPaths: string[];
+  references: DatapackResourceReference[];
+  unresolved: DatapackResourceReference[];
+  skipped: DatapackSkippedFile[];
+  truncated: boolean;
+}
