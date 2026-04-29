@@ -3,9 +3,7 @@ import {
   discoverModArchives,
   extractJavaClassReferences,
   findArchiveSetClassOwners,
-  listArchiveContent,
   readModArchiveMetadata,
-  readArchiveContentFile,
   searchArchiveSetContent,
   type ArchiveContentCache,
   type ArchiveContentSkippedEntry,
@@ -30,9 +28,14 @@ import {
   isModArchiveInventoryRequest,
   listModArchiveInventory
 } from "./mod-archive-inventory.js";
+import {
+  extractArchiveEntryPathRequest,
+  listSelectedEntries,
+  readSelectedEntries,
+  readSelectedEntry
+} from "./mod-archive-entry-operations.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
-const DEFAULT_MAX_LIST_ENTRIES = 64;
 const DEFAULT_MAX_MATCHES = 12;
 const DEFAULT_MAX_BYTES_PER_FILE = 65_536;
 const DEFAULT_MAX_QUERIES = 4;
@@ -123,7 +126,17 @@ export async function executeMcpServerModArchiveContent(
     });
   }
 
-  const entryPath = extractArchiveEntryPath(requestText);
+  const entryPathRequest = extractArchiveEntryPathRequest(requestText);
+  if (entryPathRequest.paths.length > 1 && selectedArchive) {
+    return readSelectedEntries({
+      sourceArchive: selectedArchive.archivePath,
+      relativePaths: entryPathRequest.paths,
+      truncated: entryPathRequest.truncated,
+      cache: options.cache
+    });
+  }
+
+  const entryPath = entryPathRequest.paths[0];
   if (entryPath && selectedArchive) {
     return readSelectedEntry({
       sourceArchive: selectedArchive.archivePath,
@@ -234,69 +247,6 @@ async function lookupClassOwners(input: {
       requestedClasses,
       matches,
       searchedArchives: result.searchedArchives,
-      cache: result.cache,
-      truncated: result.truncated
-    }
-  };
-}
-
-async function readSelectedEntry(input: {
-  sourceArchive: string;
-  relativePath: string;
-  cache?: ArchiveContentCache;
-}): Promise<McpServerEvidenceExecutorResult> {
-  const result = await readArchiveContentFile({
-    sourceArchive: input.sourceArchive,
-    relativePath: input.relativePath,
-    maxBytes: DEFAULT_MAX_BYTES_PER_FILE,
-    cache: input.cache
-  });
-  const payload = {
-    source: "mod_archive_content",
-    mode: "read",
-    sourceArchive: input.sourceArchive,
-    archiveMetadata: await readArchiveMetadata(input.sourceArchive),
-    requestedPath: input.relativePath,
-    ...result
-  };
-
-  if (!result.content) {
-    return {
-      matched: false,
-      summary: `Could not read ${input.relativePath} from selected mod archive.`,
-      payload
-    };
-  }
-
-  return {
-    matched: true,
-    summary: `Read ${input.relativePath} from selected mod archive.`,
-    payload
-  };
-}
-
-async function listSelectedEntries(input: {
-  sourceArchive: string;
-  domains: ArchiveContentDomain[];
-  cache?: ArchiveContentCache;
-}): Promise<McpServerEvidenceExecutorResult> {
-  const result = await listArchiveContent({
-    sourceArchive: input.sourceArchive,
-    domains: input.domains,
-    limit: DEFAULT_MAX_LIST_ENTRIES,
-    cache: input.cache
-  });
-
-  return {
-    matched: true,
-    summary: `Listed ${result.entries.length} mod archive entrie(s).`,
-    payload: {
-      source: "mod_archive_content",
-      mode: "list",
-      sourceArchive: input.sourceArchive,
-      archiveMetadata: await readArchiveMetadata(input.sourceArchive),
-      domains: input.domains,
-      entries: result.entries,
       cache: result.cache,
       truncated: result.truncated
     }
@@ -438,27 +388,6 @@ function selectArchive(
       normalizedText.includes(archiveName)
     );
   });
-}
-
-function extractArchiveEntryPath(requestText?: string): string | undefined {
-  if (!requestText) {
-    return undefined;
-  }
-
-  const text = requestText.replace(/[`"'“”‘’]/g, " ");
-  const patterns = [
-    /\b(?:data|assets)\/[A-Za-z0-9_./+$-]+\.(?:json|mcmeta|txt|toml|lang|png)\b/,
-    /\b(?:[A-Za-z_$][\w$]*\/){2,}[A-Za-z_$][\w$]*\.(?:java|class)\b/
-  ];
-
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match?.[0]) {
-      return match[0].replace(/[),.;:]+$/g, "");
-    }
-  }
-
-  return undefined;
 }
 
 function extractListDomains(requestText?: string): ArchiveContentDomain[] | undefined {
