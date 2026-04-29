@@ -129,6 +129,38 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
+  it("searches JarJar nested archives from mod content requests", async () => {
+    const workspaceRoot = await createJarJarWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Find demo:nested_gear in mods/outer-mod.jar."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "mod_archive_content",
+        matches: [
+          {
+            sourceArchive: expect.stringContaining("mods/outer-mod.jar"),
+            embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+            embeddedArchiveMetadata: {
+              loader: "fabric",
+              modId: "nested_content",
+              name: "Nested Content",
+              version: "2.0.0"
+            },
+            entry: {
+              domain: "data",
+              relativePath: "data/demo/recipes/nested_gear.json"
+            },
+            preview: expect.stringContaining("demo:nested_gear")
+          }
+        ]
+      }
+    });
+  });
+
   it("reuses an injected cache across repeated list requests", async () => {
     const workspaceRoot = await createModArchiveWorkspace();
     const input = await createExecutorInput(
@@ -203,6 +235,40 @@ async function createModArchiveWorkspace(): Promise<string> {
         name: "com/example/problem/CrashHandler.class",
         content: Buffer.from([0xca, 0xfe, 0xba, 0xbe]),
         compressionMethod: 0
+      }
+    ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createJarJarWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-jarjar-mcp-"));
+  const nestedJar = createZip([
+    {
+      name: "fabric.mod.json",
+      content: JSON.stringify({
+        id: "nested_content",
+        name: "Nested Content",
+        version: "2.0.0"
+      }),
+      compressionMethod: 0
+    },
+    {
+      name: "data/demo/recipes/nested_gear.json",
+      content: "{\"result\":\"demo:nested_gear\"}\n",
+      compressionMethod: 0
+    }
+  ]);
+
+  tempRoots.push(workspaceRoot);
+  await writeBinary(
+    join(workspaceRoot, "mods", "outer-mod.jar"),
+    createZip([
+      {
+        name: "META-INF/jarjar/nested-content.jar",
+        content: nestedJar,
+        compressionMethod: 8
       }
     ])
   );

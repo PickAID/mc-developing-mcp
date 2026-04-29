@@ -84,11 +84,70 @@ describe("mod archive discovery and search", () => {
       truncated: true
     });
   });
+
+  it("searches one-level JarJar nested archives with embedded metadata", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-jarjar-search-"));
+    const outerJar = join(workspaceRoot, "mods", "outer.jar");
+    const nestedJar = createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "nested_content",
+          name: "Nested Content",
+          version: "2.0.0"
+        }),
+        compressionMethod: 0
+      },
+      {
+        name: "data/demo/recipes/nested_gear.json",
+        content: "{\"result\":\"demo:nested_gear\"}\n",
+        compressionMethod: 0
+      }
+    ]);
+
+    await mkdir(join(outerJar, ".."), { recursive: true });
+    await writeFile(outerJar, createZip([
+      {
+        name: "META-INF/jarjar/nested-content.jar",
+        content: nestedJar,
+        compressionMethod: 8
+      }
+    ]));
+
+    await expect(
+      searchArchiveSetContent({
+        sourceArchives: [outerJar],
+        domains: ["data"],
+        query: "demo:nested_gear",
+        maxArchives: 1,
+        maxMatches: 4
+      })
+    ).resolves.toMatchObject({
+      matches: [
+        {
+          sourceArchive: outerJar,
+          embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+          embeddedArchiveMetadata: {
+            loader: "fabric",
+            modId: "nested_content",
+            name: "Nested Content",
+            version: "2.0.0"
+          },
+          entry: {
+            relativePath: "data/demo/recipes/nested_gear.json"
+          },
+          preview: "{\"result\":\"demo:nested_gear\"}"
+        }
+      ],
+      searchedArchives: 1,
+      truncated: false
+    });
+  });
 });
 
 interface ZipFixtureEntry {
   name: string;
-  content: string;
+  content: string | Buffer;
   compressionMethod: 0 | 8;
 }
 
@@ -99,7 +158,9 @@ function createZip(entries: ZipFixtureEntry[]): Buffer {
 
   for (const entry of entries) {
     const name = Buffer.from(entry.name);
-    const content = Buffer.from(entry.content);
+    const content = Buffer.isBuffer(entry.content)
+      ? entry.content
+      : Buffer.from(entry.content);
     const compressed =
       entry.compressionMethod === 8 ? deflateRawSync(content) : content;
     const localHeader = Buffer.alloc(30);

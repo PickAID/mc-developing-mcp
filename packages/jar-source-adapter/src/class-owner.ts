@@ -6,6 +6,8 @@ import {
   readZipCentralDirectory,
   type ZipEntry
 } from "./java-source-archive.js";
+import { findNestedArchiveClassOwners } from "./nested-archive.js";
+import type { ModArchiveMetadata } from "./mod-archives.js";
 
 export type ArchiveClassOwnerMatchKind = "exact" | "nested";
 
@@ -16,6 +18,8 @@ export interface ArchiveClassOwnerMatch {
   relativePath: string;
   sizeBytes: number;
   matchKind: ArchiveClassOwnerMatchKind;
+  embeddedArchivePath?: string;
+  embeddedArchiveMetadata?: ModArchiveMetadata;
 }
 
 export interface FindArchiveSetClassOwnersResult {
@@ -128,6 +132,17 @@ export async function findArchiveSetClassOwners(input: {
     }
     if (matches.length >= maxMatches) {
       break;
+    }
+    if (matches.length < maxMatches) {
+      const nested = await findNestedArchiveClassOwners({
+        sourceArchive,
+        classNames: requestedClasses,
+        maxMatches: maxMatches - matches.length,
+        includeNested: input.includeNested
+      });
+
+      matches.push(...nested.matches);
+      truncated = truncated || nested.truncated;
     }
   }
 

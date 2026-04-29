@@ -5,9 +5,13 @@ import {
   type ArchiveContentSearchMatch,
   type ArchiveContentSkippedEntry
 } from "./archive-content.js";
+import { searchNestedArchiveContent } from "./nested-archive.js";
+import type { ModArchiveMetadata } from "./mod-archives.js";
 
 export interface ArchiveSetContentSearchMatch extends ArchiveContentSearchMatch {
   sourceArchive: string;
+  embeddedArchivePath?: string;
+  embeddedArchiveMetadata?: ModArchiveMetadata;
 }
 
 export interface SearchArchiveSetContentResult {
@@ -63,6 +67,20 @@ export async function searchArchiveSetContent(input: {
       }))
     );
     truncated = truncated || result.truncated;
+
+    if (matches.length < maxMatches) {
+      const nestedResult = await searchNestedArchiveContent({
+        sourceArchive,
+        domains: input.domains,
+        query: input.query,
+        maxMatches: maxMatches - matches.length,
+        maxBytesPerFile: input.maxBytesPerFile
+      });
+
+      matches.push(...nestedResult.matches);
+      skipped.push(...nestedResult.skipped);
+      truncated = truncated || nestedResult.truncated;
+    }
   }
 
   return {

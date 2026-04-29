@@ -71,7 +71,12 @@ export async function discoverModArchives(input: {
 export async function readModArchiveMetadata(
   sourceArchive: string
 ): Promise<ModArchiveMetadata | undefined> {
-  const archive = await readFile(sourceArchive);
+  return readModArchiveMetadataFromBuffer(await readFile(sourceArchive));
+}
+
+export function readModArchiveMetadataFromBuffer(
+  archive: Buffer
+): ModArchiveMetadata | undefined {
   const entries = readZipCentralDirectory(archive);
 
   for (const metadataPath of METADATA_PATHS) {

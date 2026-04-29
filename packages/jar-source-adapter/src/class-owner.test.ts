@@ -65,16 +65,65 @@ describe("findArchiveSetClassOwners", () => {
       truncated: false
     });
   });
+
+  it("locates class owners inside one-level JarJar nested archives", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-class-owner-jarjar-"));
+    const outerArchive = join(runtimeRoot, "outer-mod.jar");
+    const nestedArchive = createZip([
+      "fabric.mod.json",
+      "com/example/nested/NestedCrash.class"
+    ]);
+
+    await writeFile(
+      outerArchive,
+      createZipEntries([
+        {
+          name: "META-INF/jarjar/nested-lib.jar",
+          content: nestedArchive
+        }
+      ])
+    );
+
+    await expect(
+      findArchiveSetClassOwners({
+        sourceArchives: [outerArchive],
+        classNames: ["com.example.nested.NestedCrash"],
+        maxMatches: 4
+      })
+    ).resolves.toMatchObject({
+      matches: [
+        {
+          sourceArchive: outerArchive,
+          embeddedArchivePath: "META-INF/jarjar/nested-lib.jar",
+          requestedClassName: "com.example.nested.NestedCrash",
+          binaryName: "com.example.nested.NestedCrash",
+          relativePath: "com/example/nested/NestedCrash.class",
+          matchKind: "exact"
+        }
+      ],
+      searchedArchives: 1,
+      truncated: false
+    });
+  });
 });
 
 function createZip(entryNames: string[]): Buffer {
+  return createZipEntries(
+    entryNames.map((entryName) => ({
+      name: entryName,
+      content: Buffer.from([0xca, 0xfe, 0xba, 0xbe])
+    }))
+  );
+}
+
+function createZipEntries(entries: ZipFixtureEntry[]): Buffer {
   const localParts: Buffer[] = [];
   const centralParts: Buffer[] = [];
   let localOffset = 0;
 
-  for (const entryName of entryNames) {
-    const name = Buffer.from(entryName);
-    const content = Buffer.from([0xca, 0xfe, 0xba, 0xbe]);
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = entry.content;
     const localHeader = Buffer.alloc(30);
     const centralHeader = Buffer.alloc(46);
 
@@ -102,10 +151,15 @@ function createZip(entryNames: string[]): Buffer {
   const eocd = Buffer.alloc(22);
 
   eocd.writeUInt32LE(0x06054b50, 0);
-  eocd.writeUInt16LE(entryNames.length, 8);
-  eocd.writeUInt16LE(entryNames.length, 10);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
   eocd.writeUInt32LE(centralDirectory.length, 12);
   eocd.writeUInt32LE(localFiles.length, 16);
 
   return Buffer.concat([localFiles, centralDirectory, eocd]);
+}
+
+interface ZipFixtureEntry {
+  name: string;
+  content: Buffer;
 }
