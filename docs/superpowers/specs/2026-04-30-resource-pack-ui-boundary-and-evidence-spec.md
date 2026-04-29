@@ -4,9 +4,9 @@ Author: m1hono
 Scope: `mc-developing-mcp` `skill-update`
 
 ## Problem Statement
-The project is expanding from core Minecraft development evidence into modpack JAR caches, datapack/assets lookup, resource packages, and now resource-pack UI/design topics. This is useful, but it creates a real scope risk: the MCP can drift into a Skill/docs/UI-design bundle instead of staying a progressive Minecraft development evidence system.
+The project is expanding from core Minecraft development evidence into modpack JAR caches, datapack lookup, resource-pack/assets lookup, resource packages, and now resource-pack UI/design topics. Resource support is a core requirement, but UI/design topics create a real scope risk: the MCP can drift into a Skill/docs/UI-design bundle instead of staying a progressive Minecraft development evidence system.
 
-The goal is to support resource-pack UI work only where it strengthens the existing evidence pipeline:
+The goal is to treat `assets/**` resource support as seriously as `data/**` datapack support, while limiting resource-pack UI/design advice to places where it strengthens the evidence pipeline:
 
 - find real `assets/**` files in mod JARs, resource packs, and datapack/resource roots;
 - summarize those resources compactly;
@@ -16,7 +16,9 @@ The goal is to support resource-pack UI work only where it strengthens the exist
 The MCP must not become a generic UI design system, a resource-pack authoring platform, or a markdown tutorial injector.
 
 ## Core Decision
-Resource-pack UI support is allowed only as `asset/resource evidence indexing`.
+Resource support is a first-class evidence domain. `assets/**` must be handled with the same engineering seriousness as `data/**`: discovery, indexing, namespace/kind summaries, explicit reads, cache invalidation, traceability, and tests.
+
+Resource-pack UI/design support is allowed only as `asset/resource evidence indexing`.
 
 It may classify and summarize GUI-related assets, but it must not generate subjective design guidance by default. The runtime system may say "inspect these evidence domains first"; it must not teach nine-slice, grid layout, taste, or dynamic-window design in unconditional prompts.
 
@@ -32,6 +34,22 @@ Four independent subagents reviewed the scope from architecture, data-layer, WIP
 
 This consensus is now treated as a project constraint for later implementation work.
 
+## Resource Support Parity With Datapacks
+`assets/**` is not an optional decoration layer. It is a core Minecraft development surface parallel to `data/**`.
+
+The system must eventually support resource evidence with the same quality bar used for datapacks:
+
+- discover resources from workspace `assets/`, resource-pack roots, mod JARs, nested JARs, and runtime/modpack locations where available;
+- enumerate namespaces and resource kinds with compact summaries;
+- read explicit JSON/text resource files under budget, including atlas, font, lang, model, blockstate, particle, shader, and metadata files when supported;
+- index binary resource entries as metadata, not token-heavy content;
+- cache and invalidate resource indexes by fingerprint;
+- preserve source provenance for every resource result;
+- include resources in crash/config/modpack triage when missing assets, bad namespaces, invalid model references, or client-side resource failures are relevant;
+- keep docs lookup as fallback after local resource evidence.
+
+The boundary is not "resources are small"; the boundary is "resources are evidence, not a bundled UI design curriculum."
+
 ## Layer Responsibilities
 ### MCP
 MCP is the capability and execution layer.
@@ -39,7 +57,7 @@ MCP is the capability and execution layer.
 It may:
 
 - discover workspace/runtime/modpack context;
-- index and query local sources, mod JARs, datapack roots, and resource package artifacts;
+- index and query local sources, mod JARs, datapack roots, resource-pack roots, loose `assets/**` roots, and resource package artifacts;
 - return bounded `structuredContent` with trace, evidence, cache state, and compact summaries;
 - perform explicit, request-driven reads of selected files;
 - route through one progressive public tool, `mc_develop`.
@@ -123,7 +141,7 @@ Core MCP correctness must not depend on them.
 
 ## Data-Layer Scope
 ### P0 Allowed
-P0 is evidence indexing only.
+P0 in this plan is evidence indexing only. It starts with high-signal asset kinds inside mod JARs, but this is the first slice of first-class resource support, not the whole resource story.
 
 - Classify paths in mod JAR top-level entries:
   - `assets/<namespace>/textures/gui/**/*.png`
@@ -143,9 +161,12 @@ P0 is evidence indexing only.
 - Detailed path lists require explicit list/read requests and existing budgets.
 
 ### P1 Allowed
-P1 may extend evidence coverage, still without design logic.
+P1 must extend resource parity with datapacks, still without design logic.
 
 - Reuse the same asset-kind classifier for loose resource/datapack assets.
+- Discover resource-pack roots and workspace `assets/**` roots.
+- Add namespace and kind summaries for general resource assets, not only GUI-oriented assets.
+- Add explicit budgeted reads for JSON/text resources such as models, blockstates, particles, shaders, atlas, font, and lang files.
 - Add namespace-level counts.
 - Add bounded samples per kind, maximum 3-5 paths.
 - Allow explicit reads of JSON/text resource files:
@@ -173,6 +194,8 @@ The following are explicitly out of scope for this phase:
 - no new public MCP tool for UI design;
 - no default prompt injection of long UI/design rules;
 - no moving private/generated modpack caches into `mdm-sources`.
+
+These non-goals do not weaken resource support. They only prevent the runtime MCP from becoming a subjective design or authoring system.
 
 ## Naming Rules
 Use neutral evidence names.

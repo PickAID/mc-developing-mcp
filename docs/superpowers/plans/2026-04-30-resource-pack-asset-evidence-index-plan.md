@@ -2,22 +2,30 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add bounded resource-pack asset evidence support without turning MCP into a UI design system.
+**Goal:** Add bounded resource-pack asset evidence support while treating `assets/**` as a first-class domain parallel to datapack `data/**`, without turning MCP into a UI design system.
 
-**Architecture:** Keep resource-pack UI work as neutral `assets/**` evidence indexing. `@mcpskill/jar-source-adapter` classifies selected asset entries and stores compact metadata in the existing SQLite mod archive entry index. `apps/mcp-server` exposes counts-only summaries through the existing `mc_develop` path. Long nine-slice/grid/dynamic-window guidance remains in resource docs/packages or external Skills.
+**Architecture:** Treat resource evidence as core infrastructure. This slice starts with neutral `assets/**` evidence indexing in mod JARs because that is the current lowest-risk path. `@mcpskill/jar-source-adapter` classifies selected asset entries and stores compact metadata in the existing SQLite mod archive entry index. `apps/mcp-server` exposes counts-only summaries through the existing `mc_develop` path. Long nine-slice/grid/dynamic-window guidance remains in resource docs/packages or external Skills.
 
 **Tech Stack:** TypeScript, Node `node:sqlite`, pnpm, Vitest, existing MCP `mc_develop`, existing `jar-source-adapter`, `agent-harness`, and `service-profile` packages.
 
 ---
 
 ## Focus Contract
-- The project remains a Minecraft development evidence system for Java, KubeJS, datapack, Gradle/LSP, mod JARs, ProbeJS, docs/resource packages, and local caches.
-- Resource-pack UI support is allowed only when it improves evidence lookup for real `assets/**` content.
+- The project remains a Minecraft development evidence system for Java, KubeJS, datapack, resource-pack/assets, Gradle/LSP, mod JARs, ProbeJS, docs/resource packages, and local caches.
+- Resource support is not secondary to datapack support; `assets/**` must become a first-class evidence domain with discovery, indexing, summaries, explicit reads, cache invalidation, provenance, and tests.
+- Resource-pack UI/design support is allowed only when it improves evidence lookup for real `assets/**` content.
 - Do not add new public UI/design MCP tools.
 - Do not add runtime prompt tutorials for nine-slice, grid, dynamic-window, taste, or visual design.
 - Do not dump PNG binary data, full path lists, or large markdown content by default.
 - Keep source and test `.ts`/`.tsx` files under 500 lines.
 - Keep Go files and Go module files out of the repo.
+
+## Resource Parity Requirements
+- Resource evidence must use the same quality bar as datapack evidence: real file discovery, namespace/kind summaries, explicit reads, provenance, bounded payloads, cache reuse, invalidation, and tests.
+- Resource roots must eventually include workspace `assets/`, resource-pack roots, mod JAR `assets/**`, nested JAR assets, and modpack runtime locations where discoverable.
+- General resource kinds must not be limited to GUI assets. Later slices must cover models, blockstates, item models, textures, particles, shaders, atlases, fonts, lang files, and pack metadata where relevant.
+- Binary entries are indexed as metadata by default. Text/JSON entries can be explicitly read under budget.
+- Resource evidence must participate in crash and modpack triage when missing assets, namespace mistakes, broken model references, or client resource failures are plausible.
 
 ## File Map
 - Create: `packages/jar-source-adapter/src/mod-archive-asset-kind.ts`
@@ -267,8 +275,11 @@ HEAD matches upstream: <commit>
 ```
 
 ## Deferred Work
+- P1 resource parity with datapacks is required follow-up work, not optional polish.
 - P1 loose resource/datapack asset classification requires its own small plan.
+- P1 workspace `assets/` and resource-pack root discovery requires its own small plan.
 - P1 namespace counts and bounded samples require explicit token-budget tests.
+- P1 explicit JSON/text reads for general resource kinds require budget and provenance tests.
 - P2 PNG header width/height extraction requires a separate spec.
 - P2 atlas/font structured summaries require a separate spec.
 - Resource-pack UI learning material belongs in resource packages or external Skills, not runtime MCP prompts.
@@ -276,6 +287,7 @@ HEAD matches upstream: <commit>
 ## Acceptance Criteria
 - `mc_develop` remains the progressive MCP entry.
 - No public UI/design tool is added.
+- `assets/**` support remains a first-class evidence requirement equal to datapack `data/**` support.
 - Default inventory payload is counts-only.
 - Detailed resource reads remain explicit and budgeted.
 - Runtime guidance remains evidence-first and short.
