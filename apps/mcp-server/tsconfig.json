@@ -9,11 +9,13 @@
   "references": [
     { "path": "../../packages/agent-harness" },
     { "path": "../../packages/datapack-adapter" },
+    { "path": "../../packages/docs-retrieval" },
     { "path": "../../packages/gradle-adapter" },
     { "path": "../../packages/jar-source-adapter" },
     { "path": "../../packages/java-jdtls-adapter" },
     { "path": "../../packages/kubejs-language-service" },
     { "path": "../../packages/kubejs-types-adapter" },
+    { "path": "../../packages/resource-registry" },
     { "path": "../../packages/runtime-manager" },
     { "path": "../../packages/service-profile" },
     { "path": "../../packages/source-package-manager" },

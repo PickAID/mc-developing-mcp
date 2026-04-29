@@ -15,6 +15,14 @@ export function buildMcpServerRequestPlan(
 ): McpServerRequestPlan {
   const requestContext = buildMcpServerRequestContext(bootstrap, requestText);
 
+  return buildMcpServerRequestPlanFromContext(requestContext);
+}
+
+export function buildMcpServerRequestPlanFromContext(
+  requestContext: McpServerRequestContext
+): McpServerRequestPlan {
+  const requestText = requestContext.requestText;
+
   return {
     appId: "mcp-server",
     requestText,

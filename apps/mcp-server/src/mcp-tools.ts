@@ -16,6 +16,13 @@ import {
   type McpJavaDiagnosticsPreparation,
   type McpJavaDiagnosticsRuntime
 } from "./java-diagnostics-runtime.js";
+import {
+  buildMdmResourceStatusContext,
+  type MdmResourceStatusContext
+} from "./mdm-resource-status.js";
+import {
+  buildMcpServerRequestContextWithServiceProfile
+} from "./service-profile-context.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -109,14 +116,24 @@ async function executeMcpDevelopTool(
     const input = mcpDevelopInputSchema.parse(rawInput);
     const runtimeRoot = resolveRuntimeRoot(input, options);
     const workspaceRoot = resolveWorkspaceRoot(input, options);
-    const prismRoot =
-      input.prismRoot ??
-      options.env?.MCPSKILL_PRISM_ROOT ??
-      process.env.MCPSKILL_PRISM_ROOT;
+    const env = resolveToolEnv(options);
+    const prismRoot = input.prismRoot ?? env.MCPSKILL_PRISM_ROOT;
     const bootstrap = await buildMcpServerBootstrap({
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
     });
+    const mdmResources = await buildMdmResourceStatusContext({
+      runtimeRoot,
+      mdmSourcesRoot: env.MDM_SOURCES_ROOT
+    });
+    const requestContext =
+      await buildMcpServerRequestContextWithServiceProfile(bootstrap, {
+        requestText: input.requestText,
+        runtimeRoot,
+        includeDefaultGradleUserHome: false,
+        env,
+        mdmResources
+      });
     const javaDiagnosticsPreparation = options.lspDiagnostics
       ? undefined
       : await resolveJavaDiagnosticsPreparation(input, options, workspaceRoot);
@@ -125,6 +142,7 @@ async function executeMcpDevelopTool(
     const result = await executeMcpServerRequest({
       bootstrap,
       requestText: input.requestText,
+      requestContext,
       lspDiagnostics,
       javaDiagnosticsPreparation
     });
@@ -136,7 +154,7 @@ async function executeMcpDevelopTool(
           text: formatMcpDevelopResultText(result)
         }
       ],
-      structuredContent: toStructuredContent(result)
+      structuredContent: toStructuredContent(result, mdmResources)
     };
   } catch (error) {
     return {
@@ -167,6 +185,13 @@ async function resolveJavaDiagnosticsPreparation(
     workspaceRoot,
     requestText: input.requestText
   });
+}
+
+function resolveToolEnv(options: McpToolRuntimeOptions): NodeJS.ProcessEnv {
+  return {
+    ...process.env,
+    ...options.env
+  };
 }
 
 function resolveRuntimeRoot(
@@ -232,9 +257,10 @@ function shouldPrepareJavaDiagnostics(requestText: string): boolean {
 }
 
 function toStructuredContent(
-  result: McpServerRequestExecutorResult
+  result: McpServerRequestExecutorResult,
+  mdmResources?: MdmResourceStatusContext
 ): Record<string, unknown> {
-  return buildMcpDevelopStructuredContent(result);
+  return buildMcpDevelopStructuredContent(result, { mdmResources });
 }
 
 function formatToolError(error: unknown): string {

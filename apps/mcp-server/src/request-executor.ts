@@ -1,6 +1,7 @@
 import type {
   AgentRuntimeToolName,
-  McpServerBootstrap
+  McpServerBootstrap,
+  McpServerRequestContext
 } from "@mcpskill/shared-types";
 import type { DocsPackageSelectionResult } from "@mcpskill/docs-retrieval";
 import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
@@ -15,7 +16,10 @@ import {
   type McpServerEvidencePlan
 } from "./evidence-plan.js";
 import { buildMcpServerDocsSelection } from "./docs-selection.js";
-import { buildMcpServerRequestPlan } from "./request-plan.js";
+import {
+  buildMcpServerRequestPlan,
+  buildMcpServerRequestPlanFromContext
+} from "./request-plan.js";
 import { buildMcpServerContextQueryExecutor } from "./context-query-executor.js";
 import type { McpServerContextQueryExecutorOptions } from "./context-query-executor.js";
 import {
@@ -56,6 +60,7 @@ export interface McpServerRequestExecutorOptions {
   modArchiveContentCache?: ArchiveContentCache;
   lspDiagnostics?: LspDiagnosticRegistry;
   javaDiagnosticsPreparation?: McpJavaDiagnosticsPreparation;
+  requestContext?: McpServerRequestContext;
 }
 
 export type McpServerRequestSourceBundleOptions = Omit<
@@ -68,10 +73,9 @@ export type McpServerRequestSourceBundleOptions = Omit<
 export async function executeMcpServerRequest(
   options: McpServerRequestExecutorOptions
 ): Promise<McpServerRequestExecutorResult> {
-  const requestPlan = buildMcpServerRequestPlan(
-    options.bootstrap,
-    options.requestText
-  );
+  const requestPlan = options.requestContext
+    ? buildMcpServerRequestPlanFromContext(options.requestContext)
+    : buildMcpServerRequestPlan(options.bootstrap, options.requestText);
   const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
   const executors = {
     ...buildDefaultExecutors(options),

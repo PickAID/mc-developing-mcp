@@ -62,6 +62,9 @@ importers:
       '@mcpskill/kubejs-types-adapter':
         specifier: workspace:*
         version: link:../../packages/kubejs-types-adapter
+      '@mcpskill/resource-registry':
+        specifier: workspace:*
+        version: link:../../packages/resource-registry
       '@mcpskill/runtime-manager':
         specifier: workspace:*
         version: link:../../packages/runtime-manager
@@ -121,6 +124,8 @@ importers:
   packages/kubejs-types-adapter: {}
 
   packages/package-registry: {}
+
+  packages/resource-registry: {}
 
   packages/runtime-manager:
     dependencies:

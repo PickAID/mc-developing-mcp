@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b ../../packages/shared-types ../../packages/runtime-manager ../../packages/agent-harness ../../packages/workspace-detector ../../packages/package-registry ../../packages/docs-retrieval ../../packages/datapack-adapter ../../packages/gradle-adapter ../../packages/jar-source-adapter ../../packages/java-jdtls-adapter ../../packages/source-package-manager ../../packages/vanilla-source-adapter ../../packages/kubejs-language-service ../../packages/kubejs-types-adapter ../../packages/service-profile . && vitest run --root ../.. apps/mcp-server/src/bootstrap.test.ts apps/mcp-server/src/request-context.test.ts apps/mcp-server/src/service-profile-context.test.ts apps/mcp-server/src/request-plan.test.ts apps/mcp-server/src/evidence-plan.test.ts apps/mcp-server/src/docs-selection.test.ts apps/mcp-server/src/docs-lookup-executor.test.ts apps/mcp-server/src/context-query-executor.test.ts apps/mcp-server/src/mod-archive-content-executor.test.ts apps/mcp-server/src/probejs-types-executor.test.ts apps/mcp-server/src/gradle-source-archive-lookup.test.ts apps/mcp-server/src/gradle-dependency-archive-lookup.test.ts apps/mcp-server/src/source-bundle-datapack-executor.test.ts apps/mcp-server/src/source-bundle-executor.test.ts apps/mcp-server/src/source-bundle-gradle-binary-executor.test.ts apps/mcp-server/src/source-bundle-workspace-executor.test.ts apps/mcp-server/src/workspace-analyze-executor.test.ts apps/mcp-server/src/java-diagnostics-runtime.test.ts apps/mcp-server/src/request-handler.test.ts apps/mcp-server/src/request-executor.test.ts apps/mcp-server/src/mcp-structured-content.test.ts apps/mcp-server/src/mcp-tools.test.ts apps/mcp-server/src/mcp-server.test.ts apps/mcp-server/src/stdio-subprocess.test.ts apps/mcp-server/src/package-metadata.test.ts apps/mcp-server/src/public-api.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
   },
   "dependencies": {
     "@mcpskill/agent-harness": "workspace:*",
@@ -26,6 +26,7 @@
     "@mcpskill/java-jdtls-adapter": "workspace:*",
     "@mcpskill/kubejs-language-service": "workspace:*",
     "@mcpskill/kubejs-types-adapter": "workspace:*",
+    "@mcpskill/resource-registry": "workspace:*",
     "@mcpskill/runtime-manager": "workspace:*",
     "@mcpskill/service-profile": "workspace:*",
     "@mcpskill/shared-types": "workspace:*",

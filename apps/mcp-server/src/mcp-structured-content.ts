@@ -1,20 +1,26 @@
 import type { McpServerRequestExecutorResult } from "./request-executor.js";
+import type { MdmResourceStatusContext } from "./mdm-resource-status.js";
 
-const DEFAULT_BUDGET: Required<McpDevelopStructuredContentBudgetOptions> = {
+type RequiredBudgetOptions = Required<
+  Omit<McpDevelopStructuredContentOptions, "mdmResources">
+>;
+
+const DEFAULT_BUDGET: RequiredBudgetOptions = {
   maxArrayItems: 20,
   maxStringLength: 4000,
   maxDepth: 8
 };
 
-export interface McpDevelopStructuredContentBudgetOptions {
+export interface McpDevelopStructuredContentOptions {
   maxArrayItems?: number;
   maxStringLength?: number;
   maxDepth?: number;
+  mdmResources?: MdmResourceStatusContext;
 }
 
 export function buildMcpDevelopStructuredContent(
   result: McpServerRequestExecutorResult,
-  options: McpDevelopStructuredContentBudgetOptions = {}
+  options: McpDevelopStructuredContentOptions = {}
 ): Record<string, unknown> {
   const budget = normalizeBudget(options);
   const snapshot = result.requestPlan.requestContext.harnessSnapshot;
@@ -44,15 +50,18 @@ export function buildMcpDevelopStructuredContent(
         .map((execution) => execution.candidateId)
     },
     executions,
-    selectedEvidence
+    selectedEvidence,
+    mdmResources: options.mdmResources
+      ? compactPayload(options.mdmResources, budget).value
+      : undefined
   };
 
   return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
 }
 
 function normalizeBudget(
-  options: McpDevelopStructuredContentBudgetOptions
-): Required<McpDevelopStructuredContentBudgetOptions> {
+  options: McpDevelopStructuredContentOptions
+): RequiredBudgetOptions {
   return {
     maxArrayItems: options.maxArrayItems ?? DEFAULT_BUDGET.maxArrayItems,
     maxStringLength:
@@ -63,7 +72,7 @@ function normalizeBudget(
 
 function toCompactExecution(
   execution: McpServerRequestExecutorResult["executions"][number],
-  budget: Required<McpDevelopStructuredContentBudgetOptions>
+  budget: RequiredBudgetOptions
 ) {
   const payload = compactPayload(execution.payload, budget);
   const compact = {
@@ -84,7 +93,7 @@ function toCompactExecution(
 
 function compactPayload(
   value: unknown,
-  budget: Required<McpDevelopStructuredContentBudgetOptions>
+  budget: RequiredBudgetOptions
 ): { value: unknown; stats: PayloadBudgetStats } {
   const stats: PayloadBudgetStats = {
     truncated: false,
@@ -100,7 +109,7 @@ function compactPayload(
 
 function compactValue(
   value: unknown,
-  budget: Required<McpDevelopStructuredContentBudgetOptions>,
+  budget: RequiredBudgetOptions,
   stats: PayloadBudgetStats,
   depth: number,
   seen: WeakSet<object>

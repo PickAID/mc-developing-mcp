@@ -11,10 +11,7 @@ describe("@mcpskill/mcp-server package metadata", () => {
     expect(packageJson.bin).toEqual({
       "mc-developing-mcp": "./dist/stdio.js"
     });
-    expect(packageJson.scripts?.test).toContain("stdio-subprocess.test.ts");
-    expect(packageJson.scripts?.test).toContain("mcp-structured-content.test.ts");
-    expect(packageJson.scripts?.test).toContain(
-      "java-diagnostics-runtime.test.ts"
-    );
+    expect(packageJson.scripts?.test).toContain("tsc -b .");
+    expect(packageJson.scripts?.test).toContain('"$PWD/src"/*.test.ts');
   });
 });

@@ -8,11 +8,16 @@ import type {
   McpServerRequestContext
 } from "@mcpskill/shared-types";
 
+import {
+  formatMdmResourceStatusPrompt,
+  type MdmResourceStatusContext
+} from "./mdm-resource-status.js";
 import { buildMcpServerRequestContext } from "./request-context.js";
 
 export interface BuildMcpServerRequestContextWithServiceProfileOptions
   extends Omit<BuildMinecraftServiceProfileOptions, "workspaceRoot"> {
   requestText?: string;
+  mdmResources?: MdmResourceStatusContext;
 }
 
 export async function buildMcpServerRequestContextWithServiceProfile(
@@ -26,7 +31,11 @@ export async function buildMcpServerRequestContextWithServiceProfile(
     return context;
   }
 
-  const { requestText: _requestText, ...serviceProfileOptions } = options;
+  const {
+    requestText: _requestText,
+    mdmResources,
+    ...serviceProfileOptions
+  } = options;
   const serviceProfile = await buildMinecraftServiceProfile({
     ...serviceProfileOptions,
     workspaceRoot
@@ -40,8 +49,22 @@ export async function buildMcpServerRequestContextWithServiceProfile(
       ...context.taskBrief,
       promptFragments: [
         ...context.taskBrief.promptFragments,
-        serviceProfileFragment
+        appendMdmResourceStatus(serviceProfileFragment, mdmResources)
       ]
     }
+  };
+}
+
+function appendMdmResourceStatus(
+  fragment: ReturnType<typeof buildServiceProfilePromptFragment>,
+  mdmResources: MdmResourceStatusContext | undefined
+): ReturnType<typeof buildServiceProfilePromptFragment> {
+  if (!mdmResources) {
+    return fragment;
+  }
+
+  return {
+    ...fragment,
+    text: `${fragment.text}\n${formatMdmResourceStatusPrompt(mdmResources)}`
   };
 }
