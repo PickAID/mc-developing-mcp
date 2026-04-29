@@ -61,19 +61,33 @@ describe("buildModArchiveInventory", () => {
     });
   });
 
-  it("reports central directory cache hits for repeated inventory reads", async () => {
+  it("reuses cached archive inventory inspections", async () => {
     const workspaceRoot = await createInventoryWorkspace();
     const cache = createArchiveContentCache();
 
     await expect(
       buildModArchiveInventory({ workspaceRoot, cache })
     ).resolves.toMatchObject({
-      cache: { centralDirectoryHits: 0, centralDirectoryMisses: 1 }
+      cache: {
+        archiveInspectionHits: 0,
+        archiveInspectionMisses: 1,
+        centralDirectoryHits: 0,
+        centralDirectoryMisses: 1
+      }
     });
     await expect(
       buildModArchiveInventory({ workspaceRoot, cache })
     ).resolves.toMatchObject({
-      cache: { centralDirectoryHits: 1, centralDirectoryMisses: 0 }
+      cache: {
+        archiveInspectionHits: 1,
+        archiveInspectionMisses: 0,
+        centralDirectoryHits: 0,
+        centralDirectoryMisses: 0
+      }
+    });
+    expect(cache.size()).toMatchObject({
+      archiveInspections: 1,
+      centralDirectories: 1
     });
   });
 

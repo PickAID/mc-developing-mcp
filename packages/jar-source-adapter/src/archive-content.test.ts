@@ -295,12 +295,14 @@ describe("extractArchiveContent", () => {
 
     expect(cache.size()).toEqual({
       centralDirectories: 1,
-      textFiles: 1
+      textFiles: 1,
+      archiveInspections: 0
     });
     cache.clear();
     expect(cache.size()).toEqual({
       centralDirectories: 0,
-      textFiles: 0
+      textFiles: 0,
+      archiveInspections: 0
     });
   });
 });

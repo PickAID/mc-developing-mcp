@@ -42,6 +42,8 @@ export interface ModArchiveInventoryResult {
 }
 
 export interface ModArchiveInventoryCacheMetadata {
+  archiveInspectionHits: number;
+  archiveInspectionMisses: number;
   centralDirectoryHits: number;
   centralDirectoryMisses: number;
 }
@@ -57,6 +59,8 @@ export async function buildModArchiveInventory(input: {
     maxArchives: input.maxArchives
   });
   const cacheMetadata: ModArchiveInventoryCacheMetadata = {
+    archiveInspectionHits: 0,
+    archiveInspectionMisses: 0,
     centralDirectoryHits: 0,
     centralDirectoryMisses: 0
   };
@@ -83,6 +87,30 @@ export async function buildModArchiveInventory(input: {
 }
 
 async function inspectArchive(input: {
+  archive: ModArchiveCandidate;
+  maxNestedArchives?: number;
+  cache?: ArchiveContentCache;
+  cacheMetadata: ModArchiveInventoryCacheMetadata;
+}): Promise<{ archive: ModArchiveInventoryEntry; truncated: boolean }> {
+  if (input.cache) {
+    const cached = await input.cache.getArchiveInspection({
+      sourceArchive: input.archive.archivePath,
+      cacheKey: buildArchiveInspectionCacheKey(input.maxNestedArchives),
+      load: () => inspectArchiveUncached(input)
+    });
+    if (cached.cacheHit) {
+      input.cacheMetadata.archiveInspectionHits += 1;
+    } else {
+      input.cacheMetadata.archiveInspectionMisses += 1;
+    }
+
+    return cached.value;
+  }
+
+  return inspectArchiveUncached(input);
+}
+
+async function inspectArchiveUncached(input: {
   archive: ModArchiveCandidate;
   maxNestedArchives?: number;
   cache?: ArchiveContentCache;
@@ -116,6 +144,14 @@ async function inspectArchive(input: {
     },
     truncated: nested.truncated
   };
+}
+
+function buildArchiveInspectionCacheKey(maxNestedArchives: number | undefined) {
+  return [
+    "mod-archive-inventory",
+    "v2",
+    normalizeLimit(maxNestedArchives, 16)
+  ].join(":");
 }
 
 async function readArchiveDirectory(input: {

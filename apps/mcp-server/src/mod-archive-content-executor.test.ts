@@ -290,13 +290,23 @@ describe("executeMcpServerModArchiveContent", () => {
     await expect(executor(input)).resolves.toMatchObject({
       payload: {
         mode: "inventory",
-        cache: { centralDirectoryHits: 0, centralDirectoryMisses: 1 }
+        cache: {
+          archiveInspectionHits: 0,
+          archiveInspectionMisses: 1,
+          centralDirectoryHits: 0,
+          centralDirectoryMisses: 1
+        }
       }
     });
     await expect(executor(input)).resolves.toMatchObject({
       payload: {
         mode: "inventory",
-        cache: { centralDirectoryHits: 1, centralDirectoryMisses: 0 }
+        cache: {
+          archiveInspectionHits: 1,
+          archiveInspectionMisses: 0,
+          centralDirectoryHits: 0,
+          centralDirectoryMisses: 0
+        }
       }
     });
   });

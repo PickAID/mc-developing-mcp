@@ -5,6 +5,7 @@ import { readZipCentralDirectory, type ZipEntry } from "./java-source-archive.js
 export interface ArchiveContentCacheOptions {
   maxCentralDirectories?: number;
   maxTextFiles?: number;
+  maxArchiveInspections?: number;
 }
 
 export interface ArchiveContentCache {
@@ -15,6 +16,11 @@ export interface ArchiveContentCache {
     maxBytes: number;
     load: () => Promise<T>;
   }): Promise<CachedValue<T>>;
+  getArchiveInspection<T>(input: {
+    sourceArchive: string;
+    cacheKey: string;
+    load: () => Promise<T>;
+  }): Promise<CachedValue<T>>;
   clear(): void;
   size(): ArchiveContentCacheSize;
 }
@@ -22,6 +28,7 @@ export interface ArchiveContentCache {
 export interface ArchiveContentCacheSize {
   centralDirectories: number;
   textFiles: number;
+  archiveInspections: number;
 }
 
 export interface CachedValue<T> {
@@ -34,8 +41,10 @@ export function createArchiveContentCache(
 ): ArchiveContentCache {
   const maxCentralDirectories = normalizeLimit(options.maxCentralDirectories, 32);
   const maxTextFiles = normalizeLimit(options.maxTextFiles, 128);
+  const maxArchiveInspections = normalizeLimit(options.maxArchiveInspections, 64);
   const centralDirectories = new Map<string, ZipEntry[]>();
   const textFiles = new Map<string, unknown>();
+  const archiveInspections = new Map<string, unknown>();
 
   return {
     async readCentralDirectory(sourceArchive) {
@@ -73,14 +82,36 @@ export function createArchiveContentCache(
 
       return { value, cacheHit: false };
     },
+    async getArchiveInspection<T>(input: {
+      sourceArchive: string;
+      cacheKey: string;
+      load: () => Promise<T>;
+    }) {
+      const key = [
+        await buildArchiveFingerprint(input.sourceArchive),
+        input.cacheKey
+      ].join("|");
+      const cached = getCached(archiveInspections, key);
+      if (cached !== undefined) {
+        return { value: cached as T, cacheHit: true };
+      }
+
+      const value = await input.load();
+      archiveInspections.set(key, value);
+      evictOverflow(archiveInspections, maxArchiveInspections);
+
+      return { value, cacheHit: false };
+    },
     clear() {
       centralDirectories.clear();
       textFiles.clear();
+      archiveInspections.clear();
     },
     size() {
       return {
         centralDirectories: centralDirectories.size,
-        textFiles: textFiles.size
+        textFiles: textFiles.size,
+        archiveInspections: archiveInspections.size
       };
     }
   };
