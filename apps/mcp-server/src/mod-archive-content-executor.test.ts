@@ -98,6 +98,37 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
+  it("adds mod metadata to content search matches", async () => {
+    const workspaceRoot = await createModArchiveWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Find demo:gear in mods/content-mod.jar."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "mod_archive_content",
+        matches: [
+          {
+            sourceArchive: expect.stringContaining("mods/content-mod.jar"),
+            archiveMetadata: {
+              loader: "fabric",
+              modId: "content_mod",
+              name: "Content Mod",
+              version: "1.0.0",
+              metadataPath: "fabric.mod.json"
+            },
+            entry: {
+              domain: "data",
+              relativePath: "data/demo/recipes/gear.json"
+            }
+          }
+        ]
+      }
+    });
+  });
+
   it("reuses an injected cache across repeated list requests", async () => {
     const workspaceRoot = await createModArchiveWorkspace();
     const input = await createExecutorInput(
@@ -149,6 +180,15 @@ async function createModArchiveWorkspace(): Promise<string> {
   await writeBinary(
     join(workspaceRoot, "mods", "content-mod.jar"),
     createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "content_mod",
+          name: "Content Mod",
+          version: "1.0.0"
+        }),
+        compressionMethod: 0
+      },
       {
         name: "data/demo/recipes/gear.json",
         content: "{\"result\":\"demo:gear\"}\n",

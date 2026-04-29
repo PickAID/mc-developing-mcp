@@ -4,12 +4,14 @@ import {
   extractJavaClassReferences,
   findArchiveSetClassOwners,
   listArchiveContent,
+  readModArchiveMetadata,
   readArchiveContentFile,
   searchArchiveSetContent,
   type ArchiveContentCache,
   type ArchiveContentSkippedEntry,
   type ArchiveContentDomain,
-  type ArchiveSetContentSearchMatch
+  type ArchiveSetContentSearchMatch,
+  type ModArchiveMetadata
 } from "@mcpskill/jar-source-adapter";
 
 import type {
@@ -140,7 +142,7 @@ export async function executeMcpServerModArchiveContent(
     queries,
     archiveCount: archives.archives.length,
     searchedArchives: result.searchedArchives,
-    matches: result.matches,
+    matches: await attachArchiveMetadata(result.matches),
     skipped: result.skipped,
     truncated: archives.truncated || result.truncated
   };
@@ -185,6 +187,7 @@ async function lookupClassOwners(input: {
   if (result.matches.length === 0) {
     return undefined;
   }
+  const matches = await attachArchiveMetadata(result.matches);
 
   return {
     matched: true,
@@ -193,7 +196,7 @@ async function lookupClassOwners(input: {
       source: "mod_archive_content",
       mode: "class_owner",
       requestedClasses,
-      matches: result.matches,
+      matches,
       searchedArchives: result.searchedArchives,
       cache: result.cache,
       truncated: result.truncated
@@ -216,6 +219,7 @@ async function readSelectedEntry(input: {
     source: "mod_archive_content",
     mode: "read",
     sourceArchive: input.sourceArchive,
+    archiveMetadata: await readArchiveMetadata(input.sourceArchive),
     requestedPath: input.relativePath,
     ...result
   };
@@ -254,6 +258,7 @@ async function listSelectedEntries(input: {
       source: "mod_archive_content",
       mode: "list",
       sourceArchive: input.sourceArchive,
+      archiveMetadata: await readArchiveMetadata(input.sourceArchive),
       domains: input.domains,
       entries: result.entries,
       cache: result.cache,
@@ -313,6 +318,43 @@ async function searchQueries(input: {
   }
 
   return { matches, skipped, searchedArchives, truncated };
+}
+
+async function attachArchiveMetadata<T extends { sourceArchive: string }>(
+  matches: T[]
+): Promise<Array<T & { archiveMetadata?: ModArchiveMetadata }>> {
+  const cache = new Map<string, Promise<ModArchiveMetadata | undefined>>();
+
+  return Promise.all(
+    matches.map(async (match) => {
+      const archiveMetadata = await readArchiveMetadataCached(
+        match.sourceArchive,
+        cache
+      );
+
+      return archiveMetadata ? { ...match, archiveMetadata } : match;
+    })
+  );
+}
+
+function readArchiveMetadataCached(
+  sourceArchive: string,
+  cache: Map<string, Promise<ModArchiveMetadata | undefined>>
+): Promise<ModArchiveMetadata | undefined> {
+  const existing = cache.get(sourceArchive);
+  if (existing) {
+    return existing;
+  }
+
+  const loaded = readArchiveMetadata(sourceArchive);
+  cache.set(sourceArchive, loaded);
+  return loaded;
+}
+
+async function readArchiveMetadata(
+  sourceArchive: string
+): Promise<ModArchiveMetadata | undefined> {
+  return readModArchiveMetadata(sourceArchive).catch(() => undefined);
 }
 
 function extractModArchiveQueries(requestText?: string): string[] {
