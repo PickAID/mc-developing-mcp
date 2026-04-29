@@ -6,6 +6,8 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建，以及实际 MCP 返回值验证。这让整合包外部 mod JAR 的资产、数据包内容、类归属和崩溃排查路线更接近可长期使用的底层服务，而不是每次重新扫描。
+
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
 ## Current Repository State
@@ -13,12 +15,12 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Git state after diagnostics and worktree migration: clean at `18341e5`
+- Git state after latest mod archive cache work: clean at `7d0c2f4`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification after moving to the fixed worktree: `pnpm test` passed with 84 test files and 262 tests
-- Latest targeted diagnostics verification: 4 test files and 9 tests passed
+- Latest full verification: `pnpm test` passed with 94 test files and 289 tests
+- Latest typecheck: `pnpm typecheck` passed
 
-Recent MCP resource and diagnostics commits:
+Recent MCP resource, diagnostics, and mod archive commits:
 
 - `0783dfc feat(resource-registry): read local mdm registries`
 - `aff046f feat(resource-registry): summarize mdm cache status`
@@ -28,6 +30,12 @@ Recent MCP resource and diagnostics commits:
 - `e112f8c feat(mcp-server): install mdm release artifacts on request`
 - `ad5729e feat(mcp-server): use cached mdm docs resources`
 - `18341e5 feat(mcp-server): report mdm docs resource diagnostics`
+- `6bf2fd4 feat(mcp-server): read multiple mod archive files`
+- `49ad940 feat(jar-source): batch read nested mod archives`
+- `e5a9b76 feat(jar-source): summarize mod archive content inventory`
+- `5015aca feat(jar-source): cache mod archive inventory inspections`
+- `0344164 feat(jar-source): persist mod archive inventory cache`
+- `7d0c2f4 feat(mcp-server): refresh mod archive inventory cache`
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -60,6 +68,10 @@ Implemented:
 - The install flow supports local manifest paths and manifest URLs, verifies SHA-256, and writes runtime cache state.
 - Cached `.mdm-resource.json` docs artifacts are loaded into docs retrieval without treating markdown as runtime content.
 - Invalid cached docs artifacts are reported through compact `mdmDocs` diagnostics without failing the whole request.
+- Mod archive inventory requests are persisted in runtime SQLite at `runtimeRoot/caches/mod-archives/mod-archive-inventory.sqlite`.
+- Mod archive inventory cache validity uses workspace root, archive limits, nested archive limits, archive relative paths, sizes, and mtimes.
+- Natural-language refresh requests rebuild the SQLite mod archive inventory cache.
+- Stale mod archive fingerprints rebuild inventory instead of returning old content summaries.
 - Public MCP tool count remains one.
 - File size guard passes: no source/test JSON/JS/TS file above 500 lines.
 - Go residue guard passes: no Go files or Go module files remain.
@@ -73,7 +85,7 @@ Not implemented in this slice:
 
 ## Completion Estimate
 ### MCP Core Capability
-Estimated completion: 75-80%.
+Estimated completion: 80-84%.
 
 Completed:
 
@@ -97,6 +109,11 @@ Completed:
 - MDM release manifest read/install/cache flow
 - MDM docs resource loading into docs retrieval
 - Compact MDM docs resource diagnostics
+- Mod archive batch file reads
+- JarJar nested archive batch reads
+- Mod archive inventory summary with data/assets/class/java counts
+- SQLite-backed persistent mod archive inventory cache
+- Explicit mod archive inventory refresh and stale rebuild behavior
 
 Still incomplete:
 
@@ -104,6 +121,7 @@ Still incomplete:
 - broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
+- persistent derived indexes beyond mod archive inventory, such as item/registry/recipe summaries and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
@@ -131,7 +149,7 @@ Still incomplete:
 - real package payload expansion beyond the first required core docs package
 
 ### Overall Deliverability
-Estimated alpha deliverability: 65-70%.
+Estimated alpha deliverability: 70-74%.
 
 Interpretation:
 
@@ -147,7 +165,7 @@ Priority:
 
 1. Expand docs retrieval packages beyond the first required cached docs artifact.
 2. Expand remote/local resource install semantics with confirmation for large/private/generated packages.
-3. Improve modpack JAR indexing for class ownership, assets, data, recipes, and datapack content.
+3. Expand persistent modpack JAR indexes beyond inventory into class ownership, assets, data, recipes, datapack content, and crash-triage lookup tables.
 4. Improve Gradle workspace model extraction.
 5. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
 6. Add migration analysis for Java/KubeJS/datapack version moves.
@@ -180,3 +198,7 @@ The next risk is scope expansion. Keep the next phase feature-focused and contin
 Detailed verification output is recorded in:
 
 `docs/reviews/2026-04-30-mdm-delivery-closure-verification.md`
+
+`docs/reviews/2026-04-29-mod-archive-persistent-inventory-verification.md`
+
+`docs/reviews/2026-04-29-mod-archive-refresh-stale-verification.md`
