@@ -38,6 +38,7 @@ import {
   readSelectedEntries,
   readSelectedEntry
 } from "./mod-archive-entry-operations.js";
+import { traceSelectedModArchiveResourceReferences } from "./mod-archive-resource-references.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_MATCHES = 12;
@@ -149,6 +150,17 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const entryPathRequest = extractArchiveEntryPathRequest(requestText);
+  if (selectedArchive) {
+    const resourceTrace = await traceSelectedModArchiveResourceReferences({
+      sourceArchive: selectedArchive.archivePath,
+      requestText,
+      cache: options.cache
+    });
+    if (resourceTrace) {
+      return resourceTrace;
+    }
+  }
+
   if (entryPathRequest.paths.length > 1 && selectedArchive) {
     return readSelectedEntries({
       sourceArchive: selectedArchive.archivePath,
