@@ -4,3 +4,4 @@ export * from "./local-registry.js";
 export * from "./cache.js";
 export * from "./status.js";
 export * from "./release-manifest.js";
+export * from "./installer.js";
