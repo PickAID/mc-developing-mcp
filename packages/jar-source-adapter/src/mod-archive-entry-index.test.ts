@@ -103,13 +103,64 @@ describe("queryCachedModArchiveEntries", () => {
       }
     });
   });
+
+  it("classifies selected asset resources without default path dumping", async () => {
+    const workspaceRoot = await createWorkspace([
+      {
+        name: "assets/demo/textures/gui/widgets.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/gui/sprites/button/normal.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/atlases/gui.json",
+        content: "{\"sources\":[]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/font/ui.json",
+        content: "{\"providers\":[]}\n",
+        compressionMethod: 0
+      }
+    ]);
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
+
+    const result = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["assets"],
+      assetKinds: ["gui_texture", "gui_sprite", "atlas", "font"],
+      limit: 0
+    });
+
+    expect(result).toMatchObject({
+      entries: [],
+      entryCount: 4,
+      assetSummary: {
+        uiAssetCount: 4,
+        byKind: {
+          gui_texture: 1,
+          gui_sprite: 1,
+          atlas: 1,
+          font: 1
+        }
+      },
+      truncated: true
+    });
+  });
 });
 
-async function createWorkspace(): Promise<string> {
+async function createWorkspace(
+  extraEntries: ZipFixtureEntry[] = []
+): Promise<string> {
   const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-entry-index-"));
   tempRoots.push(workspaceRoot);
   await mkdir(join(workspaceRoot, "mods"), { recursive: true });
-  await writeContentMod(workspaceRoot);
+  await writeContentMod(workspaceRoot, extraEntries);
   return workspaceRoot;
 }
 

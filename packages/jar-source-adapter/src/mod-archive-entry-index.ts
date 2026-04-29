@@ -9,6 +9,17 @@ import {
   readZipCentralDirectory,
   type ZipEntry
 } from "./java-source-archive.js";
+import {
+  classifyModArchiveAssetKind,
+  createEmptyModArchiveAssetSummary,
+  parseModArchiveAssetKind,
+  type ModArchiveAssetKind,
+  type ModArchiveAssetSummary
+} from "./mod-archive-asset-kind.js";
+import {
+  initializeModArchiveEntryIndexSchema,
+  type ModArchiveEntryIndexDatabase
+} from "./mod-archive-entry-index-schema.js";
 import { discoverModArchives } from "./mod-archives.js";
 
 export interface ModArchiveIndexedEntry {
@@ -17,6 +28,7 @@ export interface ModArchiveIndexedEntry {
   embeddedArchivePath?: string;
   relativePath: string;
   domain: ArchiveContentDomain;
+  assetKind?: ModArchiveAssetKind;
   sizeBytes: number;
 }
 
@@ -33,20 +45,9 @@ export interface QueryCachedModArchiveEntriesResult {
   entries: ModArchiveIndexedEntry[];
   archiveCount: number;
   entryCount: number;
+  assetSummary: ModArchiveAssetSummary;
   truncated: boolean;
   cache: ModArchiveEntryIndexCacheMetadata;
-}
-
-interface SqliteStatement {
-  all(...parameters: unknown[]): Record<string, unknown>[];
-  get(...parameters: unknown[]): Record<string, unknown> | undefined;
-  run(...parameters: unknown[]): unknown;
-}
-
-interface SqliteDatabase {
-  exec(sql: string): void;
-  prepare(sql: string): SqliteStatement;
-  close(): void;
 }
 
 interface ArchiveFingerprint {
@@ -61,7 +62,7 @@ interface IndexedArchive {
   fingerprint: ArchiveFingerprint;
 }
 
-const CACHE_SCHEMA_VERSION = 1;
+const CACHE_SCHEMA_VERSION = 2;
 const DEFAULT_DOMAINS: ArchiveContentDomain[] = [
   "java",
   "data",
@@ -74,6 +75,7 @@ export async function queryCachedModArchiveEntries(input: {
   workspaceRoot: string;
   databasePath: string;
   domains?: ArchiveContentDomain[];
+  assetKinds?: ModArchiveAssetKind[];
   maxArchives?: number;
   limit?: number;
   refresh?: boolean;
@@ -108,7 +110,7 @@ export async function queryCachedModArchiveEntries(input: {
   const database = openDatabase(databasePath);
 
   try {
-    initializeSchema(database);
+    initializeModArchiveEntryIndexSchema(database);
     const indexedArchives: IndexedArchive[] = [];
 
     for (const fingerprint of fingerprints) {
@@ -124,6 +126,7 @@ export async function queryCachedModArchiveEntries(input: {
     const query = readIndexedEntries(database, {
       archiveKeys: indexedArchives.map((archive) => archive.archiveKey),
       domains: input.domains ?? DEFAULT_DOMAINS,
+      assetKinds: normalizeAssetKinds(input.assetKinds),
       limit: normalizeLimit(input.limit)
     });
 
@@ -131,6 +134,7 @@ export async function queryCachedModArchiveEntries(input: {
       entries: query.entries,
       archiveCount: indexedArchives.length,
       entryCount: query.totalCount,
+      assetSummary: query.assetSummary,
       truncated: discovered.truncated || query.truncated,
       cache: cacheMetadata
     };
@@ -140,7 +144,7 @@ export async function queryCachedModArchiveEntries(input: {
 }
 
 async function ensureArchiveIndexed(
-  database: SqliteDatabase,
+  database: ModArchiveEntryIndexDatabase,
   input: {
     fingerprint: ArchiveFingerprint;
     refresh?: boolean;
@@ -188,7 +192,7 @@ async function ensureArchiveIndexed(
 }
 
 async function writeArchiveIndex(
-  database: SqliteDatabase,
+  database: ModArchiveEntryIndexDatabase,
   input: {
     archiveKey: string;
     oldArchiveKey?: string;
@@ -231,8 +235,8 @@ async function writeArchiveIndex(
     const insertEntry = database.prepare(
       [
         "INSERT INTO mod_archive_entry_index_entries",
-        "(archive_key, source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, size_bytes)",
-        "VALUES (?, ?, ?, ?, ?, ?, ?)"
+        "(archive_key, source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, asset_kind, size_bytes)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
       ].join(" ")
     );
     for (const entry of input.entries) {
@@ -243,6 +247,7 @@ async function writeArchiveIndex(
         entry.embeddedArchivePath ?? "",
         entry.relativePath,
         entry.domain,
+        entry.assetKind ?? "",
         entry.sizeBytes
       );
     }
@@ -280,6 +285,7 @@ function collectIndexableEntries(
       return [{
         relativePath,
         domain,
+        assetKind: classifyModArchiveAssetKind(relativePath),
         sizeBytes: entry.uncompressedSize
       }];
     })
@@ -287,28 +293,44 @@ function collectIndexableEntries(
 }
 
 function readIndexedEntries(
-  database: SqliteDatabase,
+  database: ModArchiveEntryIndexDatabase,
   input: {
     archiveKeys: string[];
     domains: ArchiveContentDomain[];
+    assetKinds: ModArchiveAssetKind[];
     limit: number;
   }
 ): {
   entries: ModArchiveIndexedEntry[];
   totalCount: number;
+  assetSummary: ModArchiveAssetSummary;
   truncated: boolean;
 } {
   if (input.archiveKeys.length === 0 || input.domains.length === 0) {
-    return { entries: [], totalCount: 0, truncated: false };
+    return {
+      entries: [],
+      totalCount: 0,
+      assetSummary: createEmptyModArchiveAssetSummary(),
+      truncated: false
+    };
   }
 
   const archivePlaceholders = input.archiveKeys.map(() => "?").join(", ");
   const domainPlaceholders = input.domains.map(() => "?").join(", ");
-  const filterSql = [
+  const filterSqlParts = [
     `WHERE archive_key IN (${archivePlaceholders})`,
     `AND domain IN (${domainPlaceholders})`
-  ].join(" ");
-  const filterParameters = [...input.archiveKeys, ...input.domains];
+  ];
+  const filterParameters: Array<string> = [...input.archiveKeys, ...input.domains];
+
+  if (input.assetKinds.length > 0) {
+    filterSqlParts.push(
+      `AND asset_kind IN (${input.assetKinds.map(() => "?").join(", ")})`
+    );
+    filterParameters.push(...input.assetKinds);
+  }
+
+  const filterSql = filterSqlParts.join(" ");
   const countRow = database
     .prepare(
       `SELECT COUNT(*) AS total_count FROM mod_archive_entry_index_entries ${filterSql}`
@@ -317,7 +339,7 @@ function readIndexedEntries(
   const rows = database
     .prepare(
       [
-        "SELECT source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, size_bytes",
+        "SELECT source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, asset_kind, size_bytes",
         "FROM mod_archive_entry_index_entries",
         filterSql,
         "ORDER BY archive_relative_path, embedded_archive_path, relative_path",
@@ -330,6 +352,7 @@ function readIndexedEntries(
   return {
     entries,
     totalCount: Number(countRow?.total_count ?? 0),
+    assetSummary: readAssetSummary(database, filterSql, filterParameters),
     truncated: rows.length > input.limit
   };
 }
@@ -346,7 +369,40 @@ function rowToIndexedEntry(row: Record<string, unknown>): ModArchiveIndexedEntry
     embeddedArchivePath,
     relativePath: String(row.relative_path),
     domain: row.domain as ArchiveContentDomain,
+    assetKind: parseModArchiveAssetKind(row.asset_kind),
     sizeBytes: Number(row.size_bytes)
+  };
+}
+
+function readAssetSummary(
+  database: ModArchiveEntryIndexDatabase,
+  filterSql: string,
+  filterParameters: string[]
+): ModArchiveAssetSummary {
+  const rows = database
+    .prepare(
+      [
+        "SELECT asset_kind, COUNT(*) AS kind_count",
+        "FROM mod_archive_entry_index_entries",
+        filterSql,
+        "AND asset_kind != ''",
+        "GROUP BY asset_kind",
+        "ORDER BY asset_kind"
+      ].join(" ")
+    )
+    .all(...filterParameters);
+  const byKind: ModArchiveAssetSummary["byKind"] = {};
+
+  for (const row of rows) {
+    const assetKind = parseModArchiveAssetKind(row.asset_kind);
+    if (assetKind) {
+      byKind[assetKind] = Number(row.kind_count);
+    }
+  }
+
+  return {
+    uiAssetCount: Object.values(byKind).reduce((sum, count) => sum + count, 0),
+    byKind
   };
 }
 
@@ -365,39 +421,25 @@ function classifyArchiveContentDomain(
   return relativePath.startsWith("assets/") ? "assets" : undefined;
 }
 
-function initializeSchema(database: SqliteDatabase): void {
-  database.exec(`
-    PRAGMA journal_mode = DELETE;
-
-    CREATE TABLE IF NOT EXISTS mod_archive_entry_index_archives (
-      source_archive TEXT PRIMARY KEY,
-      archive_key TEXT NOT NULL,
-      archive_relative_path TEXT NOT NULL,
-      fingerprint_json TEXT NOT NULL,
-      indexed_at INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS mod_archive_entry_index_entries (
-      archive_key TEXT NOT NULL,
-      source_archive TEXT NOT NULL,
-      archive_relative_path TEXT NOT NULL,
-      embedded_archive_path TEXT NOT NULL,
-      relative_path TEXT NOT NULL,
-      domain TEXT NOT NULL,
-      size_bytes INTEGER NOT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_mod_archive_entry_index_entries_lookup
-      ON mod_archive_entry_index_entries(archive_key, domain, relative_path);
-  `);
-}
-
-function openDatabase(databasePath: string): SqliteDatabase {
+function openDatabase(databasePath: string): ModArchiveEntryIndexDatabase {
   const sqlite = require("node:sqlite") as {
-    DatabaseSync: new (path: string) => SqliteDatabase;
+    DatabaseSync: new (path: string) => ModArchiveEntryIndexDatabase;
   };
 
   return new sqlite.DatabaseSync(databasePath);
+}
+
+function normalizeAssetKinds(
+  assetKinds: ModArchiveAssetKind[] | undefined
+): ModArchiveAssetKind[] {
+  return [
+    ...new Set(
+      (assetKinds ?? []).flatMap((assetKind) => {
+        const parsed = parseModArchiveAssetKind(assetKind);
+        return parsed ? [parsed] : [];
+      })
+    )
+  ];
 }
 
 function normalizeLimit(limit: number | undefined): number {
