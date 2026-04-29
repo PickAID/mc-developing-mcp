@@ -36,10 +36,24 @@ export function isModArchiveInventoryRequest(requestText?: string): boolean {
   );
 }
 
+export function shouldRefreshModArchiveInventory(requestText?: string): boolean {
+  if (!requestText) {
+    return false;
+  }
+
+  const normalizedText = requestText.toLowerCase();
+  return (
+    /\b(refresh|rebuild|rescan|reload|force|invalidate|bypass cache)\b/.test(
+      normalizedText
+    ) || /(刷新|重建|重新扫描|强制|绕过缓存|清理缓存)/.test(requestText)
+  );
+}
+
 export async function listModArchiveInventory(input: {
   executorInput: McpServerEvidenceExecutorInput;
   cache?: ArchiveContentCache;
   databasePath?: string;
+  refresh?: boolean;
 }): Promise<McpServerEvidenceExecutorResult> {
   const workspaceRoot =
     input.executorInput.requestPlan.requestContext.workspaceContext?.workspaceRoot;
@@ -56,6 +70,7 @@ export async function listModArchiveInventory(input: {
         databasePath: input.databasePath,
         maxArchives: DEFAULT_MAX_ARCHIVES,
         maxNestedArchives: DEFAULT_MAX_NESTED_ARCHIVES,
+        refresh: input.refresh,
         buildInventory: (options) =>
           buildModArchiveInventory({ ...options, cache: input.cache })
       })

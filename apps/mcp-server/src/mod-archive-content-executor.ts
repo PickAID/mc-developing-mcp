@@ -28,7 +28,8 @@ import {
 import {
   isModArchiveInventoryRequest,
   listModArchiveInventory,
-  resolveModArchiveInventoryDatabasePath
+  resolveModArchiveInventoryDatabasePath,
+  shouldRefreshModArchiveInventory
 } from "./mod-archive-inventory.js";
 import {
   extractArchiveEntryPathRequest,
@@ -115,7 +116,8 @@ export async function executeMcpServerModArchiveContent(
     return listModArchiveInventory({
       executorInput: input,
       cache: options.cache,
-      databasePath: options.inventoryDatabasePath
+      databasePath: options.inventoryDatabasePath,
+      refresh: shouldRefreshModArchiveInventory(requestText)
     });
   }
 

@@ -52,6 +52,52 @@ describe("persistent mod archive inventory", () => {
       }
     });
   });
+
+  it("refreshes the runtime SQLite inventory cache when requested", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+    const workspaceRoot = await createWorkspace();
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    await executeMcpServerRequest({
+      bootstrap,
+      requestText: "List mod archive inventory for this modpack."
+    });
+
+    const refreshed = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "Refresh the mod archive inventory cache for this modpack."
+    });
+    const cachedAgain = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "List mod archive inventory for this modpack."
+    });
+
+    expect(refreshed.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "inventory",
+        persistentCache: {
+          hit: false,
+          reason: "refresh",
+          archiveFingerprintCount: 1
+        }
+      }
+    });
+    expect(cachedAgain.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "inventory",
+        persistentCache: {
+          hit: true,
+          reason: "hit",
+          archiveFingerprintCount: 1
+        }
+      }
+    });
+  });
 });
 
 async function createWorkspace(): Promise<string> {

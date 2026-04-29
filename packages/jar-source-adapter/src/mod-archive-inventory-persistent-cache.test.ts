@@ -60,6 +60,45 @@ describe("buildCachedModArchiveInventory", () => {
       }
     });
   });
+
+  it("rebuilds cached inventory when archive fingerprints become stale", async () => {
+    const workspaceRoot = await createWorkspace();
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
+
+    await buildCachedModArchiveInventory({ workspaceRoot, databasePath });
+    await writeContentMod(workspaceRoot, [
+      {
+        name: "data/demo/recipes/plate.json",
+        content: "{\"result\":\"demo:plate\"}\n",
+        compressionMethod: 0
+      }
+    ]);
+
+    const rebuilt = await buildCachedModArchiveInventory({
+      workspaceRoot,
+      databasePath
+    });
+
+    expect(rebuilt).toMatchObject({
+      archiveCount: 1,
+      archives: [
+        {
+          contentSummary: {
+            fileCount: 3,
+            byDomain: {
+              data: 2,
+              assets: 1
+            }
+          }
+        }
+      ],
+      persistentCache: {
+        hit: false,
+        reason: "stale",
+        archiveFingerprintCount: 1
+      }
+    });
+  });
 });
 
 async function createWorkspace(): Promise<string> {
@@ -67,6 +106,15 @@ async function createWorkspace(): Promise<string> {
   tempRoots.push(workspaceRoot);
 
   await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+  await writeContentMod(workspaceRoot);
+
+  return workspaceRoot;
+}
+
+async function writeContentMod(
+  workspaceRoot: string,
+  extraEntries: ZipFixtureEntry[] = []
+): Promise<void> {
   await writeFile(
     join(workspaceRoot, "mods", "content-mod.jar"),
     createZip([
@@ -84,11 +132,10 @@ async function createWorkspace(): Promise<string> {
         name: "assets/demo/lang/en_us.json",
         content: "{\"item.demo.gear\":\"Gear\"}\n",
         compressionMethod: 8
-      }
+      },
+      ...extraEntries
     ])
   );
-
-  return workspaceRoot;
 }
 
 interface ZipFixtureEntry {
