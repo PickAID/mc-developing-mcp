@@ -37,6 +37,8 @@ This consensus is now treated as a project constraint for later implementation w
 ## Resource Support Parity With Datapacks
 `assets/**` is not an optional decoration layer. It is a core Minecraft development surface parallel to `data/**`.
 
+The detailed resource evidence architecture is defined in `docs/superpowers/specs/2026-04-30-resource-evidence-parity-system-spec.md`.
+
 The system must eventually support resource evidence with the same quality bar used for datapacks:
 
 - discover resources from workspace `assets/`, resource-pack roots, mod JARs, nested JARs, and runtime/modpack locations where available;
@@ -263,6 +265,7 @@ Any implementation must include tests for:
 - no Go files or Go module files reappear.
 
 ## References
+- `docs/superpowers/specs/2026-04-30-resource-evidence-parity-system-spec.md`
 - `docs/reviews/2026-04-29-project-delivery-progress.md`
 - `docs/superpowers/specs/2026-04-19-all-typescript-agent-harness-runtime-design.md`
 - `docs/superpowers/specs/2026-04-26-agentic-bottom-layer-services-design.md`
