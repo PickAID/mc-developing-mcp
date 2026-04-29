@@ -31,7 +31,10 @@ import {
   installMdmReleasePackage,
   type McpMdmReleaseInstallResult
 } from "./mdm-release-install.js";
-import { loadMdmDocsRecordsFromStatus } from "./mdm-docs-records.js";
+import {
+  loadMdmDocsResourcesFromStatus,
+  type MdmDocsResourceSummary
+} from "./mdm-docs-records.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -179,7 +182,7 @@ async function executeMcpDevelopTool(
       });
     }
 
-    const mdmDocsRecords = await loadMdmDocsRecordsFromStatus(mdmResources);
+    const mdmDocs = await loadMdmDocsResourcesFromStatus(mdmResources);
     const requestContext =
       await buildMcpServerRequestContextWithServiceProfile(bootstrap, {
         requestText: input.requestText,
@@ -200,7 +203,7 @@ async function executeMcpDevelopTool(
       lspDiagnostics,
       javaDiagnosticsPreparation,
       contextQuery: {
-        docsRecords: mdmDocsRecords
+        docsRecords: mdmDocs.records
       }
     });
 
@@ -213,7 +216,8 @@ async function executeMcpDevelopTool(
       ],
       structuredContent: toStructuredContent(result, {
         mdmResources,
-        mdmReleaseInstall
+        mdmReleaseInstall,
+        mdmDocs: mdmDocs.summary
       })
     };
   } catch (error) {
@@ -328,6 +332,7 @@ function toStructuredContent(
   options: {
     mdmResources?: MdmResourceStatusContext;
     mdmReleaseInstall?: McpMdmReleaseInstallResult;
+    mdmDocs?: MdmDocsResourceSummary;
   }
 ): Record<string, unknown> {
   return buildMcpDevelopStructuredContent(result, options);

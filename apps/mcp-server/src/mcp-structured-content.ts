@@ -1,9 +1,13 @@
 import type { McpServerRequestExecutorResult } from "./request-executor.js";
 import type { MdmResourceStatusContext } from "./mdm-resource-status.js";
 import type { McpMdmReleaseInstallResult } from "./mdm-release-install.js";
+import type { MdmDocsResourceSummary } from "./mdm-docs-records.js";
 
 type RequiredBudgetOptions = Required<
-  Omit<McpDevelopStructuredContentOptions, "mdmResources" | "mdmReleaseInstall">
+  Omit<
+    McpDevelopStructuredContentOptions,
+    "mdmResources" | "mdmReleaseInstall" | "mdmDocs"
+  >
 >;
 
 const DEFAULT_BUDGET: RequiredBudgetOptions = {
@@ -18,6 +22,7 @@ export interface McpDevelopStructuredContentOptions {
   maxDepth?: number;
   mdmResources?: MdmResourceStatusContext;
   mdmReleaseInstall?: McpMdmReleaseInstallResult;
+  mdmDocs?: MdmDocsResourceSummary;
 }
 
 export function buildMcpDevelopStructuredContent(
@@ -58,6 +63,9 @@ export function buildMcpDevelopStructuredContent(
       : undefined,
     mdmReleaseInstall: options.mdmReleaseInstall
       ? compactPayload(options.mdmReleaseInstall, budget).value
+      : undefined,
+    mdmDocs: options.mdmDocs
+      ? compactPayload(options.mdmDocs, budget).value
       : undefined
   };
 
