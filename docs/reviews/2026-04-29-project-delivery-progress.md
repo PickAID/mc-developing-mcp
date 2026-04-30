@@ -6,7 +6,7 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata，显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata，显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Latest implementation state before this progress update: clean at `083d18c`
+- Latest implementation state before this progress update: clean at `3e9a778`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 99 test files and 309 tests
+- Latest full verification: `pnpm test` passed with 100 test files and 312 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -49,7 +49,8 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `e71ec56 feat(harness): route assets-only resources`
 - `e85c430 feat(jar-source): summarize vanilla asset entries`
 - `083d18c feat(jar-source): trace archive resource references`
-- current progress update: explicit resource reference tracing inside selected nested JarJar archives
+- `3e9a778 feat(jar-source): trace nested archive resources`
+- current progress update: counts-only datapack data summaries from selected mod archives
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -77,7 +78,6 @@ Implemented:
 - MCP `@mcpskill/resource-registry` package for local registry reading.
 - MCP runtime cache layout and cache state read/write helpers.
 - MCP resource status summary with `ready`, `missing_required`, `missing_optional`, and `invalid_checksum`.
-- `mc_develop` structured content now includes `mdmResources` when `MDM_SOURCES_ROOT` is configured.
 - `mc_develop` can install an MDM release artifact on request only when `mdmReleaseInstall.downloadPolicy` is explicitly `allowed`.
 - The install flow supports local manifest paths and manifest URLs, verifies SHA-256, and writes runtime cache state.
 - Cached `.mdm-resource.json` docs artifacts are loaded into docs retrieval without treating markdown as runtime content.
@@ -88,6 +88,7 @@ Implemented:
 - Mod archive entry index persists selected asset kinds for GUI textures, GUI sprites, and vanilla asset roots such as blockstates, models, textures, atlases, fonts, items, lang, shaders, sounds, texts, and waypoint styles.
 - MCP inventory payloads expose compact entry index counts/cache state with `limit: 0`, avoiding full path dumps.
 - MCP inventory payloads expose `assetResourceSummary` as counts-only metadata when supported asset resources exist, including `assetEntryCount`, UI-focused count, and per-kind counts.
+- MCP inventory payloads expose `dataResourceSummary` as counts-only metadata when mod archives contain datapack `data/**` content, including recipes, tags, loot tables, worldgen, functions, structures, and generic registry JSON.
 - MCP mod archive content executor can explicitly trace JAR-internal blockstate/model/texture references without extracting archives or reading binary texture content into payloads.
 - MCP mod archive content executor can explicitly trace nested JarJar blockstate/model/texture references through `nested.jar!/assets/...` requests without extracting archives or reading binary texture content into payloads.
 - Loose workspace/resource-pack `assets/**` classification now covers vanilla asset categories including atlases, blockstates, equipment, font, items, lang, models, particles, post_effect, shaders, sounds, texts, textures, waypoint_style, and pack metadata.
@@ -147,6 +148,7 @@ Completed:
 - Explicit mod archive inventory refresh and stale rebuild behavior
 - Counts-only mod archive asset evidence summary for selected resource kinds
 - Counts-only mod archive vanilla asset evidence summary for blockstates, models, textures, lang, and related roots
+- Counts-only mod archive datapack data summary for recipes, tags, loot tables, worldgen, functions, structures, and registry JSON roots
 - Explicit mod archive resource reference trace for selected blockstate/model asset paths
 - Explicit nested JarJar resource reference trace for selected `nested.jar!/assets/...` blockstate/model asset paths
 - Vanilla-aware loose `assets/**` kind classification
@@ -161,7 +163,7 @@ Still incomplete:
 - broader docs retrieval from external resource package indexes
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
-- persistent derived indexes beyond class paths and selected/local asset summaries, such as item/registry/recipe summaries, nested resource reference lookup tables, and crash-triage lookup tables
+- persistent derived indexes beyond class paths and selected/local asset/data summaries, such as detailed item/registry/recipe lookup tables, nested resource reference lookup tables, and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
@@ -177,7 +179,6 @@ Completed:
 - deterministic local release artifact builder
 - local release artifact metadata written into registry
 - CI validation workflow
-- release artifact publication metadata baseline
 
 Still incomplete:
 
@@ -205,7 +206,7 @@ Priority:
 
 1. Expand docs retrieval packages beyond the first required cached docs artifact.
 2. Expand remote/local resource install semantics with confirmation for large/private/generated packages.
-3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset summaries into data, recipes, datapack content, nested resource reference indexes, full resource evidence, and crash-triage lookup tables.
+3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset/data summaries into detailed recipes, datapack content lookup, nested resource reference indexes, full resource evidence, and crash-triage lookup tables.
 4. Improve Gradle workspace model extraction.
 5. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
 6. Add migration analysis for Java/KubeJS/datapack version moves.
@@ -258,3 +259,7 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-30-mod-archive-vanilla-asset-summary-verification.md`
 
 `docs/reviews/2026-04-30-mod-archive-resource-reference-trace-verification.md`
+
+`docs/reviews/2026-04-30-nested-mod-archive-resource-reference-trace-verification.md`
+
+`docs/reviews/2026-04-30-mod-archive-data-summary-verification.md`

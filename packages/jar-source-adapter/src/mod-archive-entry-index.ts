@@ -11,16 +11,24 @@ import {
 } from "./java-source-archive.js";
 import {
   classifyModArchiveAssetKind,
-  createEmptyModArchiveAssetSummary,
-  isUiModArchiveAssetKind,
   parseModArchiveAssetKind,
   type ModArchiveAssetKind,
   type ModArchiveAssetSummary
 } from "./mod-archive-asset-kind.js";
 import {
+  classifyModArchiveDataKind,
+  parseModArchiveDataKind,
+  type ModArchiveDataKind,
+  type ModArchiveDataSummary
+} from "./mod-archive-data-kind.js";
+import {
   initializeModArchiveEntryIndexSchema,
   type ModArchiveEntryIndexDatabase
 } from "./mod-archive-entry-index-schema.js";
+import {
+  createEmptyModArchiveEntryIndexSummaries,
+  readModArchiveEntryIndexSummaries
+} from "./mod-archive-entry-index-summaries.js";
 import { discoverModArchives } from "./mod-archives.js";
 
 export interface ModArchiveIndexedEntry {
@@ -30,6 +38,7 @@ export interface ModArchiveIndexedEntry {
   relativePath: string;
   domain: ArchiveContentDomain;
   assetKind?: ModArchiveAssetKind;
+  dataKind?: ModArchiveDataKind;
   sizeBytes: number;
 }
 
@@ -47,6 +56,7 @@ export interface QueryCachedModArchiveEntriesResult {
   archiveCount: number;
   entryCount: number;
   assetSummary: ModArchiveAssetSummary;
+  dataSummary: ModArchiveDataSummary;
   truncated: boolean;
   cache: ModArchiveEntryIndexCacheMetadata;
 }
@@ -63,7 +73,7 @@ interface IndexedArchive {
   fingerprint: ArchiveFingerprint;
 }
 
-const CACHE_SCHEMA_VERSION = 2;
+const CACHE_SCHEMA_VERSION = 3;
 const DEFAULT_DOMAINS: ArchiveContentDomain[] = [
   "java",
   "data",
@@ -136,6 +146,7 @@ export async function queryCachedModArchiveEntries(input: {
       archiveCount: indexedArchives.length,
       entryCount: query.totalCount,
       assetSummary: query.assetSummary,
+      dataSummary: query.dataSummary,
       truncated: discovered.truncated || query.truncated,
       cache: cacheMetadata
     };
@@ -236,8 +247,8 @@ async function writeArchiveIndex(
     const insertEntry = database.prepare(
       [
         "INSERT INTO mod_archive_entry_index_entries",
-        "(archive_key, source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, asset_kind, size_bytes)",
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        "(archive_key, source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, asset_kind, data_kind, size_bytes)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
       ].join(" ")
     );
     for (const entry of input.entries) {
@@ -249,6 +260,7 @@ async function writeArchiveIndex(
         entry.relativePath,
         entry.domain,
         entry.assetKind ?? "",
+        entry.dataKind ?? "",
         entry.sizeBytes
       );
     }
@@ -287,6 +299,7 @@ function collectIndexableEntries(
         relativePath,
         domain,
         assetKind: classifyModArchiveAssetKind(relativePath),
+        dataKind: classifyModArchiveDataKind(relativePath),
         sizeBytes: entry.uncompressedSize
       }];
     })
@@ -305,13 +318,14 @@ function readIndexedEntries(
   entries: ModArchiveIndexedEntry[];
   totalCount: number;
   assetSummary: ModArchiveAssetSummary;
+  dataSummary: ModArchiveDataSummary;
   truncated: boolean;
 } {
   if (input.archiveKeys.length === 0 || input.domains.length === 0) {
     return {
       entries: [],
       totalCount: 0,
-      assetSummary: createEmptyModArchiveAssetSummary(),
+      ...createEmptyModArchiveEntryIndexSummaries(),
       truncated: false
     };
   }
@@ -340,7 +354,7 @@ function readIndexedEntries(
   const rows = database
     .prepare(
       [
-        "SELECT source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, asset_kind, size_bytes",
+        "SELECT source_archive, archive_relative_path, embedded_archive_path, relative_path, domain, asset_kind, data_kind, size_bytes",
         "FROM mod_archive_entry_index_entries",
         filterSql,
         "ORDER BY archive_relative_path, embedded_archive_path, relative_path",
@@ -353,7 +367,7 @@ function readIndexedEntries(
   return {
     entries,
     totalCount: Number(countRow?.total_count ?? 0),
-    assetSummary: readAssetSummary(database, filterSql, filterParameters),
+    ...readModArchiveEntryIndexSummaries(database, filterSql, filterParameters),
     truncated: rows.length > input.limit
   };
 }
@@ -371,44 +385,8 @@ function rowToIndexedEntry(row: Record<string, unknown>): ModArchiveIndexedEntry
     relativePath: String(row.relative_path),
     domain: row.domain as ArchiveContentDomain,
     assetKind: parseModArchiveAssetKind(row.asset_kind),
+    dataKind: parseModArchiveDataKind(row.data_kind),
     sizeBytes: Number(row.size_bytes)
-  };
-}
-
-function readAssetSummary(
-  database: ModArchiveEntryIndexDatabase,
-  filterSql: string,
-  filterParameters: string[]
-): ModArchiveAssetSummary {
-  const rows = database
-    .prepare(
-      [
-        "SELECT asset_kind, COUNT(*) AS kind_count",
-        "FROM mod_archive_entry_index_entries",
-        filterSql,
-        "AND asset_kind != ''",
-        "GROUP BY asset_kind",
-        "ORDER BY asset_kind"
-      ].join(" ")
-    )
-    .all(...filterParameters);
-  const byKind: ModArchiveAssetSummary["byKind"] = {};
-
-  for (const row of rows) {
-    const assetKind = parseModArchiveAssetKind(row.asset_kind);
-    if (assetKind) {
-      byKind[assetKind] = Number(row.kind_count);
-    }
-  }
-
-  const entries = Object.entries(byKind) as Array<[ModArchiveAssetKind, number]>;
-
-  return {
-    assetEntryCount: entries.reduce((sum, [, count]) => sum + count, 0),
-    uiAssetCount: entries
-      .filter(([assetKind]) => isUiModArchiveAssetKind(assetKind))
-      .reduce((sum, [, count]) => sum + count, 0),
-    byKind
   };
 }
 

@@ -32,14 +32,13 @@ export function initializeModArchiveEntryIndexSchema(
       relative_path TEXT NOT NULL,
       domain TEXT NOT NULL,
       asset_kind TEXT NOT NULL DEFAULT '',
+      data_kind TEXT NOT NULL DEFAULT '',
       size_bytes INTEGER NOT NULL
     );
 
     CREATE INDEX IF NOT EXISTS idx_mod_archive_entry_index_entries_lookup
       ON mod_archive_entry_index_entries(archive_key, domain, relative_path);
 
-    CREATE INDEX IF NOT EXISTS idx_mod_archive_entry_index_entries_asset_lookup
-      ON mod_archive_entry_index_entries(archive_key, domain, asset_kind, relative_path);
   `);
 
   if (!hasColumn(database, "mod_archive_entry_index_entries", "asset_kind")) {
@@ -47,6 +46,18 @@ export function initializeModArchiveEntryIndexSchema(
       "ALTER TABLE mod_archive_entry_index_entries ADD COLUMN asset_kind TEXT NOT NULL DEFAULT ''"
     );
   }
+  if (!hasColumn(database, "mod_archive_entry_index_entries", "data_kind")) {
+    database.exec(
+      "ALTER TABLE mod_archive_entry_index_entries ADD COLUMN data_kind TEXT NOT NULL DEFAULT ''"
+    );
+  }
+  database.exec(`
+    CREATE INDEX IF NOT EXISTS idx_mod_archive_entry_index_entries_asset_lookup
+      ON mod_archive_entry_index_entries(archive_key, domain, asset_kind, relative_path);
+
+    CREATE INDEX IF NOT EXISTS idx_mod_archive_entry_index_entries_data_lookup
+      ON mod_archive_entry_index_entries(archive_key, domain, data_kind, relative_path);
+  `);
 }
 
 function hasColumn(
