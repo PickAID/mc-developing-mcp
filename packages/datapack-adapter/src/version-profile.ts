@@ -26,10 +26,17 @@ export interface DatapackVersionProfile {
   packFormatStatus: DatapackPackFormatStatus;
   minecraftVersion?: string;
   packFormat?: number;
+  supportedFormats?: DatapackSupportedFormats;
+  compatibleMinecraftVersions: string[];
   knownDataKinds: DataKind[];
   semanticValidation: "not_available";
   migrationAnalysis: "not_available";
   notes: string[];
+}
+
+export interface DatapackSupportedFormats {
+  minInclusive: number;
+  maxInclusive: number;
 }
 
 export interface DatapackVersionProfileOptions {
@@ -43,6 +50,11 @@ interface KnownVersionProfile {
   knownDataKinds: DataKind[];
 }
 
+interface PackMetadataEvidence {
+  packFormat?: number;
+  supportedFormats?: DatapackSupportedFormats;
+}
+
 const KNOWN_VERSION_PROFILES: KnownVersionProfile[] = [
   createKnownProfile("1.20.1", 15),
   createKnownProfile("1.20.6", 26),
@@ -53,7 +65,8 @@ export async function resolveDatapackVersionProfile(
   root: string,
   options: DatapackVersionProfileOptions = {}
 ): Promise<DatapackVersionProfile> {
-  const packFormat = await readSinglePackFormat(root);
+  const packMetadata = await readPackMetadataEvidence(root);
+  const packFormat = packMetadata.packFormat;
   const versionFromPack = packFormat
     ? minecraftVersionFromPackFormat(packFormat)
     : undefined;
@@ -72,6 +85,7 @@ export async function resolveDatapackVersionProfile(
       confidence: "unknown",
       minecraftVersion: runtimeVersion,
       packFormat,
+      supportedFormats: packMetadata.supportedFormats,
       packFormatStatus: "conflict",
       knownProfile,
       note: `pack.mcmeta maps to ${versionFromPack}, runtime maps to ${runtimeVersion}`
@@ -84,6 +98,7 @@ export async function resolveDatapackVersionProfile(
       confidence: strongestConfidence(options.runtimeConfidence, "medium"),
       minecraftVersion,
       packFormat,
+      supportedFormats: packMetadata.supportedFormats,
       packFormatStatus: "known",
       knownProfile
     });
@@ -95,6 +110,7 @@ export async function resolveDatapackVersionProfile(
       confidence: versionFromPack ? "medium" : "low",
       minecraftVersion,
       packFormat,
+      supportedFormats: packMetadata.supportedFormats,
       packFormatStatus: versionFromPack ? "known" : "unknown",
       knownProfile
     });
@@ -124,6 +140,7 @@ function createProfile(input: {
   confidence: DatapackProfileConfidence;
   minecraftVersion?: string;
   packFormat?: number;
+  supportedFormats?: DatapackSupportedFormats;
   packFormatStatus: DatapackPackFormatStatus;
   knownProfile?: KnownVersionProfile;
   note?: string;
@@ -142,6 +159,8 @@ function createProfile(input: {
     packFormatStatus: input.packFormatStatus,
     minecraftVersion: input.minecraftVersion,
     packFormat: input.packFormat ?? input.knownProfile?.packFormat,
+    supportedFormats: input.supportedFormats,
+    compatibleMinecraftVersions: compatibleMinecraftVersions(input.supportedFormats),
     knownDataKinds: input.knownProfile?.knownDataKinds ?? [],
     semanticValidation: "not_available",
     migrationAnalysis: "not_available",
@@ -149,30 +168,43 @@ function createProfile(input: {
   };
 }
 
-async function readSinglePackFormat(root: string): Promise<number | undefined> {
+async function readPackMetadataEvidence(root: string): Promise<PackMetadataEvidence> {
   const roots = await discoverRoots(root);
   const formats = new Set<number>();
+  const ranges = new Map<string, DatapackSupportedFormats>();
 
   for (const contentRoot of roots) {
-    const packFormat = await readPackFormat(join(contentRoot.absolutePath, "pack.mcmeta"));
-    if (packFormat !== undefined) {
-      formats.add(packFormat);
+    const metadata = await readPackMetadata(join(contentRoot.absolutePath, "pack.mcmeta"));
+    if (metadata.packFormat !== undefined) {
+      formats.add(metadata.packFormat);
+    }
+    if (metadata.supportedFormats !== undefined) {
+      ranges.set(serializeRange(metadata.supportedFormats), metadata.supportedFormats);
     }
   }
 
-  return formats.size === 1 ? [...formats][0] : undefined;
+  return {
+    packFormat: formats.size === 1 ? [...formats][0] : undefined,
+    supportedFormats: ranges.size === 1 ? [...ranges.values()][0] : undefined
+  };
 }
 
-async function readPackFormat(path: string): Promise<number | undefined> {
+async function readPackMetadata(path: string): Promise<PackMetadataEvidence> {
   try {
     const payload = JSON.parse(await readFile(path, "utf8")) as {
-      pack?: { pack_format?: unknown };
+      pack?: {
+        pack_format?: unknown;
+        supported_formats?: unknown;
+      };
     };
-    return typeof payload.pack?.pack_format === "number"
-      ? payload.pack.pack_format
-      : undefined;
+    return {
+      packFormat: typeof payload.pack?.pack_format === "number"
+        ? payload.pack.pack_format
+        : undefined,
+      supportedFormats: parseSupportedFormats(payload.pack?.supported_formats)
+    };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -188,6 +220,60 @@ function minecraftVersionFromPackFormat(packFormat: number): string | undefined 
   return KNOWN_VERSION_PROFILES.find(
     (profile) => profile.packFormat === packFormat
   )?.minecraftVersion;
+}
+
+function compatibleMinecraftVersions(
+  supportedFormats: DatapackSupportedFormats | undefined
+): string[] {
+  if (!supportedFormats) {
+    return [];
+  }
+  return KNOWN_VERSION_PROFILES
+    .filter(
+      (profile) =>
+        profile.packFormat >= supportedFormats.minInclusive &&
+        profile.packFormat <= supportedFormats.maxInclusive
+    )
+    .map((profile) => profile.minecraftVersion);
+}
+
+function parseSupportedFormats(
+  value: unknown
+): DatapackSupportedFormats | undefined {
+  if (typeof value === "number") {
+    return { minInclusive: value, maxInclusive: value };
+  }
+  if (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    typeof value[0] === "number" &&
+    typeof value[1] === "number"
+  ) {
+    return normalizeRange(value[0], value[1]);
+  }
+  if (isRecord(value)) {
+    const min = value.min_inclusive;
+    const max = value.max_inclusive;
+    return typeof min === "number" && typeof max === "number"
+      ? normalizeRange(min, max)
+      : undefined;
+  }
+  return undefined;
+}
+
+function normalizeRange(left: number, right: number): DatapackSupportedFormats {
+  return {
+    minInclusive: Math.min(left, right),
+    maxInclusive: Math.max(left, right)
+  };
+}
+
+function serializeRange(range: DatapackSupportedFormats): string {
+  return `${range.minInclusive}:${range.maxInclusive}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function supportLevel(

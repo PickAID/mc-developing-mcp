@@ -69,6 +69,26 @@ describe("resolveDatapackVersionProfile", () => {
       semanticValidation: "not_available"
     });
   });
+
+  it("reports supported pack format ranges from modern pack metadata", async () => {
+    const root = await createRoot("mcpskill-profile-range-");
+
+    await writePack(root, 15, [15, 34]);
+
+    await expect(resolveDatapackVersionProfile(root)).resolves.toMatchObject({
+      source: "pack_mcmeta",
+      confidence: "medium",
+      supportLevel: "known_profile",
+      packFormatStatus: "known",
+      minecraftVersion: "1.20.1",
+      packFormat: 15,
+      supportedFormats: {
+        minInclusive: 15,
+        maxInclusive: 34
+      },
+      compatibleMinecraftVersions: ["1.20.1", "1.20.6", "1.21.1"]
+    });
+  });
 });
 
 async function createRoot(prefix: string): Promise<string> {
@@ -77,11 +97,20 @@ async function createRoot(prefix: string): Promise<string> {
   return root;
 }
 
-async function writePack(root: string, packFormat: number): Promise<void> {
+async function writePack(
+  root: string,
+  packFormat: number,
+  supportedFormats?: [number, number]
+): Promise<void> {
   await mkdir(join(root, "data", "demo", "recipes"), { recursive: true });
   await writeFile(
     join(root, "pack.mcmeta"),
-    JSON.stringify({ pack: { pack_format: packFormat } })
+    JSON.stringify({
+      pack: {
+        pack_format: packFormat,
+        ...(supportedFormats ? { supported_formats: supportedFormats } : {})
+      }
+    })
   );
   await writeFile(join(root, "data", "demo", "recipes", "gear.json"), "{}\n");
 }

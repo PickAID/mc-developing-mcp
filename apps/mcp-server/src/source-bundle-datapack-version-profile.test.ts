@@ -72,6 +72,66 @@ describe("source.bundle datapack version profile", () => {
       }
     });
   });
+
+  it("includes supported pack format ranges in compact datapack profiles", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-datapack-range-");
+
+    await writeText(
+      join(workspaceRoot, "pack.mcmeta"),
+      JSON.stringify({
+        pack: {
+          pack_format: 15,
+          supported_formats: [15, 34]
+        }
+      })
+    );
+    await writeText(join(workspaceRoot, "data", "demo", "recipes", "gear.json"), "{}\n");
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "List local datapack evidence and supported pack formats."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    await expect(
+      executor({
+        candidate,
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      payload: {
+        datapackVersionProfile: {
+          tokenPolicy: "compact_profile",
+          packFormat: 15,
+          supportedFormats: {
+            minInclusive: 15,
+            maxInclusive: 34
+          },
+          compatibleMinecraftVersions: ["1.20.1", "1.20.6", "1.21.1"]
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

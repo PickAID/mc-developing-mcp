@@ -32,6 +32,7 @@ export type {
 export type {
   DatapackPackFormatStatus,
   DatapackProfileConfidence,
+  DatapackSupportedFormats,
   DatapackVersionProfile,
   DatapackVersionProfileOptions,
   DatapackVersionProfileSource,
