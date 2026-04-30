@@ -8,6 +8,9 @@ export type DataKind =
   | "advancements"
   | "predicates"
   | "damage_type"
+  | "item_modifiers"
+  | "registry"
+  | "structures"
   | "worldgen"
   | "other";
 

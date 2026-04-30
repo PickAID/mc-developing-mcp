@@ -6,6 +6,7 @@ export {
   summarizeDatapackFiles
 } from "./files.js";
 export { traceDatapackResourceReferences } from "./resource-references.js";
+export { resolveDatapackVersionProfile } from "./version-profile.js";
 export type {
   AssetKind,
   DataKind,
@@ -28,3 +29,11 @@ export type {
   DatapackSkippedFile,
   DatapackSkipReason
 } from "./types.js";
+export type {
+  DatapackPackFormatStatus,
+  DatapackProfileConfidence,
+  DatapackVersionProfile,
+  DatapackVersionProfileOptions,
+  DatapackVersionProfileSource,
+  DatapackVersionSupportLevel
+} from "./version-profile.js";

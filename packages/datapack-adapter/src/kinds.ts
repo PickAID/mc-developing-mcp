@@ -8,6 +8,8 @@ const DATA_KINDS = new Set<DataKind>([
   "advancements",
   "predicates",
   "damage_type",
+  "item_modifiers",
+  "structures",
   "worldgen"
 ]);
 
@@ -31,8 +33,11 @@ const ASSET_KINDS = new Set<AssetKind>([
 
 export function classifyKind(domain: DatapackDomain, segment: string | undefined): DatapackKind {
   if (domain === "data") {
-    return segment !== undefined && DATA_KINDS.has(segment as DataKind)
-      ? (segment as DataKind)
+    if (segment !== undefined && DATA_KINDS.has(segment as DataKind)) {
+      return segment as DataKind;
+    }
+    return segment !== undefined && segment.endsWith(".json")
+      ? "registry"
       : "other";
   }
 

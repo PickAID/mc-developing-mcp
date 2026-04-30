@@ -2,6 +2,7 @@ import {
   discoverDatapackContent,
   listDatapackFiles,
   readDatapackFile,
+  resolveDatapackVersionProfile,
   searchDatapackFiles,
   summarizeDatapackFiles,
   traceDatapackResourceReferences,
@@ -65,6 +66,16 @@ export async function executeMcpServerDatapackFiles(
     ...DATAPACK_BUDGET
   });
   const compactResourceSummary = toCompactResourceSummary(resourceSummary);
+  const datapackVersionProfile = toCompactVersionProfile(
+    await resolveDatapackVersionProfile(workspaceRoot, {
+      minecraftVersion:
+        input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+          .minecraftVersion,
+      runtimeConfidence:
+        input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+          .confidence
+    })
+  );
   const resourceReferenceTrace = await traceRequestedResourceReferences({
     workspaceRoot,
     requestText,
@@ -86,6 +97,7 @@ export async function executeMcpServerDatapackFiles(
         queries,
         requestedPaths,
         discovery,
+        datapackVersionProfile,
         resourceSummary: compactResourceSummary,
         files: listed.entries,
         skipped: listed.skipped,
@@ -107,6 +119,7 @@ export async function executeMcpServerDatapackFiles(
       queries,
       requestedPaths,
       discovery,
+      datapackVersionProfile,
       resourceSummary: compactResourceSummary,
       reads: reads.files,
       matches: search.matches,
@@ -152,6 +165,24 @@ function toCompactResourceSummary(summary: DatapackFileSummary) {
     byNamespace: summary.byNamespace,
     skippedCount: summary.skipped.length,
     truncated: summary.truncated
+  };
+}
+
+function toCompactVersionProfile(
+  profile: Awaited<ReturnType<typeof resolveDatapackVersionProfile>>
+) {
+  return {
+    tokenPolicy: "compact_profile" as const,
+    source: profile.source,
+    confidence: profile.confidence,
+    supportLevel: profile.supportLevel,
+    packFormatStatus: profile.packFormatStatus,
+    minecraftVersion: profile.minecraftVersion,
+    packFormat: profile.packFormat,
+    knownDataKinds: profile.knownDataKinds,
+    semanticValidation: profile.semanticValidation,
+    migrationAnalysis: profile.migrationAnalysis,
+    notes: profile.notes
   };
 }
 
