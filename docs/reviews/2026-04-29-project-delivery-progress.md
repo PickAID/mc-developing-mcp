@@ -1,12 +1,12 @@
 # Project Delivery Progress
-Date: 2026-04-30
+Date: 2026-05-01
 Author: m1hono
 Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `mdm-resources`
 
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata 和 compact `datapackVersionProfile`，并能从 `supported_formats` 报告兼容 pack format 范围和已知 MC 版本映射。datapack profile catalog 已修正为官方 `server.jar!/version.json` 的 datapack pack format，覆盖 release `1.18.2` 到 `26.1.2`，并支持 1.21.10+ 的 minor format。显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata 和 compact `datapackVersionProfile`，并能从 `supported_formats` 报告兼容 pack format 范围和已知 MC 版本映射。datapack profile catalog 已修正为官方 `server.jar!/version.json` 的 datapack pack format，覆盖 release `1.18.2` 到 `26.1.2`，并支持 1.21.10+ 的 minor format。source package manager 现在也能在用户确认后从 Mojang/Piston 风格 manifest 下载官方 archive，并生成只含 `data/**` 的 vanilla datapack runtime package，不把 Mojang 内容存进仓库。显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -17,7 +17,7 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Remote: `origin/skill-update`
 - Latest implementation state before this progress update: clean at `953c4f9`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 103 test files and 322 tests
+- Latest full verification: `pnpm test` passed with 103 test files and 324 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -51,7 +51,7 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `083d18c feat(jar-source): trace archive resource references`
 - `3e9a778 feat(jar-source): trace nested archive resources`
 - `953c4f9 feat(jar-source): summarize archive data resources`
-- current progress update: official datapack release profile catalog from `1.18.2` through `26.1.2`
+- current progress update: user-confirmed generated vanilla datapack packages from Mojang/Piston archives
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -101,6 +101,9 @@ Implemented:
 - Datapack profile catalog covers release versions from `1.18.2` through `26.1.2`, including `1.21.10+` minor data formats such as `88.0`, `94.1`, and `101.1`.
 - MCP datapack/resource executor now exposes `packFormatId` and structured `packFormatVersion` to avoid losing minor format information.
 - `pack.mcmeta` parsing now supports new-style `min_format` and `max_format` ranges in addition to `pack_format` and `supported_formats`.
+- Source package manager can now represent `artifactType: "datapack"` packages.
+- Source package manager can now generate vanilla datapack packages by extracting only `data/**` from local official archives.
+- Source package manager can now generate vanilla datapack packages from Mojang/Piston-style manifests through a remote archive recipe, still gated by explicit package confirmation.
 - Loose resource reference tracing now resolves blockstate model references, model parent references, model texture references, and missing targets without reading binary texture content.
 - MCP datapack/resource executor now includes compact `resourceReferenceTrace` metadata only for explicit trace/reference requests that name traceable `assets/**` paths.
 - Workspace detector now treats root-level and resource-root `assets/**` as datapack/resource evidence even without `pack.mcmeta` or `data/**`.
@@ -163,6 +166,7 @@ Completed:
 - Compact local datapack version profile metadata with known profile, unknown version, unresolved, and conflict states
 - Compact local datapack supported format range metadata with known compatible Minecraft version mapping
 - Official datapack release profile catalog from `1.18.2` through `26.1.2`, including minor pack formats
+- User-confirmed generated vanilla datapack runtime packages from official archive metadata
 - Explicit loose resource reference trace for blockstate/model/texture chains
 - Assets-only resource-pack routing without `pack.mcmeta`
 - Runtime guidance boundary guard for resource/UI scope
@@ -171,6 +175,8 @@ Still incomplete:
 
 - published release workflow and package retention policy
 - broader docs retrieval from external resource package indexes
+- MCP-side UX for generated official vanilla datapack package install/read/status
+- Vanilla assets package generation for `assets/**`, separate from datapack package generation
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
 - persistent derived indexes beyond class paths and selected/local asset/data summaries, such as detailed item/registry/recipe lookup tables, nested resource reference lookup tables, and crash-triage lookup tables
@@ -265,6 +271,8 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-30-resource-reference-trace-verification.md`
 
 `docs/reviews/2026-04-30-datapack-official-version-catalog-verification.md`
+
+`docs/reviews/2026-05-01-vanilla-datapack-package-generation-verification.md`
 
 `docs/reviews/2026-04-30-assets-only-resource-route-verification.md`
 

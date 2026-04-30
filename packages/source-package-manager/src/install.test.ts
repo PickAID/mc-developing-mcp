@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -14,7 +14,10 @@ import { writeSourcePackageConfirmation } from "./confirmation.js";
 import { buildLocalSourcePackageRecipeExecutor } from "./executor.js";
 import { ensureSourcePackageInstalled } from "./install.js";
 import { readSourcePackageInstallState } from "./state.js";
-import { buildVanillaSourcePackCopyRecipe } from "./vanilla.js";
+import {
+  buildMojangVanillaDataPackRecipeProvider,
+  buildVanillaSourcePackCopyRecipe
+} from "./vanilla.js";
 
 const sourcePackage: SourcePackageCoordinate = {
   packageId: "minecraft-1.20.1-source-pack-named",
@@ -28,6 +31,21 @@ const confirmation: SourcePackageConfirmation = {
   ...sourcePackage,
   scope: "package-version",
   approvedAt: "2026-04-24T02:00:00Z",
+  source: "explicit-user-confirmation"
+};
+
+const vanillaDataPackPackage: SourcePackageCoordinate = {
+  packageId: "minecraft-26.1.2-vanilla-datapack-official",
+  namespace: "minecraft",
+  minecraftVersion: "26.1.2",
+  artifactType: "datapack",
+  variant: "official"
+};
+
+const vanillaDataPackConfirmation: SourcePackageConfirmation = {
+  ...vanillaDataPackPackage,
+  scope: "package-version",
+  approvedAt: "2026-05-01T00:00:00Z",
   source: "explicit-user-confirmation"
 };
 
@@ -126,6 +144,82 @@ describe("ensureSourcePackageInstalled", () => {
       status: "ready",
       package: sourcePackage
     });
+  });
+
+  it("installs a confirmed vanilla datapack package through a Mojang manifest provider", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-datapack-package-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const serverJarUrl = dataUrl(
+      "application/octet-stream",
+      createZip([
+        {
+          name: "data/minecraft/recipe/stone.json",
+          content: "{\"type\":\"minecraft:crafting_shapeless\"}\n"
+        },
+        {
+          name: "assets/minecraft/lang/en_us.json",
+          content: "{\"item.minecraft.stone\":\"Stone\"}\n"
+        }
+      ])
+    );
+    const versionUrl = jsonDataUrl({
+      downloads: {
+        server: {
+          url: serverJarUrl
+        }
+      }
+    });
+    const versionManifestUrl = jsonDataUrl({
+      versions: [
+        {
+          id: "26.1.2",
+          url: versionUrl
+        }
+      ]
+    });
+
+    await writeSourcePackageConfirmation(
+      runtimeLayout,
+      vanillaDataPackConfirmation
+    );
+
+    await expect(
+      ensureSourcePackageInstalled({
+        runtimeLayout,
+        sourcePackage: vanillaDataPackPackage,
+        recipes: {},
+        recipeProvider: buildMojangVanillaDataPackRecipeProvider({
+          versionManifestUrl
+        }),
+        executeRecipe: buildLocalSourcePackageRecipeExecutor()
+      })
+    ).resolves.toMatchObject({
+      status: "ready",
+      package: vanillaDataPackPackage
+    });
+
+    const state = await readSourcePackageInstallState(
+      runtimeLayout,
+      vanillaDataPackPackage
+    );
+
+    await expect(
+      readFile(
+        join(
+          state?.installPath ?? "",
+          "data",
+          "minecraft",
+          "recipe",
+          "stone.json"
+        ),
+        "utf-8"
+      )
+    ).resolves.toContain("crafting_shapeless");
+    await expect(
+      readFile(
+        join(state?.installPath ?? "", "assets", "minecraft", "lang", "en_us.json")
+      )
+    ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("does not rerun the recipe when a ready install state already exists", async () => {
@@ -247,4 +341,61 @@ function createRuntimeLayout(runtimeRoot: string): ManagedRuntimeLayout {
     installs: join(runtimeRoot, "installs"),
     locks: join(runtimeRoot, "locks")
   };
+}
+
+interface ZipFixtureEntry {
+  name: string;
+  content: string;
+}
+
+function jsonDataUrl(payload: unknown): string {
+  return dataUrl("application/json", Buffer.from(JSON.stringify(payload)));
+}
+
+function dataUrl(contentType: string, content: Buffer): string {
+  return `data:${contentType};base64,${content.toString("base64")}`;
+}
+
+function createZip(entries: ZipFixtureEntry[]): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let offset = 0;
+
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = Buffer.from(entry.content);
+    const localHeader = Buffer.alloc(30);
+    const centralHeader = Buffer.alloc(46);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt32LE(content.length, 18);
+    localHeader.writeUInt32LE(content.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt32LE(content.length, 20);
+    centralHeader.writeUInt32LE(content.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(offset, 42);
+
+    localParts.push(localHeader, name, content);
+    centralParts.push(centralHeader, name);
+    offset += localHeader.length + name.length + content.length;
+  }
+
+  const eocd = Buffer.alloc(22);
+
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(
+    centralParts.reduce((total, part) => total + part.length, 0),
+    12
+  );
+  eocd.writeUInt32LE(offset, 16);
+
+  return Buffer.concat([...localParts, ...centralParts, eocd]);
 }

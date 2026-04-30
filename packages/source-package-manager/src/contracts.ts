@@ -4,6 +4,7 @@ import type {
   SourcePackageId,
   SourcePackageManifest
 } from "@mcpskill/shared-types";
+import type { ArchiveContentDomain } from "@mcpskill/jar-source-adapter";
 
 export type SourcePackageRecipeStep =
   | {
@@ -13,6 +14,17 @@ export type SourcePackageRecipeStep =
   | {
       kind: "extract_java_sources_zip";
       sourceZip: string;
+    }
+  | {
+      kind: "extract_archive_content";
+      sourceArchive: string;
+      domains: ArchiveContentDomain[];
+    }
+  | {
+      kind: "extract_remote_archive_content";
+      sourceUrl: string;
+      downloadFileName: string;
+      domains: ArchiveContentDomain[];
     }
   | {
       kind: "build_source_index";

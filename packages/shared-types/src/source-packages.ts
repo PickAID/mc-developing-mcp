@@ -8,7 +8,10 @@ export type SourcePackageNamespace =
   | "quilt"
   | `mod/${string}`;
 
-export type SourcePackageArtifactType = "source-pack" | "source-index";
+export type SourcePackageArtifactType =
+  | "source-pack"
+  | "source-index"
+  | "datapack";
 
 export type SourcePackageVariant = "named" | "official" | "intermediary";
 

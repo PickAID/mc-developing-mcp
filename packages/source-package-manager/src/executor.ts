@@ -1,7 +1,10 @@
-import { copyFile, mkdir, readdir, rm } from "node:fs/promises";
+import { copyFile, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 
-import { extractJavaSourcesArchive } from "@mcpskill/jar-source-adapter";
+import {
+  extractArchiveContent,
+  extractJavaSourcesArchive
+} from "@mcpskill/jar-source-adapter";
 import { buildSourceIndex } from "@mcpskill/source-index";
 
 import { resolveSourcePackagePaths } from "./layout.js";
@@ -46,6 +49,30 @@ export async function executeLocalSourcePackageRecipe(
           })
         ).fileCount;
         break;
+      case "extract_archive_content":
+        fileCount += (
+          await extractArchiveContent({
+            sourceArchive: step.sourceArchive,
+            targetRoot: installPath,
+            domains: step.domains
+          })
+        ).fileCount;
+        break;
+      case "extract_remote_archive_content": {
+        const sourceArchive = await downloadRecipeArchive({
+          runtimeLayout: input.runtimeLayout,
+          sourceUrl: step.sourceUrl,
+          downloadFileName: step.downloadFileName
+        });
+        fileCount += (
+          await extractArchiveContent({
+            sourceArchive,
+            targetRoot: installPath,
+            domains: step.domains
+          })
+        ).fileCount;
+        break;
+      }
       case "build_source_index": {
         const indexResult = await buildSourceIndex({
           sourceRoot: installPath,
@@ -83,6 +110,28 @@ export async function executeLocalSourcePackageRecipe(
     fileCount,
     sourceIndex
   };
+}
+
+async function downloadRecipeArchive(input: {
+  runtimeLayout: SourcePackageRecipeExecutionInput["runtimeLayout"];
+  sourceUrl: string;
+  downloadFileName: string;
+}): Promise<string> {
+  const response = await fetch(input.sourceUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to download source package archive: HTTP ${response.status}`
+    );
+  }
+
+  const downloadsDir = join(input.runtimeLayout.downloads, "source-packages");
+  const archivePath = join(downloadsDir, input.downloadFileName);
+
+  await mkdir(downloadsDir, { recursive: true });
+  await writeFile(archivePath, Buffer.from(await response.arrayBuffer()));
+
+  return archivePath;
 }
 
 async function copyTree(sourceRoot: string, installPath: string): Promise<number> {

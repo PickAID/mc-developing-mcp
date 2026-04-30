@@ -10,6 +10,7 @@ import { querySourceIndex } from "@mcpskill/source-index";
 import { buildLocalSourcePackageRecipeExecutor } from "./executor.js";
 import { readSourcePackageManifest } from "./manifest.js";
 import {
+  buildVanillaDataPackArchiveRecipe,
   buildVanillaSourcePackCopyRecipe,
   buildVanillaSourcePackZipRecipe
 } from "./vanilla.js";
@@ -110,6 +111,58 @@ describe("buildLocalSourcePackageRecipeExecutor", () => {
       path: "net/minecraft/world/item/ItemStack.java"
     });
   });
+
+  it("generates a vanilla datapack package from official jar data entries only", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-datapack-package-"));
+    const serverJar = join(runtimeRoot, "minecraft-server.jar");
+    const executor = buildLocalSourcePackageRecipeExecutor();
+    const recipe = buildVanillaDataPackArchiveRecipe({
+      minecraftVersion: "26.1.2",
+      sourceArchive: serverJar
+    });
+
+    await writeFile(
+      serverJar,
+      createZip([
+        {
+          name: "data/minecraft/recipe/stone.json",
+          content: "{\"type\":\"minecraft:crafting_shapeless\"}\n"
+        },
+        {
+          name: "assets/minecraft/lang/en_us.json",
+          content: "{\"item.minecraft.stone\":\"Stone\"}\n"
+        },
+        {
+          name: "net/minecraft/server/Main.class",
+          content: "\u0000class"
+        }
+      ])
+    );
+
+    const result = await executor({
+      runtimeLayout: createRuntimeLayout(runtimeRoot),
+      recipe
+    });
+
+    await expect(
+      readFile(
+        join(result.installPath, "data", "minecraft", "recipe", "stone.json"),
+        "utf-8"
+      )
+    ).resolves.toContain("crafting_shapeless");
+    await expect(
+      readFile(join(result.installPath, "assets", "minecraft", "lang", "en_us.json"))
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(readSourcePackageManifest(result.installPath)).resolves.toMatchObject({
+      packageId: "minecraft-26.1.2-vanilla-datapack-official",
+      artifactType: "datapack",
+      variant: "official",
+      provenance: "mojang-official-archive",
+      stepKinds: ["extract_archive_content", "write_package_manifest"],
+      fileCount: 1
+    });
+    expect(result.fileCount).toBe(1);
+  });
 });
 
 function createRuntimeLayout(runtimeRoot: string): ManagedRuntimeLayout {
@@ -123,37 +176,64 @@ function createRuntimeLayout(runtimeRoot: string): ManagedRuntimeLayout {
 
 async function createStoredSourceZip(runtimeRoot: string): Promise<string> {
   const sourceZip = join(runtimeRoot, "minecraft-sources.jar");
-  const name = Buffer.from("net/minecraft/world/item/ItemStack.java");
-  const content = Buffer.from(
-    "package net.minecraft.world.item;\npublic class ItemStack {}\n"
-  );
-  const localHeader = Buffer.alloc(30);
-  const centralHeader = Buffer.alloc(46);
-  const eocd = Buffer.alloc(22);
-
-  localHeader.writeUInt32LE(0x04034b50, 0);
-  localHeader.writeUInt16LE(20, 4);
-  localHeader.writeUInt32LE(content.length, 18);
-  localHeader.writeUInt32LE(content.length, 22);
-  localHeader.writeUInt16LE(name.length, 26);
-
-  centralHeader.writeUInt32LE(0x02014b50, 0);
-  centralHeader.writeUInt16LE(20, 4);
-  centralHeader.writeUInt16LE(20, 6);
-  centralHeader.writeUInt32LE(content.length, 20);
-  centralHeader.writeUInt32LE(content.length, 24);
-  centralHeader.writeUInt16LE(name.length, 28);
-
-  eocd.writeUInt32LE(0x06054b50, 0);
-  eocd.writeUInt16LE(1, 8);
-  eocd.writeUInt16LE(1, 10);
-  eocd.writeUInt32LE(centralHeader.length + name.length, 12);
-  eocd.writeUInt32LE(localHeader.length + name.length + content.length, 16);
-
   await writeFile(
     sourceZip,
-    Buffer.concat([localHeader, name, content, centralHeader, name, eocd])
+    createZip([
+      {
+        name: "net/minecraft/world/item/ItemStack.java",
+        content: "package net.minecraft.world.item;\npublic class ItemStack {}\n"
+      }
+    ])
   );
 
   return sourceZip;
+}
+
+interface ZipFixtureEntry {
+  name: string;
+  content: string;
+}
+
+function createZip(entries: ZipFixtureEntry[]): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let offset = 0;
+
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = Buffer.from(entry.content);
+    const localHeader = Buffer.alloc(30);
+    const centralHeader = Buffer.alloc(46);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt32LE(content.length, 18);
+    localHeader.writeUInt32LE(content.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt32LE(content.length, 20);
+    centralHeader.writeUInt32LE(content.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(offset, 42);
+
+    localParts.push(localHeader, name, content);
+    centralParts.push(centralHeader, name);
+    offset += localHeader.length + name.length + content.length;
+  }
+
+  const eocd = Buffer.alloc(22);
+
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(
+    centralParts.reduce((total, part) => total + part.length, 0),
+    12
+  );
+  eocd.writeUInt32LE(offset, 16);
+
+  return Buffer.concat([...localParts, ...centralParts, eocd]);
 }

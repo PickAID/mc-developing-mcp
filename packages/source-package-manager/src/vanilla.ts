@@ -3,7 +3,13 @@ import type {
   SourcePackageVariant
 } from "@mcpskill/shared-types";
 
-import type { SourcePackageRecipe } from "./contracts.js";
+import type {
+  SourcePackageRecipe,
+  SourcePackageRecipeProvider
+} from "./contracts.js";
+
+const PISTON_VERSION_MANIFEST_V2 =
+  "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 
 export function buildVanillaSourcePackCoordinate(
   minecraftVersion: string,
@@ -73,5 +79,141 @@ export function buildVanillaSourcePackZipRecipe(input: {
         kind: "write_package_manifest"
       }
     ]
+  };
+}
+
+export function buildVanillaDataPackArchiveRecipe(input: {
+  minecraftVersion: string;
+  sourceArchive: string;
+  provenance?: string;
+}): SourcePackageRecipe {
+  const coordinate = buildVanillaDataPackCoordinate(input.minecraftVersion);
+
+  return {
+    ...coordinate,
+    provenance: input.provenance ?? "mojang-official-archive",
+    steps: [
+      {
+        kind: "extract_archive_content",
+        sourceArchive: input.sourceArchive,
+        domains: ["data"]
+      },
+      {
+        kind: "write_package_manifest"
+      }
+    ]
+  };
+}
+
+export function buildVanillaDataPackRemoteArchiveRecipe(input: {
+  minecraftVersion: string;
+  sourceUrl: string;
+  provenance?: string;
+}): SourcePackageRecipe {
+  const coordinate = buildVanillaDataPackCoordinate(input.minecraftVersion);
+
+  return {
+    ...coordinate,
+    provenance: input.provenance ?? "mojang-piston-manifest",
+    steps: [
+      {
+        kind: "extract_remote_archive_content",
+        sourceUrl: input.sourceUrl,
+        downloadFileName: `minecraft-${input.minecraftVersion}-server.jar`,
+        domains: ["data"]
+      },
+      {
+        kind: "write_package_manifest"
+      }
+    ]
+  };
+}
+
+export function buildMojangVanillaDataPackRecipeProvider(input: {
+  versionManifestUrl?: string;
+} = {}): SourcePackageRecipeProvider {
+  return async (sourcePackage) => {
+    if (!isVanillaDataPackCoordinate(sourcePackage)) {
+      return undefined;
+    }
+
+    const versionManifest = await fetchJson<MojangVersionManifest>(
+      input.versionManifestUrl ?? PISTON_VERSION_MANIFEST_V2
+    );
+    const versionEntry = versionManifest.versions.find(
+      (entry) => entry.id === sourcePackage.minecraftVersion
+    );
+
+    if (!versionEntry) {
+      return undefined;
+    }
+
+    const versionMetadata = await fetchJson<MojangVersionMetadata>(
+      versionEntry.url
+    );
+    const sourceUrl =
+      versionMetadata.downloads.server?.url ??
+      versionMetadata.downloads.client?.url;
+
+    if (!sourceUrl) {
+      return undefined;
+    }
+
+    return buildVanillaDataPackRemoteArchiveRecipe({
+      minecraftVersion: sourcePackage.minecraftVersion,
+      sourceUrl
+    });
+  };
+}
+
+function buildVanillaDataPackCoordinate(
+  minecraftVersion: string
+): SourcePackageCoordinate {
+  return {
+    packageId: `minecraft-${minecraftVersion}-vanilla-datapack-official`,
+    namespace: "minecraft",
+    minecraftVersion,
+    artifactType: "datapack",
+    variant: "official"
+  };
+}
+
+function isVanillaDataPackCoordinate(
+  sourcePackage: SourcePackageCoordinate
+): boolean {
+  return (
+    sourcePackage.packageId ===
+      `minecraft-${sourcePackage.minecraftVersion}-vanilla-datapack-official` &&
+    sourcePackage.namespace === "minecraft" &&
+    sourcePackage.artifactType === "datapack" &&
+    sourcePackage.variant === "official"
+  );
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Mojang metadata: HTTP ${response.status}`);
+  }
+
+  return await response.json() as T;
+}
+
+interface MojangVersionManifest {
+  versions: Array<{
+    id: string;
+    url: string;
+  }>;
+}
+
+interface MojangVersionMetadata {
+  downloads: {
+    server?: {
+      url: string;
+    };
+    client?: {
+      url: string;
+    };
   };
 }
