@@ -179,6 +179,8 @@ function toCompactVersionProfile(
     packFormatStatus: profile.packFormatStatus,
     minecraftVersion: profile.minecraftVersion,
     packFormat: profile.packFormat,
+    packFormatId: profile.packFormatId,
+    packFormatVersion: profile.packFormatVersion,
     supportedFormats: profile.supportedFormats,
     compatibleMinecraftVersions: profile.compatibleMinecraftVersions,
     knownDataKinds: profile.knownDataKinds,

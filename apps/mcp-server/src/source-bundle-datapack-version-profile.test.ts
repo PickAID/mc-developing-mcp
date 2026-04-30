@@ -66,6 +66,7 @@ describe("source.bundle datapack version profile", () => {
           source: "pack_mcmeta_and_runtime",
           minecraftVersion: "1.20.1",
           packFormat: 15,
+          packFormatId: "15",
           supportLevel: "known_profile",
           semanticValidation: "not_available"
         }
@@ -125,9 +126,17 @@ describe("source.bundle datapack version profile", () => {
           packFormat: 15,
           supportedFormats: {
             minInclusive: 15,
-            maxInclusive: 34
+            maxInclusive: 34,
+            minFormat: { id: "15" },
+            maxFormat: { id: "34.*" }
           },
-          compatibleMinecraftVersions: ["1.20.1", "1.20.6", "1.21.1"]
+          compatibleMinecraftVersions: [
+            "1.20",
+            "1.20.1",
+            "1.20.2",
+            "1.20.3",
+            "1.20.4"
+          ]
         }
       }
     });

@@ -86,7 +86,79 @@ describe("resolveDatapackVersionProfile", () => {
         minInclusive: 15,
         maxInclusive: 34
       },
-      compatibleMinecraftVersions: ["1.20.1", "1.20.6", "1.21.1"]
+      compatibleMinecraftVersions: [
+        "1.20",
+        "1.20.1",
+        "1.20.2",
+        "1.20.3",
+        "1.20.4"
+      ]
+    });
+  });
+
+  it("uses official data pack formats from 1.18.2 through 26.1 releases", async () => {
+    const root = await createRoot("mcpskill-profile-catalog-");
+    const cases = [
+      ["1.18.2", 9, "9"],
+      ["1.20.6", 41, "41"],
+      ["1.21.1", 48, "48"],
+      ["1.21.10", 88, "88.0"],
+      ["1.21.11", 94.1, "94.1"],
+      ["26.1", 101.1, "101.1"],
+      ["26.1.2", 101.1, "101.1"]
+    ] as const;
+
+    for (const [minecraftVersion, packFormat, packFormatId] of cases) {
+      await expect(
+        resolveDatapackVersionProfile(root, { minecraftVersion })
+      ).resolves.toMatchObject({
+        source: "runtime",
+        supportLevel: "known_profile",
+        packFormatStatus: "known",
+        minecraftVersion,
+        packFormat,
+        packFormatId
+      });
+    }
+  });
+
+  it("does not mark pack format evidence as conflicting when runtime is in the same data format", async () => {
+    const root = await createRoot("mcpskill-profile-shared-format-");
+
+    await writePack(root, 48);
+
+    await expect(
+      resolveDatapackVersionProfile(root, { minecraftVersion: "1.21.1" })
+    ).resolves.toMatchObject({
+      source: "pack_mcmeta_and_runtime",
+      supportLevel: "known_profile",
+      packFormatStatus: "known",
+      minecraftVersion: "1.21.1",
+      packFormat: 48,
+      packFormatId: "48"
+    });
+  });
+
+  it("parses minor data pack format bounds from min_format and max_format", async () => {
+    const root = await createRoot("mcpskill-profile-min-max-");
+
+    await writePackMetadata(root, {
+      pack: {
+        min_format: [101, 1],
+        max_format: 101
+      }
+    });
+
+    await expect(resolveDatapackVersionProfile(root)).resolves.toMatchObject({
+      source: "pack_mcmeta",
+      packFormatStatus: "known",
+      packFormat: 101.1,
+      packFormatId: "101.1",
+      supportedFormats: {
+        minFormat: { major: 101, minor: 1, id: "101.1" },
+        maxFormat: { major: 101, minor: null, id: "101.*" }
+      },
+      compatibleMinecraftVersions: ["26.1", "26.1.1", "26.1.2"]
     });
   });
 });
@@ -102,15 +174,19 @@ async function writePack(
   packFormat: number,
   supportedFormats?: [number, number]
 ): Promise<void> {
+  await writePackMetadata(root, {
+    pack: {
+      pack_format: packFormat,
+      ...(supportedFormats ? { supported_formats: supportedFormats } : {})
+    }
+  });
+}
+
+async function writePackMetadata(
+  root: string,
+  metadata: Record<string, unknown>
+): Promise<void> {
   await mkdir(join(root, "data", "demo", "recipes"), { recursive: true });
-  await writeFile(
-    join(root, "pack.mcmeta"),
-    JSON.stringify({
-      pack: {
-        pack_format: packFormat,
-        ...(supportedFormats ? { supported_formats: supportedFormats } : {})
-      }
-    })
-  );
+  await writeFile(join(root, "pack.mcmeta"), JSON.stringify(metadata));
   await writeFile(join(root, "data", "demo", "recipes", "gear.json"), "{}\n");
 }
