@@ -11,7 +11,8 @@ export type SourcePackageNamespace =
 export type SourcePackageArtifactType =
   | "source-pack"
   | "source-index"
-  | "datapack";
+  | "datapack"
+  | "assets";
 
 export type SourcePackageVariant = "named" | "official" | "intermediary";
 

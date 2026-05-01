@@ -129,6 +129,53 @@ export function buildVanillaDataPackRemoteArchiveRecipe(input: {
   };
 }
 
+export function buildVanillaAssetsArchiveRecipe(input: {
+  minecraftVersion: string;
+  sourceArchive: string;
+  provenance?: string;
+}): SourcePackageRecipe {
+  const coordinate = buildVanillaAssetsCoordinate(input.minecraftVersion);
+
+  return {
+    ...coordinate,
+    provenance: input.provenance ?? "mojang-official-archive",
+    steps: [
+      {
+        kind: "extract_archive_content",
+        sourceArchive: input.sourceArchive,
+        domains: ["assets"]
+      },
+      {
+        kind: "write_package_manifest"
+      }
+    ]
+  };
+}
+
+export function buildVanillaAssetsRemoteArchiveRecipe(input: {
+  minecraftVersion: string;
+  sourceUrl: string;
+  provenance?: string;
+}): SourcePackageRecipe {
+  const coordinate = buildVanillaAssetsCoordinate(input.minecraftVersion);
+
+  return {
+    ...coordinate,
+    provenance: input.provenance ?? "mojang-piston-manifest",
+    steps: [
+      {
+        kind: "extract_remote_archive_content",
+        sourceUrl: input.sourceUrl,
+        downloadFileName: `minecraft-${input.minecraftVersion}-client.jar`,
+        domains: ["assets"]
+      },
+      {
+        kind: "write_package_manifest"
+      }
+    ]
+  };
+}
+
 export function buildMojangVanillaDataPackRecipeProvider(input: {
   versionManifestUrl?: string;
 } = {}): SourcePackageRecipeProvider {
@@ -137,29 +184,42 @@ export function buildMojangVanillaDataPackRecipeProvider(input: {
       return undefined;
     }
 
-    const versionManifest = await fetchJson<MojangVersionManifest>(
-      input.versionManifestUrl ?? PISTON_VERSION_MANIFEST_V2
-    );
-    const versionEntry = versionManifest.versions.find(
-      (entry) => entry.id === sourcePackage.minecraftVersion
-    );
-
-    if (!versionEntry) {
-      return undefined;
-    }
-
-    const versionMetadata = await fetchJson<MojangVersionMetadata>(
-      versionEntry.url
-    );
-    const sourceUrl =
-      versionMetadata.downloads.server?.url ??
-      versionMetadata.downloads.client?.url;
+    const sourceUrl = await resolveMojangArchiveUrl({
+      minecraftVersion: sourcePackage.minecraftVersion,
+      versionManifestUrl: input.versionManifestUrl,
+      preference: "server-first"
+    });
 
     if (!sourceUrl) {
       return undefined;
     }
 
     return buildVanillaDataPackRemoteArchiveRecipe({
+      minecraftVersion: sourcePackage.minecraftVersion,
+      sourceUrl
+    });
+  };
+}
+
+export function buildMojangVanillaAssetsRecipeProvider(input: {
+  versionManifestUrl?: string;
+} = {}): SourcePackageRecipeProvider {
+  return async (sourcePackage) => {
+    if (!isVanillaAssetsCoordinate(sourcePackage)) {
+      return undefined;
+    }
+
+    const sourceUrl = await resolveMojangArchiveUrl({
+      minecraftVersion: sourcePackage.minecraftVersion,
+      versionManifestUrl: input.versionManifestUrl,
+      preference: "client-first"
+    });
+
+    if (!sourceUrl) {
+      return undefined;
+    }
+
+    return buildVanillaAssetsRemoteArchiveRecipe({
       minecraftVersion: sourcePackage.minecraftVersion,
       sourceUrl
     });
@@ -178,6 +238,18 @@ export function buildVanillaDataPackCoordinate(
   };
 }
 
+export function buildVanillaAssetsCoordinate(
+  minecraftVersion: string
+): SourcePackageCoordinate {
+  return {
+    packageId: `minecraft-${minecraftVersion}-vanilla-assets-official`,
+    namespace: "minecraft",
+    minecraftVersion,
+    artifactType: "assets",
+    variant: "official"
+  };
+}
+
 function isVanillaDataPackCoordinate(
   sourcePackage: SourcePackageCoordinate
 ): boolean {
@@ -187,6 +259,51 @@ function isVanillaDataPackCoordinate(
     sourcePackage.namespace === "minecraft" &&
     sourcePackage.artifactType === "datapack" &&
     sourcePackage.variant === "official"
+  );
+}
+
+function isVanillaAssetsCoordinate(
+  sourcePackage: SourcePackageCoordinate
+): boolean {
+  return (
+    sourcePackage.packageId ===
+      `minecraft-${sourcePackage.minecraftVersion}-vanilla-assets-official` &&
+    sourcePackage.namespace === "minecraft" &&
+    sourcePackage.artifactType === "assets" &&
+    sourcePackage.variant === "official"
+  );
+}
+
+async function resolveMojangArchiveUrl(input: {
+  minecraftVersion: string;
+  versionManifestUrl?: string;
+  preference: "server-first" | "client-first";
+}): Promise<string | undefined> {
+  const versionManifest = await fetchJson<MojangVersionManifest>(
+    input.versionManifestUrl ?? PISTON_VERSION_MANIFEST_V2
+  );
+  const versionEntry = versionManifest.versions.find(
+    (entry) => entry.id === input.minecraftVersion
+  );
+
+  if (!versionEntry) {
+    return undefined;
+  }
+
+  const versionMetadata = await fetchJson<MojangVersionMetadata>(
+    versionEntry.url
+  );
+
+  if (input.preference === "client-first") {
+    return (
+      versionMetadata.downloads.client?.url ??
+      versionMetadata.downloads.server?.url
+    );
+  }
+
+  return (
+    versionMetadata.downloads.server?.url ??
+    versionMetadata.downloads.client?.url
   );
 }
 

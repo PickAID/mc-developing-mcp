@@ -10,6 +10,7 @@ import { querySourceIndex } from "@mcpskill/source-index";
 import { buildLocalSourcePackageRecipeExecutor } from "./executor.js";
 import { readSourcePackageManifest } from "./manifest.js";
 import {
+  buildVanillaAssetsArchiveRecipe,
   buildVanillaDataPackArchiveRecipe,
   buildVanillaSourcePackCopyRecipe,
   buildVanillaSourcePackZipRecipe
@@ -156,6 +157,58 @@ describe("buildLocalSourcePackageRecipeExecutor", () => {
     await expect(readSourcePackageManifest(result.installPath)).resolves.toMatchObject({
       packageId: "minecraft-26.1.2-vanilla-datapack-official",
       artifactType: "datapack",
+      variant: "official",
+      provenance: "mojang-official-archive",
+      stepKinds: ["extract_archive_content", "write_package_manifest"],
+      fileCount: 1
+    });
+    expect(result.fileCount).toBe(1);
+  });
+
+  it("generates a vanilla assets package from official client jar assets entries only", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-assets-package-"));
+    const clientJar = join(runtimeRoot, "minecraft-client.jar");
+    const executor = buildLocalSourcePackageRecipeExecutor();
+    const recipe = buildVanillaAssetsArchiveRecipe({
+      minecraftVersion: "26.1.2",
+      sourceArchive: clientJar
+    });
+
+    await writeFile(
+      clientJar,
+      createZip([
+        {
+          name: "assets/minecraft/models/item/stone.json",
+          content: "{\"parent\":\"minecraft:item/generated\"}\n"
+        },
+        {
+          name: "data/minecraft/recipe/stone.json",
+          content: "{\"type\":\"minecraft:crafting_shapeless\"}\n"
+        },
+        {
+          name: "net/minecraft/client/Minecraft.class",
+          content: "\u0000class"
+        }
+      ])
+    );
+
+    const result = await executor({
+      runtimeLayout: createRuntimeLayout(runtimeRoot),
+      recipe
+    });
+
+    await expect(
+      readFile(
+        join(result.installPath, "assets", "minecraft", "models", "item", "stone.json"),
+        "utf-8"
+      )
+    ).resolves.toContain("minecraft:item/generated");
+    await expect(
+      readFile(join(result.installPath, "data", "minecraft", "recipe", "stone.json"))
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(readSourcePackageManifest(result.installPath)).resolves.toMatchObject({
+      packageId: "minecraft-26.1.2-vanilla-assets-official",
+      artifactType: "assets",
       variant: "official",
       provenance: "mojang-official-archive",
       stepKinds: ["extract_archive_content", "write_package_manifest"],
