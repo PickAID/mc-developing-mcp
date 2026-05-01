@@ -133,17 +133,28 @@ export function detectHarnessTaskIntent(
   const datapackOrResourceRequest =
     matchesAny(normalized, DATAPACK_KEYWORDS) ||
     mentionsDatapackOrResourcePath(normalized);
+  const vanillaDatapackRequest =
+    datapackOrResourceRequest && mentionsVanillaDatapackRequest(normalized);
 
   if (
     datapackOrResourceRequest &&
-    (snapshot.facts.hasDatapack || snapshot.facts.datapackRootCount > 0)
+    (
+      snapshot.facts.hasDatapack ||
+      snapshot.facts.datapackRootCount > 0 ||
+      vanillaDatapackRequest
+    )
   ) {
     const assetRequest = mentionsDatapackOrResourcePath(normalized);
 
     return {
       id: "datapack_lookup",
       confidence: "high",
-      reasons: assetRequest
+      reasons: vanillaDatapackRequest
+        ? [
+            "request text mentions vanilla datapack evidence",
+            "vanilla datapack content can be resolved from generated official packages"
+          ]
+        : assetRequest
         ? [
             "request text mentions datapack or resource-pack keywords",
             "workspace snapshot exposes datapack or resource-pack content"
@@ -175,4 +186,11 @@ function matchesAny(requestText: string, keywords: string[]): boolean {
 
 function mentionsDatapackOrResourcePath(requestText: string): boolean {
   return /\b(?:data|assets)\/[a-z0-9_.-]+\/[a-z0-9_./-]+/.test(requestText);
+}
+
+function mentionsVanillaDatapackRequest(requestText: string): boolean {
+  return (
+    /\b(?:vanilla|official)\b|原版|官方/.test(requestText) &&
+    /\bminecraft:[a-z0-9_.\/-]+\b|data\/minecraft\//.test(requestText)
+  );
 }

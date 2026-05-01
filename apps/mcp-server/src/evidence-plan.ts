@@ -74,6 +74,9 @@ function buildCandidate(
   const vanillaSourceRequest = mentionsVanillaSourceRequest(
     requestPlan.requestText
   );
+  const vanillaDatapackRequest = mentionsVanillaDatapackRequest(
+    requestPlan.requestText
+  );
 
   switch (routeStep) {
     case "java_diagnostics":
@@ -162,8 +165,14 @@ function buildCandidate(
         preferredTool: "source.bundle",
         estimatedCost: "medium",
         reliability: "high",
-        reason: "Inspect datapack files before secondary docs.",
-        pathHints: [...(descriptor?.datapackRoots ?? [])],
+        reason: vanillaDatapackRequest
+          ? buildVanillaDatapackReason(
+              descriptor?.currentRuntime.minecraftVersion
+            )
+          : "Inspect datapack files before secondary docs.",
+        pathHints: vanillaDatapackRequest
+          ? collectVanillaDatapackHints(descriptor)
+          : [...(descriptor?.datapackRoots ?? [])],
         queryHint: requestPlan.requestText
       };
     case "docs_lookup":
@@ -239,6 +248,18 @@ function mentionsVanillaSourceRequest(requestText?: string): boolean {
   return /\bnet\.minecraft(?:\.[A-Za-z_][A-Za-z0-9_]*)+\b/.test(requestText);
 }
 
+function mentionsVanillaDatapackRequest(requestText?: string): boolean {
+  if (!requestText) {
+    return false;
+  }
+
+  const normalized = requestText.toLowerCase();
+  return (
+    /\b(?:vanilla|official)\b|原版|官方/.test(normalized) &&
+    /\bminecraft:[a-z0-9_.\/-]+\b|data\/minecraft\//.test(normalized)
+  );
+}
+
 function buildVanillaSourceReason(minecraftVersion?: string): string {
   if (!minecraftVersion) {
     return "Request targets net.minecraft.* and should resolve through version-bound vanilla source before docs.";
@@ -264,4 +285,23 @@ function collectVanillaSourceHints(
   }
 
   return workspaceRoot ? [...hints, workspaceRoot] : hints;
+}
+
+function buildVanillaDatapackReason(minecraftVersion?: string): string {
+  if (!minecraftVersion) {
+    return "Request targets generated vanilla datapack evidence before docs.";
+  }
+
+  return `Request targets generated vanilla datapack evidence for Minecraft ${minecraftVersion} before docs.`;
+}
+
+function collectVanillaDatapackHints(
+  descriptor?: { currentRuntime?: { minecraftVersion?: string } }
+): string[] {
+  const runtimeVersion = descriptor?.currentRuntime?.minecraftVersion;
+  return [
+    runtimeVersion
+      ? `vanilla-datapack-package:minecraft:${runtimeVersion}:official`
+      : "vanilla-datapack-package:minecraft:unresolved:official"
+  ];
 }

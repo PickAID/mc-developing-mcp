@@ -166,7 +166,7 @@ export function buildMojangVanillaDataPackRecipeProvider(input: {
   };
 }
 
-function buildVanillaDataPackCoordinate(
+export function buildVanillaDataPackCoordinate(
   minecraftVersion: string
 ): SourcePackageCoordinate {
   return {

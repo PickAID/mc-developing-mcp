@@ -10,7 +10,10 @@ import type {
   SourcePackageRecipeProvider,
   SourcePackageRecipeRegistry
 } from "@mcpskill/source-package-manager";
-import { buildVanillaSourcePackZipRecipe } from "@mcpskill/source-package-manager";
+import {
+  buildMojangVanillaDataPackRecipeProvider,
+  buildVanillaSourcePackZipRecipe
+} from "@mcpskill/source-package-manager";
 import type { SourcePackageCoordinate } from "@mcpskill/shared-types";
 
 import type {
@@ -47,7 +50,14 @@ export function buildMcpServerSourceBundleExecutor(
     input: McpServerEvidenceExecutorInput
   ): Promise<McpServerEvidenceExecutorResult> => {
     if (input.candidate.routeStep === "datapack_files") {
-      return executeMcpServerDatapackFiles(input);
+      return executeMcpServerDatapackFiles(input, {
+        vanillaDatapackPackage: {
+          runtimeLayout,
+          recipes: options.recipes,
+          recipeProvider: buildVanillaDatapackRecipeProvider(options),
+          executeRecipe: options.executeRecipe
+        }
+      });
     }
 
     if (input.candidate.routeStep !== "workspace_source") {
@@ -193,6 +203,35 @@ function buildSourcePackageRecipeProvider(
 
   return async (sourcePackage) => {
     for (const provider of providers) {
+      const recipe = await provider(sourcePackage);
+
+      if (recipe) {
+        return recipe;
+      }
+    }
+
+    return undefined;
+  };
+}
+
+function buildVanillaDatapackRecipeProvider(
+  options: McpServerSourceBundleExecutorOptions
+): SourcePackageRecipeProvider {
+  return combineRecipeProviders([
+    options.recipeProvider,
+    buildMojangVanillaDataPackRecipeProvider()
+  ]);
+}
+
+function combineRecipeProviders(
+  providers: Array<SourcePackageRecipeProvider | undefined>
+): SourcePackageRecipeProvider {
+  const activeProviders = providers.filter(
+    (provider): provider is SourcePackageRecipeProvider => Boolean(provider)
+  );
+
+  return async (sourcePackage) => {
+    for (const provider of activeProviders) {
       const recipe = await provider(sourcePackage);
 
       if (recipe) {

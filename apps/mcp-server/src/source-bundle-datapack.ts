@@ -18,6 +18,10 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
+import {
+  executeMcpServerVanillaDatapackPackage,
+  type McpServerVanillaDatapackPackageOptions
+} from "./source-bundle-vanilla-datapack.js";
 
 const MAX_QUERIES = 8;
 const MAX_MATCHES = 16;
@@ -29,7 +33,10 @@ const DATAPACK_BUDGET = {
 } as const;
 
 export async function executeMcpServerDatapackFiles(
-  input: McpServerEvidenceExecutorInput
+  input: McpServerEvidenceExecutorInput,
+  options: {
+    vanillaDatapackPackage?: McpServerVanillaDatapackPackageOptions;
+  } = {}
 ): Promise<McpServerEvidenceExecutorResult> {
   if (input.candidate.routeStep !== "datapack_files") {
     return {
@@ -54,6 +61,18 @@ export async function executeMcpServerDatapackFiles(
   const discovery = await discoverDatapackContent(workspaceRoot);
 
   if (discovery.roots.length === 0) {
+    const vanillaDatapackResult = await executeMcpServerVanillaDatapackPackage({
+      executorInput: input,
+      requestText,
+      queries,
+      requestedPaths,
+      options: options.vanillaDatapackPackage
+    });
+
+    if (vanillaDatapackResult) {
+      return vanillaDatapackResult;
+    }
+
     return {
       matched: false,
       summary: "No local datapack or asset roots were discovered."
