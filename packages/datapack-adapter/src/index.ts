@@ -7,6 +7,7 @@ export {
 } from "./files.js";
 export { traceDatapackResourceReferences } from "./resource-references.js";
 export { analyzeDatapackVersionMigration } from "./migration-analysis.js";
+export { analyzeResourcePackVersionMigration } from "./resource-pack-migration-analysis.js";
 export { resolveResourcePackVersionProfile } from "./resource-pack-profile.js";
 export { resolveDatapackVersionProfile } from "./version-profile.js";
 export type {
@@ -46,6 +47,18 @@ export type {
 export type {
   KnownResourcePackProfile
 } from "./resource-pack-profile-catalog.js";
+export type {
+  ResourcePackFormatChange,
+  ResourcePackMigrationAction,
+  ResourcePackMigrationActionKind,
+  ResourcePackMigrationCompatibility,
+  ResourcePackMigrationDirection,
+  ResourcePackMigrationRiskHint,
+  ResourcePackMigrationRiskSeverity,
+  ResourcePackMigrationStatus,
+  ResourcePackMigrationVersionEvidence,
+  ResourcePackVersionMigrationAnalysis
+} from "./resource-pack-migration-analysis.js";
 export type {
   ResourcePackFormatStatus,
   ResourcePackProfileConfidence,

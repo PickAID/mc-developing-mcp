@@ -15,6 +15,7 @@ Implemented:
 - Assets-only roots no longer emit `datapackVersionProfile`.
 - Resource-pack profile now uses Mojang/Piston `server.jar!/version.json` `pack_version.resource`.
 - Resource-pack profile detects runtime conflicts without using datapack format values.
+- Resource-pack migration analysis now reports format changes and observed asset-kind risk hints.
 
 ## Official Evidence Source
 官方来源：
@@ -95,6 +96,19 @@ Expected supportLevel known_profile and packFormatStatus known.
 Received supportLevel format_catalog_not_available and packFormatStatus metadata_only.
 ```
 
+Resource-pack migration red phase:
+
+```bash
+pnpm exec vitest run packages/datapack-adapter/src/resource-pack-migration-analysis.test.ts apps/mcp-server/src/source-bundle-resource-pack-profile.test.ts
+```
+
+Observed failure before migration implementation:
+
+```text
+Cannot find module './resource-pack-migration-analysis.js'
+Expected payload.resourcePackMigrationAnalysis in MCP response.
+```
+
 ## Green Phase
 Build command:
 
@@ -113,6 +127,7 @@ Targeted command:
 
 ```bash
 pnpm exec vitest run \
+  packages/datapack-adapter/src/resource-pack-migration-analysis.test.ts \
   packages/datapack-adapter/src/resource-pack-profile.test.ts \
   apps/mcp-server/src/source-bundle-resource-pack-profile.test.ts \
   apps/mcp-server/src/source-bundle-datapack-executor.test.ts
@@ -121,8 +136,8 @@ pnpm exec vitest run \
 Observed result:
 
 ```text
-Test Files  3 passed (3)
-Tests  10 passed (10)
+Test Files  4 passed (4)
+Tests  14 passed (14)
 ```
 
 ## Full Verification
@@ -135,8 +150,8 @@ pnpm test
 Observed result:
 
 ```text
-Test Files  108 passed (108)
-Tests  344 passed (344)
+Test Files  109 passed (109)
+Tests  348 passed (348)
 ```
 
 Guard commands:
@@ -187,6 +202,45 @@ and `assets/demo/lang/en_us.json`, the compact profile shape is:
 
 The same payload does not include `datapackVersionProfile`.
 
+For `Analyze resource pack migration from 1.20.1 to 1.21.1.`, the same evidence path also returns:
+
+```json
+{
+  "payload": {
+    "resourcePackMigrationAnalysis": {
+      "tokenPolicy": "compact_resource_migration",
+      "status": "ready",
+      "direction": "upgrade",
+      "compatibility": "pack_format_changed",
+      "from": {
+        "minecraftVersion": "1.20.1",
+        "packFormatId": "15"
+      },
+      "to": {
+        "minecraftVersion": "1.21.1",
+        "packFormatId": "34"
+      },
+      "packFormatChange": {
+        "fromPackFormatId": "15",
+        "toPackFormatId": "34",
+        "numericDelta": 19
+      },
+      "riskHints": [
+        {
+          "kind": "models",
+          "severity": "medium"
+        }
+      ],
+      "notes": [
+        "This is a resource-pack format migration summary, not full asset schema rewriting."
+      ]
+    }
+  }
+}
+```
+
+The assets-only migration payload does not include `datapackMigrationAnalysis`.
+
 ## Boundaries
 Implemented:
 
@@ -194,9 +248,11 @@ Implemented:
 - Assets-only profile without datapack catalog interpretation.
 - Official resource-pack format catalog from `1.18.2` through `26.1.2`.
 - Runtime conflict detection, such as resource format `34` with runtime `1.20.1`.
+- Resource-pack format migration summary for known source/target versions.
+- Compact risk hints for observed asset kinds only.
 - Missing `pack.mcmeta` handling without guessing a pack format.
 
 Not implemented in this slice:
 
 - Versioned asset schema validation.
-- Resource-pack migration analysis.
+- Automatic model, atlas, shader, texture, or language-file rewriting.

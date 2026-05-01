@@ -75,6 +75,74 @@ describe("source.bundle resource-pack profile", () => {
     });
     expect(result.payload).not.toHaveProperty("datapackVersionProfile");
   });
+
+  it("adds resource-pack migration analysis for assets-only roots", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-resource-migration-");
+
+    await writeText(
+      join(workspaceRoot, "pack.mcmeta"),
+      JSON.stringify({ pack: { pack_format: 15 } })
+    );
+    await writeText(join(workspaceRoot, "assets", "demo", "models", "item.json"), "{}\n");
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Analyze resource pack migration from 1.20.1 to 1.21.1."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    const result = await executor({
+      candidate,
+      evidencePlan,
+      requestPlan
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        resourcePackMigrationAnalysis: {
+          tokenPolicy: "compact_resource_migration",
+          status: "ready",
+          direction: "upgrade",
+          compatibility: "pack_format_changed",
+          from: {
+            minecraftVersion: "1.20.1",
+            packFormatId: "15"
+          },
+          to: {
+            minecraftVersion: "1.21.1",
+            packFormatId: "34"
+          },
+          riskHints: [
+            {
+              kind: "models",
+              severity: "medium"
+            }
+          ]
+        }
+      }
+    });
+    expect(result.payload).not.toHaveProperty("datapackMigrationAnalysis");
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

@@ -4,7 +4,6 @@ import {
   listDatapackFiles,
   readDatapackFile,
   resolveDatapackVersionProfile,
-  resolveResourcePackVersionProfile,
   searchDatapackFiles,
   summarizeDatapackFiles,
   traceDatapackResourceReferences,
@@ -15,8 +14,7 @@ import {
   type DatapackResourceReference,
   type DatapackResourceReferenceTrace,
   type DatapackSearchMatch,
-  type DatapackSkippedFile,
-  type ResourcePackVersionProfile
+  type DatapackSkippedFile
 } from "@mcpskill/datapack-adapter";
 
 import type {
@@ -31,6 +29,7 @@ import {
   executeMcpServerVanillaAssetsPackage,
   type McpServerVanillaAssetsPackageOptions
 } from "./source-bundle-vanilla-assets.js";
+import { resolveMcpServerResourcePackEvidence } from "./source-bundle-resource-pack.js";
 
 const MAX_QUERIES = 8;
 const MAX_MATCHES = 16;
@@ -123,19 +122,23 @@ export async function executeMcpServerDatapackFiles(
         })
       )
     : undefined;
-  const resourcePackVersionProfile = hasResourcePackEvidence
-    ? toCompactResourcePackVersionProfile(
-        await resolveResourcePackVersionProfile(workspaceRoot, {
-          assetKinds: discovery.assetKinds,
-          minecraftVersion:
-            input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
-              .minecraftVersion,
-          runtimeConfidence:
-            input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
-              .confidence
-        })
-      )
+  const resourcePackEvidence = hasResourcePackEvidence
+    ? await resolveMcpServerResourcePackEvidence({
+        workspaceRoot,
+        assetKinds: discovery.assetKinds,
+        minecraftVersion:
+          input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+            .minecraftVersion,
+        runtimeConfidence:
+          input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+            .confidence,
+        migrationRequest: extractMigrationRequest(requestText)
+      })
     : undefined;
+  const resourcePackVersionProfile =
+    resourcePackEvidence?.resourcePackVersionProfile;
+  const resourcePackMigrationAnalysis =
+    resourcePackEvidence?.resourcePackMigrationAnalysis;
   const datapackMigrationAnalysis = toCompactMigrationAnalysis(
     datapackVersionProfile ? extractMigrationRequest(requestText) : undefined,
     discovery.dataKinds
@@ -164,6 +167,7 @@ export async function executeMcpServerDatapackFiles(
         ...(datapackVersionProfile ? { datapackVersionProfile } : {}),
         ...(resourcePackVersionProfile ? { resourcePackVersionProfile } : {}),
         ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
+        ...(resourcePackMigrationAnalysis ? { resourcePackMigrationAnalysis } : {}),
         resourceSummary: compactResourceSummary,
         files: listed.entries,
         skipped: listed.skipped,
@@ -188,6 +192,7 @@ export async function executeMcpServerDatapackFiles(
       ...(datapackVersionProfile ? { datapackVersionProfile } : {}),
       ...(resourcePackVersionProfile ? { resourcePackVersionProfile } : {}),
       ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
+      ...(resourcePackMigrationAnalysis ? { resourcePackMigrationAnalysis } : {}),
       resourceSummary: compactResourceSummary,
       reads: reads.files,
       matches: search.matches,
@@ -223,26 +228,6 @@ function toCompactMigrationAnalysis(input: {
     notes: analysis.notes
   } satisfies DatapackVersionMigrationAnalysis & {
     tokenPolicy: "compact_migration";
-  };
-}
-
-function toCompactResourcePackVersionProfile(profile: ResourcePackVersionProfile) {
-  return {
-    tokenPolicy: "compact_resource_profile" as const,
-    source: profile.source,
-    confidence: profile.confidence,
-    supportLevel: profile.supportLevel,
-    packFormatStatus: profile.packFormatStatus,
-    packFormat: profile.packFormat,
-    packFormatId: profile.packFormatId,
-    packFormatVersion: profile.packFormatVersion,
-    minecraftVersion: profile.minecraftVersion,
-    compatibleMinecraftVersions: profile.compatibleMinecraftVersions,
-    knownAssetKinds: profile.knownAssetKinds,
-    assetKinds: profile.assetKinds,
-    semanticValidation: profile.semanticValidation,
-    migrationAnalysis: profile.migrationAnalysis,
-    notes: profile.notes
   };
 }
 
