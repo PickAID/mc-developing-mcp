@@ -35,6 +35,8 @@ export type {
   DatapackMigrationActionKind,
   DatapackMigrationCompatibility,
   DatapackMigrationDirection,
+  DatapackMigrationRiskHint,
+  DatapackMigrationRiskSeverity,
   DatapackMigrationStatus,
   DatapackMigrationVersionEvidence,
   DatapackPackFormatChange,

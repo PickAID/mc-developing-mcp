@@ -7,6 +7,7 @@ import {
   searchDatapackFiles,
   summarizeDatapackFiles,
   traceDatapackResourceReferences,
+  type DataKind,
   type DatapackVersionMigrationAnalysis,
   type DatapackFileEntry,
   type DatapackFileSummary,
@@ -115,7 +116,8 @@ export async function executeMcpServerDatapackFiles(
     })
   );
   const datapackMigrationAnalysis = toCompactMigrationAnalysis(
-    extractMigrationRequest(requestText)
+    extractMigrationRequest(requestText),
+    discovery.dataKinds
   );
   const resourceReferenceTrace = await traceRequestedResourceReferences({
     workspaceRoot,
@@ -176,12 +178,15 @@ export async function executeMcpServerDatapackFiles(
 function toCompactMigrationAnalysis(input: {
   fromMinecraftVersion: string;
   toMinecraftVersion: string;
-} | undefined) {
+} | undefined, observedDataKinds: DataKind[]) {
   if (!input) {
     return undefined;
   }
 
-  const analysis = analyzeDatapackVersionMigration(input);
+  const analysis = analyzeDatapackVersionMigration({
+    ...input,
+    observedDataKinds
+  });
   return {
     tokenPolicy: "compact_migration" as const,
     status: analysis.status,
@@ -191,6 +196,7 @@ function toCompactMigrationAnalysis(input: {
     to: analysis.to,
     packFormatChange: analysis.packFormatChange,
     requiredActions: analysis.requiredActions,
+    riskHints: analysis.riskHints,
     notes: analysis.notes
   } satisfies DatapackVersionMigrationAnalysis & {
     tokenPolicy: "compact_migration";

@@ -80,6 +80,34 @@ describe("analyzeDatapackVersionMigration", () => {
     });
   });
 
+  it("reports compact risk hints for observed data kinds", () => {
+    const analysis = analyzeDatapackVersionMigration({
+      fromMinecraftVersion: "1.20.1",
+      toMinecraftVersion: "1.21.1",
+      observedDataKinds: ["recipes", "worldgen", "other"]
+    });
+
+    expect(analysis).toMatchObject({
+      riskHints: [
+        {
+          kind: "recipes",
+          severity: "medium",
+          summary: "Review recipe JSON and ingredient/item references against the target version."
+        },
+        {
+          kind: "worldgen",
+          severity: "high",
+          summary: "Review worldgen JSON against the target version; registry and bootstrap rules are high-churn."
+        },
+        {
+          kind: "other",
+          severity: "low",
+          summary: "Review uncategorized datapack files manually."
+        }
+      ]
+    });
+  });
+
   it("reports unknown versions without guessing pack formats", () => {
     expect(
       analyzeDatapackVersionMigration({

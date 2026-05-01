@@ -18,9 +18,16 @@ export type DatapackMigrationCompatibility =
   | "unknown";
 
 export type DatapackMigrationActionKind = "update_pack_format";
+export type DatapackMigrationRiskSeverity = "low" | "medium" | "high";
 
 export interface DatapackMigrationAction {
   kind: DatapackMigrationActionKind;
+  summary: string;
+}
+
+export interface DatapackMigrationRiskHint {
+  kind: DataKind;
+  severity: DatapackMigrationRiskSeverity;
   summary: string;
 }
 
@@ -45,12 +52,68 @@ export interface DatapackVersionMigrationAnalysis {
   to?: DatapackMigrationVersionEvidence;
   packFormatChange?: DatapackPackFormatChange;
   requiredActions: DatapackMigrationAction[];
+  riskHints: DatapackMigrationRiskHint[];
   notes: string[];
 }
+
+const RISK_HINTS: Record<
+  DataKind,
+  Omit<DatapackMigrationRiskHint, "kind">
+> = {
+  advancements: {
+    severity: "medium",
+    summary: "Review advancement criteria, rewards, and predicate references against the target version."
+  },
+  damage_type: {
+    severity: "high",
+    summary: "Review custom damage type registry JSON against the target version."
+  },
+  functions: {
+    severity: "low",
+    summary: "Review function commands for renamed or removed commands in the target version."
+  },
+  item_modifiers: {
+    severity: "medium",
+    summary: "Review item modifier functions and predicates against the target version."
+  },
+  loot_tables: {
+    severity: "medium",
+    summary: "Review loot table conditions, functions, and item references against the target version."
+  },
+  predicates: {
+    severity: "medium",
+    summary: "Review predicate JSON and referenced conditions against the target version."
+  },
+  recipes: {
+    severity: "medium",
+    summary: "Review recipe JSON and ingredient/item references against the target version."
+  },
+  registry: {
+    severity: "high",
+    summary: "Review custom registry JSON against the target version."
+  },
+  structures: {
+    severity: "low",
+    summary: "Confirm structure files and references remain valid in the target version."
+  },
+  tags: {
+    severity: "low",
+    summary: "Review tag references for renamed or removed ids in the target version."
+  },
+  worldgen: {
+    severity: "high",
+    summary: "Review worldgen JSON against the target version; registry and bootstrap rules are high-churn."
+  },
+  other: {
+    severity: "low",
+    summary: "Review uncategorized datapack files manually."
+  }
+};
 
 export function analyzeDatapackVersionMigration(input: {
   fromMinecraftVersion: string;
   toMinecraftVersion: string;
+  observedDataKinds?: DataKind[];
 }): DatapackVersionMigrationAnalysis {
   const fromProfile = findKnownProfile(input.fromMinecraftVersion);
   const toProfile = findKnownProfile(input.toMinecraftVersion);
@@ -92,6 +155,9 @@ export function analyzeDatapackVersionMigration(input: {
             summary: `Update pack.mcmeta pack.pack_format from ${fromProfile.packFormatId} to ${toProfile.packFormatId}.`
           }
         ],
+    riskHints: samePackFormat
+      ? []
+      : createRiskHints(input.observedDataKinds ?? []),
     notes: [
       "This is a pack-format migration summary, not full JSON schema rewriting."
     ]
@@ -128,6 +194,7 @@ function createUnknownAnalysis(input: {
     compatibility: "unknown",
     from: input.from,
     requiredActions: [],
+    riskHints: [],
     notes: [input.note]
   };
 }
@@ -163,4 +230,13 @@ function calculateNumericPackFormatDelta(
 
 function decimalPlaces(value: string): number {
   return value.includes(".") ? value.split(".")[1]?.length ?? 0 : 0;
+}
+
+function createRiskHints(kinds: DataKind[]): DatapackMigrationRiskHint[] {
+  const uniqueKinds = [...new Set(kinds)];
+  return uniqueKinds.map(createRiskHint);
+}
+
+function createRiskHint(kind: DataKind): DatapackMigrationRiskHint {
+  return { kind, ...RISK_HINTS[kind] };
 }

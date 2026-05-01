@@ -13,6 +13,7 @@ Scope: `packages/datapack-adapter`, `apps/mcp-server`
 - 迁移方向：upgrade、downgrade、same_version。
 - pack format 是否变化。
 - 必要动作：例如更新 `pack.mcmeta` 的 `pack.pack_format`。
+- 项目中实际出现的 datapack data kind 粗粒度风险提示，例如 `recipes`、`worldgen`、`tags`。
 
 ## Red Phase
 Bottom-layer command:
@@ -38,6 +39,19 @@ Observed failure before fixing decimal-stable delta calculation:
 ```text
 Expected numericDelta: 6.1
 Received numericDelta: 6.099999999999994
+```
+
+Observed-data-kind risk hint command:
+
+```bash
+pnpm exec vitest run packages/datapack-adapter/src/migration-analysis.test.ts apps/mcp-server/src/source-bundle-datapack-version-profile.test.ts
+```
+
+Observed failure before implementation:
+
+```text
+Expected riskHints for recipes/worldgen/other.
+Received no riskHints in bottom-layer analysis and undefined riskHints in MCP payload.
 ```
 
 MCP command:
@@ -79,7 +93,7 @@ Observed result:
 
 ```text
 Test Files  2 passed (2)
-Tests  7 passed (7)
+Tests  8 passed (8)
 ```
 
 ## Full Verification
@@ -93,7 +107,7 @@ Observed result:
 
 ```text
 Test Files  106 passed (106)
-Tests  338 passed (338)
+Tests  339 passed (339)
 ```
 
 Guard commands:
@@ -156,6 +170,13 @@ Observed compact output:
           "summary": "Update pack.mcmeta pack.pack_format from 15 to 48."
         }
       ],
+      "riskHints": [
+        {
+          "kind": "recipes",
+          "severity": "medium",
+          "summary": "Review recipe JSON and ingredient/item references against the target version."
+        }
+      ],
       "notes": [
         "This is a pack-format migration summary, not full JSON schema rewriting."
       ]
@@ -167,11 +188,13 @@ Observed compact output:
 ## Changed Behavior
 - Added `analyzeDatapackVersionMigration(...)` to `@mcpskill/datapack-adapter`.
 - Exported migration analysis types from the datapack adapter public API.
+- Added compact `riskHints` for observed datapack data kinds.
 - MCP datapack/resource executor now parses simple migration requests:
   - `from 1.20.1 to 1.21.1`
   - `1.20.1 -> 1.21.1`
   - `从 1.20.1 到 1.21.1`
 - When parsed, payload includes `datapackMigrationAnalysis` beside `datapackVersionProfile`.
+- MCP risk hints are driven by discovered local `data/**` kinds, so absent datapack areas do not consume payload space.
 
 ## Boundaries
 Implemented:
@@ -180,6 +203,7 @@ Implemented:
 - Unknown source/target version reporting without guessing.
 - Minor-aware same-format compatibility, such as `1.21.9 -> 1.21.10`.
 - Decimal-stable numeric deltas for minor-aware pack formats, such as `1.21.10 -> 1.21.11`.
+- Coarse risk hints for observed datapack data kinds only.
 
 Not implemented in this slice:
 

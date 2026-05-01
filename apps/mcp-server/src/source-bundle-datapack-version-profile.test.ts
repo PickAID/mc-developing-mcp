@@ -207,6 +207,12 @@ describe("source.bundle datapack version profile", () => {
               kind: "update_pack_format",
               summary: "Update pack.mcmeta pack.pack_format from 15 to 48."
             }
+          ],
+          riskHints: [
+            {
+              kind: "recipes",
+              severity: "medium"
+            }
           ]
         }
       }
