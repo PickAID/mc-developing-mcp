@@ -6,6 +6,7 @@ export {
   summarizeDatapackFiles
 } from "./files.js";
 export { traceDatapackResourceReferences } from "./resource-references.js";
+export { analyzeDatapackVersionMigration } from "./migration-analysis.js";
 export { resolveDatapackVersionProfile } from "./version-profile.js";
 export type {
   AssetKind,
@@ -29,6 +30,16 @@ export type {
   DatapackSkippedFile,
   DatapackSkipReason
 } from "./types.js";
+export type {
+  DatapackMigrationAction,
+  DatapackMigrationActionKind,
+  DatapackMigrationCompatibility,
+  DatapackMigrationDirection,
+  DatapackMigrationStatus,
+  DatapackMigrationVersionEvidence,
+  DatapackPackFormatChange,
+  DatapackVersionMigrationAnalysis
+} from "./migration-analysis.js";
 export type {
   DatapackPackFormatStatus,
   DatapackProfileConfidence,

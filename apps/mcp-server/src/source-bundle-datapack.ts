@@ -1,4 +1,5 @@
 import {
+  analyzeDatapackVersionMigration,
   discoverDatapackContent,
   listDatapackFiles,
   readDatapackFile,
@@ -6,6 +7,7 @@ import {
   searchDatapackFiles,
   summarizeDatapackFiles,
   traceDatapackResourceReferences,
+  type DatapackVersionMigrationAnalysis,
   type DatapackFileEntry,
   type DatapackFileSummary,
   type DatapackResourceReference,
@@ -112,6 +114,9 @@ export async function executeMcpServerDatapackFiles(
           .confidence
     })
   );
+  const datapackMigrationAnalysis = toCompactMigrationAnalysis(
+    extractMigrationRequest(requestText)
+  );
   const resourceReferenceTrace = await traceRequestedResourceReferences({
     workspaceRoot,
     requestText,
@@ -134,6 +139,7 @@ export async function executeMcpServerDatapackFiles(
         requestedPaths,
         discovery,
         datapackVersionProfile,
+        ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
         resourceSummary: compactResourceSummary,
         files: listed.entries,
         skipped: listed.skipped,
@@ -156,6 +162,7 @@ export async function executeMcpServerDatapackFiles(
       requestedPaths,
       discovery,
       datapackVersionProfile,
+      ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
       resourceSummary: compactResourceSummary,
       reads: reads.files,
       matches: search.matches,
@@ -163,6 +170,55 @@ export async function executeMcpServerDatapackFiles(
       skipped: [...reads.skipped, ...search.skipped],
       truncated: search.truncated
     }
+  };
+}
+
+function toCompactMigrationAnalysis(input: {
+  fromMinecraftVersion: string;
+  toMinecraftVersion: string;
+} | undefined) {
+  if (!input) {
+    return undefined;
+  }
+
+  const analysis = analyzeDatapackVersionMigration(input);
+  return {
+    tokenPolicy: "compact_migration" as const,
+    status: analysis.status,
+    direction: analysis.direction,
+    compatibility: analysis.compatibility,
+    from: analysis.from,
+    to: analysis.to,
+    packFormatChange: analysis.packFormatChange,
+    requiredActions: analysis.requiredActions,
+    notes: analysis.notes
+  } satisfies DatapackVersionMigrationAnalysis & {
+    tokenPolicy: "compact_migration";
+  };
+}
+
+function extractMigrationRequest(
+  requestText: string
+): { fromMinecraftVersion: string; toMinecraftVersion: string } | undefined {
+  const normalized = requestText.trim();
+  const english = normalized.match(
+    /\bfrom\s+(?<from>\d+\.\d+(?:\.\d+)?)\s+(?:to|->)\s+(?<to>\d+\.\d+(?:\.\d+)?)/i
+  );
+  const chinese = normalized.match(
+    /从\s*(?<from>\d+\.\d+(?:\.\d+)?)\s*(?:到|至|->)\s*(?<to>\d+\.\d+(?:\.\d+)?)/
+  );
+  const generic = normalized.match(
+    /(?<from>\d+\.\d+(?:\.\d+)?)\s*(?:->|=>|到|至)\s*(?<to>\d+\.\d+(?:\.\d+)?)/
+  );
+  const groups = english?.groups ?? chinese?.groups ?? generic?.groups;
+
+  if (!groups?.from || !groups.to) {
+    return undefined;
+  }
+
+  return {
+    fromMinecraftVersion: groups.from,
+    toMinecraftVersion: groups.to
   };
 }
 

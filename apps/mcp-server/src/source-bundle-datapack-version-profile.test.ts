@@ -141,6 +141,77 @@ describe("source.bundle datapack version profile", () => {
       }
     });
   });
+
+  it("adds pack-format migration analysis when the request names source and target versions", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-datapack-migration-");
+
+    await writeText(
+      join(workspaceRoot, "pack.mcmeta"),
+      JSON.stringify({ pack: { pack_format: 15 } })
+    );
+    await writeText(join(workspaceRoot, "data", "demo", "recipes", "gear.json"), "{}\n");
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Analyze datapack migration from 1.20.1 to 1.21.1."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    await expect(
+      executor({
+        candidate,
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      payload: {
+        datapackMigrationAnalysis: {
+          tokenPolicy: "compact_migration",
+          status: "ready",
+          direction: "upgrade",
+          compatibility: "pack_format_changed",
+          from: {
+            minecraftVersion: "1.20.1",
+            packFormatId: "15"
+          },
+          to: {
+            minecraftVersion: "1.21.1",
+            packFormatId: "48"
+          },
+          packFormatChange: {
+            fromPackFormatId: "15",
+            toPackFormatId: "48",
+            numericDelta: 33
+          },
+          requiredActions: [
+            {
+              kind: "update_pack_format",
+              summary: "Update pack.mcmeta pack.pack_format from 15 to 48."
+            }
+          ]
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {
