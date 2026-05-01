@@ -7,6 +7,7 @@ export {
 } from "./files.js";
 export { traceDatapackResourceReferences } from "./resource-references.js";
 export { analyzeDatapackVersionMigration } from "./migration-analysis.js";
+export { resolveResourcePackVersionProfile } from "./resource-pack-profile.js";
 export { resolveDatapackVersionProfile } from "./version-profile.js";
 export type {
   AssetKind,
@@ -42,6 +43,14 @@ export type {
   DatapackPackFormatChange,
   DatapackVersionMigrationAnalysis
 } from "./migration-analysis.js";
+export type {
+  ResourcePackFormatStatus,
+  ResourcePackProfileConfidence,
+  ResourcePackVersionProfile,
+  ResourcePackVersionProfileOptions,
+  ResourcePackVersionProfileSource,
+  ResourcePackVersionSupportLevel
+} from "./resource-pack-profile.js";
 export type {
   DatapackPackFormatStatus,
   DatapackProfileConfidence,

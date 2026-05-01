@@ -4,6 +4,7 @@ import {
   listDatapackFiles,
   readDatapackFile,
   resolveDatapackVersionProfile,
+  resolveResourcePackVersionProfile,
   searchDatapackFiles,
   summarizeDatapackFiles,
   traceDatapackResourceReferences,
@@ -14,7 +15,8 @@ import {
   type DatapackResourceReference,
   type DatapackResourceReferenceTrace,
   type DatapackSearchMatch,
-  type DatapackSkippedFile
+  type DatapackSkippedFile,
+  type ResourcePackVersionProfile
 } from "@mcpskill/datapack-adapter";
 
 import type {
@@ -105,18 +107,31 @@ export async function executeMcpServerDatapackFiles(
     ...DATAPACK_BUDGET
   });
   const compactResourceSummary = toCompactResourceSummary(resourceSummary);
-  const datapackVersionProfile = toCompactVersionProfile(
-    await resolveDatapackVersionProfile(workspaceRoot, {
-      minecraftVersion:
-        input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
-          .minecraftVersion,
-      runtimeConfidence:
-        input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
-          .confidence
-    })
-  );
+  const hasDatapackEvidence =
+    discovery.dataKinds.length > 0 || discovery.roots.some((root) => root.hasData);
+  const hasResourcePackEvidence =
+    discovery.assetKinds.length > 0 || discovery.roots.some((root) => root.hasAssets);
+  const datapackVersionProfile = hasDatapackEvidence
+    ? toCompactVersionProfile(
+        await resolveDatapackVersionProfile(workspaceRoot, {
+          minecraftVersion:
+            input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+              .minecraftVersion,
+          runtimeConfidence:
+            input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+              .confidence
+        })
+      )
+    : undefined;
+  const resourcePackVersionProfile = hasResourcePackEvidence
+    ? toCompactResourcePackVersionProfile(
+        await resolveResourcePackVersionProfile(workspaceRoot, {
+          assetKinds: discovery.assetKinds
+        })
+      )
+    : undefined;
   const datapackMigrationAnalysis = toCompactMigrationAnalysis(
-    extractMigrationRequest(requestText),
+    datapackVersionProfile ? extractMigrationRequest(requestText) : undefined,
     discovery.dataKinds
   );
   const resourceReferenceTrace = await traceRequestedResourceReferences({
@@ -140,7 +155,8 @@ export async function executeMcpServerDatapackFiles(
         queries,
         requestedPaths,
         discovery,
-        datapackVersionProfile,
+        ...(datapackVersionProfile ? { datapackVersionProfile } : {}),
+        ...(resourcePackVersionProfile ? { resourcePackVersionProfile } : {}),
         ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
         resourceSummary: compactResourceSummary,
         files: listed.entries,
@@ -163,7 +179,8 @@ export async function executeMcpServerDatapackFiles(
       queries,
       requestedPaths,
       discovery,
-      datapackVersionProfile,
+      ...(datapackVersionProfile ? { datapackVersionProfile } : {}),
+      ...(resourcePackVersionProfile ? { resourcePackVersionProfile } : {}),
       ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
       resourceSummary: compactResourceSummary,
       reads: reads.files,
@@ -200,6 +217,23 @@ function toCompactMigrationAnalysis(input: {
     notes: analysis.notes
   } satisfies DatapackVersionMigrationAnalysis & {
     tokenPolicy: "compact_migration";
+  };
+}
+
+function toCompactResourcePackVersionProfile(profile: ResourcePackVersionProfile) {
+  return {
+    tokenPolicy: "compact_resource_profile" as const,
+    source: profile.source,
+    confidence: profile.confidence,
+    supportLevel: profile.supportLevel,
+    packFormatStatus: profile.packFormatStatus,
+    packFormat: profile.packFormat,
+    packFormatId: profile.packFormatId,
+    packFormatVersion: profile.packFormatVersion,
+    assetKinds: profile.assetKinds,
+    semanticValidation: profile.semanticValidation,
+    migrationAnalysis: profile.migrationAnalysis,
+    notes: profile.notes
   };
 }
 
