@@ -119,6 +119,115 @@ describe("source.bundle vanilla assets package execution", () => {
       }
     });
   });
+
+  it("traces references inside a confirmed generated vanilla assets package", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createForgeWorkspace();
+    const clientJar = join(runtimeRoot, "minecraft-client.jar");
+
+    await writeSourcePackageConfirmation(
+      {
+        root: runtimeRoot,
+        downloads: join(runtimeRoot, "downloads"),
+        installs: join(runtimeRoot, "installs"),
+        locks: join(runtimeRoot, "locks")
+      },
+      createVanillaAssetsConfirmation("1.20.1")
+    );
+    await writeText(
+      clientJar,
+      createZip([
+        {
+          name: "assets/minecraft/blockstates/stone.json",
+          content: JSON.stringify({
+            variants: {
+              "": {
+                model: "minecraft:block/stone"
+              }
+            }
+          })
+        },
+        {
+          name: "assets/minecraft/models/block/stone.json",
+          content: JSON.stringify({
+            textures: {
+              all: "minecraft:block/stone"
+            }
+          })
+        },
+        {
+          name: "assets/minecraft/textures/block/stone.png",
+          content: "png"
+        }
+      ])
+    );
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Trace vanilla official references for assets/minecraft/blockstates/stone.json"
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      recipes: {
+        "minecraft-1.20.1-vanilla-assets-official":
+          buildVanillaAssetsArchiveRecipe({
+            minecraftVersion: "1.20.1",
+            sourceArchive: clientJar
+          })
+      },
+      executeRecipe: buildLocalSourcePackageRecipeExecutor()
+    });
+
+    await expect(
+      executor({
+        candidate,
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "vanilla_assets",
+        result: {
+          status: "ready",
+          resourceReferenceTrace: {
+            tokenPolicy: "explicit_trace",
+            startPaths: ["assets/minecraft/blockstates/stone.json"],
+            referenceCount: 2,
+            unresolvedCount: 0,
+            references: [
+              {
+                fromPath: "assets/minecraft/blockstates/stone.json",
+                relation: "blockstate_model",
+                toPath: "assets/minecraft/models/block/stone.json",
+                status: "resolved"
+              },
+              {
+                fromPath: "assets/minecraft/models/block/stone.json",
+                relation: "model_texture",
+                toPath: "assets/minecraft/textures/block/stone.png",
+                status: "resolved"
+              }
+            ],
+            truncated: false
+          }
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

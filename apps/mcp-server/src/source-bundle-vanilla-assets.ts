@@ -47,6 +47,7 @@ export async function executeMcpServerVanillaAssetsPackage(input: {
     sourcePackage: buildVanillaAssetsCoordinate(minecraftVersion),
     payloadSource: "vanilla_assets",
     evidenceLabel: "generated vanilla assets",
+    requestText: input.requestText,
     queries: input.queries,
     requestedPaths: input.requestedPaths,
     options: input.options

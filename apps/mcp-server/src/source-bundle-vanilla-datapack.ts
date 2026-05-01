@@ -47,6 +47,7 @@ export async function executeMcpServerVanillaDatapackPackage(input: {
     sourcePackage: buildVanillaDataPackCoordinate(minecraftVersion),
     payloadSource: "vanilla_datapack",
     evidenceLabel: "generated vanilla datapack",
+    requestText: input.requestText,
     queries: input.queries,
     requestedPaths: input.requestedPaths,
     options: input.options

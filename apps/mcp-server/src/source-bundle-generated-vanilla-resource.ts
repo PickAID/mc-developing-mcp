@@ -4,8 +4,11 @@ import {
   readDatapackFile,
   searchDatapackFiles,
   summarizeDatapackFiles,
+  traceDatapackResourceReferences,
   type DatapackFileEntry,
   type DatapackFileSummary,
+  type DatapackResourceReference,
+  type DatapackResourceReferenceTrace,
   type DatapackSearchMatch,
   type DatapackSkippedFile
 } from "@mcpskill/datapack-adapter";
@@ -28,6 +31,7 @@ const GENERATED_VANILLA_RESOURCE_BUDGET = {
 } as const;
 const MAX_GENERATED_VANILLA_MATCHES = 16;
 const MAX_GENERATED_VANILLA_LISTED_FILES = 32;
+const MAX_GENERATED_VANILLA_REFERENCE_TRACE_ENTRIES = 24;
 
 export interface McpServerGeneratedVanillaResourcePackageOptions {
   runtimeLayout: ManagedRuntimeLayout;
@@ -41,6 +45,7 @@ export async function executeMcpServerGeneratedVanillaResourcePackage(input: {
   sourcePackage: SourcePackageCoordinate;
   payloadSource: "vanilla_datapack" | "vanilla_assets";
   evidenceLabel: string;
+  requestText: string;
   queries: string[];
   requestedPaths: string[];
   options: McpServerGeneratedVanillaResourcePackageOptions;
@@ -80,6 +85,7 @@ export async function executeMcpServerGeneratedVanillaResourcePackage(input: {
     minecraftVersion: input.minecraftVersion,
     packageId: input.sourcePackage.packageId,
     evidenceLabel: input.evidenceLabel,
+    requestText: input.requestText,
     queries: input.queries,
     requestedPaths: input.requestedPaths
   });
@@ -104,6 +110,7 @@ async function resolveInstalledGeneratedVanillaResourcePackage(input: {
   minecraftVersion: string;
   packageId: string;
   evidenceLabel: string;
+  requestText: string;
   queries: string[];
   requestedPaths: string[];
 }) {
@@ -116,6 +123,11 @@ async function resolveInstalledGeneratedVanillaResourcePackage(input: {
       GENERATED_VANILLA_RESOURCE_BUDGET
     )
   );
+  const resourceReferenceTrace = await traceRequestedResourceReferences({
+    installPath: input.installPath,
+    requestText: input.requestText,
+    requestedPaths: input.requestedPaths
+  });
 
   if (input.queries.length === 0 && input.requestedPaths.length === 0) {
     const listed = await listDatapackFiles(input.installPath, {
@@ -145,12 +157,38 @@ async function resolveInstalledGeneratedVanillaResourcePackage(input: {
     resourceSummary,
     reads: reads.files,
     matches: search.matches,
+    ...(resourceReferenceTrace ? { resourceReferenceTrace } : {}),
     skipped: [...reads.skipped, ...search.skipped],
     truncated: search.truncated,
     summary: matchCount > 0
       ? `Resolved ${matchCount} ${input.evidenceLabel} evidence item(s).`
       : `${input.evidenceLabel} package ${input.packageId} is installed but no matching file was found.`
   };
+}
+
+async function traceRequestedResourceReferences(input: {
+  installPath: string;
+  requestText: string;
+  requestedPaths: string[];
+}) {
+  const startPaths = input.requestedPaths.filter((path) =>
+    isTraceableAssetPath(path)
+  );
+
+  if (
+    startPaths.length === 0 ||
+    !mentionsResourceReferenceTrace(input.requestText)
+  ) {
+    return undefined;
+  }
+
+  const trace = await traceDatapackResourceReferences(input.installPath, {
+    ...GENERATED_VANILLA_RESOURCE_BUDGET,
+    paths: startPaths,
+    maxReferences: MAX_GENERATED_VANILLA_REFERENCE_TRACE_ENTRIES
+  });
+
+  return toCompactResourceReferenceTrace(trace);
 }
 
 async function readRequestedPaths(
@@ -226,6 +264,50 @@ function toCompactResourceSummary(summary: DatapackFileSummary) {
     skippedCount: summary.skipped.length,
     truncated: summary.truncated
   };
+}
+
+function toCompactResourceReferenceTrace(
+  trace: DatapackResourceReferenceTrace
+) {
+  return {
+    tokenPolicy: "explicit_trace" as const,
+    startPaths: trace.startPaths,
+    referenceCount: trace.references.length,
+    unresolvedCount: trace.unresolved.length,
+    references: trace.references.map(toCompactResourceReference),
+    unresolved: trace.unresolved.map(toCompactResourceReference),
+    skippedCount: trace.skipped.length,
+    truncated: trace.truncated
+  };
+}
+
+function toCompactResourceReference(reference: DatapackResourceReference) {
+  return {
+    fromPath: reference.fromPath,
+    fromKind: reference.fromKind,
+    relation: reference.relation,
+    value: reference.value,
+    toPath: reference.toPath,
+    toKind: reference.toKind,
+    status: reference.status
+  };
+}
+
+function isTraceableAssetPath(path: string): boolean {
+  return (
+    path.startsWith("assets/") &&
+    (
+      path.includes("/blockstates/") ||
+      path.includes("/models/")
+    ) &&
+    path.endsWith(".json")
+  );
+}
+
+function mentionsResourceReferenceTrace(requestText: string): boolean {
+  return /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i.test(
+    requestText
+  );
 }
 
 function toPackageStatusResult(input: {

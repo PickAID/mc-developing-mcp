@@ -6,7 +6,7 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata 和 compact `datapackVersionProfile`，并能从 `supported_formats` 报告兼容 pack format 范围和已知 MC 版本映射。datapack profile catalog 已修正为官方 `server.jar!/version.json` 的 datapack pack format，覆盖 release `1.18.2` 到 `26.1.2`，并支持 1.21.10+ 的 minor format。source package manager 现在也能在用户确认后从 Mojang/Piston 风格 manifest 下载官方 archive，并生成只含 `data/**` 的 vanilla datapack runtime package 或只含 `assets/**` 的 vanilla assets runtime package，不把 Mojang 内容存进仓库。MCP datapack/resource executor 现在也能在没有本地 datapack/resource roots 时，通过现有 `mc_develop`/`source.bundle` 证据链读取已确认生成的 vanilla datapack package 或 vanilla assets package。显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata 和 compact `datapackVersionProfile`，并能从 `supported_formats` 报告兼容 pack format 范围和已知 MC 版本映射。datapack profile catalog 已修正为官方 `server.jar!/version.json` 的 datapack pack format，覆盖 release `1.18.2` 到 `26.1.2`，并支持 1.21.10+ 的 minor format。source package manager 现在也能在用户确认后从 Mojang/Piston 风格 manifest 下载官方 archive，并生成只含 `data/**` 的 vanilla datapack runtime package 或只含 `assets/**` 的 vanilla assets runtime package，不把 Mojang 内容存进仓库。MCP datapack/resource executor 现在也能在没有本地 datapack/resource roots 时，通过现有 `mc_develop`/`source.bundle` 证据链读取已确认生成的 vanilla datapack package 或 vanilla assets package，并能对 generated vanilla assets 执行显式 blockstate -> model -> texture 引用追踪。显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -15,9 +15,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Latest committed base before this progress update: `a8d72d0`
+- Latest committed base before this progress update: `2d2f0f8`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 105 test files and 332 tests
+- Latest full verification: `pnpm test` passed with 105 test files and 333 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -55,7 +55,8 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `24a7378 feat(datapack): generate vanilla datapack packages`
 - `9d19c71 feat(mcp-server): use generated vanilla datapack evidence`
 - `a8d72d0 feat(source-package-manager): generate vanilla assets packages`
-- current progress update: MCP datapack/resource evidence uses generated vanilla assets packages when local roots are absent
+- `2d2f0f8 feat(mcp-server): use generated vanilla assets evidence`
+- current progress update: MCP generated vanilla assets evidence supports explicit resource reference traces
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -111,6 +112,7 @@ Implemented:
 - Source package manager can now generate vanilla assets packages by extracting only `assets/**` from local official archives or Mojang/Piston-style remote client archives, still gated by explicit package confirmation.
 - MCP datapack/resource executor can now use a generated vanilla datapack package as evidence when no local datapack roots exist and the request explicitly targets vanilla/official `minecraft:*` or `data/minecraft/...`.
 - MCP datapack/resource executor can now use a generated vanilla assets package as evidence when no local resource roots exist and the request explicitly targets vanilla/official `assets/minecraft/...`.
+- MCP datapack/resource executor can now trace blockstate/model/texture references over generated vanilla assets packages for explicit trace/reference requests.
 - Harness and evidence planning now route explicit vanilla datapack requests to `datapack_files` without adding a new public MCP tool.
 - Harness and evidence planning now route explicit vanilla assets requests to `datapack_files` without adding a new public MCP tool.
 - Loose resource reference tracing now resolves blockstate model references, model parent references, model texture references, and missing targets without reading binary texture content.
@@ -179,6 +181,7 @@ Completed:
 - MCP-side generated vanilla datapack package evidence through `source.bundle`
 - User-confirmed generated vanilla assets runtime packages from official archive metadata
 - MCP-side generated vanilla assets package evidence through `source.bundle`
+- Explicit generated vanilla assets reference trace for blockstate/model/texture chains
 - Explicit loose resource reference trace for blockstate/model/texture chains
 - Assets-only resource-pack routing without `pack.mcmeta`
 - Runtime guidance boundary guard for resource/UI scope
@@ -187,7 +190,6 @@ Still incomplete:
 
 - published release workflow and package retention policy
 - broader docs retrieval from external resource package indexes
-- resource reference tracing over generated vanilla assets packages
 - full migration analysis across Java/KubeJS/datapack versions
 - robust modpack-specific derived caches for ProbeJS snippets/items/registries
 - persistent derived indexes beyond class paths and selected/local asset/data summaries, such as detailed item/registry/recipe lookup tables, nested resource reference lookup tables, and crash-triage lookup tables
@@ -290,6 +292,8 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-05-01-vanilla-assets-package-generation-verification.md`
 
 `docs/reviews/2026-05-01-mcp-vanilla-assets-package-evidence-verification.md`
+
+`docs/reviews/2026-05-01-mcp-vanilla-assets-reference-trace-verification.md`
 
 `docs/reviews/2026-04-30-assets-only-resource-route-verification.md`
 
