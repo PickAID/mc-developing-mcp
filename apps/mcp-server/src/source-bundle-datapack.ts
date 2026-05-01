@@ -22,6 +22,10 @@ import {
   executeMcpServerVanillaDatapackPackage,
   type McpServerVanillaDatapackPackageOptions
 } from "./source-bundle-vanilla-datapack.js";
+import {
+  executeMcpServerVanillaAssetsPackage,
+  type McpServerVanillaAssetsPackageOptions
+} from "./source-bundle-vanilla-assets.js";
 
 const MAX_QUERIES = 8;
 const MAX_MATCHES = 16;
@@ -36,6 +40,7 @@ export async function executeMcpServerDatapackFiles(
   input: McpServerEvidenceExecutorInput,
   options: {
     vanillaDatapackPackage?: McpServerVanillaDatapackPackageOptions;
+    vanillaAssetsPackage?: McpServerVanillaAssetsPackageOptions;
   } = {}
 ): Promise<McpServerEvidenceExecutorResult> {
   if (input.candidate.routeStep !== "datapack_files") {
@@ -71,6 +76,18 @@ export async function executeMcpServerDatapackFiles(
 
     if (vanillaDatapackResult) {
       return vanillaDatapackResult;
+    }
+
+    const vanillaAssetsResult = await executeMcpServerVanillaAssetsPackage({
+      executorInput: input,
+      requestText,
+      queries,
+      requestedPaths,
+      options: options.vanillaAssetsPackage
+    });
+
+    if (vanillaAssetsResult) {
+      return vanillaAssetsResult;
     }
 
     return {

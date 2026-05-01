@@ -1,4 +1,4 @@
-import { buildVanillaDataPackCoordinate } from "@mcpskill/source-package-manager";
+import { buildVanillaAssetsCoordinate } from "@mcpskill/source-package-manager";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -9,17 +9,17 @@ import {
   type McpServerGeneratedVanillaResourcePackageOptions
 } from "./source-bundle-generated-vanilla-resource.js";
 
-export type McpServerVanillaDatapackPackageOptions =
+export type McpServerVanillaAssetsPackageOptions =
   McpServerGeneratedVanillaResourcePackageOptions;
 
-export async function executeMcpServerVanillaDatapackPackage(input: {
+export async function executeMcpServerVanillaAssetsPackage(input: {
   executorInput: McpServerEvidenceExecutorInput;
   requestText: string;
   queries: string[];
   requestedPaths: string[];
-  options?: McpServerVanillaDatapackPackageOptions;
+  options?: McpServerVanillaAssetsPackageOptions;
 }): Promise<McpServerEvidenceExecutorResult | undefined> {
-  if (!input.options || !shouldUseVanillaDatapackPackage(input)) {
+  if (!input.options || !shouldUseVanillaAssetsPackage(input)) {
     return undefined;
   }
 
@@ -30,13 +30,13 @@ export async function executeMcpServerVanillaDatapackPackage(input: {
   if (!minecraftVersion) {
     return {
       matched: true,
-      summary: "No Minecraft runtime version available for vanilla datapack package resolution.",
+      summary: "No Minecraft runtime version available for vanilla assets package resolution.",
       payload: {
-        source: "vanilla_datapack",
+        source: "vanilla_assets",
         result: {
           status: "version_unresolved",
           summary:
-            "No Minecraft runtime version available for vanilla datapack package resolution."
+            "No Minecraft runtime version available for vanilla assets package resolution."
         }
       }
     };
@@ -44,26 +44,24 @@ export async function executeMcpServerVanillaDatapackPackage(input: {
 
   return executeMcpServerGeneratedVanillaResourcePackage({
     minecraftVersion,
-    sourcePackage: buildVanillaDataPackCoordinate(minecraftVersion),
-    payloadSource: "vanilla_datapack",
-    evidenceLabel: "generated vanilla datapack",
+    sourcePackage: buildVanillaAssetsCoordinate(minecraftVersion),
+    payloadSource: "vanilla_assets",
+    evidenceLabel: "generated vanilla assets",
     queries: input.queries,
     requestedPaths: input.requestedPaths,
     options: input.options
   });
 }
 
-function shouldUseVanillaDatapackPackage(input: {
+function shouldUseVanillaAssetsPackage(input: {
   requestText: string;
-  queries: string[];
   requestedPaths: string[];
 }): boolean {
   const requestText = input.requestText.toLowerCase();
   const mentionsVanilla = /\b(?:vanilla|official)\b|原版|官方/.test(requestText);
-  const mentionsMinecraftData =
-    input.queries.some((query) => query.startsWith("minecraft:")) ||
-    input.requestedPaths.some((path) => path.startsWith("data/minecraft/")) ||
-    /\bminecraft:[a-z0-9_.\/-]+\b|data\/minecraft\//.test(requestText);
+  const mentionsMinecraftAssets =
+    input.requestedPaths.some((path) => path.startsWith("assets/minecraft/")) ||
+    /assets\/minecraft\//.test(requestText);
 
-  return mentionsVanilla && mentionsMinecraftData;
+  return mentionsVanilla && mentionsMinecraftAssets;
 }

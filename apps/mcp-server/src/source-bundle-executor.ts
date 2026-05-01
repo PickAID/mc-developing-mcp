@@ -11,6 +11,7 @@ import type {
   SourcePackageRecipeRegistry
 } from "@mcpskill/source-package-manager";
 import {
+  buildMojangVanillaAssetsRecipeProvider,
   buildMojangVanillaDataPackRecipeProvider,
   buildVanillaSourcePackZipRecipe
 } from "@mcpskill/source-package-manager";
@@ -55,6 +56,12 @@ export function buildMcpServerSourceBundleExecutor(
           runtimeLayout,
           recipes: options.recipes,
           recipeProvider: buildVanillaDatapackRecipeProvider(options),
+          executeRecipe: options.executeRecipe
+        },
+        vanillaAssetsPackage: {
+          runtimeLayout,
+          recipes: options.recipes,
+          recipeProvider: buildVanillaAssetsRecipeProvider(options),
           executeRecipe: options.executeRecipe
         }
       });
@@ -220,6 +227,15 @@ function buildVanillaDatapackRecipeProvider(
   return combineRecipeProviders([
     options.recipeProvider,
     buildMojangVanillaDataPackRecipeProvider()
+  ]);
+}
+
+function buildVanillaAssetsRecipeProvider(
+  options: McpServerSourceBundleExecutorOptions
+): SourcePackageRecipeProvider {
+  return combineRecipeProviders([
+    options.recipeProvider,
+    buildMojangVanillaAssetsRecipeProvider()
   ]);
 }
 

@@ -260,6 +260,43 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes vanilla asset lookups to datapack files even without local resource roots", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "docs_lookup"]
+          },
+          currentRuntime: {
+            minecraftVersion: "1.20.1",
+            source: "workspace-detect",
+            confidence: "high",
+            evidenceSources: ["workspace-detect"],
+            candidates: [],
+            evidence: []
+          },
+          facts: {
+            ...createFacts(),
+            hasGradle: true,
+            hasJavaSource: true
+          }
+        }),
+        "Read the vanilla official asset assets/minecraft/models/item/stone.json"
+      )
+    ).toMatchObject({
+      intent: {
+        id: "datapack_lookup",
+        confidence: "high"
+      },
+      steps: ["datapack_files", "docs_lookup"],
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+  });
+
   it("falls back to the workspace default route when no strong intent is present", () => {
     expect(
       buildHarnessTaskRoute(

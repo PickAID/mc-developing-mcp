@@ -77,6 +77,9 @@ function buildCandidate(
   const vanillaDatapackRequest = mentionsVanillaDatapackRequest(
     requestPlan.requestText
   );
+  const vanillaAssetsRequest = mentionsVanillaAssetsRequest(
+    requestPlan.requestText
+  );
 
   switch (routeStep) {
     case "java_diagnostics":
@@ -165,12 +168,18 @@ function buildCandidate(
         preferredTool: "source.bundle",
         estimatedCost: "medium",
         reliability: "high",
-        reason: vanillaDatapackRequest
+        reason: vanillaAssetsRequest
+          ? buildVanillaAssetsReason(
+              descriptor?.currentRuntime.minecraftVersion
+            )
+          : vanillaDatapackRequest
           ? buildVanillaDatapackReason(
               descriptor?.currentRuntime.minecraftVersion
             )
           : "Inspect datapack files before secondary docs.",
-        pathHints: vanillaDatapackRequest
+        pathHints: vanillaAssetsRequest
+          ? collectVanillaAssetsHints(descriptor)
+          : vanillaDatapackRequest
           ? collectVanillaDatapackHints(descriptor)
           : [...(descriptor?.datapackRoots ?? [])],
         queryHint: requestPlan.requestText
@@ -260,6 +269,18 @@ function mentionsVanillaDatapackRequest(requestText?: string): boolean {
   );
 }
 
+function mentionsVanillaAssetsRequest(requestText?: string): boolean {
+  if (!requestText) {
+    return false;
+  }
+
+  const normalized = requestText.toLowerCase();
+  return (
+    /\b(?:vanilla|official)\b|原版|官方/.test(normalized) &&
+    /assets\/minecraft\//.test(normalized)
+  );
+}
+
 function buildVanillaSourceReason(minecraftVersion?: string): string {
   if (!minecraftVersion) {
     return "Request targets net.minecraft.* and should resolve through version-bound vanilla source before docs.";
@@ -303,5 +324,24 @@ function collectVanillaDatapackHints(
     runtimeVersion
       ? `vanilla-datapack-package:minecraft:${runtimeVersion}:official`
       : "vanilla-datapack-package:minecraft:unresolved:official"
+  ];
+}
+
+function buildVanillaAssetsReason(minecraftVersion?: string): string {
+  if (!minecraftVersion) {
+    return "Request targets generated vanilla assets evidence before docs.";
+  }
+
+  return `Request targets generated vanilla assets evidence for Minecraft ${minecraftVersion} before docs.`;
+}
+
+function collectVanillaAssetsHints(
+  descriptor?: { currentRuntime?: { minecraftVersion?: string } }
+): string[] {
+  const runtimeVersion = descriptor?.currentRuntime?.minecraftVersion;
+  return [
+    runtimeVersion
+      ? `vanilla-assets-package:minecraft:${runtimeVersion}:official`
+      : "vanilla-assets-package:minecraft:unresolved:official"
   ];
 }

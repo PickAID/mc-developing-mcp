@@ -250,6 +250,40 @@ describe("buildMcpServerEvidencePlan", () => {
     });
   });
 
+  it("marks vanilla asset requests as generated vanilla assets evidence", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-evidence-plan-"));
+    const workspaceRoot = await createForgeWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: {
+        workspaceRoot
+      }
+    });
+
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Read the vanilla official asset assets/minecraft/models/item/stone.json"
+    );
+
+    expect(buildMcpServerEvidencePlan(requestPlan)).toMatchObject({
+      candidates: [
+        {
+          id: "candidate-1-datapack_files",
+          routeStep: "datapack_files",
+          provenance: "datapack_files",
+          preferredTool: "source.bundle",
+          reason:
+            "Request targets generated vanilla assets evidence for Minecraft 1.20.1 before docs.",
+          pathHints: ["vanilla-assets-package:minecraft:1.20.1:official"]
+        },
+        {
+          id: "candidate-2-docs_lookup",
+          provenance: "docs"
+        }
+      ]
+    });
+  });
+
   it("adds Java diagnostics evidence before source for compile error requests", async () => {
     const workspaceRoot = await createForgeWorkspace();
     const bootstrap = await buildMcpServerBootstrap({
