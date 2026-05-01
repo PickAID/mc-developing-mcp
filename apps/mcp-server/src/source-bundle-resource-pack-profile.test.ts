@@ -64,9 +64,11 @@ describe("source.bundle resource-pack profile", () => {
         resourcePackVersionProfile: {
           tokenPolicy: "compact_resource_profile",
           source: "pack_mcmeta_and_assets_runtime",
-          supportLevel: "format_catalog_not_available",
-          packFormatStatus: "metadata_only",
+          supportLevel: "known_profile",
+          packFormatStatus: "known",
+          minecraftVersion: "1.20.1",
           packFormatId: "15",
+          compatibleMinecraftVersions: [],
           assetKinds: ["lang"]
         }
       }

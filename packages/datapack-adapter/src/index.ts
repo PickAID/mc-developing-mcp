@@ -44,6 +44,9 @@ export type {
   DatapackVersionMigrationAnalysis
 } from "./migration-analysis.js";
 export type {
+  KnownResourcePackProfile
+} from "./resource-pack-profile-catalog.js";
+export type {
   ResourcePackFormatStatus,
   ResourcePackProfileConfidence,
   ResourcePackVersionProfile,

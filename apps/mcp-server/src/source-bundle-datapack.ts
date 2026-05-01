@@ -126,7 +126,13 @@ export async function executeMcpServerDatapackFiles(
   const resourcePackVersionProfile = hasResourcePackEvidence
     ? toCompactResourcePackVersionProfile(
         await resolveResourcePackVersionProfile(workspaceRoot, {
-          assetKinds: discovery.assetKinds
+          assetKinds: discovery.assetKinds,
+          minecraftVersion:
+            input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+              .minecraftVersion,
+          runtimeConfidence:
+            input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
+              .confidence
         })
       )
     : undefined;
@@ -230,6 +236,9 @@ function toCompactResourcePackVersionProfile(profile: ResourcePackVersionProfile
     packFormat: profile.packFormat,
     packFormatId: profile.packFormatId,
     packFormatVersion: profile.packFormatVersion,
+    minecraftVersion: profile.minecraftVersion,
+    compatibleMinecraftVersions: profile.compatibleMinecraftVersions,
+    knownAssetKinds: profile.knownAssetKinds,
     assetKinds: profile.assetKinds,
     semanticValidation: profile.semanticValidation,
     migrationAnalysis: profile.migrationAnalysis,

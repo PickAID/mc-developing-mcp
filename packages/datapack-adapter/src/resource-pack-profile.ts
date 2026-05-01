@@ -5,8 +5,13 @@ import { discoverRoots } from "./discovery.js";
 import {
   packFormatToNumber,
   parsePackFormatValue,
+  samePackFormat,
   type DatapackPackFormatVersion
 } from "./pack-format.js";
+import {
+  KNOWN_RESOURCE_PACK_PROFILES,
+  type KnownResourcePackProfile
+} from "./resource-pack-profile-catalog.js";
 import type { AssetKind } from "./types.js";
 
 export type ResourcePackVersionProfileSource =
@@ -17,16 +22,20 @@ export type ResourcePackVersionProfileSource =
   | "unknown";
 
 export type ResourcePackVersionSupportLevel =
+  | "known_profile"
+  | "unknown_version"
   | "format_catalog_not_available"
   | "unresolved";
 
 export type ResourcePackFormatStatus =
+  | "known"
   | "metadata_only"
   | "missing_metadata"
   | "conflict"
   | "unknown";
 
 export type ResourcePackProfileConfidence =
+  | "high"
   | "medium"
   | "low"
   | "unknown";
@@ -39,6 +48,9 @@ export interface ResourcePackVersionProfile {
   packFormat?: number;
   packFormatId?: string;
   packFormatVersion?: DatapackPackFormatVersion;
+  minecraftVersion?: string;
+  compatibleMinecraftVersions: string[];
+  knownAssetKinds: AssetKind[];
   assetKinds: AssetKind[];
   semanticValidation: "not_available";
   migrationAnalysis: "not_available";
@@ -47,6 +59,8 @@ export interface ResourcePackVersionProfile {
 
 export interface ResourcePackVersionProfileOptions {
   assetKinds?: AssetKind[];
+  minecraftVersion?: string;
+  runtimeConfidence?: ResourcePackProfileConfidence;
 }
 
 interface ResourcePackMetadataEvidence {
@@ -62,6 +76,11 @@ export async function resolveResourcePackVersionProfile(
 ): Promise<ResourcePackVersionProfile> {
   const evidence = await readResourcePackMetadataEvidence(root);
   const assetKinds = [...new Set(options.assetKinds ?? [])].sort();
+  const knownProfile = options.minecraftVersion
+    ? knownProfileForVersion(options.minecraftVersion)
+    : undefined;
+  const metadataKnownProfile =
+    knownProfile ?? knownProfileFromPackFormat(evidence.packFormatVersion);
 
   if (evidence.conflict) {
     return createProfile({
@@ -69,7 +88,23 @@ export async function resolveResourcePackVersionProfile(
       confidence: "unknown",
       supportLevel: "unresolved",
       packFormatStatus: "conflict",
-      assetKinds
+      knownProfile: metadataKnownProfile,
+      assetKinds,
+      note: "multiple resource pack formats were found in pack.mcmeta files"
+    });
+  }
+
+  if (isConflictingEvidence(evidence.packFormatVersion, knownProfile)) {
+    return createProfile({
+      source: "conflict",
+      confidence: "unknown",
+      supportLevel: "known_profile",
+      packFormatStatus: "conflict",
+      minecraftVersion: options.minecraftVersion,
+      packFormatVersion: evidence.packFormatVersion,
+      knownProfile,
+      assetKinds,
+      note: `pack.mcmeta resource format is incompatible with runtime ${options.minecraftVersion}`
     });
   }
 
@@ -77,8 +112,11 @@ export async function resolveResourcePackVersionProfile(
     return createProfile({
       source: "pack_mcmeta_and_assets_runtime",
       confidence: "medium",
-      supportLevel: "format_catalog_not_available",
-      packFormatStatus: "metadata_only",
+      supportLevel: metadataKnownProfile ? "known_profile" : "unresolved",
+      packFormatStatus: metadataKnownProfile ? "known" : "metadata_only",
+      minecraftVersion:
+        options.minecraftVersion ?? metadataKnownProfile?.minecraftVersion,
+      knownProfile: metadataKnownProfile,
       packFormatVersion: evidence.packFormatVersion,
       assetKinds
     });
@@ -88,9 +126,23 @@ export async function resolveResourcePackVersionProfile(
     return createProfile({
       source: "pack_mcmeta",
       confidence: "low",
-      supportLevel: "format_catalog_not_available",
-      packFormatStatus: "metadata_only",
+      supportLevel: metadataKnownProfile ? "known_profile" : "unresolved",
+      packFormatStatus: metadataKnownProfile ? "known" : "metadata_only",
+      minecraftVersion: metadataKnownProfile?.minecraftVersion,
+      knownProfile: metadataKnownProfile,
       packFormatVersion: evidence.packFormatVersion,
+      assetKinds
+    });
+  }
+
+  if (knownProfile) {
+    return createProfile({
+      source: evidence.hasAssets ? "assets_runtime" : "unknown",
+      confidence: options.runtimeConfidence ?? "medium",
+      supportLevel: "known_profile",
+      packFormatStatus: "known",
+      minecraftVersion: options.minecraftVersion,
+      knownProfile,
       assetKinds
     });
   }
@@ -99,8 +151,9 @@ export async function resolveResourcePackVersionProfile(
     return createProfile({
       source: "assets_runtime",
       confidence: "low",
-      supportLevel: "unresolved",
+      supportLevel: options.minecraftVersion ? "unknown_version" : "unresolved",
       packFormatStatus: evidence.hasMetadata ? "unknown" : "missing_metadata",
+      minecraftVersion: options.minecraftVersion,
       assetKinds
     });
   }
@@ -161,24 +214,64 @@ function createProfile(input: {
   confidence: ResourcePackProfileConfidence;
   supportLevel: ResourcePackVersionSupportLevel;
   packFormatStatus: ResourcePackFormatStatus;
+  minecraftVersion?: string;
   packFormatVersion?: DatapackPackFormatVersion;
+  knownProfile?: KnownResourcePackProfile;
   assetKinds: AssetKind[];
+  note?: string;
 }): ResourcePackVersionProfile {
   return {
     source: input.source,
     confidence: input.confidence,
     supportLevel: input.supportLevel,
     packFormatStatus: input.packFormatStatus,
-    packFormat: packFormatToNumber(input.packFormatVersion),
-    packFormatId: input.packFormatVersion?.id,
-    packFormatVersion: input.packFormatVersion,
+    packFormat: packFormatToNumber(input.packFormatVersion) ??
+      input.knownProfile?.packFormat,
+    packFormatId: input.packFormatVersion?.id ?? input.knownProfile?.packFormatId,
+    packFormatVersion:
+      input.packFormatVersion ?? input.knownProfile?.packFormatVersion,
+    minecraftVersion: input.minecraftVersion,
+    compatibleMinecraftVersions: [],
+    knownAssetKinds: input.knownProfile?.knownAssetKinds ?? [],
     assetKinds: input.assetKinds,
     semanticValidation: "not_available",
     migrationAnalysis: "not_available",
     notes: [
       "profile describes resource-pack metadata and observed asset kinds only",
-      "official resource pack format catalog is not implemented yet",
-      "versioned asset validation is not implemented yet"
+      "versioned asset validation is not implemented yet",
+      ...(input.note ? [input.note] : [])
     ]
   };
+}
+
+function knownProfileForVersion(
+  minecraftVersion: string
+): KnownResourcePackProfile | undefined {
+  return KNOWN_RESOURCE_PACK_PROFILES.find(
+    (profile) => profile.minecraftVersion === minecraftVersion
+  );
+}
+
+function knownProfileFromPackFormat(
+  packFormatVersion: DatapackPackFormatVersion | undefined
+): KnownResourcePackProfile | undefined {
+  if (!packFormatVersion) {
+    return undefined;
+  }
+  return [...KNOWN_RESOURCE_PACK_PROFILES]
+    .reverse()
+    .find((profile) =>
+      samePackFormat(profile.packFormatVersion, packFormatVersion)
+    );
+}
+
+function isConflictingEvidence(
+  packFormatVersion: DatapackPackFormatVersion | undefined,
+  knownProfile: KnownResourcePackProfile | undefined
+): boolean {
+  return Boolean(
+    packFormatVersion &&
+      knownProfile &&
+      !samePackFormat(packFormatVersion, knownProfile.packFormatVersion)
+  );
 }
