@@ -12,6 +12,7 @@ import { readSourcePackageManifest } from "./manifest.js";
 import {
   buildVanillaAssetsArchiveRecipe,
   buildVanillaDataPackArchiveRecipe,
+  buildVanillaResourcePackArchiveRecipe,
   buildVanillaSourcePackCopyRecipe,
   buildVanillaSourcePackZipRecipe
 } from "./vanilla.js";
@@ -215,6 +216,50 @@ describe("buildLocalSourcePackageRecipeExecutor", () => {
       fileCount: 1
     });
     expect(result.fileCount).toBe(1);
+  });
+
+  it("generates a vanilla resource-pack package from official client jar assets entries only", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-resource-pack-package-"));
+    const clientJar = join(runtimeRoot, "minecraft-client.jar");
+    const executor = buildLocalSourcePackageRecipeExecutor();
+    const recipe = buildVanillaResourcePackArchiveRecipe({
+      minecraftVersion: "26.1.2",
+      sourceArchive: clientJar
+    });
+
+    await writeFile(
+      clientJar,
+      createZip([
+        {
+          name: "assets/minecraft/models/item/stone.json",
+          content: "{\"parent\":\"minecraft:item/generated\"}\n"
+        },
+        {
+          name: "data/minecraft/recipe/stone.json",
+          content: "{\"type\":\"minecraft:crafting_shapeless\"}\n"
+        }
+      ])
+    );
+
+    const result = await executor({
+      runtimeLayout: createRuntimeLayout(runtimeRoot),
+      recipe
+    });
+
+    await expect(
+      readFile(
+        join(result.installPath, "assets", "minecraft", "models", "item", "stone.json"),
+        "utf-8"
+      )
+    ).resolves.toContain("minecraft:item/generated");
+    await expect(readSourcePackageManifest(result.installPath)).resolves.toMatchObject({
+      packageId: "minecraft-26.1.2-vanilla-resource-pack-official",
+      artifactType: "resource-pack",
+      variant: "official",
+      provenance: "mojang-official-archive",
+      stepKinds: ["extract_archive_content", "write_package_manifest"],
+      fileCount: 1
+    });
   });
 });
 

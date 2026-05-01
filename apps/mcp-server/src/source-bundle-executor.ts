@@ -13,6 +13,7 @@ import type {
 import {
   buildMojangVanillaAssetsRecipeProvider,
   buildMojangVanillaDataPackRecipeProvider,
+  buildMojangVanillaResourcePackRecipeProvider,
   buildVanillaSourcePackZipRecipe
 } from "@mcpskill/source-package-manager";
 import type { SourcePackageCoordinate } from "@mcpskill/shared-types";
@@ -235,6 +236,7 @@ function buildVanillaAssetsRecipeProvider(
 ): SourcePackageRecipeProvider {
   return combineRecipeProviders([
     options.recipeProvider,
+    buildMojangVanillaResourcePackRecipeProvider(),
     buildMojangVanillaAssetsRecipeProvider()
   ]);
 }

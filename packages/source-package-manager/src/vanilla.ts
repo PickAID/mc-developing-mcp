@@ -152,12 +152,59 @@ export function buildVanillaAssetsArchiveRecipe(input: {
   };
 }
 
+export function buildVanillaResourcePackArchiveRecipe(input: {
+  minecraftVersion: string;
+  sourceArchive: string;
+  provenance?: string;
+}): SourcePackageRecipe {
+  const coordinate = buildVanillaResourcePackCoordinate(input.minecraftVersion);
+
+  return {
+    ...coordinate,
+    provenance: input.provenance ?? "mojang-official-archive",
+    steps: [
+      {
+        kind: "extract_archive_content",
+        sourceArchive: input.sourceArchive,
+        domains: ["assets"]
+      },
+      {
+        kind: "write_package_manifest"
+      }
+    ]
+  };
+}
+
 export function buildVanillaAssetsRemoteArchiveRecipe(input: {
   minecraftVersion: string;
   sourceUrl: string;
   provenance?: string;
 }): SourcePackageRecipe {
   const coordinate = buildVanillaAssetsCoordinate(input.minecraftVersion);
+
+  return {
+    ...coordinate,
+    provenance: input.provenance ?? "mojang-piston-manifest",
+    steps: [
+      {
+        kind: "extract_remote_archive_content",
+        sourceUrl: input.sourceUrl,
+        downloadFileName: `minecraft-${input.minecraftVersion}-client.jar`,
+        domains: ["assets"]
+      },
+      {
+        kind: "write_package_manifest"
+      }
+    ]
+  };
+}
+
+export function buildVanillaResourcePackRemoteArchiveRecipe(input: {
+  minecraftVersion: string;
+  sourceUrl: string;
+  provenance?: string;
+}): SourcePackageRecipe {
+  const coordinate = buildVanillaResourcePackCoordinate(input.minecraftVersion);
 
   return {
     ...coordinate,
@@ -226,6 +273,31 @@ export function buildMojangVanillaAssetsRecipeProvider(input: {
   };
 }
 
+export function buildMojangVanillaResourcePackRecipeProvider(input: {
+  versionManifestUrl?: string;
+} = {}): SourcePackageRecipeProvider {
+  return async (sourcePackage) => {
+    if (!isVanillaResourcePackCoordinate(sourcePackage)) {
+      return undefined;
+    }
+
+    const sourceUrl = await resolveMojangArchiveUrl({
+      minecraftVersion: sourcePackage.minecraftVersion,
+      versionManifestUrl: input.versionManifestUrl,
+      preference: "client-first"
+    });
+
+    if (!sourceUrl) {
+      return undefined;
+    }
+
+    return buildVanillaResourcePackRemoteArchiveRecipe({
+      minecraftVersion: sourcePackage.minecraftVersion,
+      sourceUrl
+    });
+  };
+}
+
 export function buildVanillaDataPackCoordinate(
   minecraftVersion: string
 ): SourcePackageCoordinate {
@@ -234,6 +306,18 @@ export function buildVanillaDataPackCoordinate(
     namespace: "minecraft",
     minecraftVersion,
     artifactType: "datapack",
+    variant: "official"
+  };
+}
+
+export function buildVanillaResourcePackCoordinate(
+  minecraftVersion: string
+): SourcePackageCoordinate {
+  return {
+    packageId: `minecraft-${minecraftVersion}-vanilla-resource-pack-official`,
+    namespace: "minecraft",
+    minecraftVersion,
+    artifactType: "resource-pack",
     variant: "official"
   };
 }
@@ -258,6 +342,18 @@ function isVanillaDataPackCoordinate(
       `minecraft-${sourcePackage.minecraftVersion}-vanilla-datapack-official` &&
     sourcePackage.namespace === "minecraft" &&
     sourcePackage.artifactType === "datapack" &&
+    sourcePackage.variant === "official"
+  );
+}
+
+function isVanillaResourcePackCoordinate(
+  sourcePackage: SourcePackageCoordinate
+): boolean {
+  return (
+    sourcePackage.packageId ===
+      `minecraft-${sourcePackage.minecraftVersion}-vanilla-resource-pack-official` &&
+    sourcePackage.namespace === "minecraft" &&
+    sourcePackage.artifactType === "resource-pack" &&
     sourcePackage.variant === "official"
   );
 }

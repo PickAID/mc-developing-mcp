@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   buildLocalSourcePackageRecipeExecutor,
-  buildVanillaAssetsArchiveRecipe,
+  buildVanillaResourcePackArchiveRecipe,
   writeSourcePackageConfirmation
 } from "@mcpskill/source-package-manager";
 import type { SourcePackageConfirmation } from "@mcpskill/shared-types";
@@ -37,7 +37,7 @@ describe("source.bundle vanilla assets package execution", () => {
         installs: join(runtimeRoot, "installs"),
         locks: join(runtimeRoot, "locks")
       },
-      createVanillaAssetsConfirmation("1.20.1")
+      createVanillaResourcePackConfirmation("1.20.1")
     );
     await writeText(
       clientJar,
@@ -73,8 +73,8 @@ describe("source.bundle vanilla assets package execution", () => {
     const executor = buildMcpServerSourceBundleExecutor({
       runtimeRoot,
       recipes: {
-        "minecraft-1.20.1-vanilla-assets-official":
-          buildVanillaAssetsArchiveRecipe({
+        "minecraft-1.20.1-vanilla-resource-pack-official":
+          buildVanillaResourcePackArchiveRecipe({
             minecraftVersion: "1.20.1",
             sourceArchive: clientJar
           })
@@ -94,7 +94,7 @@ describe("source.bundle vanilla assets package execution", () => {
         source: "vanilla_assets",
         result: {
           status: "ready",
-          packageId: "minecraft-1.20.1-vanilla-assets-official",
+          packageId: "minecraft-1.20.1-vanilla-resource-pack-official",
           resourceSummary: {
             tokenPolicy: "counts_only",
             byDomain: {
@@ -132,7 +132,7 @@ describe("source.bundle vanilla assets package execution", () => {
         installs: join(runtimeRoot, "installs"),
         locks: join(runtimeRoot, "locks")
       },
-      createVanillaAssetsConfirmation("1.20.1")
+      createVanillaResourcePackConfirmation("1.20.1")
     );
     await writeText(
       clientJar,
@@ -182,8 +182,8 @@ describe("source.bundle vanilla assets package execution", () => {
     const executor = buildMcpServerSourceBundleExecutor({
       runtimeRoot,
       recipes: {
-        "minecraft-1.20.1-vanilla-assets-official":
-          buildVanillaAssetsArchiveRecipe({
+        "minecraft-1.20.1-vanilla-resource-pack-official":
+          buildVanillaResourcePackArchiveRecipe({
             minecraftVersion: "1.20.1",
             sourceArchive: clientJar
           })
@@ -258,14 +258,14 @@ async function writeText(path: string, content: string | Buffer): Promise<void> 
   await writeFile(path, content);
 }
 
-function createVanillaAssetsConfirmation(
+function createVanillaResourcePackConfirmation(
   minecraftVersion: string
 ): SourcePackageConfirmation {
   return {
-    packageId: `minecraft-${minecraftVersion}-vanilla-assets-official`,
+    packageId: `minecraft-${minecraftVersion}-vanilla-resource-pack-official`,
     namespace: "minecraft",
     minecraftVersion,
-    artifactType: "assets",
+    artifactType: "resource-pack",
     variant: "official",
     scope: "package-version",
     approvedAt: "2026-05-01T00:00:00Z",

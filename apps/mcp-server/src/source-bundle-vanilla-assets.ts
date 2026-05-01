@@ -1,4 +1,4 @@
-import { buildVanillaAssetsCoordinate } from "@mcpskill/source-package-manager";
+import { buildVanillaResourcePackCoordinate } from "@mcpskill/source-package-manager";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -44,7 +44,7 @@ export async function executeMcpServerVanillaAssetsPackage(input: {
 
   return executeMcpServerGeneratedVanillaResourcePackage({
     minecraftVersion,
-    sourcePackage: buildVanillaAssetsCoordinate(minecraftVersion),
+    sourcePackage: buildVanillaResourcePackCoordinate(minecraftVersion),
     payloadSource: "vanilla_assets",
     evidenceLabel: "generated vanilla assets",
     requestText: input.requestText,

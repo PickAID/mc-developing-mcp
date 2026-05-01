@@ -16,7 +16,8 @@ import { ensureSourcePackageInstalled } from "./install.js";
 import { readSourcePackageInstallState } from "./state.js";
 import {
   buildMojangVanillaAssetsRecipeProvider,
-  buildMojangVanillaDataPackRecipeProvider
+  buildMojangVanillaDataPackRecipeProvider,
+  buildMojangVanillaResourcePackRecipeProvider
 } from "./vanilla.js";
 
 describe("Mojang vanilla generated package providers", () => {
@@ -124,6 +125,59 @@ describe("Mojang vanilla generated package providers", () => {
       readFile(join(state?.installPath ?? "", "data", "minecraft", "recipe", "stone.json"))
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
+
+  it("installs a confirmed vanilla resource-pack package from the client archive", async () => {
+    const sourcePackage = createCoordinate("resource-pack");
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-resource-pack-package-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const versionManifestUrl = createVersionManifestUrl({
+      client: dataUrl(
+        "application/octet-stream",
+        createZip([
+          {
+            name: "assets/minecraft/models/item/stone.json",
+            content: "{\"parent\":\"minecraft:item/generated\"}\n"
+          },
+          {
+            name: "data/minecraft/recipe/stone.json",
+            content: "{\"type\":\"minecraft:crafting_shapeless\"}\n"
+          }
+        ])
+      )
+    });
+
+    await writeSourcePackageConfirmation(
+      runtimeLayout,
+      createConfirmation(sourcePackage)
+    );
+
+    await expect(
+      ensureSourcePackageInstalled({
+        runtimeLayout,
+        sourcePackage,
+        recipes: {},
+        recipeProvider: buildMojangVanillaResourcePackRecipeProvider({
+          versionManifestUrl
+        }),
+        executeRecipe: buildLocalSourcePackageRecipeExecutor()
+      })
+    ).resolves.toMatchObject({ status: "ready", package: sourcePackage });
+
+    const state = await readSourcePackageInstallState(runtimeLayout, sourcePackage);
+    await expect(
+      readFile(
+        join(
+          state?.installPath ?? "",
+          "assets",
+          "minecraft",
+          "models",
+          "item",
+          "stone.json"
+        ),
+        "utf-8"
+      )
+    ).resolves.toContain("minecraft:item/generated");
+  });
 });
 
 function createRuntimeLayout(runtimeRoot: string): ManagedRuntimeLayout {
@@ -136,10 +190,12 @@ function createRuntimeLayout(runtimeRoot: string): ManagedRuntimeLayout {
 }
 
 function createCoordinate(
-  artifactType: "datapack" | "assets"
+  artifactType: "datapack" | "assets" | "resource-pack"
 ): SourcePackageCoordinate {
   return {
-    packageId: `minecraft-26.1.2-vanilla-${artifactType}-official`,
+    packageId: artifactType === "resource-pack"
+      ? "minecraft-26.1.2-vanilla-resource-pack-official"
+      : `minecraft-26.1.2-vanilla-${artifactType}-official`,
     namespace: "minecraft",
     minecraftVersion: "26.1.2",
     artifactType,
