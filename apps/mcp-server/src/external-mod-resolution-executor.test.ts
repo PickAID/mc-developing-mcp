@@ -206,6 +206,44 @@ describe("executeMcpServerExternalModResolution", () => {
     });
   });
 
+  it("passes explicit CurseForge project ids to the resolver", async () => {
+    const input = await createExecutorInput(
+      "Find CurseMaven for project id 238222 forge 1.20.1."
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      curseForgeResolver: async (request) => {
+        expect(request).toMatchObject({
+          projectId: "238222",
+          query: "238222",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
+        });
+        expect(request.slug).toBeUndefined();
+        return {
+          source: "curseforge",
+          query: "238222",
+          candidates: [],
+          warnings: []
+        };
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "curseforge",
+          projectId: "238222",
+          query: "238222",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
+        }
+      }
+    });
+  });
+
   it("resolves explicit Maven coordinates before remote project search", async () => {
     const input = await createExecutorInput(
       'Use modImplementation "com.example:demo-mod:1.2.3" from https://maven.example/releases.'

@@ -54,4 +54,32 @@ describe("parseExternalModRequest", () => {
       minecraftVersion: "1.20.1"
     });
   });
+
+  it("extracts an explicit CurseForge slug constraint", () => {
+    expect(
+      parseExternalModRequest(
+        "Find CurseMaven for slug jei forge 1.20.1."
+      )
+    ).toMatchObject({
+      platform: "curseforge",
+      slug: "jei",
+      query: "jei",
+      loader: "forge",
+      minecraftVersion: "1.20.1"
+    });
+  });
+
+  it("extracts an explicit CurseForge project id constraint", () => {
+    expect(
+      parseExternalModRequest(
+        "Find CurseMaven for project id 238222 forge 1.20.1."
+      )
+    ).toMatchObject({
+      platform: "curseforge",
+      projectId: "238222",
+      query: "238222",
+      loader: "forge",
+      minecraftVersion: "1.20.1"
+    });
+  });
 });

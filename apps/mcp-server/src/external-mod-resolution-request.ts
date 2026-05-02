@@ -4,6 +4,7 @@ export interface McpServerExternalModResolutionRequest {
   platform: McpServerExternalModPlatform;
   coordinate?: string;
   repositoryUrls?: string[];
+  projectId?: string;
   slug?: string;
   query?: string;
   loader?: string;
@@ -19,6 +20,12 @@ interface ExternalModUrlHint {
   platform: "modrinth" | "curseforge";
   query: string;
   slug: string;
+}
+
+interface ExternalModConstraintHint {
+  query: string;
+  slug?: string;
+  projectId?: string;
 }
 
 export type ResolvableExternalModRequest =
@@ -49,14 +56,19 @@ export function parseExternalModRequest(
   }
 
   const urlHint = extractExternalModUrlHint(requestText);
+  const constraintHint = extractExplicitConstraintHint(requestText);
   const platform = urlHint?.platform ?? detectPlatform(requestText);
   const loader = detectLoader(requestText);
   const minecraftVersion = detectMinecraftVersion(requestText);
 
   return {
     platform,
-    slug: urlHint?.slug,
-    query: urlHint?.query ?? extractQuery(requestText, loader, minecraftVersion),
+    projectId: constraintHint?.projectId,
+    slug: urlHint?.slug ?? constraintHint?.slug,
+    query:
+      urlHint?.query ??
+      constraintHint?.query ??
+      extractQuery(requestText, loader, minecraftVersion),
     loader,
     minecraftVersion
   };
@@ -164,6 +176,30 @@ function extractQuery(
   );
 
   return meaningful[0]?.toLowerCase();
+}
+
+function extractExplicitConstraintHint(
+  requestText: string
+): ExternalModConstraintHint | undefined {
+  const projectId = requestText.match(/\bproject\s+id\s+([A-Za-z0-9_-]+)\b/i)?.[1];
+
+  if (projectId) {
+    return {
+      projectId,
+      query: projectId
+    };
+  }
+
+  const slug = requestText.match(/\bslug\s+([A-Za-z0-9_.-]+)\b/i)?.[1]?.toLowerCase();
+
+  if (slug) {
+    return {
+      slug,
+      query: slug
+    };
+  }
+
+  return undefined;
 }
 
 function extractExternalModUrlHint(requestText: string): ExternalModUrlHint | undefined {

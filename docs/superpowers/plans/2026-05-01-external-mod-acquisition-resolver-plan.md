@@ -19,6 +19,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Modrinth exact slug/project id resolution now checks `/project/{id|slug}` before broad search and falls back to search on 404.
 - Modrinth file selection now skips sidecar `file_type` jars such as sources/dev/javadoc/signature/resource-pack entries before choosing a runtime jar.
 - MCP external mod execution now preserves broad CurseForge query terms without inventing a slug; exact slug constraints are only passed when parsed from URL-backed requests.
+- MCP external mod parsing now understands explicit `slug <value>` and `project id <value>` constraints and passes CurseForge project ids to the resolver.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -62,7 +63,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, ambiguous query, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, compact ambiguous remote search reports, URL-backed slug extraction, and broad CurseForge query preservation inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, compact ambiguous remote search reports, URL-backed slug extraction, explicit slug/project-id constraint parsing, and broad CurseForge query preservation inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;
@@ -72,6 +73,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add tests proving Maven coordinates avoid remote project search and ambiguous remote hits are reported compactly.
 - Add tests proving remote project URLs are narrowed into exact platform + slug requests before resolver execution.
 - Add tests proving ordinary CurseForge search terms do not bypass ambiguity handling by being treated as exact slugs.
+- Add tests proving explicit slug/project-id follow-up text can route the next resolver call without broad search ambiguity.
 
 ## Task 6: MCP Integration
 - Wire resolver into existing `mc_develop` evidence chain, likely behind `source.bundle` or crash/log analysis routes.
@@ -92,5 +94,6 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
   - CurseForge ambiguous project match;
   - CurseForge missing `downloadUrl` fallback behavior;
   - Modrinth and CurseForge URL-backed request parsing;
-  - CurseForge broad query versus exact URL slug routing.
+  - CurseForge broad query versus exact URL slug routing;
+  - explicit slug/project-id follow-up routing.
 - Run `pnpm typecheck`, `pnpm test`, `git diff --check`, line guard, and Go residue guard.

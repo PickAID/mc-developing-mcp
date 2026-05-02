@@ -104,6 +104,7 @@ async function resolveByPlatform(
 
     return await resolver({
       slug: request.slug,
+      projectId: request.projectId,
       query: request.query,
       loader: request.loader,
       minecraftVersion: request.minecraftVersion
