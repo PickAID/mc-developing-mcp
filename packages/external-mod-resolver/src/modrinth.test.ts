@@ -1,0 +1,140 @@
+import { describe, expect, it } from "vitest";
+
+import { resolveModrinthMod } from "./modrinth.js";
+
+describe("resolveModrinthMod", () => {
+  it("resolves a Modrinth slug to a primary jar candidate for the requested loader and Minecraft version", async () => {
+    const requests: string[] = [];
+    const result = await resolveModrinthMod({
+      query: "sodium",
+      loader: "fabric",
+      minecraftVersion: "1.20.1",
+      fetch: async (url) => {
+        requests.push(url.toString());
+
+        if (url.toString().includes("/v2/search")) {
+          return jsonResponse({
+            total_hits: 1,
+            hits: [
+              {
+                project_id: "AANobbMI",
+                slug: "sodium",
+                title: "Sodium",
+                project_type: "mod",
+                downloads: 148390564
+              }
+            ]
+          });
+        }
+
+        return jsonResponse([
+          {
+            id: "OihdIimA",
+            version_number: "mc1.20.1-0.5.13-fabric",
+            loaders: ["fabric", "quilt"],
+            game_versions: ["1.20.1"],
+            files: [
+              {
+                primary: true,
+                filename: "sodium-fabric-0.5.13+mc1.20.1.jar",
+                url: "https://cdn.modrinth.com/data/AANobbMI/versions/OihdIimA/sodium.jar",
+                hashes: {
+                  sha1: "sha1-fixture",
+                  sha512: "sha512-fixture"
+                }
+              }
+            ]
+          }
+        ]);
+      }
+    });
+
+    expect(requests[0]).toContain("/v2/search");
+    expect(requests[0]).toContain("query=sodium");
+    expect(requests[0]).toContain("categories%3Afabric");
+    expect(requests[0]).toContain("versions%3A1.20.1");
+    expect(requests[1]).toContain("/v2/project/sodium/version");
+    expect(requests[1]).toContain("loaders=%5B%22fabric%22%5D");
+    expect(requests[1]).toContain("game_versions=%5B%221.20.1%22%5D");
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "sodium",
+      candidates: [
+        {
+          source: "modrinth",
+          confidence: "high",
+          confidenceReasons: [
+            "matched Modrinth slug sodium",
+            "matched loader fabric",
+            "matched Minecraft 1.20.1",
+            "selected primary jar file"
+          ],
+          projectId: "AANobbMI",
+          slug: "sodium",
+          title: "Sodium",
+          versionId: "OihdIimA",
+          versionNumber: "mc1.20.1-0.5.13-fabric",
+          loaders: ["fabric", "quilt"],
+          minecraftVersions: ["1.20.1"],
+          fileName: "sodium-fabric-0.5.13+mc1.20.1.jar",
+          downloadUrl: "https://cdn.modrinth.com/data/AANobbMI/versions/OihdIimA/sodium.jar",
+          hashes: {
+            sha1: "sha1-fixture",
+            sha512: "sha512-fixture"
+          },
+          requiresConfirmation: true,
+          cachePolicy: "metadata_only"
+        }
+      ],
+      warnings: []
+    });
+  });
+
+  it("returns a compact unresolved result when no compatible Modrinth version exists", async () => {
+    const result = await resolveModrinthMod({
+      query: "sodium",
+      loader: "neoforge",
+      minecraftVersion: "1.20.1",
+      fetch: async (url) => {
+        if (url.toString().includes("/v2/search")) {
+          return jsonResponse({
+            total_hits: 1,
+            hits: [
+              {
+                project_id: "AANobbMI",
+                slug: "sodium",
+                title: "Sodium",
+                project_type: "mod",
+                downloads: 148390564
+              }
+            ]
+          });
+        }
+
+        return jsonResponse([]);
+      }
+    });
+
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "sodium",
+      candidates: [],
+      warnings: [
+        {
+          code: "no_compatible_version",
+          message:
+            "Modrinth project sodium has no version matching loader neoforge and Minecraft 1.20.1."
+        }
+      ]
+    });
+  });
+});
+
+function jsonResponse(payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: {
+      "content-type": "application/json"
+    }
+  });
+}

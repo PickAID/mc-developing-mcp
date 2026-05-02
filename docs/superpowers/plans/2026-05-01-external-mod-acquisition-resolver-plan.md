@@ -6,6 +6,11 @@ Spec: `docs/superpowers/specs/2026-05-01-external-mod-acquisition-resolver-spec.
 ## Goal
 Build a bottom-layer external mod resolver that can locate the right mod artifact from Modrinth, Maven repositories, and CurseForge API without expanding the public MCP tool surface.
 
+## Current Status
+- Initial Modrinth resolver package exists in `packages/external-mod-resolver`.
+- Modrinth can resolve query/slug + loader + Minecraft version into a compact primary-jar candidate with hashes and explicit confirmation metadata.
+- Maven, CurseForge, persistent metadata cache, orchestrator ranking, and MCP integration remain pending.
+
 ## Constraints
 - TypeScript only.
 - TDD required.
@@ -27,6 +32,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Test with fixture metadata and real URL-shape assertions.
 
 ## Task 3: Modrinth Resolver
+- Status: initial implementation complete; ranking expansion remains pending.
 - Search by query/slug/id using API endpoints.
 - Filter project versions by Minecraft version and loader.
 - Select primary jar files and preserve hash metadata.

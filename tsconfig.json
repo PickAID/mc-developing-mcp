@@ -7,6 +7,7 @@
     { "path": "./packages/source-index" },
     { "path": "./packages/datapack-adapter" },
     { "path": "./packages/gradle-adapter" },
+    { "path": "./packages/external-mod-resolver" },
     { "path": "./packages/java-jdtls-adapter" },
     { "path": "./packages/kubejs-types-adapter" },
     { "path": "./packages/kubejs-language-service" },
