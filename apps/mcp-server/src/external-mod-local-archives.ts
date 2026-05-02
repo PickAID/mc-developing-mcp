@@ -1,11 +1,16 @@
+import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 
 import {
   discoverModArchives,
-  readModArchiveMetadata,
+  normalizeArchivePath,
+  readModArchiveMetadataFromBuffer,
+  readZipCentralDirectory,
+  readZipEntryContent,
   type ModArchiveCandidate,
   type ModArchiveMetadata,
-  type ModArchiveSource
+  type ModArchiveSource,
+  type ZipEntry
 } from "@mcpskill/jar-source-adapter";
 
 import type { ResolvableExternalModRequest } from "./external-mod-resolution-request.js";
@@ -34,6 +39,7 @@ export interface McpServerLocalModArchiveCandidate {
   fileName: string;
   archivePath: string;
   relativePath: string;
+  embeddedArchivePath?: string;
   archiveSource: ModArchiveSource;
   metadataPath: string;
   requiresConfirmation: false;
@@ -52,6 +58,8 @@ interface LocalMatchScore {
 }
 
 const MAX_LOCAL_ARCHIVES = 512;
+const MAX_LOCAL_NESTED_ARCHIVES = 16;
+const MAX_LOCAL_NESTED_ARCHIVE_BYTES = 32 * 1024 * 1024;
 
 export async function resolveLocalModArchiveEvidence(input: {
   request: ResolvableExternalModRequest;
@@ -69,11 +77,13 @@ export async function resolveLocalModArchiveEvidence(input: {
   const candidates: McpServerLocalModArchiveCandidate[] = [];
 
   for (const archive of discovered.archives) {
-    const candidate = await buildLocalCandidate(input.request, archive, warnings);
-
-    if (candidate) {
-      candidates.push(candidate);
-    }
+    candidates.push(
+      ...(await inspectArchiveForLocalCandidates(
+        input.request,
+        archive,
+        warnings
+      ))
+    );
   }
 
   if (candidates.length === 0) {
@@ -96,15 +106,10 @@ async function buildLocalCandidate(
     platform: "modrinth" | "curseforge";
   },
   archive: ModArchiveCandidate,
-  warnings: McpServerLocalModArchiveWarning[]
+  metadata: ModArchiveMetadata,
+  embeddedArchivePath?: string
 ): Promise<McpServerLocalModArchiveCandidate | undefined> {
-  const metadata = await readArchiveMetadata(archive, warnings);
-
-  if (!metadata) {
-    return undefined;
-  }
-
-  const score = scoreLocalMatch(request, archive, metadata);
+  const score = scoreLocalMatch(request, archive, metadata, embeddedArchivePath);
 
   if (!score) {
     return undefined;
@@ -121,9 +126,10 @@ async function buildLocalCandidate(
     versionNumber: metadata.version ?? "unknown",
     loaders: [metadata.loader],
     minecraftVersions: [],
-    fileName: basename(archive.archivePath),
+    fileName: basename(embeddedArchivePath ?? archive.archivePath),
     archivePath: archive.archivePath,
     relativePath: archive.relativePath,
+    embeddedArchivePath,
     archiveSource: archive.source,
     metadataPath: metadata.metadataPath,
     requiresConfirmation: false,
@@ -131,20 +137,167 @@ async function buildLocalCandidate(
   };
 }
 
-async function readArchiveMetadata(
+async function inspectArchiveForLocalCandidates(
+  request: ResolvableExternalModRequest & {
+    platform: "modrinth" | "curseforge";
+  },
   archive: ModArchiveCandidate,
   warnings: McpServerLocalModArchiveWarning[]
-): Promise<ModArchiveMetadata | undefined> {
+): Promise<McpServerLocalModArchiveCandidate[]> {
+  const archiveBuffer = await readArchiveBuffer(archive, warnings);
+
+  if (!archiveBuffer) {
+    return [];
+  }
+
+  const directory = readDirectory(archive, archiveBuffer, warnings);
+
+  if (!directory) {
+    return [];
+  }
+
+  return [
+    await buildTopLevelCandidate(request, archive, archiveBuffer),
+    ...(await buildNestedCandidates(request, archive, archiveBuffer, directory, warnings))
+  ].filter((candidate): candidate is McpServerLocalModArchiveCandidate =>
+    Boolean(candidate)
+  );
+}
+
+async function readArchiveBuffer(
+  archive: ModArchiveCandidate,
+  warnings: McpServerLocalModArchiveWarning[]
+): Promise<Buffer | undefined> {
   try {
-    return await readModArchiveMetadata(archive.archivePath);
+    return await readFile(archive.archivePath);
   } catch (error) {
     warnings.push({
-      code: "local_archive_metadata_unreadable",
-      message: `Could not read mod metadata from ${archive.relativePath}: ${toMessage(error)}`,
+      code: "local_archive_unreadable",
+      message: `Could not read local archive ${archive.relativePath}: ${toMessage(error)}`,
       relativePath: archive.relativePath
     });
     return undefined;
   }
+}
+
+function readDirectory(
+  archive: ModArchiveCandidate,
+  archiveBuffer: Buffer,
+  warnings: McpServerLocalModArchiveWarning[]
+): ZipEntry[] | undefined {
+  try {
+    return readZipCentralDirectory(archiveBuffer);
+  } catch (error) {
+    warnings.push({
+      code: "local_archive_directory_unreadable",
+      message:
+        `Could not read ZIP directory from ${archive.relativePath}: ${toMessage(error)}`,
+      relativePath: archive.relativePath
+    });
+    return undefined;
+  }
+}
+
+async function buildTopLevelCandidate(
+  request: ResolvableExternalModRequest & {
+    platform: "modrinth" | "curseforge";
+  },
+  archive: ModArchiveCandidate,
+  archiveBuffer: Buffer
+): Promise<McpServerLocalModArchiveCandidate | undefined> {
+  const metadata = readMetadataSafely(archiveBuffer);
+  return metadata ? buildLocalCandidate(request, archive, metadata) : undefined;
+}
+
+async function buildNestedCandidates(
+  request: ResolvableExternalModRequest & {
+    platform: "modrinth" | "curseforge";
+  },
+  archive: ModArchiveCandidate,
+  archiveBuffer: Buffer,
+  directory: ZipEntry[],
+  warnings: McpServerLocalModArchiveWarning[]
+): Promise<McpServerLocalModArchiveCandidate[]> {
+  const candidates: McpServerLocalModArchiveCandidate[] = [];
+
+  for (const entry of collectNestedArchiveEntries(directory)) {
+    const embeddedArchivePath = normalizeArchivePath(entry.name);
+    if (!embeddedArchivePath) {
+      continue;
+    }
+    if (entry.uncompressedSize > MAX_LOCAL_NESTED_ARCHIVE_BYTES) {
+      warnings.push(toNestedWarning(archive, embeddedArchivePath, "too-large"));
+      continue;
+    }
+
+    const metadata = readNestedMetadata(archive, archiveBuffer, entry, warnings);
+    const candidate = metadata
+      ? await buildLocalCandidate(
+          request,
+          archive,
+          metadata,
+          embeddedArchivePath
+        )
+      : undefined;
+
+    if (candidate) {
+      candidates.push(candidate);
+    }
+  }
+
+  return candidates;
+}
+
+function collectNestedArchiveEntries(directory: ZipEntry[]): ZipEntry[] {
+  return directory
+    .filter((entry) => normalizeArchivePath(entry.name)?.endsWith(".jar") === true)
+    .slice(0, MAX_LOCAL_NESTED_ARCHIVES);
+}
+
+function readNestedMetadata(
+  archive: ModArchiveCandidate,
+  archiveBuffer: Buffer,
+  entry: ZipEntry,
+  warnings: McpServerLocalModArchiveWarning[]
+): ModArchiveMetadata | undefined {
+  const embeddedArchivePath = normalizeArchivePath(entry.name);
+
+  if (!embeddedArchivePath) {
+    return undefined;
+  }
+
+  try {
+    return readMetadataSafely(readZipEntryContent(archiveBuffer, entry));
+  } catch (error) {
+    warnings.push({
+      code: "local_nested_archive_unreadable",
+      message:
+        `Could not read nested archive ${archive.relativePath}!${embeddedArchivePath}: ${toMessage(error)}`,
+      relativePath: `${archive.relativePath}!${embeddedArchivePath}`
+    });
+    return undefined;
+  }
+}
+
+function readMetadataSafely(archiveBuffer: Buffer): ModArchiveMetadata | undefined {
+  try {
+    return readModArchiveMetadataFromBuffer(archiveBuffer);
+  } catch {
+    return undefined;
+  }
+}
+
+function toNestedWarning(
+  archive: ModArchiveCandidate,
+  embeddedArchivePath: string,
+  reason: string
+): McpServerLocalModArchiveWarning {
+  return {
+    code: "local_nested_archive_skipped",
+    message:
+      `Skipped nested archive ${archive.relativePath}!${embeddedArchivePath}: ${reason}.`,
+    relativePath: `${archive.relativePath}!${embeddedArchivePath}`
+  };
 }
 
 function scoreLocalMatch(
@@ -152,7 +305,8 @@ function scoreLocalMatch(
     platform: "modrinth" | "curseforge";
   },
   archive: ModArchiveCandidate,
-  metadata: ModArchiveMetadata
+  metadata: ModArchiveMetadata,
+  embeddedArchivePath?: string
 ): LocalMatchScore | undefined {
   if (normalizeText(metadata.loader) !== normalizeText(request.loader)) {
     return undefined;
@@ -163,6 +317,7 @@ function scoreLocalMatch(
     metadata.modId,
     metadata.name,
     archive.relativePath,
+    embeddedArchivePath,
     basename(archive.archivePath)
   ].filter((value): value is string => Boolean(value));
 
@@ -172,7 +327,7 @@ function scoreLocalMatch(
 
   return {
     confidence: isExactMetadataMatch(query, metadata) ? "high" : "medium",
-    reasons: buildMatchReasons(request, archive, metadata, query)
+    reasons: buildMatchReasons(request, archive, metadata, query, embeddedArchivePath)
   };
 }
 
@@ -182,7 +337,8 @@ function buildMatchReasons(
   },
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
-  query: string
+  query: string,
+  embeddedArchivePath?: string
 ): string[] {
   const reasons: string[] = [];
 
@@ -193,7 +349,9 @@ function buildMatchReasons(
     reasons.push(`matched local mod name ${metadata.name}`);
   }
   if (reasons.length === 0) {
-    reasons.push(`matched local archive path ${archive.relativePath}`);
+    reasons.push(
+      `matched local archive path ${formatArchiveReference(archive, embeddedArchivePath)}`
+    );
   }
 
   reasons.push(`loader ${metadata.loader} matched requested loader`);
@@ -202,6 +360,26 @@ function buildMatchReasons(
   );
 
   return reasons;
+}
+
+export function formatLocalArchiveCandidateReference(
+  candidate: Pick<
+    McpServerLocalModArchiveCandidate,
+    "relativePath" | "embeddedArchivePath"
+  >
+): string {
+  return candidate.embeddedArchivePath
+    ? `${candidate.relativePath}!${candidate.embeddedArchivePath}`
+    : candidate.relativePath;
+}
+
+function formatArchiveReference(
+  archive: ModArchiveCandidate,
+  embeddedArchivePath?: string
+): string {
+  return embeddedArchivePath
+    ? `${archive.relativePath}!${embeddedArchivePath}`
+    : archive.relativePath;
 }
 
 function matchesQuery(query: string, values: string[]): boolean {

@@ -66,6 +66,71 @@ describe("executeMcpServerExternalModResolution local archives", () => {
       }
     });
   });
+
+  it("uses matching JarJar nested mod metadata before remote project resolvers", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-nested-extmod-"));
+    const outerJar = join(workspaceRoot, "mods", "outer-mod.jar");
+    const nestedJar = createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "nested_energy",
+          name: "Nested Energy",
+          version: "2.0.0"
+        })
+      }
+    ]);
+
+    await writeZip(outerJar, [
+      {
+        name: "META-INF/jarjar/nested-energy.jar",
+        content: nestedJar
+      }
+    ]);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Find the Modrinth mod for Nested Energy fabric 1.20.1."
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      modrinthResolver: async () => {
+        throw new Error("nested local archive lookup must not search Modrinth");
+      },
+      curseForgeResolver: async () => {
+        throw new Error("nested local archive lookup must not search CurseForge");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      summary:
+        "Resolved local mod archive: mods/outer-mod.jar!META-INF/jarjar/nested-energy.jar.",
+      payload: {
+        source: "external_mod_resolution",
+        result: {
+          source: "local_archive",
+          query: "nested energy",
+          remoteLookupSkipped: true,
+          candidates: [
+            {
+              source: "local_archive",
+              confidence: "high",
+              modId: "nested_energy",
+              title: "Nested Energy",
+              versionNumber: "2.0.0",
+              loaders: ["fabric"],
+              fileName: "nested-energy.jar",
+              relativePath: "mods/outer-mod.jar",
+              embeddedArchivePath: "META-INF/jarjar/nested-energy.jar",
+              archiveSource: "mods-directory",
+              metadataPath: "fabric.mod.json"
+            }
+          ],
+          warnings: []
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
@@ -85,20 +150,24 @@ async function createExecutorInput(workspaceRoot: string, requestText: string) {
 
 async function writeZip(
   path: string,
-  entries: Array<{ name: string; content: string }>
+  entries: Array<{ name: string; content: string | Buffer }>
 ): Promise<void> {
   await mkdir(join(path, ".."), { recursive: true });
   await writeFile(path, createZip(entries));
 }
 
-function createZip(entries: Array<{ name: string; content: string }>): Buffer {
+function createZip(
+  entries: Array<{ name: string; content: string | Buffer }>
+): Buffer {
   const localParts: Buffer[] = [];
   const centralParts: Buffer[] = [];
   let localOffset = 0;
 
   for (const entry of entries) {
     const name = Buffer.from(entry.name);
-    const content = Buffer.from(entry.content);
+    const content = Buffer.isBuffer(entry.content)
+      ? entry.content
+      : Buffer.from(entry.content);
     const localHeader = Buffer.alloc(30);
     const centralHeader = Buffer.alloc(46);
 

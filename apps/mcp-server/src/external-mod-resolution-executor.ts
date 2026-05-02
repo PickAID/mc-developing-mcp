@@ -22,6 +22,7 @@ import {
   type ResolvableExternalModRequest
 } from "./external-mod-resolution-request.js";
 import {
+  formatLocalArchiveCandidateReference,
   resolveLocalModArchiveEvidence,
   type McpServerLocalModArchiveResolutionResult
 } from "./external-mod-local-archives.js";
@@ -136,7 +137,9 @@ function summarizeResolution(
   result: McpServerExternalModResolutionResult
 ): string {
   if (result.source === "local_archive") {
-    return `Resolved local mod archive: ${result.candidates[0]?.relativePath}.`;
+    return `Resolved local mod archive: ${formatLocalArchiveCandidateReference(
+      result.candidates[0]
+    )}.`;
   }
 
   const coordinates = [
