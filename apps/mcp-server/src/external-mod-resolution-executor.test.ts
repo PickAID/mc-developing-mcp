@@ -68,10 +68,11 @@ describe("executeMcpServerExternalModResolution", () => {
     const result = await executeMcpServerExternalModResolution(input, {
       curseForgeResolver: async (request) => {
         expect(request).toMatchObject({
-          slug: "jei",
+          query: "jei",
           loader: "forge",
           minecraftVersion: "1.20.1"
         });
+        expect(request.slug).toBeUndefined();
         return {
           source: "curseforge",
           query: "jei",
@@ -106,6 +107,100 @@ describe("executeMcpServerExternalModResolution", () => {
               setupUrl: "https://console.curseforge.com/?#/api-keys"
             }
           ]
+        }
+      }
+    });
+  });
+
+  it("passes broad CurseForge queries without a slug so ambiguity can be reported", async () => {
+    const input = await createExecutorInput(
+      "Find the CurseForge mod energy forge 1.20.1."
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      curseForgeResolver: async (request) => {
+        expect(request).toMatchObject({
+          query: "energy",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
+        });
+        expect(request.slug).toBeUndefined();
+        return {
+          source: "curseforge",
+          query: "energy",
+          candidates: [],
+          warnings: [
+            {
+              code: "ambiguous_project_match",
+              message:
+                "CurseForge query energy matched multiple projects; choose an exact slug or project id."
+            }
+          ]
+        };
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      summary:
+        "CurseForge query energy matched multiple projects; choose an exact slug or project id.",
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "curseforge",
+          query: "energy",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
+        },
+        result: {
+          warnings: [
+            {
+              code: "ambiguous_project_match"
+            }
+          ]
+        }
+      }
+    });
+  });
+
+  it("passes CurseForge URL slugs as exact slug constraints", async () => {
+    const input = await createExecutorInput(
+      "Find CurseMaven for https://www.curseforge.com/minecraft/mc-mods/jei forge 1.20.1."
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      curseForgeResolver: async (request) => {
+        expect(request).toMatchObject({
+          slug: "jei",
+          query: "jei",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
+        });
+        return {
+          source: "curseforge",
+          query: "jei",
+          candidates: [],
+          warnings: [
+            {
+              code: "credentials_required",
+              message: "CurseForge API resolution requires CURSEFORGE_API_KEY.",
+              credentialEnvVar: "CURSEFORGE_API_KEY"
+            }
+          ]
+        };
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "curseforge",
+          slug: "jei",
+          query: "jei",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
         }
       }
     });

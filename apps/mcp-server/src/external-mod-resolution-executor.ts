@@ -101,10 +101,9 @@ async function resolveByPlatform(
 
   if (request.platform === "curseforge") {
     const resolver = options.curseForgeResolver ?? resolveCurseForgeMod;
-    const slug = request.query.includes(" ") ? undefined : request.query;
 
     return await resolver({
-      slug,
+      slug: request.slug,
       query: request.query,
       loader: request.loader,
       minecraftVersion: request.minecraftVersion

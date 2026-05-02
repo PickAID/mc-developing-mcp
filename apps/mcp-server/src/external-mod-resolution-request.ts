@@ -4,6 +4,7 @@ export interface McpServerExternalModResolutionRequest {
   platform: McpServerExternalModPlatform;
   coordinate?: string;
   repositoryUrls?: string[];
+  slug?: string;
   query?: string;
   loader?: string;
   minecraftVersion?: string;
@@ -17,6 +18,7 @@ export interface McpServerExternalModMavenRepository {
 interface ExternalModUrlHint {
   platform: "modrinth" | "curseforge";
   query: string;
+  slug: string;
 }
 
 export type ResolvableExternalModRequest =
@@ -53,6 +55,7 @@ export function parseExternalModRequest(
 
   return {
     platform,
+    slug: urlHint?.slug,
     query: urlHint?.query ?? extractQuery(requestText, loader, minecraftVersion),
     loader,
     minecraftVersion
@@ -208,7 +211,7 @@ function parseModrinthUrlSegments(
   const kindIndex = segments.findIndex((segment) => projectKinds.has(segment));
   const query = kindIndex >= 0 ? segments[kindIndex + 1] : undefined;
 
-  return query ? { platform: "modrinth", query } : undefined;
+  return query ? { platform: "modrinth", query, slug: query } : undefined;
 }
 
 function parseCurseForgeUrlSegments(
@@ -217,7 +220,7 @@ function parseCurseForgeUrlSegments(
   const modsIndex = segments.findIndex((segment) => segment === "mc-mods");
   const query = modsIndex >= 0 ? segments[modsIndex + 1] : undefined;
 
-  return query ? { platform: "curseforge", query } : undefined;
+  return query ? { platform: "curseforge", query, slug: query } : undefined;
 }
 
 function extractQueryAfterFor(
