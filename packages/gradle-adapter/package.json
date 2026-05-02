@@ -14,6 +14,6 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. packages/gradle-adapter/src/source-archives.test.ts packages/gradle-adapter/src/build-dependencies.test.ts packages/gradle-adapter/src/dependency-source-archives.test.ts packages/gradle-adapter/src/dependency-binary-archives.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. packages/gradle-adapter/src/source-archives.test.ts packages/gradle-adapter/src/build-dependencies.test.ts packages/gradle-adapter/src/build-repositories.test.ts packages/gradle-adapter/src/dependency-source-archives.test.ts packages/gradle-adapter/src/dependency-binary-archives.test.ts"
   }
 }

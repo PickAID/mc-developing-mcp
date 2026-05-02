@@ -18,11 +18,13 @@ import {
   collectMissingConstraints,
   hasRequiredConstraints,
   parseExternalModRequest,
+  type McpServerExternalModMavenRepository,
   type ResolvableExternalModRequest
 } from "./external-mod-resolution-request.js";
 
 export interface McpServerExternalModResolutionOptions {
   mavenMetadataCache?: MavenMetadataCache;
+  mavenRepositories?: McpServerExternalModMavenRepository[];
   mavenResolver?: (
     input: ResolveMavenArtifactInput
   ) => Promise<ExternalModResolverResult>;
@@ -91,7 +93,7 @@ async function resolveByPlatform(
 
     return await resolver({
       coordinate: request.coordinate,
-      repositories: buildMavenRepositories(request),
+      repositories: buildMavenRepositories(request, options.mavenRepositories),
       includeSources: true,
       metadataCache: options.mavenMetadataCache
     });

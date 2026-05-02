@@ -12,7 +12,8 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - CurseForge can return `credentials_required` without leaking keys and can resolve fixture-backed slug + loader + Minecraft version into CurseMaven dispatch metadata when a credential provider is configured.
 - Maven resolver now parses explicit Gradle/Maven coordinates, builds deterministic binary/sources jar URLs, reads `maven-metadata.xml` when a version is omitted, and is wired Maven-first into MCP `external_mod_resolution`.
 - Runtime-local Maven metadata cache now supports memory and file-backed cache adapters with cache hit/miss/write traces.
-- Broader orchestrator ranking remains pending.
+- Gradle-declared Maven repositories are now extracted and used before inferred default repositories when MCP resolves Maven coordinates without an explicit URL.
+- Broader remote candidate ranking remains pending.
 
 ## Constraints
 - TypeScript only.
@@ -55,7 +56,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority and runtime-local Maven metadata cache inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, and Gradle-declared Maven repository priority inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;

@@ -9,6 +9,11 @@ export interface McpServerExternalModResolutionRequest {
   minecraftVersion?: string;
 }
 
+export interface McpServerExternalModMavenRepository {
+  name: string;
+  url: string;
+}
+
 export type ResolvableExternalModRequest =
   | (McpServerExternalModResolutionRequest & {
       platform: "maven";
@@ -78,13 +83,18 @@ export function buildMavenRepositories(
   request: McpServerExternalModResolutionRequest & {
     platform: "maven";
     coordinate: string;
-  }
-): { name: string; url: string }[] {
+  },
+  fallbackRepositories: McpServerExternalModMavenRepository[] = []
+): McpServerExternalModMavenRepository[] {
   if (request.repositoryUrls && request.repositoryUrls.length > 0) {
     return request.repositoryUrls.map((url) => ({
       name: "requested-maven-repository",
       url
     }));
+  }
+
+  if (fallbackRepositories.length > 0) {
+    return fallbackRepositories;
   }
 
   return [inferMavenRepository(request.coordinate)];

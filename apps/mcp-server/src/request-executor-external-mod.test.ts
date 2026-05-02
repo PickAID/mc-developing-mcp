@@ -1,6 +1,6 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 import { createFileMavenMetadataCache } from "@mcpskill/external-mod-resolver";
@@ -153,4 +153,72 @@ describe("executeMcpServerRequest external mod routing", () => {
       }
     });
   });
+
+  it("uses Gradle-declared repositories when Maven request omits repository URL", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-extmod-mcp-"));
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-repo-"));
+    const metadataCache = createFileMavenMetadataCache(runtimeRoot);
+    await writeText(
+      join(workspaceRoot, "build.gradle"),
+      [
+        "repositories {",
+        "  maven { url = \"https://maven.example/releases\" }",
+        "}",
+        ""
+      ].join("\n")
+    );
+    await metadataCache.write(
+      new URL(
+        "https://maven.example/releases/com/example/demo-mod/maven-metadata.xml"
+      ),
+      "<metadata><versioning><release>1.2.4</release></versioning></metadata>"
+    );
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: 'Use modImplementation "com.example:demo-mod".'
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      candidateId: "candidate-1-external_mod_resolution",
+      status: "selected",
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "maven",
+          coordinate: "com.example:demo-mod"
+        },
+        result: {
+          source: "maven",
+          query: "com.example:demo-mod:1.2.4",
+          cacheTrace: {
+            hits: [
+              "https://maven.example/releases/com/example/demo-mod/maven-metadata.xml"
+            ]
+          },
+          candidates: expect.arrayContaining([
+            expect.objectContaining({
+              downloadUrl:
+                "https://maven.example/releases/com/example/demo-mod/1.2.4/demo-mod-1.2.4.jar",
+              mavenArtifacts: expect.arrayContaining([
+                expect.objectContaining({
+                  repositoryName: "Gradle build.gradle",
+                  repositoryUrl: "https://maven.example/releases"
+                })
+              ])
+            })
+          ])
+        }
+      }
+    });
+  });
 });
+
+async function writeText(path: string, content: string): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, content);
+}
