@@ -16,6 +16,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - TDD required.
 - Keep each source/test file under 500 lines.
 - Do not download remote jars unless an explicit policy says download is allowed.
+- Do not ship or commit a shared CurseForge API key; require user-supplied credentials by default.
 - Keep public MCP surface progressive and small.
 - Prefer local/Gradle/JAR evidence before remote lookup.
 
@@ -39,10 +40,11 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for exact slug, ambiguous query, missing loader, and file selection.
 
 ## Task 4: CurseForge Resolver
-- Add API-key/config-driven resolver.
+- Add API-key/config-driven resolver using `CURSEFORGE_API_KEY` as the default environment variable.
+- Return `credentials_required` with the setup URL `https://console.curseforge.com/?#/api-keys` when no credential provider supplies a key.
 - Search mods and list files through official API.
+- Prefer exact project id or slug lookup; treat broad `searchFilter` hits as lower-confidence candidates that require ranking.
 - Resolve download URL through API when `downloadUrl` is absent.
-- Return `credentials_required` when no credential is configured.
 - Add fixture tests for credential presence, missing credential, and file selection.
 
 ## Task 5: Orchestrator

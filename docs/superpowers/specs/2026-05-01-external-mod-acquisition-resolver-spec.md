@@ -79,18 +79,29 @@ Official reference:
 - <https://maven.apache.org/repositories/layout.html>
 
 ### CurseForge
-Use API-first resolution.
+Use API-first resolution with user-supplied credentials. The service must not ship a shared CurseForge API key in the open-source package.
 
 Required behavior:
 
-- Require an API key or configured credential provider for official API calls.
+- Read the API key from an explicit credential provider, with `CURSEFORGE_API_KEY` as the default local environment variable.
+- When credentials are missing, return `credentials_required` with a short setup hint instead of failing generically.
+- The setup hint must point users to the CurseForge API key console: <https://console.curseforge.com/?#/api-keys>.
 - Resolve project search, file list, and download URL through API endpoints.
-- Report `credentials_required` instead of scraping by default when credentials are missing.
+- Prefer project id or exact slug lookup over broad `searchFilter`; observed broad CurseForge search can return unrelated projects.
+- Support loader filtering by inspecting returned `gameVersions` labels such as `Forge`, `Fabric`, and `NeoForge`.
 - Treat download-page parsing as a diagnostic fallback only, because page layout and anti-bot behavior are not stable API contracts.
 
-Official reference:
+Official references:
 
 - <https://docs.curseforge.com/rest-api/>
+- <https://console.curseforge.com/?#/api-keys>
+
+Key handling policy:
+
+- Do not hardcode a CurseForge API key in repository source.
+- Do not document or log user API keys.
+- Do not build key obfuscation as the primary security boundary.
+- A future hosted proxy can be added as a separate endpoint profile, but the default open-source MCP distribution requires user-supplied credentials.
 
 ## Cache And Privacy
 Remote metadata can be cached in runtime-local SQLite or JSON cache files.
