@@ -233,12 +233,14 @@ function isQueryStopToken(
 
 function extractMavenCoordinate(requestText: string): string | undefined {
   const match = requestText.match(
-    /(?:^|[\s"'(])([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([A-Za-z0-9_.+-]+)(?=$|[\s"',)])/u
+    /(?:^|[\s"'(])([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+)(?::([A-Za-z0-9_.+-]+))?(?=$|[\s"',)])/u
   );
 
-  return match?.[1] && match[2] && match[3]
-    ? `${match[1]}:${match[2]}:${match[3]}`
-    : undefined;
+  if (!match?.[1] || !match[2]) {
+    return undefined;
+  }
+
+  return match[3] ? `${match[1]}:${match[2]}:${match[3]}` : `${match[1]}:${match[2]}`;
 }
 
 function extractRepositoryUrls(requestText: string): string[] {

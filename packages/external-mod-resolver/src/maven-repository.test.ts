@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { resolveMavenArtifact } from "./maven-repository.js";
+import { createMemoryMavenMetadataCache } from "./metadata-cache.js";
 
 describe("resolveMavenArtifact", () => {
   it("builds deterministic binary and sources jar candidates from an exact Gradle coordinate", async () => {
@@ -126,6 +127,72 @@ describe("resolveMavenArtifact", () => {
         }
       ],
       warnings: []
+    });
+  });
+
+  it("reuses cached maven-metadata.xml without repeating a remote fetch", async () => {
+    const metadataCache = createMemoryMavenMetadataCache();
+    let fetchCount = 0;
+    const first = await resolveMavenArtifact({
+      coordinate: "com.example:demo-mod",
+      repositories: [
+        {
+          name: "Example Maven",
+          url: "https://maven.example/releases"
+        }
+      ],
+      metadataCache,
+      fetch: async () => {
+        fetchCount += 1;
+        return new Response(
+          "<metadata><versioning><release>1.2.4</release></versioning></metadata>",
+          { status: 200 }
+        );
+      }
+    });
+    const second = await resolveMavenArtifact({
+      coordinate: "com.example:demo-mod",
+      repositories: [
+        {
+          name: "Example Maven",
+          url: "https://maven.example/releases"
+        }
+      ],
+      metadataCache,
+      fetch: async () => {
+        fetchCount += 1;
+        throw new Error("Cached metadata should avoid a second fetch.");
+      }
+    });
+
+    expect(fetchCount).toBe(1);
+    expect(first.cacheTrace).toEqual({
+      hits: [],
+      misses: [
+        "https://maven.example/releases/com/example/demo-mod/maven-metadata.xml"
+      ],
+      writes: [
+        "https://maven.example/releases/com/example/demo-mod/maven-metadata.xml"
+      ]
+    });
+    expect(second).toMatchObject({
+      query: "com.example:demo-mod:1.2.4",
+      cacheTrace: {
+        hits: [
+          "https://maven.example/releases/com/example/demo-mod/maven-metadata.xml"
+        ],
+        misses: [],
+        writes: []
+      },
+      candidates: [
+        {
+          confidenceReasons: [
+            "resolved Maven version 1.2.4 from cached maven-metadata.xml",
+            "selected repository Example Maven",
+            "built deterministic Maven artifact URL"
+          ]
+        }
+      ]
     });
   });
 });

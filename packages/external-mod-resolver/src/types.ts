@@ -38,6 +38,13 @@ export interface ExternalModResolverResult {
   query: string;
   candidates: ExternalModCandidate[];
   warnings: ExternalModResolverWarning[];
+  cacheTrace?: ExternalModResolverCacheTrace;
+}
+
+export interface ExternalModResolverCacheTrace {
+  hits: string[];
+  misses: string[];
+  writes: string[];
 }
 
 export type ExternalModMavenArtifactSource =

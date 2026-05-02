@@ -3,6 +3,7 @@ import {
   resolveCurseForgeMod,
   resolveModrinthMod,
   type ExternalModResolverResult,
+  type MavenMetadataCache,
   type ResolveMavenArtifactInput,
   type ResolveCurseForgeModInput,
   type ResolveModrinthModInput
@@ -21,6 +22,7 @@ import {
 } from "./external-mod-resolution-request.js";
 
 export interface McpServerExternalModResolutionOptions {
+  mavenMetadataCache?: MavenMetadataCache;
   mavenResolver?: (
     input: ResolveMavenArtifactInput
   ) => Promise<ExternalModResolverResult>;
@@ -90,7 +92,8 @@ async function resolveByPlatform(
     return await resolver({
       coordinate: request.coordinate,
       repositories: buildMavenRepositories(request),
-      includeSources: true
+      includeSources: true,
+      metadataCache: options.mavenMetadataCache
     });
   }
 

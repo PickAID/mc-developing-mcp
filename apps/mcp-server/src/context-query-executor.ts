@@ -1,5 +1,9 @@
 import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
 import type { DocsPackageRecord } from "@mcpskill/docs-retrieval";
+import {
+  createFileMavenMetadataCache,
+  type MavenMetadataCache
+} from "@mcpskill/external-mod-resolver";
 
 import { executeMcpServerDocsLookup } from "./docs-lookup-executor.js";
 import { executeMcpServerExternalModResolution } from "./external-mod-resolution-executor.js";
@@ -14,6 +18,7 @@ import type {
 export interface McpServerContextQueryExecutorOptions {
   probejsTypesExecutor?: McpServerEvidenceExecutor;
   externalModResolutionExecutor?: McpServerEvidenceExecutor;
+  externalModMavenMetadataCache?: MavenMetadataCache;
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
@@ -49,7 +54,13 @@ export function buildMcpServerContextQueryExecutor(
       case "external_mod_resolution":
         return (
           options.externalModResolutionExecutor?.(input) ??
-          executeMcpServerExternalModResolution(input)
+          executeMcpServerExternalModResolution(input, {
+            mavenMetadataCache:
+              options.externalModMavenMetadataCache ??
+              (options.runtimeRoot
+                ? createFileMavenMetadataCache(options.runtimeRoot)
+                : undefined)
+          })
         );
       case "mod_archive_content":
         return modArchiveContentExecutor(input);

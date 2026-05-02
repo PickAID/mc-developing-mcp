@@ -1,15 +1,18 @@
 import { buildRepositoryMavenArtifact } from "./maven.js";
 import type {
   ExternalModCandidate,
+  ExternalModResolverCacheTrace,
   ExternalModResolverResult,
   ExternalModResolverWarning
 } from "./types.js";
+import type { MavenMetadataCache } from "./metadata-cache.js";
 
 export interface ResolveMavenArtifactInput {
   coordinate: string;
   repositories: ExternalMavenRepository[];
   includeSources?: boolean;
   fetch?: MavenMetadataFetch;
+  metadataCache?: MavenMetadataCache;
 }
 
 export interface ExternalMavenRepository {
@@ -31,6 +34,7 @@ interface ParsedMavenCoordinate {
 export async function resolveMavenArtifact(
   input: ResolveMavenArtifactInput
 ): Promise<ExternalModResolverResult> {
+  const cacheTrace = createCacheTrace();
   const parsed = parseMavenCoordinate(input.coordinate);
 
   if (!parsed) {
@@ -48,7 +52,13 @@ export async function resolveMavenArtifact(
     });
   }
 
-  const versionResolution = await resolveVersion(parsed, repository, input.fetch);
+  const versionResolution = await resolveVersion({
+    parsed,
+    repository,
+    fetchImpl: input.fetch,
+    metadataCache: input.metadataCache,
+    cacheTrace
+  });
 
   if (!versionResolution.version) {
     return unresolved(toCoordinate(parsed), versionResolution.warning);
@@ -96,7 +106,8 @@ export async function resolveMavenArtifact(
     source: "maven",
     query: coordinate,
     candidates,
-    warnings: []
+    warnings: [],
+    cacheTrace: hasCacheTrace(cacheTrace) ? cacheTrace : undefined
   };
 }
 
@@ -118,18 +129,20 @@ export function parseMavenCoordinate(
   };
 }
 
-async function resolveVersion(
-  parsed: ParsedMavenCoordinate,
-  repository: ExternalMavenRepository,
-  fetchImpl?: MavenMetadataFetch
-): Promise<{
+async function resolveVersion(input: {
+  parsed: ParsedMavenCoordinate;
+  repository: ExternalMavenRepository;
+  fetchImpl?: MavenMetadataFetch;
+  metadataCache?: MavenMetadataCache;
+  cacheTrace: ExternalModResolverCacheTrace;
+}): Promise<{
   version?: string;
   reason?: string;
   warning: ExternalModResolverWarning;
 }> {
-  if (parsed.version) {
+  if (input.parsed.version) {
     return {
-      version: parsed.version,
+      version: input.parsed.version,
       warning: {
         code: "none",
         message: ""
@@ -137,19 +150,33 @@ async function resolveVersion(
     };
   }
 
-  if (!fetchImpl) {
+  const metadataUrl = buildMetadataUrl(input.repository, input.parsed);
+  const cached = await input.metadataCache?.read(metadataUrl);
+
+  if (cached) {
+    input.cacheTrace.hits.push(metadataUrl.toString());
+    return resolveVersionFromMetadata(
+      cached.value,
+      "cached maven-metadata.xml"
+    );
+  }
+
+  if (input.metadataCache) {
+    input.cacheTrace.misses.push(metadataUrl.toString());
+  }
+
+  if (!input.fetchImpl) {
     return {
       warning: {
         code: "metadata_fetch_required",
         message:
-          `Maven coordinate ${toCoordinate(parsed)} omits a version and ` +
+          `Maven coordinate ${toCoordinate(input.parsed)} omits a version and ` +
           "requires maven-metadata.xml."
       }
     };
   }
 
-  const metadataUrl = buildMetadataUrl(repository, parsed);
-  const response = await fetchImpl(metadataUrl, {
+  const response = await input.fetchImpl(metadataUrl, {
     headers: {
       accept: "application/xml,text/xml,*/*"
     }
@@ -165,6 +192,22 @@ async function resolveVersion(
   }
 
   const metadata = await response.text();
+  await input.metadataCache?.write(metadataUrl, metadata);
+  if (input.metadataCache) {
+    input.cacheTrace.writes.push(metadataUrl.toString());
+  }
+
+  return resolveVersionFromMetadata(metadata, "maven-metadata.xml");
+}
+
+function resolveVersionFromMetadata(
+  metadata: string,
+  source: string
+): {
+  version?: string;
+  reason?: string;
+  warning: ExternalModResolverWarning;
+} {
   const version = readFirstXmlValue(metadata, "release") ??
     readFirstXmlValue(metadata, "latest") ??
     readLastVersion(metadata);
@@ -172,7 +215,7 @@ async function resolveVersion(
   return version
     ? {
         version,
-        reason: `resolved Maven version ${version} from maven-metadata.xml`,
+        reason: `resolved Maven version ${version} from ${source}`,
         warning: {
           code: "none",
           message: ""
@@ -184,6 +227,22 @@ async function resolveVersion(
           message: "maven-metadata.xml did not contain a version."
         }
       };
+}
+
+function createCacheTrace(): ExternalModResolverCacheTrace {
+  return {
+    hits: [],
+    misses: [],
+    writes: []
+  };
+}
+
+function hasCacheTrace(trace: ExternalModResolverCacheTrace): boolean {
+  return (
+    trace.hits.length > 0 ||
+    trace.misses.length > 0 ||
+    trace.writes.length > 0
+  );
 }
 
 function buildCandidate(input: {
