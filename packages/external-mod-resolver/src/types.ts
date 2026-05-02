@@ -31,6 +31,15 @@ export interface ExternalModResolverWarning {
   message: string;
   setupUrl?: string;
   credentialEnvVar?: string;
+  projectHints?: ExternalModProjectHint[];
+}
+
+export interface ExternalModProjectHint {
+  source: ExternalModResolverSource;
+  projectId: string;
+  slug: string;
+  title: string;
+  downloads?: number;
 }
 
 export interface ExternalModResolverResult {

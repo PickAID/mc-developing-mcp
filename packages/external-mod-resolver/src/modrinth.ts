@@ -1,5 +1,6 @@
 import type {
   ExternalModCandidate,
+  ExternalModProjectHint,
   ExternalModResolverResult
 } from "./types.js";
 import { buildModrinthMavenArtifact } from "./maven.js";
@@ -28,6 +29,25 @@ export async function resolveModrinthMod(
     fetchImpl,
     buildSearchUrl(input)
   );
+  const ambiguity = detectAmbiguousProjectMatch(search.hits, input.query);
+
+  if (ambiguity) {
+    return {
+      source: "modrinth",
+      query: input.query,
+      candidates: [],
+      warnings: [
+        {
+          code: "ambiguous_project_match",
+          message:
+            `Modrinth query ${input.query} matched multiple projects; ` +
+            "choose an exact slug or project id.",
+          projectHints: ambiguity
+        }
+      ]
+    };
+  }
+
   const project = chooseProject(search.hits, input.query);
 
   if (!project) {
@@ -151,8 +171,41 @@ function chooseProject(
   const normalizedQuery = query.toLowerCase();
 
   return (
-    hits.find((hit) => hit.slug.toLowerCase() === normalizedQuery) ??
+    hits.find((hit) => matchesProjectIdentity(hit, normalizedQuery)) ??
     hits[0]
+  );
+}
+
+function detectAmbiguousProjectMatch(
+  hits: ModrinthProjectHit[],
+  query: string
+): ExternalModProjectHint[] | undefined {
+  const normalizedQuery = query.toLowerCase();
+
+  if (hits.length <= 1) {
+    return undefined;
+  }
+
+  if (hits.some((hit) => matchesProjectIdentity(hit, normalizedQuery))) {
+    return undefined;
+  }
+
+  return hits.slice(0, 5).map((hit) => ({
+    source: "modrinth",
+    projectId: hit.project_id,
+    slug: hit.slug,
+    title: hit.title,
+    downloads: hit.downloads
+  }));
+}
+
+function matchesProjectIdentity(
+  hit: ModrinthProjectHit,
+  normalizedQuery: string
+): boolean {
+  return (
+    hit.slug.toLowerCase() === normalizedQuery ||
+    hit.project_id.toLowerCase() === normalizedQuery
   );
 }
 

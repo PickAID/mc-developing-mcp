@@ -13,6 +13,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Maven resolver now parses explicit Gradle/Maven coordinates, builds deterministic binary/sources jar URLs, reads `maven-metadata.xml` when a version is omitted, and is wired Maven-first into MCP `external_mod_resolution`.
 - Runtime-local Maven metadata cache now supports memory and file-backed cache adapters with cache hit/miss/write traces.
 - Gradle-declared Maven repositories are now extracted and used before inferred default repositories when MCP resolves Maven coordinates without an explicit URL.
+- Broad Modrinth and CurseForge searches now report compact ambiguous project matches instead of silently selecting the first remote hit.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -38,25 +39,25 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Test with fixture metadata and real URL-shape assertions.
 
 ## Task 3: Modrinth Resolver
-- Status: initial implementation complete; Maven dispatch complete; ranking expansion remains pending.
+- Status: initial implementation complete; Maven dispatch complete; broad ambiguous search handling complete; ranking expansion remains pending.
 - Search by query/slug/id using API endpoints.
 - Filter project versions by Minecraft version and loader.
 - Select primary jar files and preserve hash metadata.
 - Emit Modrinth Maven coordinates and Gradle method-level usage.
-- Add fixture tests for exact slug, ambiguous query, missing loader, and file selection.
+- Add fixture tests for exact slug, exact project id, ambiguous query, missing loader, and file selection.
 
 ## Task 4: CurseForge Resolver
-- Status: initial implementation complete for credentials handling, exact slug fixture resolution, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
+- Status: initial implementation complete for credentials handling, exact slug fixture resolution, broad ambiguous search handling, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
 - Add API-key/config-driven resolver using `CURSEFORGE_API_KEY` as the default environment variable.
 - Return `credentials_required` with the setup URL `https://console.curseforge.com/?#/api-keys` when no credential provider supplies a key.
 - Search mods and list files through official API.
-- Prefer exact project id or slug lookup; treat broad `searchFilter` hits as lower-confidence candidates that require ranking.
+- Prefer exact project id or slug lookup; report broad `searchFilter` ambiguity until ranking has enough evidence to avoid a false positive.
 - Resolve download URL through API when `downloadUrl` is absent.
 - Emit CurseMaven coordinates and Gradle method-level usage.
-- Add fixture tests for credential presence, missing credential, and file selection.
+- Add fixture tests for credential presence, missing credential, ambiguous query, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, and Gradle-declared Maven repository priority inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, and compact ambiguous remote search reports inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;
@@ -75,7 +76,9 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Record red/green outputs in `docs/reviews`.
 - Include actual resolver return values for:
   - Modrinth query + version file selection;
+  - Modrinth ambiguous project match;
   - Maven metadata resolution;
   - CurseForge missing-credential behavior;
-  - CurseForge fixture API success behavior.
+  - CurseForge fixture API success behavior;
+  - CurseForge ambiguous project match.
 - Run `pnpm typecheck`, `pnpm test`, `git diff --check`, line guard, and Go residue guard.

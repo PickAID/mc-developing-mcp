@@ -1,6 +1,7 @@
 import { buildCurseMavenArtifact } from "./maven.js";
 import type {
   ExternalModCandidate,
+  ExternalModProjectHint,
   ExternalModResolverResult
 } from "./types.js";
 
@@ -51,11 +52,31 @@ export async function resolveCurseForgeMod(
   }
 
   const fetchImpl = input.fetch ?? fetchCurseForge;
-  const project = input.projectId
-    ? await fetchProjectById({ fetchImpl, input, apiKey })
-    : await fetchProjectBySearch({ fetchImpl, input, apiKey, query });
+  const projectResolution = input.projectId
+    ? {
+        project: await fetchProjectById({ fetchImpl, input, apiKey }),
+        ambiguity: undefined
+      }
+    : await resolveProjectBySearch({ fetchImpl, input, apiKey, query });
 
-  if (!project) {
+  if (projectResolution.ambiguity) {
+    return {
+      source: "curseforge",
+      query,
+      candidates: [],
+      warnings: [
+        {
+          code: "ambiguous_project_match",
+          message:
+            `CurseForge query ${query} matched multiple projects; ` +
+            "choose an exact slug or project id.",
+          projectHints: projectResolution.ambiguity
+        }
+      ]
+    };
+  }
+
+  if (!projectResolution.project) {
     return {
       source: "curseforge",
       query,
@@ -71,7 +92,7 @@ export async function resolveCurseForgeMod(
 
   const files = await fetchJson<CurseForgeFilesResponse>(
     fetchImpl,
-    buildFilesUrl(input, project.id),
+    buildFilesUrl(input, projectResolution.project.id),
     apiKey
   );
   const file = chooseFile(files.data, input);
@@ -85,7 +106,7 @@ export async function resolveCurseForgeMod(
         {
           code: "no_compatible_file",
           message:
-            `CurseForge project ${project.slug} has no jar file matching ` +
+            `CurseForge project ${projectResolution.project.slug} has no jar file matching ` +
             `loader ${input.loader} and Minecraft ${input.minecraftVersion}.`
         }
       ]
@@ -95,7 +116,7 @@ export async function resolveCurseForgeMod(
   return {
     source: "curseforge",
     query,
-    candidates: [toCandidate({ project, file, input })],
+    candidates: [toCandidate({ project: projectResolution.project, file, input })],
     warnings: []
   };
 }
@@ -117,19 +138,27 @@ async function fetchProjectById(input: {
   return response.data;
 }
 
-async function fetchProjectBySearch(input: {
+async function resolveProjectBySearch(input: {
   fetchImpl: CurseForgeFetch;
   input: ResolveCurseForgeModInput;
   apiKey: string;
   query: string;
-}): Promise<CurseForgeProject | undefined> {
+}): Promise<{
+  project?: CurseForgeProject;
+  ambiguity?: ExternalModProjectHint[];
+}> {
   const response = await fetchJson<CurseForgeSearchResponse>(
     input.fetchImpl,
     buildSearchUrl(input.input, input.query),
     input.apiKey
   );
+  const ambiguity = detectAmbiguousProjectMatch(response.data, input.input);
 
-  return chooseProject(response.data, input.input);
+  if (ambiguity) {
+    return { ambiguity };
+  }
+
+  return { project: chooseProject(response.data, input.input) };
 }
 
 function buildSearchUrl(
@@ -208,6 +237,24 @@ function chooseProject(
   }
 
   return projects[0];
+}
+
+function detectAmbiguousProjectMatch(
+  projects: CurseForgeProject[],
+  input: ResolveCurseForgeModInput
+): ExternalModProjectHint[] | undefined {
+  const slug = input.slug?.toLowerCase();
+
+  if (projects.length <= 1 || slug) {
+    return undefined;
+  }
+
+  return projects.slice(0, 5).map((project) => ({
+    source: "curseforge",
+    projectId: String(project.id),
+    slug: project.slug,
+    title: project.name
+  }));
 }
 
 function chooseFile(

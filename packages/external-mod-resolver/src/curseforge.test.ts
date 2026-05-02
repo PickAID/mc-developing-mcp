@@ -144,6 +144,63 @@ describe("resolveCurseForgeMod", () => {
       ]
     });
   });
+
+  it("reports ambiguous broad CurseForge search hits without selecting the first unrelated project", async () => {
+    const requests: string[] = [];
+    const result = await resolveCurseForgeMod({
+      query: "energy",
+      loader: "forge",
+      minecraftVersion: "1.20.1",
+      credentialProvider: () => "test-key",
+      fetch: async (url) => {
+        requests.push(url.toString());
+        return jsonResponse({
+          data: [
+            {
+              id: 1001,
+              name: "Energy API",
+              slug: "energy-api",
+              classId: 6
+            },
+            {
+              id: 1002,
+              name: "Energy Control",
+              slug: "energy-control",
+              classId: 6
+            }
+          ]
+        });
+      }
+    });
+
+    expect(requests).toHaveLength(1);
+    expect(result).toMatchObject({
+      source: "curseforge",
+      query: "energy",
+      candidates: [],
+      warnings: [
+        {
+          code: "ambiguous_project_match",
+          message:
+            "CurseForge query energy matched multiple projects; choose an exact slug or project id.",
+          projectHints: [
+            {
+              source: "curseforge",
+              projectId: "1001",
+              slug: "energy-api",
+              title: "Energy API"
+            },
+            {
+              source: "curseforge",
+              projectId: "1002",
+              slug: "energy-control",
+              title: "Energy Control"
+            }
+          ]
+        }
+      ]
+    });
+  });
 });
 
 function jsonResponse(payload: unknown): Response {

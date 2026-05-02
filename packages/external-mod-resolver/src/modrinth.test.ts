@@ -167,6 +167,151 @@ describe("resolveModrinthMod", () => {
       ]
     });
   });
+
+  it("reports ambiguous Modrinth search hits without selecting the first unrelated project", async () => {
+    const requests: string[] = [];
+    const result = await resolveModrinthMod({
+      query: "energy",
+      loader: "fabric",
+      minecraftVersion: "1.20.1",
+      fetch: async (url) => {
+        requests.push(url.toString());
+        return jsonResponse({
+          total_hits: 3,
+          hits: [
+            {
+              project_id: "project-a",
+              slug: "energy-api",
+              title: "Energy API",
+              project_type: "mod",
+              downloads: 3000
+            },
+            {
+              project_id: "project-b",
+              slug: "energy-control",
+              title: "Energy Control",
+              project_type: "mod",
+              downloads: 2000
+            },
+            {
+              project_id: "project-c",
+              slug: "energized-power",
+              title: "Energized Power",
+              project_type: "mod",
+              downloads: 1000
+            }
+          ]
+        });
+      }
+    });
+
+    expect(requests).toHaveLength(1);
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "energy",
+      candidates: [],
+      warnings: [
+        {
+          code: "ambiguous_project_match",
+          message:
+            "Modrinth query energy matched multiple projects; choose an exact slug or project id.",
+          projectHints: [
+            {
+              source: "modrinth",
+              projectId: "project-a",
+              slug: "energy-api",
+              title: "Energy API",
+              downloads: 3000
+            },
+            {
+              source: "modrinth",
+              projectId: "project-b",
+              slug: "energy-control",
+              title: "Energy Control",
+              downloads: 2000
+            },
+            {
+              source: "modrinth",
+              projectId: "project-c",
+              slug: "energized-power",
+              title: "Energized Power",
+              downloads: 1000
+            }
+          ]
+        }
+      ]
+    });
+  });
+
+  it("uses an exact Modrinth project id match instead of reporting ambiguity", async () => {
+    const requests: string[] = [];
+    const result = await resolveModrinthMod({
+      query: "project-a",
+      loader: "fabric",
+      minecraftVersion: "1.20.1",
+      fetch: async (url) => {
+        requests.push(url.toString());
+
+        if (url.toString().includes("/v2/search")) {
+          return jsonResponse({
+            total_hits: 2,
+            hits: [
+              {
+                project_id: "project-a",
+                slug: "energy-api",
+                title: "Energy API",
+                project_type: "mod",
+                downloads: 3000
+              },
+              {
+                project_id: "project-b",
+                slug: "energy-control",
+                title: "Energy Control",
+                project_type: "mod",
+                downloads: 2000
+              }
+            ]
+          });
+        }
+
+        return jsonResponse([
+          {
+            id: "version-a",
+            version_number: "1.0.0",
+            loaders: ["fabric"],
+            game_versions: ["1.20.1"],
+            files: [
+              {
+                primary: true,
+                filename: "energy-api-1.0.0.jar",
+                url: "https://cdn.modrinth.com/data/project-a/versions/version-a/energy-api.jar",
+                hashes: {
+                  sha1: "sha1-fixture"
+                }
+              }
+            ]
+          }
+        ]);
+      }
+    });
+
+    expect(requests).toHaveLength(2);
+    expect(requests[1]).toContain("/v2/project/energy-api/version");
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "project-a",
+      warnings: [],
+      candidates: [
+        {
+          projectId: "project-a",
+          slug: "energy-api",
+          title: "Energy API",
+          versionId: "version-a",
+          fileName: "energy-api-1.0.0.jar"
+        }
+      ]
+    });
+  });
 });
 
 function jsonResponse(payload: unknown): Response {
