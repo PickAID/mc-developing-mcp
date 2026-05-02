@@ -356,6 +356,73 @@ describe("resolveModrinthMod", () => {
       ]
     });
   });
+
+  it("selects a runtime jar instead of a primary Modrinth sources jar", async () => {
+    const result = await resolveModrinthMod({
+      query: "demo-mod",
+      loader: "fabric",
+      minecraftVersion: "1.20.1",
+      fetch: async (url) => {
+        if (url.toString().endsWith("/v2/project/demo-mod")) {
+          return jsonResponse({
+            id: "project-demo",
+            slug: "demo-mod",
+            title: "Demo Mod",
+            project_type: "mod",
+            downloads: 42
+          });
+        }
+
+        return jsonResponse([
+          {
+            id: "version-demo",
+            version_number: "1.0.0",
+            loaders: ["fabric"],
+            game_versions: ["1.20.1"],
+            files: [
+              {
+                primary: true,
+                filename: "demo-mod-1.0.0-sources.jar",
+                file_type: "sources-jar",
+                url: "https://cdn.modrinth.com/data/project-demo/versions/version-demo/demo-mod-sources.jar",
+                hashes: {
+                  sha1: "sources-sha1"
+                }
+              },
+              {
+                primary: false,
+                filename: "demo-mod-1.0.0.jar",
+                file_type: null,
+                url: "https://cdn.modrinth.com/data/project-demo/versions/version-demo/demo-mod.jar",
+                hashes: {
+                  sha1: "runtime-sha1"
+                }
+              }
+            ]
+          }
+        ]);
+      }
+    });
+
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "demo-mod",
+      warnings: [],
+      candidates: [
+        {
+          projectId: "project-demo",
+          slug: "demo-mod",
+          versionId: "version-demo",
+          fileName: "demo-mod-1.0.0.jar",
+          downloadUrl:
+            "https://cdn.modrinth.com/data/project-demo/versions/version-demo/demo-mod.jar",
+          hashes: {
+            sha1: "runtime-sha1"
+          }
+        }
+      ]
+    });
+  });
 });
 
 function jsonResponse(payload: unknown): Response {

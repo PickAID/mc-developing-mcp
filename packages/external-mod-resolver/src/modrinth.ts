@@ -289,8 +289,8 @@ function chooseVersionFile(
   files: ModrinthVersionFile[]
 ): ModrinthVersionFile | undefined {
   return (
-    files.find((file) => file.primary && isJarFile(file.filename)) ??
-    files.find((file) => isJarFile(file.filename))
+    files.find((file) => file.primary && isRuntimeJarFile(file)) ??
+    files.find((file) => isRuntimeJarFile(file))
   );
 }
 
@@ -336,6 +336,21 @@ function isJarFile(filename: string): boolean {
   return filename.toLowerCase().endsWith(".jar");
 }
 
+function isRuntimeJarFile(file: ModrinthVersionFile): boolean {
+  return isJarFile(file.filename) && !isSidecarFileType(file.file_type);
+}
+
+function isSidecarFileType(fileType?: string | null): boolean {
+  return (
+    fileType === "sources-jar" ||
+    fileType === "dev-jar" ||
+    fileType === "javadoc-jar" ||
+    fileType === "signature" ||
+    fileType === "required-resource-pack" ||
+    fileType === "optional-resource-pack"
+  );
+}
+
 interface ModrinthSearchResponse {
   total_hits: number;
   hits: ModrinthProjectHit[];
@@ -368,6 +383,7 @@ interface ModrinthVersion {
 interface ModrinthVersionFile {
   primary: boolean;
   filename: string;
+  file_type?: string | null;
   url: string;
   hashes: Record<string, string>;
 }

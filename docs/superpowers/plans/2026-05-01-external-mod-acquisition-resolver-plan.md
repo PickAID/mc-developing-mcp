@@ -17,6 +17,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - CurseForge file resolution now follows the official download-url endpoint when the selected file omits `downloadUrl`.
 - MCP external mod request parsing now extracts Modrinth and CurseForge slugs from project/file URLs before falling back to token heuristics.
 - Modrinth exact slug/project id resolution now checks `/project/{id|slug}` before broad search and falls back to search on 404.
+- Modrinth file selection now skips sidecar `file_type` jars such as sources/dev/javadoc/signature/resource-pack entries before choosing a runtime jar.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -42,10 +43,10 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Test with fixture metadata and real URL-shape assertions.
 
 ## Task 3: Modrinth Resolver
-- Status: initial implementation complete; Maven dispatch complete; direct slug/project id lookup complete; broad ambiguous search handling complete; ranking expansion remains pending.
+- Status: initial implementation complete; Maven dispatch complete; direct slug/project id lookup complete; runtime jar selection complete; broad ambiguous search handling complete; ranking expansion remains pending.
 - Search by query/slug/id using API endpoints, preferring direct project lookup before broad search.
 - Filter project versions by Minecraft version and loader.
-- Select primary jar files and preserve hash metadata.
+- Select primary runtime jar files, avoid known sidecar `file_type` entries, and preserve hash metadata.
 - Emit Modrinth Maven coordinates and Gradle method-level usage.
 - Add fixture tests for exact slug, exact project id, ambiguous query, missing loader, and file selection.
 
@@ -82,6 +83,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
   - Modrinth query + version file selection;
   - Modrinth ambiguous project match;
   - Modrinth direct slug/project id lookup;
+  - Modrinth runtime jar selection when sidecar jars are present;
   - Maven metadata resolution;
   - CurseForge missing-credential behavior;
   - CurseForge fixture API success behavior;
