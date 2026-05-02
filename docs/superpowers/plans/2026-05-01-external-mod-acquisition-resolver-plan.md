@@ -15,6 +15,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Gradle-declared Maven repositories are now extracted and used before inferred default repositories when MCP resolves Maven coordinates without an explicit URL.
 - Broad Modrinth and CurseForge searches now report compact ambiguous project matches instead of silently selecting the first remote hit.
 - CurseForge file resolution now follows the official download-url endpoint when the selected file omits `downloadUrl`.
+- MCP external mod request parsing now extracts Modrinth and CurseForge slugs from project/file URLs before falling back to token heuristics.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -58,7 +59,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, ambiguous query, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, and compact ambiguous remote search reports inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, compact ambiguous remote search reports, and URL-backed slug extraction inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;
@@ -66,6 +67,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
   4. CurseForge API;
   5. explicit page-hint fallback only.
 - Add tests proving Maven coordinates avoid remote project search and ambiguous remote hits are reported compactly.
+- Add tests proving remote project URLs are narrowed into exact platform + slug requests before resolver execution.
 
 ## Task 6: MCP Integration
 - Wire resolver into existing `mc_develop` evidence chain, likely behind `source.bundle` or crash/log analysis routes.
@@ -82,5 +84,6 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
   - CurseForge missing-credential behavior;
   - CurseForge fixture API success behavior;
   - CurseForge ambiguous project match;
-  - CurseForge missing `downloadUrl` fallback behavior.
+  - CurseForge missing `downloadUrl` fallback behavior;
+  - Modrinth and CurseForge URL-backed request parsing.
 - Run `pnpm typecheck`, `pnpm test`, `git diff --check`, line guard, and Go residue guard.

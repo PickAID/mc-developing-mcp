@@ -14,6 +14,11 @@ export interface McpServerExternalModMavenRepository {
   url: string;
 }
 
+interface ExternalModUrlHint {
+  platform: "modrinth" | "curseforge";
+  query: string;
+}
+
 export type ResolvableExternalModRequest =
   | (McpServerExternalModResolutionRequest & {
       platform: "maven";
@@ -41,13 +46,14 @@ export function parseExternalModRequest(
     };
   }
 
-  const platform = detectPlatform(requestText);
+  const urlHint = extractExternalModUrlHint(requestText);
+  const platform = urlHint?.platform ?? detectPlatform(requestText);
   const loader = detectLoader(requestText);
   const minecraftVersion = detectMinecraftVersion(requestText);
 
   return {
     platform,
-    query: extractQuery(requestText, loader, minecraftVersion),
+    query: urlHint?.query ?? extractQuery(requestText, loader, minecraftVersion),
     loader,
     minecraftVersion
   };
@@ -133,6 +139,12 @@ function extractQuery(
   loader?: string,
   minecraftVersion?: string
 ): string | undefined {
+  const fromUrl = extractExternalModUrlHint(requestText)?.query;
+
+  if (fromUrl) {
+    return fromUrl;
+  }
+
   const fromForPhrase = extractQueryAfterFor(requestText, loader, minecraftVersion);
 
   if (fromForPhrase) {
@@ -149,6 +161,63 @@ function extractQuery(
   );
 
   return meaningful[0]?.toLowerCase();
+}
+
+function extractExternalModUrlHint(requestText: string): ExternalModUrlHint | undefined {
+  for (const rawUrl of extractRepositoryUrls(requestText)) {
+    const hint = parseExternalModUrlHint(rawUrl);
+
+    if (hint) {
+      return hint;
+    }
+  }
+
+  return undefined;
+}
+
+function parseExternalModUrlHint(rawUrl: string): ExternalModUrlHint | undefined {
+  let url: URL;
+
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return undefined;
+  }
+
+  const host = url.hostname.toLowerCase().replace(/^www\./, "");
+  const segments = url.pathname
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => decodeURIComponent(segment).toLowerCase());
+
+  if (host === "modrinth.com") {
+    return parseModrinthUrlSegments(segments);
+  }
+
+  if (host === "curseforge.com") {
+    return parseCurseForgeUrlSegments(segments);
+  }
+
+  return undefined;
+}
+
+function parseModrinthUrlSegments(
+  segments: string[]
+): ExternalModUrlHint | undefined {
+  const projectKinds = new Set(["mod", "plugin"]);
+  const kindIndex = segments.findIndex((segment) => projectKinds.has(segment));
+  const query = kindIndex >= 0 ? segments[kindIndex + 1] : undefined;
+
+  return query ? { platform: "modrinth", query } : undefined;
+}
+
+function parseCurseForgeUrlSegments(
+  segments: string[]
+): ExternalModUrlHint | undefined {
+  const modsIndex = segments.findIndex((segment) => segment === "mc-mods");
+  const query = modsIndex >= 0 ? segments[modsIndex + 1] : undefined;
+
+  return query ? { platform: "curseforge", query } : undefined;
 }
 
 function extractQueryAfterFor(
