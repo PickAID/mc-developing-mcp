@@ -21,6 +21,10 @@ import {
   type McpServerExternalModMavenRepository,
   type ResolvableExternalModRequest
 } from "./external-mod-resolution-request.js";
+import {
+  resolveLocalModArchiveEvidence,
+  type McpServerLocalModArchiveResolutionResult
+} from "./external-mod-local-archives.js";
 
 export interface McpServerExternalModResolutionOptions {
   mavenMetadataCache?: MavenMetadataCache;
@@ -35,6 +39,10 @@ export interface McpServerExternalModResolutionOptions {
     input: ResolveCurseForgeModInput
   ) => Promise<ExternalModResolverResult>;
 }
+
+type McpServerExternalModResolutionResult =
+  | ExternalModResolverResult
+  | McpServerLocalModArchiveResolutionResult;
 
 export async function executeMcpServerExternalModResolution(
   input: McpServerEvidenceExecutorInput,
@@ -71,7 +79,12 @@ export async function executeMcpServerExternalModResolution(
     throw new Error("External mod request constraints were not narrowed.");
   }
 
-  const result = await resolveByPlatform(request, options);
+  const result =
+    (await resolveLocalModArchiveEvidence({
+      request,
+      workspaceRoot:
+        input.requestPlan.requestContext.workspaceContext?.workspaceRoot
+    })) ?? (await resolveByPlatform(request, options));
 
   return {
     matched: true,
@@ -119,7 +132,13 @@ async function resolveByPlatform(
   });
 }
 
-function summarizeResolution(result: ExternalModResolverResult): string {
+function summarizeResolution(
+  result: McpServerExternalModResolutionResult
+): string {
+  if (result.source === "local_archive") {
+    return `Resolved local mod archive: ${result.candidates[0]?.relativePath}.`;
+  }
+
   const coordinates = [
     ...new Set(
       result.candidates.flatMap((candidate) =>

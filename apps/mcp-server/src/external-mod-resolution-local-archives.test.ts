@@ -1,0 +1,135 @@
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+import { buildMcpServerBootstrap } from "./bootstrap.js";
+import { buildMcpServerEvidencePlan } from "./evidence-plan.js";
+import { executeMcpServerExternalModResolution } from "./external-mod-resolution-executor.js";
+import { buildMcpServerRequestPlan } from "./request-plan.js";
+
+describe("executeMcpServerExternalModResolution local archives", () => {
+  it("uses matching workspace mod jars before remote project resolvers", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-local-extmod-"));
+    const modJar = join(workspaceRoot, "mods", "local-energy.jar");
+
+    await writeZip(modJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "local_energy",
+          name: "Local Energy",
+          version: "1.0.0"
+        })
+      }
+    ]);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Find the CurseForge mod for Local Energy fabric 1.20.1."
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      modrinthResolver: async () => {
+        throw new Error("local archive lookup must not search Modrinth");
+      },
+      curseForgeResolver: async () => {
+        throw new Error("local archive lookup must not search CurseForge");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      summary: "Resolved local mod archive: mods/local-energy.jar.",
+      payload: {
+        source: "external_mod_resolution",
+        result: {
+          source: "local_archive",
+          query: "local energy",
+          remoteLookupSkipped: true,
+          candidates: [
+            {
+              source: "local_archive",
+              confidence: "high",
+              modId: "local_energy",
+              title: "Local Energy",
+              versionNumber: "1.0.0",
+              loaders: ["fabric"],
+              fileName: basename(modJar),
+              relativePath: "mods/local-energy.jar",
+              archiveSource: "mods-directory",
+              metadataPath: "fabric.mod.json"
+            }
+          ],
+          warnings: []
+        }
+      }
+    });
+  });
+});
+
+async function createExecutorInput(workspaceRoot: string, requestText: string) {
+  const bootstrap = await buildMcpServerBootstrap({
+    runtimeRoot: "/tmp/mcpskill-runtime",
+    workspace: { workspaceRoot }
+  });
+  const requestPlan = buildMcpServerRequestPlan(bootstrap, requestText);
+  const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+
+  return {
+    candidate: evidencePlan.candidates[0],
+    evidencePlan,
+    requestPlan
+  };
+}
+
+async function writeZip(
+  path: string,
+  entries: Array<{ name: string; content: string }>
+): Promise<void> {
+  await mkdir(join(path, ".."), { recursive: true });
+  await writeFile(path, createZip(entries));
+}
+
+function createZip(entries: Array<{ name: string; content: string }>): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let localOffset = 0;
+
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = Buffer.from(entry.content);
+    const localHeader = Buffer.alloc(30);
+    const centralHeader = Buffer.alloc(46);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt32LE(content.length, 18);
+    localHeader.writeUInt32LE(content.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt32LE(content.length, 20);
+    centralHeader.writeUInt32LE(content.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(localOffset, 42);
+
+    localParts.push(localHeader, name, content);
+    centralParts.push(centralHeader, name);
+    localOffset += localHeader.length + name.length + content.length;
+  }
+
+  const centralDirectory = Buffer.concat(centralParts);
+  const localFiles = Buffer.concat(localParts);
+  const eocd = Buffer.alloc(22);
+
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(centralDirectory.length, 12);
+  eocd.writeUInt32LE(localFiles.length, 16);
+
+  return Buffer.concat([localFiles, centralDirectory, eocd]);
+}
