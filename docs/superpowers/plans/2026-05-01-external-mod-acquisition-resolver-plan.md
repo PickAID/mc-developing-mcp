@@ -14,6 +14,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Runtime-local Maven metadata cache now supports memory and file-backed cache adapters with cache hit/miss/write traces.
 - Gradle-declared Maven repositories are now extracted and used before inferred default repositories when MCP resolves Maven coordinates without an explicit URL.
 - Broad Modrinth and CurseForge searches now report compact ambiguous project matches instead of silently selecting the first remote hit.
+- CurseForge file resolution now follows the official download-url endpoint when the selected file omits `downloadUrl`.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -47,7 +48,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for exact slug, exact project id, ambiguous query, missing loader, and file selection.
 
 ## Task 4: CurseForge Resolver
-- Status: initial implementation complete for credentials handling, exact slug fixture resolution, broad ambiguous search handling, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
+- Status: initial implementation complete for credentials handling, exact slug fixture resolution, broad ambiguous search handling, download-url fallback, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
 - Add API-key/config-driven resolver using `CURSEFORGE_API_KEY` as the default environment variable.
 - Return `credentials_required` with the setup URL `https://console.curseforge.com/?#/api-keys` when no credential provider supplies a key.
 - Search mods and list files through official API.
@@ -80,5 +81,6 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
   - Maven metadata resolution;
   - CurseForge missing-credential behavior;
   - CurseForge fixture API success behavior;
-  - CurseForge ambiguous project match.
+  - CurseForge ambiguous project match;
+  - CurseForge missing `downloadUrl` fallback behavior.
 - Run `pnpm typecheck`, `pnpm test`, `git diff --check`, line guard, and Go residue guard.

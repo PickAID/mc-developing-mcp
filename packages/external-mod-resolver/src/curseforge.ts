@@ -112,11 +112,25 @@ export async function resolveCurseForgeMod(
       ]
     };
   }
+  const downloadUrl = await resolveFileDownloadUrl({
+    fetchImpl,
+    input,
+    apiKey,
+    projectId: projectResolution.project.id,
+    file
+  });
 
   return {
     source: "curseforge",
     query,
-    candidates: [toCandidate({ project: projectResolution.project, file, input })],
+    candidates: [
+      toCandidate({
+        project: projectResolution.project,
+        file,
+        input,
+        downloadUrl
+      })
+    ],
     warnings: []
   };
 }
@@ -195,6 +209,17 @@ function buildFilesUrl(
   return url;
 }
 
+function buildFileDownloadUrl(
+  input: ResolveCurseForgeModInput,
+  projectId: number,
+  fileId: number
+): URL {
+  return new URL(
+    `/v1/mods/${projectId}/files/${fileId}/download-url`,
+    input.apiBaseUrl ?? CURSEFORGE_API_BASE_URL
+  );
+}
+
 async function fetchJson<T>(
   fetchImpl: CurseForgeFetch,
   url: URL,
@@ -257,6 +282,26 @@ function detectAmbiguousProjectMatch(
   }));
 }
 
+async function resolveFileDownloadUrl(input: {
+  fetchImpl: CurseForgeFetch;
+  input: ResolveCurseForgeModInput;
+  apiKey: string;
+  projectId: number;
+  file: CurseForgeFile;
+}): Promise<string> {
+  if (input.file.downloadUrl) {
+    return input.file.downloadUrl;
+  }
+
+  const response = await fetchJson<CurseForgeDownloadUrlResponse>(
+    input.fetchImpl,
+    buildFileDownloadUrl(input.input, input.projectId, input.file.id),
+    input.apiKey
+  );
+
+  return response.data;
+}
+
 function chooseFile(
   files: CurseForgeFile[],
   input: ResolveCurseForgeModInput
@@ -274,6 +319,7 @@ function toCandidate(input: {
   project: CurseForgeProject;
   file: CurseForgeFile;
   input: ResolveCurseForgeModInput;
+  downloadUrl: string;
 }): ExternalModCandidate {
   const projectId = String(input.project.id);
   const fileId = String(input.file.id);
@@ -297,7 +343,7 @@ function toCandidate(input: {
     loaders: [normalizeLoader(input.input.loader)],
     minecraftVersions: [input.input.minecraftVersion],
     fileName: input.file.fileName,
-    downloadUrl: input.file.downloadUrl,
+    downloadUrl: input.downloadUrl,
     hashes: toHashRecord(input.file.hashes),
     mavenArtifacts: [
       buildCurseMavenArtifact({
@@ -364,11 +410,15 @@ interface CurseForgeFilesResponse {
   data: CurseForgeFile[];
 }
 
+interface CurseForgeDownloadUrlResponse {
+  data: string;
+}
+
 interface CurseForgeFile {
   id: number;
   displayName: string;
   fileName: string;
-  downloadUrl: string;
+  downloadUrl?: string | null;
   gameVersions: string[];
   hashes: CurseForgeHash[];
 }

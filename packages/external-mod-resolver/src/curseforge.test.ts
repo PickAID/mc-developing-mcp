@@ -201,6 +201,67 @@ describe("resolveCurseForgeMod", () => {
       ]
     });
   });
+
+  it("fetches a CurseForge file download URL when the selected file omits it", async () => {
+    const requests: string[] = [];
+    const result = await resolveCurseForgeMod({
+      slug: "jei",
+      loader: "forge",
+      minecraftVersion: "1.20.1",
+      credentialProvider: () => "test-key",
+      fetch: async (url) => {
+        requests.push(url.toString());
+
+        if (url.toString().includes("/v1/mods/search")) {
+          return jsonResponse({
+            data: [
+              {
+                id: 238222,
+                name: "Just Enough Items (JEI)",
+                slug: "jei",
+                classId: 6
+              }
+            ]
+          });
+        }
+
+        if (url.toString().includes("/download-url")) {
+          return jsonResponse({
+            data: "https://mediafilez.forgecdn.net/files/7920/915/jei.jar"
+          });
+        }
+
+        return jsonResponse({
+          data: [
+            {
+              id: 7920915,
+              displayName: "15.20.0.130 for Forge 1.20.1",
+              fileName: "jei-1.20.1-forge-15.20.0.130.jar",
+              gameVersions: ["1.20.1", "Forge"],
+              hashes: []
+            }
+          ]
+        });
+      }
+    });
+
+    expect(requests).toHaveLength(3);
+    expect(requests[2]).toContain("/v1/mods/238222/files/7920915/download-url");
+    expect(result).toMatchObject({
+      source: "curseforge",
+      query: "jei",
+      warnings: [],
+      candidates: [
+        {
+          source: "curseforge",
+          projectId: "238222",
+          versionId: "7920915",
+          fileName: "jei-1.20.1-forge-15.20.0.130.jar",
+          downloadUrl: "https://mediafilez.forgecdn.net/files/7920/915/jei.jar"
+        }
+      ]
+    });
+  });
 });
 
 function jsonResponse(payload: unknown): Response {
