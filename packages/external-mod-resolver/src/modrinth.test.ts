@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { resolveModrinthMod } from "./modrinth.js";
 
 describe("resolveModrinthMod", () => {
-  it("resolves a Modrinth slug to a primary jar candidate for the requested loader and Minecraft version", async () => {
+  it("resolves an exact Modrinth slug through the project API before search", async () => {
     const requests: string[] = [];
     const result = await resolveModrinthMod({
       query: "sodium",
@@ -13,17 +13,74 @@ describe("resolveModrinthMod", () => {
         requests.push(url.toString());
 
         if (url.toString().includes("/v2/search")) {
+          throw new Error("Exact Modrinth slugs should not use search first.");
+        }
+
+        if (url.toString().includes("/version")) {
+          return jsonResponse([
+            {
+              id: "OihdIimA",
+              version_number: "mc1.20.1-0.5.13-fabric",
+              loaders: ["fabric"],
+              game_versions: ["1.20.1"],
+              files: [
+                {
+                  primary: true,
+                  filename: "sodium-fabric-0.5.13+mc1.20.1.jar",
+                  url: "https://cdn.modrinth.com/data/AANobbMI/versions/OihdIimA/sodium.jar",
+                  hashes: {
+                    sha1: "sha1-fixture"
+                  }
+                }
+              ]
+            }
+          ]);
+        }
+
+        return jsonResponse({
+          id: "AANobbMI",
+          slug: "sodium",
+          title: "Sodium",
+          project_type: "mod",
+          downloads: 148390564
+        });
+      }
+    });
+
+    expect(requests).toHaveLength(2);
+    expect(requests[0]).toBe("https://api.modrinth.com/v2/project/sodium");
+    expect(requests[1]).toContain("/v2/project/sodium/version");
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "sodium",
+      warnings: [],
+      candidates: [
+        {
+          projectId: "AANobbMI",
+          slug: "sodium",
+          versionId: "OihdIimA",
+          fileName: "sodium-fabric-0.5.13+mc1.20.1.jar"
+        }
+      ]
+    });
+  });
+
+  it("resolves a Modrinth slug to a primary jar candidate for the requested loader and Minecraft version", async () => {
+    const requests: string[] = [];
+    const result = await resolveModrinthMod({
+      query: "sodium",
+      loader: "fabric",
+      minecraftVersion: "1.20.1",
+      fetch: async (url) => {
+        requests.push(url.toString());
+
+        if (url.toString().endsWith("/v2/project/sodium")) {
           return jsonResponse({
-            total_hits: 1,
-            hits: [
-              {
-                project_id: "AANobbMI",
-                slug: "sodium",
-                title: "Sodium",
-                project_type: "mod",
-                downloads: 148390564
-              }
-            ]
+            id: "AANobbMI",
+            slug: "sodium",
+            title: "Sodium",
+            project_type: "mod",
+            downloads: 148390564
           });
         }
 
@@ -49,10 +106,7 @@ describe("resolveModrinthMod", () => {
       }
     });
 
-    expect(requests[0]).toContain("/v2/search");
-    expect(requests[0]).toContain("query=sodium");
-    expect(requests[0]).toContain("categories%3Afabric");
-    expect(requests[0]).toContain("versions%3A1.20.1");
+    expect(requests[0]).toBe("https://api.modrinth.com/v2/project/sodium");
     expect(requests[1]).toContain("/v2/project/sodium/version");
     expect(requests[1]).toContain("loaders=%5B%22fabric%22%5D");
     expect(requests[1]).toContain("game_versions=%5B%221.20.1%22%5D");
@@ -135,18 +189,13 @@ describe("resolveModrinthMod", () => {
       loader: "neoforge",
       minecraftVersion: "1.20.1",
       fetch: async (url) => {
-        if (url.toString().includes("/v2/search")) {
+        if (url.toString().endsWith("/v2/project/sodium")) {
           return jsonResponse({
-            total_hits: 1,
-            hits: [
-              {
-                project_id: "AANobbMI",
-                slug: "sodium",
-                title: "Sodium",
-                project_type: "mod",
-                downloads: 148390564
-              }
-            ]
+            id: "AANobbMI",
+            slug: "sodium",
+            title: "Sodium",
+            project_type: "mod",
+            downloads: 148390564
           });
         }
 
@@ -176,6 +225,11 @@ describe("resolveModrinthMod", () => {
       minecraftVersion: "1.20.1",
       fetch: async (url) => {
         requests.push(url.toString());
+
+        if (url.toString().endsWith("/v2/project/energy")) {
+          return new Response(null, { status: 404 });
+        }
+
         return jsonResponse({
           total_hits: 3,
           hits: [
@@ -205,7 +259,9 @@ describe("resolveModrinthMod", () => {
       }
     });
 
-    expect(requests).toHaveLength(1);
+    expect(requests).toHaveLength(2);
+    expect(requests[0]).toBe("https://api.modrinth.com/v2/project/energy");
+    expect(requests[1]).toContain("/v2/search");
     expect(result).toMatchObject({
       source: "modrinth",
       query: "energy",
@@ -252,25 +308,13 @@ describe("resolveModrinthMod", () => {
       fetch: async (url) => {
         requests.push(url.toString());
 
-        if (url.toString().includes("/v2/search")) {
+        if (url.toString().endsWith("/v2/project/project-a")) {
           return jsonResponse({
-            total_hits: 2,
-            hits: [
-              {
-                project_id: "project-a",
-                slug: "energy-api",
-                title: "Energy API",
-                project_type: "mod",
-                downloads: 3000
-              },
-              {
-                project_id: "project-b",
-                slug: "energy-control",
-                title: "Energy Control",
-                project_type: "mod",
-                downloads: 2000
-              }
-            ]
+            id: "project-a",
+            slug: "energy-api",
+            title: "Energy API",
+            project_type: "mod",
+            downloads: 3000
           });
         }
 

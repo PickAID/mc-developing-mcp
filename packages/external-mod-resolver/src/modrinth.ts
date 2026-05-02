@@ -25,6 +25,16 @@ export async function resolveModrinthMod(
   input: ResolveModrinthModInput
 ): Promise<ExternalModResolverResult> {
   const fetchImpl = input.fetch ?? fetchModrinth;
+  const directProject = await fetchProjectByIdOrSlug(fetchImpl, input);
+
+  if (directProject) {
+    return await resolveProjectVersions({
+      fetchImpl,
+      input,
+      project: directProject
+    });
+  }
+
   const search = await fetchJson<ModrinthSearchResponse>(
     fetchImpl,
     buildSearchUrl(input)
@@ -64,23 +74,43 @@ export async function resolveModrinthMod(
     };
   }
 
-  const versions = await fetchJson<ModrinthVersion[]>(
+  return await resolveProjectVersions({ fetchImpl, input, project });
+}
+
+async function fetchProjectByIdOrSlug(
+  fetchImpl: ModrinthFetch,
+  input: ResolveModrinthModInput
+): Promise<ModrinthProjectHit | undefined> {
+  const project = await fetchOptionalJson<ModrinthProjectDetail>(
     fetchImpl,
-    buildProjectVersionsUrl(input, project.slug)
+    buildProjectUrl(input)
+  );
+
+  return project ? toProjectHit(project) : undefined;
+}
+
+async function resolveProjectVersions(input: {
+  fetchImpl: ModrinthFetch;
+  input: ResolveModrinthModInput;
+  project: ModrinthProjectHit;
+}): Promise<ExternalModResolverResult> {
+  const versions = await fetchJson<ModrinthVersion[]>(
+    input.fetchImpl,
+    buildProjectVersionsUrl(input.input, input.project.slug)
   );
   const version = versions[0];
 
   if (!version) {
     return {
       source: "modrinth",
-      query: input.query,
+      query: input.input.query,
       candidates: [],
       warnings: [
         {
           code: "no_compatible_version",
           message:
-            `Modrinth project ${project.slug} has no version matching loader ` +
-            `${input.loader} and Minecraft ${input.minecraftVersion}.`
+            `Modrinth project ${input.project.slug} has no version matching loader ` +
+            `${input.input.loader} and Minecraft ${input.input.minecraftVersion}.`
         }
       ]
     };
@@ -91,7 +121,7 @@ export async function resolveModrinthMod(
   if (!file) {
     return {
       source: "modrinth",
-      query: input.query,
+      query: input.input.query,
       candidates: [],
       warnings: [
         {
@@ -104,10 +134,24 @@ export async function resolveModrinthMod(
 
   return {
     source: "modrinth",
-    query: input.query,
-    candidates: [toCandidate({ project, version, file, input })],
+    query: input.input.query,
+    candidates: [
+      toCandidate({
+        project: input.project,
+        version,
+        file,
+        input: input.input
+      })
+    ],
     warnings: []
   };
+}
+
+function buildProjectUrl(input: ResolveModrinthModInput): URL {
+  return new URL(
+    `/v2/project/${encodeURIComponent(input.query)}`,
+    input.apiBaseUrl ?? MODRINTH_API_BASE_URL
+  );
 }
 
 function buildSearchUrl(input: ResolveModrinthModInput): URL {
@@ -152,6 +196,28 @@ async function fetchJson<T>(
       accept: "application/json"
     }
   });
+
+  if (!response.ok) {
+    throw new Error(`Modrinth request failed: HTTP ${response.status}`);
+  }
+
+  return await response.json() as T;
+}
+
+async function fetchOptionalJson<T>(
+  fetchImpl: ModrinthFetch,
+  url: URL
+): Promise<T | undefined> {
+  const response = await fetchImpl(url, {
+    headers: {
+      "user-agent": MODRINTH_USER_AGENT,
+      accept: "application/json"
+    }
+  });
+
+  if (response.status === 404) {
+    return undefined;
+  }
 
   if (!response.ok) {
     throw new Error(`Modrinth request failed: HTTP ${response.status}`);
@@ -207,6 +273,16 @@ function matchesProjectIdentity(
     hit.slug.toLowerCase() === normalizedQuery ||
     hit.project_id.toLowerCase() === normalizedQuery
   );
+}
+
+function toProjectHit(project: ModrinthProjectDetail): ModrinthProjectHit {
+  return {
+    project_id: project.id,
+    slug: project.slug,
+    title: project.title,
+    project_type: project.project_type,
+    downloads: project.downloads
+  };
 }
 
 function chooseVersionFile(
@@ -267,6 +343,14 @@ interface ModrinthSearchResponse {
 
 interface ModrinthProjectHit {
   project_id: string;
+  slug: string;
+  title: string;
+  project_type: string;
+  downloads: number;
+}
+
+interface ModrinthProjectDetail {
+  id: string;
   slug: string;
   title: string;
   project_type: string;

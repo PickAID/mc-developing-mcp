@@ -16,6 +16,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Broad Modrinth and CurseForge searches now report compact ambiguous project matches instead of silently selecting the first remote hit.
 - CurseForge file resolution now follows the official download-url endpoint when the selected file omits `downloadUrl`.
 - MCP external mod request parsing now extracts Modrinth and CurseForge slugs from project/file URLs before falling back to token heuristics.
+- Modrinth exact slug/project id resolution now checks `/project/{id|slug}` before broad search and falls back to search on 404.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -41,8 +42,8 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Test with fixture metadata and real URL-shape assertions.
 
 ## Task 3: Modrinth Resolver
-- Status: initial implementation complete; Maven dispatch complete; broad ambiguous search handling complete; ranking expansion remains pending.
-- Search by query/slug/id using API endpoints.
+- Status: initial implementation complete; Maven dispatch complete; direct slug/project id lookup complete; broad ambiguous search handling complete; ranking expansion remains pending.
+- Search by query/slug/id using API endpoints, preferring direct project lookup before broad search.
 - Filter project versions by Minecraft version and loader.
 - Select primary jar files and preserve hash metadata.
 - Emit Modrinth Maven coordinates and Gradle method-level usage.
@@ -80,6 +81,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Include actual resolver return values for:
   - Modrinth query + version file selection;
   - Modrinth ambiguous project match;
+  - Modrinth direct slug/project id lookup;
   - Maven metadata resolution;
   - CurseForge missing-credential behavior;
   - CurseForge fixture API success behavior;
