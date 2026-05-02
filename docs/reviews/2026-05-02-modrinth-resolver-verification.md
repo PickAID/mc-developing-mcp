@@ -11,6 +11,7 @@ Implemented behavior:
 - Resolves a Modrinth query/slug with loader and Minecraft version constraints.
 - Uses Modrinth API endpoints instead of HTML scraping.
 - Returns compact evidence-ranked candidates with project, version, file, hash, and confirmation metadata.
+- Returns Modrinth Maven dispatch metadata, including exact version-id coordinates and Gradle method-level usage.
 - Does not download jar files.
 - Keeps cache policy at `metadata_only` and `requiresConfirmation: true`.
 - Does not add a public MCP tool.
@@ -113,4 +114,5 @@ Observed output:
 - This is not wired into `mc_develop` yet.
 - Candidate ranking currently handles the common exact-slug path first; ambiguous natural-language query ranking should be expanded before MCP integration.
 - No runtime cache has been added in this slice.
-- Maven and CurseForge resolvers remain planned follow-up work.
+- Ordinary Maven repository resolution remains planned follow-up work.
+- CurseForge resolution exists for credentialed exact slug/project-id paths, but broad search ranking remains planned follow-up work.

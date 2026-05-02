@@ -2,6 +2,7 @@ import type {
   ExternalModCandidate,
   ExternalModResolverResult
 } from "./types.js";
+import { buildModrinthMavenArtifact } from "./maven.js";
 
 const MODRINTH_API_BASE_URL = "https://api.modrinth.com";
 const MODRINTH_USER_AGENT = "PickAID-mc-developing-mcp/0.0.0";
@@ -189,6 +190,14 @@ function toCandidate(input: {
     fileName: input.file.filename,
     downloadUrl: input.file.url,
     hashes: { ...input.file.hashes },
+    mavenArtifacts: [
+      buildModrinthMavenArtifact({
+        slug: input.project.slug,
+        projectId: input.project.project_id,
+        versionId: input.version.id,
+        versionNumber: input.version.version_number
+      })
+    ],
     requiresConfirmation: true,
     cachePolicy: "metadata_only"
   };

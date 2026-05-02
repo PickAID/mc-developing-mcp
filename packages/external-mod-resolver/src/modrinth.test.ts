@@ -82,6 +82,45 @@ describe("resolveModrinthMod", () => {
             sha1: "sha1-fixture",
             sha512: "sha512-fixture"
           },
+          mavenArtifacts: [
+            {
+              source: "modrinth-maven",
+              repositoryName: "Modrinth Maven",
+              repositoryUrl: "https://api.modrinth.com/maven",
+              group: "maven.modrinth",
+              artifact: "sodium",
+              version: "OihdIimA",
+              coordinates: "maven.modrinth:sodium:OihdIimA",
+              aliases: [
+                "maven.modrinth:sodium:mc1.20.1-0.5.13-fabric",
+                "maven.modrinth:AANobbMI:OihdIimA",
+                "maven.modrinth:AANobbMI:mc1.20.1-0.5.13-fabric"
+              ],
+              gradle: {
+                repositoryGroovy:
+                  "maven { url = \"https://api.modrinth.com/maven\" }",
+                repositoryKotlin: "maven(\"https://api.modrinth.com/maven\")",
+                loom: {
+                  modImplementation:
+                    "modImplementation \"maven.modrinth:sodium:OihdIimA\"",
+                  modCompileOnly:
+                    "modCompileOnly \"maven.modrinth:sodium:OihdIimA\"",
+                  modRuntimeOnly:
+                    "modRuntimeOnly \"maven.modrinth:sodium:OihdIimA\"",
+                  modLocalRuntime:
+                    "modLocalRuntime \"maven.modrinth:sodium:OihdIimA\""
+                },
+                forgeGradle: {
+                  implementationFgDeobf:
+                    "implementation fg.deobf(\"maven.modrinth:sodium:OihdIimA\")",
+                  compileOnlyFgDeobf:
+                    "compileOnly fg.deobf(\"maven.modrinth:sodium:OihdIimA\")",
+                  runtimeOnlyFgDeobf:
+                    "runtimeOnly fg.deobf(\"maven.modrinth:sodium:OihdIimA\")"
+                }
+              }
+            }
+          ],
           requiresConfirmation: true,
           cachePolicy: "metadata_only"
         }

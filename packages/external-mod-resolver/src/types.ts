@@ -1,4 +1,4 @@
-export type ExternalModResolverSource = "modrinth";
+export type ExternalModResolverSource = "modrinth" | "curseforge";
 
 export type ExternalModCandidateConfidence = "high" | "medium" | "low";
 
@@ -21,6 +21,7 @@ export interface ExternalModCandidate {
   fileName: string;
   downloadUrl: string;
   hashes: Record<string, string>;
+  mavenArtifacts: ExternalModMavenArtifact[];
   requiresConfirmation: boolean;
   cachePolicy: ExternalModCandidateCachePolicy;
 }
@@ -28,6 +29,8 @@ export interface ExternalModCandidate {
 export interface ExternalModResolverWarning {
   code: string;
   message: string;
+  setupUrl?: string;
+  credentialEnvVar?: string;
 }
 
 export interface ExternalModResolverResult {
@@ -35,4 +38,34 @@ export interface ExternalModResolverResult {
   query: string;
   candidates: ExternalModCandidate[];
   warnings: ExternalModResolverWarning[];
+}
+
+export type ExternalModMavenArtifactSource = "modrinth-maven" | "cursemaven";
+
+export interface ExternalModMavenArtifact {
+  source: ExternalModMavenArtifactSource;
+  repositoryName: string;
+  repositoryUrl: string;
+  group: string;
+  artifact: string;
+  version: string;
+  coordinates: string;
+  aliases: string[];
+  gradle: ExternalModGradleUsage;
+}
+
+export interface ExternalModGradleUsage {
+  repositoryGroovy: string;
+  repositoryKotlin: string;
+  loom: {
+    modImplementation: string;
+    modCompileOnly: string;
+    modRuntimeOnly: string;
+    modLocalRuntime: string;
+  };
+  forgeGradle: {
+    implementationFgDeobf: string;
+    compileOnlyFgDeobf: string;
+    runtimeOnlyFgDeobf: string;
+  };
 }

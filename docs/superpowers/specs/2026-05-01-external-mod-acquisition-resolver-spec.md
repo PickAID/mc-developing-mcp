@@ -42,9 +42,17 @@ Candidate fields:
 - `projectId`, `slug`, `title`, and `modId` when available.
 - `minecraftVersions` and `loaders`.
 - `fileName`, `downloadUrl`, and checksum metadata when available.
+- `mavenArtifacts`: repository URL, exact Maven coordinates, aliases, and Gradle method-level usage for Modrinth Maven or CurseMaven when derivable from API IDs.
 - `requiresConfirmation`: always true before downloading a new remote artifact.
 - `cachePolicy`: `metadata_only`, `download_allowed`, or `download_denied`.
 - `warnings`: credential missing, ambiguous match, stale cache, unsupported loader, or page-scrape fallback.
+
+Maven dispatch fields:
+
+- Modrinth Maven exact coordinate should prefer selected API `versionId`: `maven.modrinth:<slug>:<versionId>`.
+- Modrinth Maven should also expose aliases such as `maven.modrinth:<slug>:<version_number>` and `maven.modrinth:<projectId>:<versionId>`.
+- CurseMaven exact coordinate should use selected API `projectId` and `fileId`: `curse.maven:<slug>-<projectId>:<fileId>`.
+- Gradle usage must be method-level, including at least `modImplementation`, `modCompileOnly`, `modRuntimeOnly`, `modLocalRuntime`, `implementation fg.deobf(...)`, `compileOnly fg.deobf(...)`, and `runtimeOnly fg.deobf(...)`.
 
 ## Source Rules
 ### Modrinth
@@ -56,6 +64,7 @@ Required behavior:
 - Resolve project versions with `loaders` and `game_versions` filters.
 - Prefer primary files, then non-server-only jar files.
 - Preserve upstream hashes such as SHA-1 and SHA-512.
+- Add Modrinth Maven dispatch metadata with repository `https://api.modrinth.com/maven`.
 - Send a clear user agent.
 
 Official references:
@@ -89,6 +98,7 @@ Required behavior:
 - Resolve project search, file list, and download URL through API endpoints.
 - Prefer project id or exact slug lookup over broad `searchFilter`; observed broad CurseForge search can return unrelated projects.
 - Support loader filtering by inspecting returned `gameVersions` labels such as `Forge`, `Fabric`, and `NeoForge`.
+- Add CurseMaven dispatch metadata with repository `https://cursemaven.com` once project id and file id are known.
 - Treat download-page parsing as a diagnostic fallback only, because page layout and anti-bot behavior are not stable API contracts.
 
 Official references:

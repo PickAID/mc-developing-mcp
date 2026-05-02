@@ -8,8 +8,9 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 
 ## Current Status
 - Initial Modrinth resolver package exists in `packages/external-mod-resolver`.
-- Modrinth can resolve query/slug + loader + Minecraft version into a compact primary-jar candidate with hashes and explicit confirmation metadata.
-- Maven, CurseForge, persistent metadata cache, orchestrator ranking, and MCP integration remain pending.
+- Modrinth can resolve query/slug + loader + Minecraft version into a compact primary-jar candidate with hashes, Modrinth Maven dispatch metadata, and explicit confirmation metadata.
+- CurseForge can return `credentials_required` without leaking keys and can resolve fixture-backed slug + loader + Minecraft version into CurseMaven dispatch metadata when a credential provider is configured.
+- Maven resolver, persistent metadata cache, orchestrator ranking, and MCP integration remain pending.
 
 ## Constraints
 - TypeScript only.
@@ -33,18 +34,21 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Test with fixture metadata and real URL-shape assertions.
 
 ## Task 3: Modrinth Resolver
-- Status: initial implementation complete; ranking expansion remains pending.
+- Status: initial implementation complete; Maven dispatch complete; ranking expansion remains pending.
 - Search by query/slug/id using API endpoints.
 - Filter project versions by Minecraft version and loader.
 - Select primary jar files and preserve hash metadata.
+- Emit Modrinth Maven coordinates and Gradle method-level usage.
 - Add fixture tests for exact slug, ambiguous query, missing loader, and file selection.
 
 ## Task 4: CurseForge Resolver
+- Status: initial implementation complete for credentials handling, exact slug fixture resolution, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
 - Add API-key/config-driven resolver using `CURSEFORGE_API_KEY` as the default environment variable.
 - Return `credentials_required` with the setup URL `https://console.curseforge.com/?#/api-keys` when no credential provider supplies a key.
 - Search mods and list files through official API.
 - Prefer exact project id or slug lookup; treat broad `searchFilter` hits as lower-confidence candidates that require ranking.
 - Resolve download URL through API when `downloadUrl` is absent.
+- Emit CurseMaven coordinates and Gradle method-level usage.
 - Add fixture tests for credential presence, missing credential, and file selection.
 
 ## Task 5: Orchestrator
