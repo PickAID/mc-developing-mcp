@@ -14,6 +14,6 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. packages/external-mod-resolver/src/modrinth.test.ts packages/external-mod-resolver/src/curseforge.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. packages/external-mod-resolver/src/modrinth.test.ts packages/external-mod-resolver/src/curseforge.test.ts packages/external-mod-resolver/src/maven-repository.test.ts"
   }
 }

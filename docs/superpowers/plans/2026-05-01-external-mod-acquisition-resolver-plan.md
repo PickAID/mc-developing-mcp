@@ -10,7 +10,8 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Initial Modrinth resolver package exists in `packages/external-mod-resolver`.
 - Modrinth can resolve query/slug + loader + Minecraft version into a compact primary-jar candidate with hashes, Modrinth Maven dispatch metadata, and explicit confirmation metadata.
 - CurseForge can return `credentials_required` without leaking keys and can resolve fixture-backed slug + loader + Minecraft version into CurseMaven dispatch metadata when a credential provider is configured.
-- Maven resolver, persistent metadata cache, orchestrator ranking, and MCP integration remain pending.
+- Maven resolver now parses explicit Gradle/Maven coordinates, builds deterministic binary/sources jar URLs, reads `maven-metadata.xml` when a version is omitted, and is wired Maven-first into MCP `external_mod_resolution`.
+- Persistent metadata cache and broader orchestrator ranking remain pending.
 
 ## Constraints
 - TypeScript only.
@@ -27,6 +28,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add tests for candidate ranking, confidence reasons, and no-download default behavior.
 
 ## Task 2: Maven Resolver
+- Status: initial implementation complete for explicit coordinates, deterministic artifact URLs, optional sources candidates, metadata version resolution, and MCP Maven-first routing.
 - Parse Gradle/Maven coordinates.
 - Build deterministic artifact URLs from repository layout.
 - Read `maven-metadata.xml` for missing/latest versions.
@@ -52,6 +54,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, and file selection.
 
 ## Task 5: Orchestrator
+- Status: partial implementation complete for explicit Maven-coordinate priority inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;

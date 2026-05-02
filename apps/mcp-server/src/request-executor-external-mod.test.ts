@@ -43,4 +43,49 @@ describe("executeMcpServerRequest external mod routing", () => {
       failedCandidateIds: []
     });
   });
+
+  it("resolves explicit Maven coordinates through the default evidence chain", async () => {
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot: "/tmp/mcpskill-runtime"
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText:
+        'Use modImplementation "com.example:demo-mod:1.2.3" from https://maven.example/releases.'
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      candidateId: "candidate-1-external_mod_resolution",
+      routeStep: "external_mod_resolution",
+      status: "selected",
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "maven",
+          coordinate: "com.example:demo-mod:1.2.3",
+          repositoryUrls: ["https://maven.example/releases"]
+        },
+        result: {
+          source: "maven",
+          candidates: [
+            {
+              fileName: "demo-mod-1.2.3.jar",
+              downloadUrl:
+                "https://maven.example/releases/com/example/demo-mod/1.2.3/demo-mod-1.2.3.jar"
+            },
+            {
+              fileName: "demo-mod-1.2.3-sources.jar",
+              downloadUrl:
+                "https://maven.example/releases/com/example/demo-mod/1.2.3/demo-mod-1.2.3-sources.jar"
+            }
+          ]
+        }
+      }
+    });
+    expect(result.trace).toMatchObject({
+      selectedCandidateId: "candidate-1-external_mod_resolution",
+      fallbackUsed: false
+    });
+  });
 });

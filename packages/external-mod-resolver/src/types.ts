@@ -1,4 +1,4 @@
-export type ExternalModResolverSource = "modrinth" | "curseforge";
+export type ExternalModResolverSource = "maven" | "modrinth" | "curseforge";
 
 export type ExternalModCandidateConfidence = "high" | "medium" | "low";
 
@@ -40,7 +40,10 @@ export interface ExternalModResolverResult {
   warnings: ExternalModResolverWarning[];
 }
 
-export type ExternalModMavenArtifactSource = "modrinth-maven" | "cursemaven";
+export type ExternalModMavenArtifactSource =
+  | "maven-repository"
+  | "modrinth-maven"
+  | "cursemaven";
 
 export interface ExternalModMavenArtifact {
   source: ExternalModMavenArtifactSource;

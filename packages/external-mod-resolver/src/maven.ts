@@ -40,6 +40,24 @@ export function buildCurseMavenArtifact(input: {
   });
 }
 
+export function buildRepositoryMavenArtifact(input: {
+  repositoryName: string;
+  repositoryUrl: string;
+  group: string;
+  artifact: string;
+  version: string;
+}): ExternalModMavenArtifact {
+  return buildMavenArtifact({
+    source: "maven-repository",
+    repositoryName: input.repositoryName,
+    repositoryUrl: input.repositoryUrl,
+    group: input.group,
+    artifact: input.artifact,
+    version: input.version,
+    aliases: []
+  });
+}
+
 function buildMavenArtifact(input: {
   source: ExternalModMavenArtifact["source"];
   repositoryName: string;

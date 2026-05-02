@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildModrinthMavenArtifact,
+  buildRepositoryMavenArtifact,
   type ExternalModResolverResult
 } from "@mcpskill/external-mod-resolver";
 
@@ -109,6 +110,57 @@ describe("executeMcpServerExternalModResolution", () => {
       }
     });
   });
+
+  it("resolves explicit Maven coordinates before remote project search", async () => {
+    const input = await createExecutorInput(
+      'Use modImplementation "com.example:demo-mod:1.2.3" from https://maven.example/releases.'
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      mavenResolver: async (request) => {
+        expect(request).toMatchObject({
+          coordinate: "com.example:demo-mod:1.2.3",
+          repositories: [
+            {
+              name: "requested-maven-repository",
+              url: "https://maven.example/releases"
+            }
+          ]
+        });
+        return createMavenResult();
+      },
+      modrinthResolver: async () => {
+        throw new Error("Explicit Maven coordinates must not search Modrinth.");
+      },
+      curseForgeResolver: async () => {
+        throw new Error("Explicit Maven coordinates must not search CurseForge.");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      summary: expect.stringContaining("com.example:demo-mod:1.2.3"),
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "maven",
+          coordinate: "com.example:demo-mod:1.2.3",
+          repositoryUrls: ["https://maven.example/releases"]
+        },
+        result: {
+          source: "maven",
+          candidates: [
+            {
+              source: "maven",
+              fileName: "demo-mod-1.2.3.jar",
+              downloadUrl:
+                "https://maven.example/releases/com/example/demo-mod/1.2.3/demo-mod-1.2.3.jar"
+            }
+          ]
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(requestText: string) {
@@ -152,6 +204,45 @@ function createModrinthSodiumResult(): ExternalModResolverResult {
             projectId: "AANobbMI",
             versionId: "OihdIimA",
             versionNumber: "mc1.20.1-0.5.13-fabric"
+          })
+        ],
+        requiresConfirmation: true,
+        cachePolicy: "metadata_only"
+      }
+    ],
+    warnings: []
+  };
+}
+
+function createMavenResult(): ExternalModResolverResult {
+  return {
+    source: "maven",
+    query: "com.example:demo-mod:1.2.3",
+    candidates: [
+      {
+        source: "maven",
+        confidence: "high",
+        confidenceReasons: [
+          "parsed exact Maven coordinate com.example:demo-mod:1.2.3"
+        ],
+        projectId: "com.example:demo-mod",
+        slug: "demo-mod",
+        title: "com.example:demo-mod",
+        versionId: "1.2.3",
+        versionNumber: "1.2.3",
+        loaders: [],
+        minecraftVersions: [],
+        fileName: "demo-mod-1.2.3.jar",
+        downloadUrl:
+          "https://maven.example/releases/com/example/demo-mod/1.2.3/demo-mod-1.2.3.jar",
+        hashes: {},
+        mavenArtifacts: [
+          buildRepositoryMavenArtifact({
+            repositoryName: "Example Maven",
+            repositoryUrl: "https://maven.example/releases",
+            group: "com.example",
+            artifact: "demo-mod",
+            version: "1.2.3"
           })
         ],
         requiresConfirmation: true,
