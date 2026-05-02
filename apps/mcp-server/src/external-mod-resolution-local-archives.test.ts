@@ -67,6 +67,56 @@ describe("executeMcpServerExternalModResolution local archives", () => {
     });
   });
 
+  it("uses local mod metadata even when remote lookup constraints are incomplete", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-loose-extmod-"));
+    const modJar = join(workspaceRoot, "mods", "local-energy.jar");
+
+    await writeZip(modJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "local_energy",
+          name: "Local Energy",
+          version: "1.0.0"
+        })
+      }
+    ]);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Find the Modrinth mod for Local Energy."
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      modrinthResolver: async () => {
+        throw new Error("local archive lookup must not search Modrinth");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      summary: "Resolved local mod archive: mods/local-energy.jar.",
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "modrinth",
+          query: "local energy"
+        },
+        result: {
+          source: "local_archive",
+          remoteLookupSkipped: true,
+          candidates: [
+            {
+              modId: "local_energy",
+              loaders: ["fabric"],
+              relativePath: "mods/local-energy.jar"
+            }
+          ],
+          warnings: []
+        }
+      }
+    });
+  });
+
   it("uses matching JarJar nested mod metadata before remote project resolvers", async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-nested-extmod-"));
     const outerJar = join(workspaceRoot, "mods", "outer-mod.jar");

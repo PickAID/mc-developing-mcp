@@ -13,7 +13,12 @@ import {
   type ZipEntry
 } from "@mcpskill/jar-source-adapter";
 
-import type { ResolvableExternalModRequest } from "./external-mod-resolution-request.js";
+import type { McpServerExternalModResolutionRequest } from "./external-mod-resolution-request.js";
+
+type LocalModArchiveRequest = McpServerExternalModResolutionRequest & {
+  platform: "modrinth" | "curseforge";
+  query: string;
+};
 
 export interface McpServerLocalModArchiveResolutionResult {
   source: "local_archive";
@@ -62,10 +67,12 @@ const MAX_LOCAL_NESTED_ARCHIVES = 16;
 const MAX_LOCAL_NESTED_ARCHIVE_BYTES = 32 * 1024 * 1024;
 
 export async function resolveLocalModArchiveEvidence(input: {
-  request: ResolvableExternalModRequest;
+  request: McpServerExternalModResolutionRequest;
   workspaceRoot?: string;
 }): Promise<McpServerLocalModArchiveResolutionResult | undefined> {
-  if (!input.workspaceRoot || input.request.platform === "maven") {
+  const request = toLocalModArchiveRequest(input.request);
+
+  if (!input.workspaceRoot || !request) {
     return undefined;
   }
 
@@ -79,7 +86,7 @@ export async function resolveLocalModArchiveEvidence(input: {
   for (const archive of discovered.archives) {
     candidates.push(
       ...(await inspectArchiveForLocalCandidates(
-        input.request,
+        request,
         archive,
         warnings
       ))
@@ -92,7 +99,7 @@ export async function resolveLocalModArchiveEvidence(input: {
 
   return {
     source: "local_archive",
-    query: input.request.query,
+    query: request.query,
     candidates: candidates.sort(compareLocalCandidates),
     warnings,
     scannedArchives: discovered.archives.length,
@@ -102,9 +109,7 @@ export async function resolveLocalModArchiveEvidence(input: {
 }
 
 async function buildLocalCandidate(
-  request: ResolvableExternalModRequest & {
-    platform: "modrinth" | "curseforge";
-  },
+  request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
   embeddedArchivePath?: string
@@ -138,9 +143,7 @@ async function buildLocalCandidate(
 }
 
 async function inspectArchiveForLocalCandidates(
-  request: ResolvableExternalModRequest & {
-    platform: "modrinth" | "curseforge";
-  },
+  request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   warnings: McpServerLocalModArchiveWarning[]
 ): Promise<McpServerLocalModArchiveCandidate[]> {
@@ -199,9 +202,7 @@ function readDirectory(
 }
 
 async function buildTopLevelCandidate(
-  request: ResolvableExternalModRequest & {
-    platform: "modrinth" | "curseforge";
-  },
+  request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   archiveBuffer: Buffer
 ): Promise<McpServerLocalModArchiveCandidate | undefined> {
@@ -210,9 +211,7 @@ async function buildTopLevelCandidate(
 }
 
 async function buildNestedCandidates(
-  request: ResolvableExternalModRequest & {
-    platform: "modrinth" | "curseforge";
-  },
+  request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   archiveBuffer: Buffer,
   directory: ZipEntry[],
@@ -301,14 +300,15 @@ function toNestedWarning(
 }
 
 function scoreLocalMatch(
-  request: ResolvableExternalModRequest & {
-    platform: "modrinth" | "curseforge";
-  },
+  request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
   embeddedArchivePath?: string
 ): LocalMatchScore | undefined {
-  if (normalizeText(metadata.loader) !== normalizeText(request.loader)) {
+  if (
+    request.loader &&
+    normalizeText(metadata.loader) !== normalizeText(request.loader)
+  ) {
     return undefined;
   }
 
@@ -332,9 +332,7 @@ function scoreLocalMatch(
 }
 
 function buildMatchReasons(
-  request: ResolvableExternalModRequest & {
-    platform: "modrinth" | "curseforge";
-  },
+  request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
   query: string,
@@ -354,12 +352,38 @@ function buildMatchReasons(
     );
   }
 
-  reasons.push(`loader ${metadata.loader} matched requested loader`);
   reasons.push(
-    `local metadata does not declare Minecraft version ${request.minecraftVersion}`
+    request.loader
+      ? `loader ${metadata.loader} matched requested loader`
+      : `local metadata declares loader ${metadata.loader}`
   );
+  if (request.minecraftVersion) {
+    reasons.push(
+      `local metadata does not declare Minecraft version ${request.minecraftVersion}`
+    );
+  }
 
   return reasons;
+}
+
+function toLocalModArchiveRequest(
+  request: McpServerExternalModResolutionRequest
+): LocalModArchiveRequest | undefined {
+  const platform = request.platform;
+  const query = request.query;
+
+  if (platform !== "modrinth" && platform !== "curseforge") {
+    return undefined;
+  }
+  if (!query) {
+    return undefined;
+  }
+
+  return {
+    ...request,
+    platform,
+    query
+  };
 }
 
 export function formatLocalArchiveCandidateReference(

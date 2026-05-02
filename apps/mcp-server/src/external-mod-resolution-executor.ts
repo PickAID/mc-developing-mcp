@@ -52,6 +52,24 @@ export async function executeMcpServerExternalModResolution(
   const request = parseExternalModRequest(
     input.requestPlan.requestText ?? input.candidate.queryHint ?? ""
   );
+  const localResult = await resolveLocalModArchiveEvidence({
+    request,
+    workspaceRoot:
+      input.requestPlan.requestContext.workspaceContext?.workspaceRoot
+  });
+
+  if (localResult) {
+    return {
+      matched: true,
+      summary: summarizeResolution(localResult),
+      payload: {
+        source: "external_mod_resolution",
+        request,
+        result: localResult
+      }
+    };
+  }
+
   const missing = collectMissingConstraints(request);
 
   if (missing.length > 0) {
@@ -80,12 +98,7 @@ export async function executeMcpServerExternalModResolution(
     throw new Error("External mod request constraints were not narrowed.");
   }
 
-  const result =
-    (await resolveLocalModArchiveEvidence({
-      request,
-      workspaceRoot:
-        input.requestPlan.requestContext.workspaceContext?.workspaceRoot
-    })) ?? (await resolveByPlatform(request, options));
+  const result = await resolveByPlatform(request, options);
 
   return {
     matched: true,
