@@ -153,6 +153,21 @@ describe("detectHarnessTaskIntent", () => {
       ]
     });
   });
+
+  it("detects external mod Maven coordinate requests", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot(),
+        "Find the Modrinth Maven modImplementation coordinate for Sodium fabric 1.20.1."
+      )
+    ).toEqual({
+      id: "external_mod_resolution",
+      confidence: "high",
+      reasons: [
+        "request text mentions external mod acquisition or Maven coordinate keywords"
+      ]
+    });
+  });
 });
 
 function createSnapshot(

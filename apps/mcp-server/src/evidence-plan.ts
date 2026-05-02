@@ -10,6 +10,7 @@ export type McpServerEvidenceProvenance =
   | "workspace_source"
   | "vanilla_source"
   | "mod_archive_content"
+  | "external_mod_resolution"
   | "probejs_types"
   | "datapack_files"
   | "docs";
@@ -156,6 +157,21 @@ function buildCandidate(
         reliability: "high",
         reason: "Inspect discovered mod jar data, assets, and class paths before docs.",
         pathHints: collectModArchiveHints(descriptor, workspaceRoot),
+        queryHint: requestPlan.requestText
+      };
+    case "external_mod_resolution":
+      return {
+        id: buildCandidateId(priority, routeStep),
+        priority,
+        tier: "primary",
+        routeStep,
+        provenance: "external_mod_resolution",
+        preferredTool: "context.query",
+        estimatedCost: "low",
+        reliability: "high",
+        reason:
+          "Resolve API-backed external mod candidates and Maven coordinates before docs.",
+        pathHints: [],
         queryHint: requestPlan.requestText
       };
     case "datapack_files":

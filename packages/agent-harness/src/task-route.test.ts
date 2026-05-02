@@ -331,6 +331,28 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes external mod coordinate requests to API-backed resolution before docs", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createSnapshot(),
+        "Find the CurseMaven coordinate for JEI forge 1.20.1."
+      )
+    ).toEqual({
+      intent: {
+        id: "external_mod_resolution",
+        confidence: "high",
+        reasons: [
+          "request text mentions external mod acquisition or Maven coordinate keywords"
+        ]
+      },
+      reasons: [
+        "external mod acquisition should resolve API-backed candidates before docs"
+      ],
+      steps: ["external_mod_resolution", "docs_lookup"],
+      preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+    });
+  });
+
   it("routes explicit mod archive inventory requests even before archives exist", () => {
     expect(
       buildHarnessTaskRoute(

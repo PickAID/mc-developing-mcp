@@ -77,6 +77,23 @@ const JAVA_DIAGNOSTIC_KEYWORDS = [
   "无法解析"
 ];
 
+const EXTERNAL_MOD_KEYWORDS = [
+  "modrinth",
+  "curseforge",
+  "cursemaven",
+  "curse.maven",
+  "maven.modrinth",
+  "modimplementation",
+  "modcompileonly",
+  "modruntimeonly",
+  "modlocalruntime",
+  "fg.deobf",
+  "外部模组",
+  "外部mod",
+  "模组坐标",
+  "依赖坐标"
+];
+
 export function detectHarnessTaskIntent(
   snapshot: AgentRuntimeHarnessSnapshot,
   requestText?: string
@@ -90,6 +107,16 @@ export function detectHarnessTaskIntent(
   }
 
   const normalized = requestText.toLowerCase();
+
+  if (matchesAny(normalized, EXTERNAL_MOD_KEYWORDS)) {
+    return {
+      id: "external_mod_resolution",
+      confidence: "high",
+      reasons: [
+        "request text mentions external mod acquisition or Maven coordinate keywords"
+      ]
+    };
+  }
 
   if (matchesAny(normalized, CRASH_KEYWORDS) && snapshot.facts.logPathCount > 0) {
     return {

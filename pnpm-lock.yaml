@@ -47,6 +47,9 @@ importers:
       '@mcpskill/docs-retrieval':
         specifier: workspace:*
         version: link:../../packages/docs-retrieval
+      '@mcpskill/external-mod-resolver':
+        specifier: workspace:*
+        version: link:../../packages/external-mod-resolver
       '@mcpskill/gradle-adapter':
         specifier: workspace:*
         version: link:../../packages/gradle-adapter
@@ -108,6 +111,8 @@ importers:
         version: link:../shared-types
 
   packages/eval-harness: {}
+
+  packages/external-mod-resolver: {}
 
   packages/gradle-adapter: {}
 

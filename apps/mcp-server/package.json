@@ -23,6 +23,7 @@
     "@mcpskill/agent-harness": "workspace:*",
     "@mcpskill/datapack-adapter": "workspace:*",
     "@mcpskill/docs-retrieval": "workspace:*",
+    "@mcpskill/external-mod-resolver": "workspace:*",
     "@mcpskill/gradle-adapter": "workspace:*",
     "@mcpskill/jar-source-adapter": "workspace:*",
     "@mcpskill/java-jdtls-adapter": "workspace:*",

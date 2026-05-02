@@ -322,6 +322,43 @@ describe("buildMcpServerEvidencePlan", () => {
       }
     });
   });
+
+  it("adds external mod resolution before docs for Maven coordinate requests", async () => {
+    const workspaceRoot = await createForgeWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot: "/tmp/mcpskill-runtime",
+      workspace: { workspaceRoot }
+    });
+
+    const requestText =
+      "Find the Modrinth Maven modImplementation coordinate for Sodium fabric 1.20.1.";
+    const requestPlan = buildMcpServerRequestPlan(bootstrap, requestText);
+
+    expect(buildMcpServerEvidencePlan(requestPlan)).toMatchObject({
+      candidates: [
+        {
+          id: "candidate-1-external_mod_resolution",
+          routeStep: "external_mod_resolution",
+          provenance: "external_mod_resolution",
+          preferredTool: "context.query",
+          estimatedCost: "low",
+          reliability: "high",
+          reason:
+            "Resolve API-backed external mod candidates and Maven coordinates before docs.",
+          queryHint: requestText,
+          pathHints: []
+        },
+        {
+          id: "candidate-2-docs_lookup",
+          provenance: "docs"
+        }
+      ],
+      trace: {
+        routeSteps: ["external_mod_resolution", "docs_lookup"],
+        fallbackCandidateIds: ["candidate-2-docs_lookup"]
+      }
+    });
+  });
 });
 
 function resolveScenarioPath(name: string): string {

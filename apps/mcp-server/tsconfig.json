@@ -10,6 +10,7 @@
     { "path": "../../packages/agent-harness" },
     { "path": "../../packages/datapack-adapter" },
     { "path": "../../packages/docs-retrieval" },
+    { "path": "../../packages/external-mod-resolver" },
     { "path": "../../packages/gradle-adapter" },
     { "path": "../../packages/jar-source-adapter" },
     { "path": "../../packages/java-jdtls-adapter" },

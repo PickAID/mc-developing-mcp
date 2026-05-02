@@ -16,6 +16,15 @@ export function buildHarnessTaskRoute(
   const modArchiveInventoryRequest = mentionsModArchiveInventoryRequest(requestText);
 
   switch (intent.id) {
+    case "external_mod_resolution":
+      return {
+        intent,
+        reasons: [
+          "external mod acquisition should resolve API-backed candidates before docs"
+        ],
+        steps: ["external_mod_resolution", "docs_lookup"],
+        preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+      };
     case "crash_triage":
       return {
         intent,

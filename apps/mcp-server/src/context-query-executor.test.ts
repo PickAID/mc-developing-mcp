@@ -90,6 +90,44 @@ describe("buildMcpServerContextQueryExecutor", () => {
     });
   });
 
+  it("delegates external_mod_resolution to the provided route executor", async () => {
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot: "/tmp/mcpskill-runtime",
+      workspace: {
+        workspaceRoot: resolveScenarioPath("modpack_kubejs")
+      }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Find the CurseMaven coordinate for JEI forge 1.20.1."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates[0];
+    const executor = buildMcpServerContextQueryExecutor({
+      externalModResolutionExecutor: () => ({
+        matched: true,
+        summary: "Resolved external mod metadata.",
+        payload: {
+          source: "external_mod_resolution"
+        }
+      })
+    });
+
+    const result = await executor({
+      candidate,
+      evidencePlan,
+      requestPlan
+    });
+
+    expect(result).toEqual({
+      matched: true,
+      summary: "Resolved external mod metadata.",
+      payload: {
+        source: "external_mod_resolution"
+      }
+    });
+  });
+
   it("resolves probejs_types through the default KubeJS language service executor", async () => {
     const workspaceRoot = await createKubeJsLanguageWorkspace();
     const bootstrap = await buildMcpServerBootstrap({

@@ -39,6 +39,7 @@ export interface WorkspaceBootstrapContext extends WorkspaceBootstrapInput {
 export type AgentRuntimeRouteStep =
   | "workspace_source"
   | "probejs_types"
+  | "external_mod_resolution"
   | "mod_archive_content"
   | "datapack_files"
   | "docs_lookup";
@@ -122,6 +123,7 @@ export interface AgentRuntimeAuthoringPolicy {
 export type AgentRuntimeTaskIntentId =
   | "workspace_default"
   | "crash_triage"
+  | "external_mod_resolution"
   | "java_diagnostics"
   | "kubejs_authoring"
   | "datapack_lookup";
