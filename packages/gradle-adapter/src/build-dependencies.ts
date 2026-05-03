@@ -14,8 +14,9 @@ export async function readGradleDeclaredDependencies(input: {
 }): Promise<GradleDeclaredDependency[]> {
   const dependencies: GradleDeclaredDependency[] = [];
   const versionCatalog = await readGradleVersionCatalog(input.workspaceRoot);
+  const sourceFiles = await discoverGradleDependencyBuildFiles(input.workspaceRoot);
 
-  for (const sourceFile of ["build.gradle", "build.gradle.kts"]) {
+  for (const sourceFile of sourceFiles) {
     const sourcePath = join(input.workspaceRoot, sourceFile);
     let content: string;
 
@@ -79,6 +80,64 @@ type GradleVersionCatalog = Map<
   string,
   Omit<GradleDeclaredDependency, "sourceFile">
 >;
+
+async function discoverGradleDependencyBuildFiles(
+  workspaceRoot: string
+): Promise<string[]> {
+  const sourceFiles = ["build.gradle", "build.gradle.kts"];
+  const subprojectDirs = await readIncludedGradleProjectDirs(workspaceRoot);
+
+  for (const subprojectDir of subprojectDirs) {
+    sourceFiles.push(
+      `${subprojectDir}/build.gradle`,
+      `${subprojectDir}/build.gradle.kts`
+    );
+  }
+
+  return dedupeStrings(sourceFiles);
+}
+
+async function readIncludedGradleProjectDirs(
+  workspaceRoot: string
+): Promise<string[]> {
+  const dirs: string[] = [];
+
+  for (const settingsFile of ["settings.gradle", "settings.gradle.kts"]) {
+    let content: string;
+
+    try {
+      content = await readFile(join(workspaceRoot, settingsFile), "utf-8");
+    } catch (error) {
+      if (isFileNotFound(error)) {
+        continue;
+      }
+      throw error;
+    }
+
+    dirs.push(...extractIncludedGradleProjectDirs(content));
+  }
+
+  return dedupeStrings(dirs);
+}
+
+function extractIncludedGradleProjectDirs(content: string): string[] {
+  return [...content.matchAll(/\binclude\s*(?:\(([^)]*)\)|([^\n\r]+))/g)]
+    .flatMap((match) => extractQuotedValues(match[1] ?? match[2] ?? ""))
+    .map(toGradleProjectDir)
+    .filter((entry): entry is string => Boolean(entry));
+}
+
+function extractQuotedValues(value: string): string[] {
+  return [...value.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
+}
+
+function toGradleProjectDir(projectPath: string): string | undefined {
+  const trimmed = projectPath.trim();
+  const normalized = trimmed.startsWith(":") ? trimmed.slice(1) : trimmed;
+  const parts = normalized.split(":").filter(Boolean);
+
+  return parts.length > 0 ? parts.join("/") : undefined;
+}
 
 async function readGradleVersionCatalog(
   workspaceRoot: string
@@ -221,6 +280,10 @@ function dedupeDependencies(
   }
 
   return result;
+}
+
+function dedupeStrings(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function isFileNotFound(error: unknown): error is NodeJS.ErrnoException {

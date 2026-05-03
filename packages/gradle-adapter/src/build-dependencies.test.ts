@@ -103,6 +103,41 @@ describe("readGradleDeclaredDependencies", () => {
       sourceFile: "build.gradle.kts"
     });
   });
+
+  it("reads dependency declarations from included Gradle subprojects", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
+
+    await writeGradleFile(
+      workspaceRoot,
+      "settings.gradle",
+      'include ":common", ":content:core"\n'
+    );
+    await writeGradleFile(
+      workspaceRoot,
+      "common/build.gradle",
+      'dependencies { modImplementation "org.widgets:widget-api:1.0.0" }\n'
+    );
+    await writeGradleFile(
+      workspaceRoot,
+      "content/core/build.gradle.kts",
+      'dependencies { modApi("com.example:content-core:2.0.0") }\n'
+    );
+
+    await expect(
+      readGradleDeclaredDependencies({ workspaceRoot })
+    ).resolves.toMatchObject([
+      {
+        group: "org.widgets",
+        artifact: "widget-api",
+        sourceFile: "common/build.gradle"
+      },
+      {
+        group: "com.example",
+        artifact: "content-core",
+        sourceFile: "content/core/build.gradle.kts"
+      }
+    ]);
+  });
 });
 
 async function writeGradleFile(
