@@ -23,6 +23,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - MCP external mod execution now checks Gradle-declared dependencies and local Gradle module-cache JARs before remote project lookup, including mod metadata read from the cached JAR when present.
 - Gradle-declared dependency discovery now reads included subproject `build.gradle(.kts)` files from static `settings.gradle(.kts)` `include` declarations.
 - Gradle-declared dependency discovery now honors simple workspace-relative `project(":x").projectDir = file("...")` mappings without executing Gradle.
+- Gradle-declared binary archive discovery now accepts runtime classifier JARs such as `-all`, `-shadow`, `-dev`, and `-remapped` while excluding sources/javadoc classifiers.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -66,7 +67,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, ambiguous query, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, Gradle-declared dependency/cache-JAR priority including included subprojects and simple `projectDir` mappings, compact ambiguous remote search reports, URL-backed slug extraction, explicit slug/project-id constraint parsing, and broad CurseForge query preservation inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, Gradle-declared dependency/cache-JAR priority including runtime classifier JARs, included subprojects, and simple `projectDir` mappings, compact ambiguous remote search reports, URL-backed slug extraction, explicit slug/project-id constraint parsing, and broad CurseForge query preservation inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;

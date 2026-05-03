@@ -92,7 +92,7 @@ async function findDependencyBinariesInRoot(
     }
 
     for (const file of files) {
-      if (file.isFile() && isDependencyBinaryFile(file.name, dependency)) {
+      if (file.isFile() && isDeclaredDependencyBinaryFile(file.name, dependency)) {
         archives.push(join(hashRoot, file.name));
       }
     }
@@ -101,11 +101,37 @@ async function findDependencyBinariesInRoot(
   return archives.sort();
 }
 
-function isDependencyBinaryFile(
+export function isDeclaredDependencyBinaryFile(
   fileName: string,
   dependency: GradleDeclaredDependency
 ): boolean {
-  return fileName === `${dependency.artifact}-${dependency.version}.jar`;
+  const baseName = `${dependency.artifact}-${dependency.version}`;
+
+  if (fileName === `${baseName}.jar`) {
+    return true;
+  }
+
+  if (!fileName.startsWith(`${baseName}-`) || !fileName.endsWith(".jar")) {
+    return false;
+  }
+
+  const classifier = fileName.slice(baseName.length + 1, -".jar".length);
+
+  return isRuntimeClassifier(classifier);
+}
+
+function isRuntimeClassifier(classifier: string): boolean {
+  const nonRuntimeParts = new Set([
+    "sources",
+    "source",
+    "javadoc",
+    "docs",
+    "doc",
+    "kdoc"
+  ]);
+  const parts = classifier.toLowerCase().split(/[-_.]+/).filter(Boolean);
+
+  return parts.length > 0 && parts.every((part) => !nonRuntimeParts.has(part));
 }
 
 function buildGradleModuleCacheRoots(

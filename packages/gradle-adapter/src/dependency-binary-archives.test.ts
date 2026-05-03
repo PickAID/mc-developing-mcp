@@ -45,4 +45,42 @@ describe("discoverDeclaredDependencyBinaryArchives", () => {
       }
     ]);
   });
+
+  it("locates runtime classifier jars and skips documentation classifiers", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-dep-bin-workspace-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-dep-bin-home-"));
+    const hashRoot = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "org.widgets",
+      "widget-api",
+      "1.0.0",
+      "hash"
+    );
+    const allJar = join(hashRoot, "widget-api-1.0.0-all.jar");
+    const devJar = join(hashRoot, "widget-api-1.0.0-dev.jar");
+
+    await writeFile(
+      join(workspaceRoot, "build.gradle"),
+      'dependencies { implementation "org.widgets:widget-api:1.0.0" }\n'
+    );
+    await mkdir(hashRoot, { recursive: true });
+    await writeFile(allJar, Buffer.from("all jar"));
+    await writeFile(devJar, Buffer.from("dev jar"));
+    await writeFile(join(hashRoot, "widget-api-1.0.0-sources.jar"), Buffer.from("sources"));
+    await writeFile(join(hashRoot, "widget-api-1.0.0-javadoc.jar"), Buffer.from("docs"));
+
+    await expect(
+      discoverDeclaredDependencyBinaryArchives({
+        workspaceRoot,
+        gradleUserHome,
+        includeDefaultGradleUserHome: false
+      })
+    ).resolves.toMatchObject([
+      { archivePath: allJar },
+      { archivePath: devJar }
+    ]);
+  });
 });

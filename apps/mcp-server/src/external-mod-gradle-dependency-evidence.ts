@@ -6,6 +6,7 @@ import {
 } from "@mcpskill/external-mod-resolver";
 import {
   discoverDeclaredDependencyBinaryArchives,
+  isDeclaredDependencyBinaryFile,
   readGradleDeclaredDependencies,
   type GradleDeclaredDependency,
   type GradleSourceArchiveCandidate
@@ -292,9 +293,11 @@ function archiveMatchesDependency(
   const normalizedPath = normalize(archivePath).replaceAll("\\", "/");
   const expectedPath =
     `/${dependency.group}/${dependency.artifact}/${dependency.version}/`;
-  const expectedName = `/${dependency.artifact}-${dependency.version}.jar`;
 
-  return normalizedPath.includes(expectedPath) && normalizedPath.endsWith(expectedName);
+  return (
+    normalizedPath.includes(expectedPath) &&
+    isDeclaredDependencyBinaryFile(basename(archivePath), dependency)
+  );
 }
 
 function compareCandidates(
