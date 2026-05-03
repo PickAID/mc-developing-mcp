@@ -121,10 +121,32 @@ async function readIncludedGradleProjectDirs(
 }
 
 function extractIncludedGradleProjectDirs(content: string): string[] {
+  const projectDirMappings = extractGradleProjectDirMappings(content);
+
   return [...content.matchAll(/\binclude\s*(?:\(([^)]*)\)|([^\n\r]+))/g)]
     .flatMap((match) => extractQuotedValues(match[1] ?? match[2] ?? ""))
-    .map(toGradleProjectDir)
+    .map((projectPath) =>
+      projectDirMappings.get(normalizeGradleProjectPath(projectPath)) ??
+      toGradleProjectDir(projectPath)
+    )
     .filter((entry): entry is string => Boolean(entry));
+}
+
+function extractGradleProjectDirMappings(content: string): Map<string, string> {
+  const mappings = new Map<string, string>();
+  const pattern =
+    /\bproject\s*\(\s*["']([^"']+)["']\s*\)\s*\.\s*projectDir\s*=\s*(?:file|File)\s*\(\s*["']([^"']+)["']\s*\)/g;
+
+  for (const match of content.matchAll(pattern)) {
+    const projectPath = normalizeGradleProjectPath(match[1]);
+    const projectDir = normalizeSafeProjectDir(match[2]);
+
+    if (projectPath && projectDir) {
+      mappings.set(projectPath, projectDir);
+    }
+  }
+
+  return mappings;
 }
 
 function extractQuotedValues(value: string): string[] {
@@ -132,9 +154,30 @@ function extractQuotedValues(value: string): string[] {
 }
 
 function toGradleProjectDir(projectPath: string): string | undefined {
+  const parts = normalizeGradleProjectPath(projectPath).split(":").filter(Boolean);
+
+  return parts.length > 0 ? parts.join("/") : undefined;
+}
+
+function normalizeGradleProjectPath(projectPath: string): string {
   const trimmed = projectPath.trim();
-  const normalized = trimmed.startsWith(":") ? trimmed.slice(1) : trimmed;
-  const parts = normalized.split(":").filter(Boolean);
+  const normalized = trimmed.startsWith(":") ? trimmed : `:${trimmed}`;
+
+  return normalized.replace(/:+/g, ":");
+}
+
+function normalizeSafeProjectDir(projectDir: string): string | undefined {
+  const normalized = projectDir.trim().replaceAll("\\", "/").replace(/^\.\//, "");
+
+  if (
+    normalized.startsWith("/") ||
+    /^[A-Za-z]:\//.test(normalized) ||
+    normalized.split("/").includes("..")
+  ) {
+    return undefined;
+  }
+
+  const parts = normalized.split("/").filter((part) => part && part !== ".");
 
   return parts.length > 0 ? parts.join("/") : undefined;
 }

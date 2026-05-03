@@ -236,6 +236,80 @@ describe("external mod resolution Gradle dependency evidence", () => {
       }
     });
   });
+
+  it("uses Gradle projectDir mapped cache jars before remote lookup", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-map-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-gradle-home-"));
+    const archivePath = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "org.widgets",
+      "energy-core",
+      "1.0.0",
+      "hash",
+      "energy-core-1.0.0.jar"
+    );
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Find the Modrinth mod for Local Energy fabric 1.20.1."
+    );
+
+    await writeText(
+      join(workspaceRoot, "settings.gradle"),
+      [
+        'include ":api"',
+        'project(":api").projectDir = file("modules/api")',
+        ""
+      ].join("\n")
+    );
+    await writeText(
+      join(workspaceRoot, "modules", "api", "build.gradle"),
+      'dependencies { modImplementation "org.widgets:energy-core:1.0.0" }\n'
+    );
+    await writeBinary(
+      archivePath,
+      createZip([
+        {
+          name: "fabric.mod.json",
+          content: JSON.stringify({
+            id: "local_energy",
+            name: "Local Energy",
+            version: "1.0.0"
+          })
+        }
+      ])
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      gradleDependencyDiscovery: {
+        gradleUserHome,
+        includeDefaultGradleUserHome: false
+      },
+      modrinthResolver: async () => {
+        throw new Error("Remote Modrinth resolver must not run.");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        result: {
+          source: "gradle_dependency_archive",
+          candidates: [
+            {
+              coordinate: "org.widgets:energy-core:1.0.0",
+              sourceFile: "modules/api/build.gradle",
+              modId: "local_energy",
+              archivePath
+            }
+          ],
+          remoteLookupSkipped: true
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {

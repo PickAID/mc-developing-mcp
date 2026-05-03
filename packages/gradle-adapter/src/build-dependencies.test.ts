@@ -138,6 +138,35 @@ describe("readGradleDeclaredDependencies", () => {
       }
     ]);
   });
+
+  it("honors static Gradle projectDir mappings for included subprojects", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
+
+    await writeGradleFile(
+      workspaceRoot,
+      "settings.gradle",
+      [
+        'include ":api"',
+        'project(":api").projectDir = file("modules/api")',
+        ""
+      ].join("\n")
+    );
+    await writeGradleFile(
+      workspaceRoot,
+      "modules/api/build.gradle",
+      'dependencies { modImplementation "org.widgets:widget-api:1.0.0" }\n'
+    );
+
+    await expect(
+      readGradleDeclaredDependencies({ workspaceRoot })
+    ).resolves.toContainEqual({
+      group: "org.widgets",
+      artifact: "widget-api",
+      version: "1.0.0",
+      notation: "org.widgets:widget-api:1.0.0",
+      sourceFile: "modules/api/build.gradle"
+    });
+  });
 });
 
 async function writeGradleFile(
