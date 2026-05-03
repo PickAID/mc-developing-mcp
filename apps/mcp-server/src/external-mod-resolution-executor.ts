@@ -8,6 +8,7 @@ import {
   type ResolveCurseForgeModInput,
   type ResolveModrinthModInput
 } from "@mcpskill/external-mod-resolver";
+import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -30,6 +31,7 @@ import {
 export interface McpServerExternalModResolutionOptions {
   mavenMetadataCache?: MavenMetadataCache;
   mavenRepositories?: McpServerExternalModMavenRepository[];
+  modArchiveContentCache?: ArchiveContentCache;
   mavenResolver?: (
     input: ResolveMavenArtifactInput
   ) => Promise<ExternalModResolverResult>;
@@ -55,7 +57,8 @@ export async function executeMcpServerExternalModResolution(
   const localResult = await resolveLocalModArchiveEvidence({
     request,
     workspaceRoot:
-      input.requestPlan.requestContext.workspaceContext?.workspaceRoot
+      input.requestPlan.requestContext.workspaceContext?.workspaceRoot,
+    cache: options.modArchiveContentCache
   });
 
   if (localResult) {

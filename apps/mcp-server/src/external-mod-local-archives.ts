@@ -1,19 +1,20 @@
-import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 
 import {
   discoverModArchives,
-  normalizeArchivePath,
-  readModArchiveMetadataFromBuffer,
-  readZipCentralDirectory,
-  readZipEntryContent,
+  type ArchiveContentCache,
   type ModArchiveCandidate,
   type ModArchiveMetadata,
-  type ModArchiveSource,
-  type ZipEntry
+  type ModArchiveSource
 } from "@mcpskill/jar-source-adapter";
 
 import type { McpServerExternalModResolutionRequest } from "./external-mod-resolution-request.js";
+import {
+  createLocalModArchiveInspectionCacheStats,
+  inspectLocalModArchive,
+  type LocalModArchiveInspectionCacheStats,
+  type LocalModArchiveInspectionWarning
+} from "./external-mod-local-archive-inspection.js";
 
 type LocalModArchiveRequest = McpServerExternalModResolutionRequest & {
   platform: "modrinth" | "curseforge";
@@ -28,6 +29,7 @@ export interface McpServerLocalModArchiveResolutionResult {
   scannedArchives: number;
   truncated: boolean;
   remoteLookupSkipped: true;
+  cache?: LocalModArchiveInspectionCacheStats;
 }
 
 export interface McpServerLocalModArchiveCandidate {
@@ -51,11 +53,7 @@ export interface McpServerLocalModArchiveCandidate {
   cachePolicy: "metadata_only";
 }
 
-export interface McpServerLocalModArchiveWarning {
-  code: string;
-  message: string;
-  relativePath?: string;
-}
+export type McpServerLocalModArchiveWarning = LocalModArchiveInspectionWarning;
 
 interface LocalMatchScore {
   confidence: McpServerLocalModArchiveCandidate["confidence"];
@@ -63,12 +61,11 @@ interface LocalMatchScore {
 }
 
 const MAX_LOCAL_ARCHIVES = 512;
-const MAX_LOCAL_NESTED_ARCHIVES = 16;
-const MAX_LOCAL_NESTED_ARCHIVE_BYTES = 32 * 1024 * 1024;
 
 export async function resolveLocalModArchiveEvidence(input: {
   request: McpServerExternalModResolutionRequest;
   workspaceRoot?: string;
+  cache?: ArchiveContentCache;
 }): Promise<McpServerLocalModArchiveResolutionResult | undefined> {
   const request = toLocalModArchiveRequest(input.request);
 
@@ -82,13 +79,18 @@ export async function resolveLocalModArchiveEvidence(input: {
   });
   const warnings: McpServerLocalModArchiveWarning[] = [];
   const candidates: McpServerLocalModArchiveCandidate[] = [];
+  const cacheStats = input.cache
+    ? createLocalModArchiveInspectionCacheStats()
+    : undefined;
 
   for (const archive of discovered.archives) {
     candidates.push(
       ...(await inspectArchiveForLocalCandidates(
         request,
         archive,
-        warnings
+        warnings,
+        input.cache,
+        cacheStats
       ))
     );
   }
@@ -104,7 +106,8 @@ export async function resolveLocalModArchiveEvidence(input: {
     warnings,
     scannedArchives: discovered.archives.length,
     truncated: discovered.truncated,
-    remoteLookupSkipped: true
+    remoteLookupSkipped: true,
+    cache: cacheStats
   };
 }
 
@@ -145,158 +148,38 @@ async function buildLocalCandidate(
 async function inspectArchiveForLocalCandidates(
   request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
-  warnings: McpServerLocalModArchiveWarning[]
+  warnings: McpServerLocalModArchiveWarning[],
+  cache: ArchiveContentCache | undefined,
+  cacheStats: LocalModArchiveInspectionCacheStats | undefined
 ): Promise<McpServerLocalModArchiveCandidate[]> {
-  const archiveBuffer = await readArchiveBuffer(archive, warnings);
+  const inspection = await inspectLocalModArchive({
+    archive,
+    cache,
+    cacheStats
+  });
+  const nestedCandidates = await Promise.all(
+    inspection.nestedArchives.map((nested) =>
+      nested.embeddedArchiveMetadata
+        ? buildLocalCandidate(
+            request,
+            archive,
+            nested.embeddedArchiveMetadata,
+            nested.embeddedArchivePath
+          )
+        : undefined
+    )
+  );
 
-  if (!archiveBuffer) {
-    return [];
-  }
-
-  const directory = readDirectory(archive, archiveBuffer, warnings);
-
-  if (!directory) {
-    return [];
-  }
+  warnings.push(...inspection.warnings);
 
   return [
-    await buildTopLevelCandidate(request, archive, archiveBuffer),
-    ...(await buildNestedCandidates(request, archive, archiveBuffer, directory, warnings))
+    inspection.archiveMetadata
+      ? await buildLocalCandidate(request, archive, inspection.archiveMetadata)
+      : undefined,
+    ...nestedCandidates
   ].filter((candidate): candidate is McpServerLocalModArchiveCandidate =>
     Boolean(candidate)
   );
-}
-
-async function readArchiveBuffer(
-  archive: ModArchiveCandidate,
-  warnings: McpServerLocalModArchiveWarning[]
-): Promise<Buffer | undefined> {
-  try {
-    return await readFile(archive.archivePath);
-  } catch (error) {
-    warnings.push({
-      code: "local_archive_unreadable",
-      message: `Could not read local archive ${archive.relativePath}: ${toMessage(error)}`,
-      relativePath: archive.relativePath
-    });
-    return undefined;
-  }
-}
-
-function readDirectory(
-  archive: ModArchiveCandidate,
-  archiveBuffer: Buffer,
-  warnings: McpServerLocalModArchiveWarning[]
-): ZipEntry[] | undefined {
-  try {
-    return readZipCentralDirectory(archiveBuffer);
-  } catch (error) {
-    warnings.push({
-      code: "local_archive_directory_unreadable",
-      message:
-        `Could not read ZIP directory from ${archive.relativePath}: ${toMessage(error)}`,
-      relativePath: archive.relativePath
-    });
-    return undefined;
-  }
-}
-
-async function buildTopLevelCandidate(
-  request: LocalModArchiveRequest,
-  archive: ModArchiveCandidate,
-  archiveBuffer: Buffer
-): Promise<McpServerLocalModArchiveCandidate | undefined> {
-  const metadata = readMetadataSafely(archiveBuffer);
-  return metadata ? buildLocalCandidate(request, archive, metadata) : undefined;
-}
-
-async function buildNestedCandidates(
-  request: LocalModArchiveRequest,
-  archive: ModArchiveCandidate,
-  archiveBuffer: Buffer,
-  directory: ZipEntry[],
-  warnings: McpServerLocalModArchiveWarning[]
-): Promise<McpServerLocalModArchiveCandidate[]> {
-  const candidates: McpServerLocalModArchiveCandidate[] = [];
-
-  for (const entry of collectNestedArchiveEntries(directory)) {
-    const embeddedArchivePath = normalizeArchivePath(entry.name);
-    if (!embeddedArchivePath) {
-      continue;
-    }
-    if (entry.uncompressedSize > MAX_LOCAL_NESTED_ARCHIVE_BYTES) {
-      warnings.push(toNestedWarning(archive, embeddedArchivePath, "too-large"));
-      continue;
-    }
-
-    const metadata = readNestedMetadata(archive, archiveBuffer, entry, warnings);
-    const candidate = metadata
-      ? await buildLocalCandidate(
-          request,
-          archive,
-          metadata,
-          embeddedArchivePath
-        )
-      : undefined;
-
-    if (candidate) {
-      candidates.push(candidate);
-    }
-  }
-
-  return candidates;
-}
-
-function collectNestedArchiveEntries(directory: ZipEntry[]): ZipEntry[] {
-  return directory
-    .filter((entry) => normalizeArchivePath(entry.name)?.endsWith(".jar") === true)
-    .slice(0, MAX_LOCAL_NESTED_ARCHIVES);
-}
-
-function readNestedMetadata(
-  archive: ModArchiveCandidate,
-  archiveBuffer: Buffer,
-  entry: ZipEntry,
-  warnings: McpServerLocalModArchiveWarning[]
-): ModArchiveMetadata | undefined {
-  const embeddedArchivePath = normalizeArchivePath(entry.name);
-
-  if (!embeddedArchivePath) {
-    return undefined;
-  }
-
-  try {
-    return readMetadataSafely(readZipEntryContent(archiveBuffer, entry));
-  } catch (error) {
-    warnings.push({
-      code: "local_nested_archive_unreadable",
-      message:
-        `Could not read nested archive ${archive.relativePath}!${embeddedArchivePath}: ${toMessage(error)}`,
-      relativePath: `${archive.relativePath}!${embeddedArchivePath}`
-    });
-    return undefined;
-  }
-}
-
-function readMetadataSafely(archiveBuffer: Buffer): ModArchiveMetadata | undefined {
-  try {
-    return readModArchiveMetadataFromBuffer(archiveBuffer);
-  } catch {
-    return undefined;
-  }
-}
-
-function toNestedWarning(
-  archive: ModArchiveCandidate,
-  embeddedArchivePath: string,
-  reason: string
-): McpServerLocalModArchiveWarning {
-  return {
-    code: "local_nested_archive_skipped",
-    message:
-      `Skipped nested archive ${archive.relativePath}!${embeddedArchivePath}: ${reason}.`,
-    relativePath: `${archive.relativePath}!${embeddedArchivePath}`
-  };
 }
 
 function scoreLocalMatch(
@@ -447,8 +330,4 @@ function normalizeText(value: string): string {
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
     .replace(/\s+/g, " ");
-}
-
-function toMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

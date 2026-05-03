@@ -84,7 +84,8 @@ async function executeExternalModResolution(
         : undefined),
     mavenRepositories:
       options.externalModMavenRepositories ??
-      (await readWorkspaceMavenRepositories(input))
+      (await readWorkspaceMavenRepositories(input)),
+    modArchiveContentCache: options.modArchiveContentCache
   });
 }
 

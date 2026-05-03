@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
+import { createArchiveContentCache } from "@mcpskill/jar-source-adapter";
 
 import { buildMcpServerBootstrap } from "./bootstrap.js";
 import { buildMcpServerContextQueryExecutor } from "./context-query-executor.js";
@@ -212,6 +213,49 @@ describe("buildMcpServerContextQueryExecutor", () => {
       }
     });
   });
+
+  it("reuses mod archive inspection cache for local external mod evidence", async () => {
+    const workspaceRoot = await createExternalModWorkspace();
+    const cache = createArchiveContentCache();
+    const executor = buildMcpServerContextQueryExecutor({
+      modArchiveContentCache: cache
+    });
+    const input = await createExternalModInput(
+      workspaceRoot,
+      "Find the Modrinth mod for Local Energy."
+    );
+
+    const first = await executor(input);
+    const second = await executor(input);
+
+    expect(first).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        result: {
+          source: "local_archive",
+          cache: {
+            archiveInspectionHits: 0,
+            archiveInspectionMisses: 1
+          }
+        }
+      }
+    });
+    expect(second).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        result: {
+          source: "local_archive",
+          cache: {
+            archiveInspectionHits: 1,
+            archiveInspectionMisses: 0
+          }
+        }
+      }
+    });
+    expect(cache.size().archiveInspections).toBe(1);
+  });
 });
 
 function resolveScenarioPath(name: string): string {
@@ -262,6 +306,50 @@ async function createModArchiveWorkspace(): Promise<string> {
   );
 
   return workspaceRoot;
+}
+
+async function createExternalModWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-extmod-cache-"));
+  tempRoots.push(workspaceRoot);
+
+  await writeBinary(
+    join(workspaceRoot, "mods", "local-energy.jar"),
+    createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "local_energy",
+          name: "Local Energy",
+          version: "1.0.0"
+        }),
+        compressionMethod: 0
+      }
+    ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createExternalModInput(workspaceRoot: string, requestText: string) {
+  const bootstrap = await buildMcpServerBootstrap({
+    runtimeRoot: "/tmp/mcpskill-runtime",
+    workspace: { workspaceRoot }
+  });
+  const requestPlan = buildMcpServerRequestPlan(bootstrap, requestText);
+  const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+  const candidate = evidencePlan.candidates.find(
+    (entry) => entry.routeStep === "external_mod_resolution"
+  );
+
+  if (!candidate) {
+    throw new Error("Expected external_mod_resolution candidate.");
+  }
+
+  return {
+    candidate,
+    evidencePlan,
+    requestPlan
+  };
 }
 
 async function writeText(path: string, content: string): Promise<void> {
