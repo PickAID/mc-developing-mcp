@@ -20,6 +20,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Modrinth file selection now skips sidecar `file_type` jars such as sources/dev/javadoc/signature/resource-pack entries before choosing a runtime jar.
 - MCP external mod execution now preserves broad CurseForge query terms without inventing a slug; exact slug constraints are only passed when parsed from URL-backed requests.
 - MCP external mod parsing now understands explicit `slug <value>` and `project id <value>` constraints and passes CurseForge project ids to the resolver.
+- MCP external mod execution now checks Gradle-declared dependencies and local Gradle module-cache JARs before remote project lookup, including mod metadata read from the cached JAR when present.
 - Broader remote candidate ranking remains pending.
 
 ## Constraints
@@ -63,7 +64,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, ambiguous query, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, compact ambiguous remote search reports, URL-backed slug extraction, explicit slug/project-id constraint parsing, and broad CurseForge query preservation inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, Gradle-declared dependency/cache-JAR priority, compact ambiguous remote search reports, URL-backed slug extraction, explicit slug/project-id constraint parsing, and broad CurseForge query preservation inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;

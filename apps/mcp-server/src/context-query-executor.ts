@@ -16,12 +16,14 @@ import type {
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
 import type { McpServerExternalModMavenRepository } from "./external-mod-resolution-request.js";
+import type { GradleSourceArchiveDiscoveryOptions } from "./gradle-source-archive-lookup.js";
 
 export interface McpServerContextQueryExecutorOptions {
   probejsTypesExecutor?: McpServerEvidenceExecutor;
   externalModResolutionExecutor?: McpServerEvidenceExecutor;
   externalModMavenMetadataCache?: MavenMetadataCache;
   externalModMavenRepositories?: McpServerExternalModMavenRepository[];
+  externalModGradleDependencyDiscovery?: GradleSourceArchiveDiscoveryOptions;
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
@@ -85,6 +87,7 @@ async function executeExternalModResolution(
     mavenRepositories:
       options.externalModMavenRepositories ??
       (await readWorkspaceMavenRepositories(input)),
+    gradleDependencyDiscovery: options.externalModGradleDependencyDiscovery,
     modArchiveContentCache: options.modArchiveContentCache
   });
 }

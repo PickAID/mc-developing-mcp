@@ -27,11 +27,18 @@ import {
   resolveLocalModArchiveEvidence,
   type McpServerLocalModArchiveResolutionResult
 } from "./external-mod-local-archives.js";
+import {
+  formatGradleDependencyCandidateReference,
+  resolveGradleDependencyArchiveEvidence,
+  type McpServerGradleDependencyArchiveResolutionResult
+} from "./external-mod-gradle-dependency-evidence.js";
+import type { GradleSourceArchiveDiscoveryOptions } from "./gradle-source-archive-lookup.js";
 
 export interface McpServerExternalModResolutionOptions {
   mavenMetadataCache?: MavenMetadataCache;
   mavenRepositories?: McpServerExternalModMavenRepository[];
   modArchiveContentCache?: ArchiveContentCache;
+  gradleDependencyDiscovery?: GradleSourceArchiveDiscoveryOptions;
   mavenResolver?: (
     input: ResolveMavenArtifactInput
   ) => Promise<ExternalModResolverResult>;
@@ -45,7 +52,8 @@ export interface McpServerExternalModResolutionOptions {
 
 type McpServerExternalModResolutionResult =
   | ExternalModResolverResult
-  | McpServerLocalModArchiveResolutionResult;
+  | McpServerLocalModArchiveResolutionResult
+  | McpServerGradleDependencyArchiveResolutionResult;
 
 export async function executeMcpServerExternalModResolution(
   input: McpServerEvidenceExecutorInput,
@@ -69,6 +77,27 @@ export async function executeMcpServerExternalModResolution(
         source: "external_mod_resolution",
         request,
         result: localResult
+      }
+    };
+  }
+
+  const gradleResult = await resolveGradleDependencyArchiveEvidence({
+    request,
+    workspaceRoot:
+      input.requestPlan.requestContext.workspaceContext?.workspaceRoot,
+    discovery: options.gradleDependencyDiscovery,
+    mavenRepositories: options.mavenRepositories,
+    cache: options.modArchiveContentCache
+  });
+
+  if (gradleResult) {
+    return {
+      matched: true,
+      summary: summarizeResolution(gradleResult),
+      payload: {
+        source: "external_mod_resolution",
+        request,
+        result: gradleResult
       }
     };
   }
@@ -154,6 +183,12 @@ function summarizeResolution(
 ): string {
   if (result.source === "local_archive") {
     return `Resolved local mod archive: ${formatLocalArchiveCandidateReference(
+      result.candidates[0]
+    )}.`;
+  }
+
+  if (result.source === "gradle_dependency_archive") {
+    return `Resolved Gradle dependency archive: ${formatGradleDependencyCandidateReference(
       result.candidates[0]
     )}.`;
   }

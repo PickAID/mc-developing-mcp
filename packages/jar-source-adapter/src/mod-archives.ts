@@ -10,7 +10,8 @@ import {
 export type ModArchiveSource =
   | "mods-directory"
   | "run-mods-directory"
-  | "workspace-libs";
+  | "workspace-libs"
+  | "gradle-cache";
 
 export interface ModArchiveCandidate {
   archivePath: string;
