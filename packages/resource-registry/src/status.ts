@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-import type { MdmResourceRelease, MdmResourceRegistry } from "./manifest.js";
+import type {
+  MdmResourcePackageMetadata,
+  MdmResourceRelease,
+  MdmResourceRegistry
+} from "./manifest.js";
 import {
   readCachedResourceState,
   type MdmResourceCacheLayout,
@@ -18,6 +22,7 @@ export interface MdmResourceStatusEntry {
   packageId: string;
   required: boolean;
   status: MdmResourcePackageStatus;
+  metadata?: MdmResourcePackageMetadata;
   artifactName?: string;
   artifactPath?: string;
   expectedSha256?: string;
@@ -50,7 +55,8 @@ export async function summarizeMdmResourceStatus(
         packageId: resourcePackage.id,
         required: resourcePackage.required,
         release,
-        state
+        state,
+        metadata: resourcePackage.detail.metadata ?? resourcePackage.metadata
       });
     })
   );
@@ -66,9 +72,15 @@ async function summarizePackage(input: {
   required: boolean;
   release: MdmResourceRelease | null;
   state: MdmResourceCacheState | undefined;
+  metadata: MdmResourcePackageMetadata | undefined;
 }): Promise<MdmResourceStatusEntry> {
   if (!input.release || !input.state) {
-    return missingEntry(input.packageId, input.required, input.release);
+    return missingEntry(
+      input.packageId,
+      input.required,
+      input.release,
+      input.metadata
+    );
   }
 
   const actualSha256 = await hashFile(input.state.artifactPath);
@@ -80,6 +92,7 @@ async function summarizePackage(input: {
       packageId: input.packageId,
       required: input.required,
       status: "invalid_checksum",
+      metadata: input.metadata,
       artifactName: input.release.artifactName,
       artifactPath: input.state.artifactPath,
       expectedSha256: input.release.sha256,
@@ -92,6 +105,7 @@ async function summarizePackage(input: {
     packageId: input.packageId,
     required: input.required,
     status: "ready",
+    metadata: input.metadata,
     artifactName: input.release.artifactName,
     artifactPath: input.state.artifactPath,
     expectedSha256: input.release.sha256,
@@ -103,7 +117,8 @@ async function summarizePackage(input: {
 function missingEntry(
   packageId: string,
   required: boolean,
-  release: MdmResourceRelease | null
+  release: MdmResourceRelease | null,
+  metadata: MdmResourcePackageMetadata | undefined
 ): MdmResourceStatusEntry {
   const status = required ? "missing_required" : "missing_optional";
 
@@ -111,6 +126,7 @@ function missingEntry(
     packageId,
     required,
     status,
+    metadata,
     artifactName: release?.artifactName,
     expectedSha256: release?.sha256,
     message: required

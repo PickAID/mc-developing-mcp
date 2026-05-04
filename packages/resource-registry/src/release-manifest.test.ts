@@ -28,6 +28,11 @@ describe("mdm release manifest", () => {
         {
           packageId: "core-docs-required",
           artifactName: "core-docs-required-0.1.0.mdm-resource.json",
+          metadata: {
+            storageKind: "remote_manifest",
+            installTier: "required_docs",
+            commitPolicy: "repository_manifest"
+          },
           sha256:
             "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477"
         }
@@ -88,12 +93,22 @@ describe("mdm release manifest", () => {
           id: "core-docs-required",
           required: true,
           format: "json",
+          metadata: {
+            storageKind: "remote_manifest",
+            installTier: "required_docs",
+            commitPolicy: "repository_manifest"
+          },
           currentRelease: {
             artifactName: "core-docs-required-0.1.0.mdm-resource.json"
           },
           detail: {
             sourcePath:
-              "release:core-docs-required-0.1.0.mdm-resource.json"
+              "release:core-docs-required-0.1.0.mdm-resource.json",
+            metadata: {
+              storageKind: "remote_manifest",
+              installTier: "required_docs",
+              commitPolicy: "repository_manifest"
+            }
           }
         }
       ]

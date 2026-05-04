@@ -73,6 +73,58 @@ describe("discoverProbeJsLanguageProject", () => {
     ]);
   });
 
+  it("loads scoped declarations from kubejs/probejs local ProbeJS output", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-kjs-probejs-scoped");
+
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "server", "events.d.ts"),
+      "declare const ServerEvents: unknown;\n"
+    );
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "shared", "globals.d.ts"),
+      "declare const Item: unknown;\n"
+    );
+
+    const result = await discoverProbeJsLanguageProject({
+      workspaceRoot,
+      scope: "server"
+    });
+
+    expect(result.declarationFiles.map((file) => file.relativePath)).toEqual([
+      "kubejs/probejs/server/events.d.ts",
+      "kubejs/probejs/shared/globals.d.ts"
+    ]);
+    expect(result.totalDeclarationBytes).toBe(
+      "declare const ServerEvents: unknown;\n".length
+        + "declare const Item: unknown;\n".length
+    );
+  });
+
+  it("discovers ProbeJS snippet text files without requiring .vscode snippets", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-kjs-probejs-snippets");
+
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "snippets", "recipes.txt"),
+      "ServerEvents.recipes(event => {});\n"
+    );
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "snippets", "ignored.json"),
+      "{\"not\":\"a snippet file\"}\n"
+    );
+
+    const result = await discoverProbeJsLanguageProject({
+      workspaceRoot,
+      scope: "server"
+    });
+
+    expect(result.snippetFiles.map((file) => file.relativePath)).toEqual([
+      "kubejs/probejs/snippets/recipes.txt"
+    ]);
+    expect(result.snippetFiles[0]?.sizeBytes).toBe(
+      "ServerEvents.recipes(event => {});\n".length
+    );
+  });
+
   it("applies max declaration file budgets deterministically", async () => {
     const workspaceRoot = await createTempRoot("mcpskill-kjs-probe-budget");
 

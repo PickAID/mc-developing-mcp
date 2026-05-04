@@ -74,6 +74,11 @@ describe("buildHarnessTaskBrief", () => {
         {
           id: "task_tool_policy",
           text: "Task tools: workspace.analyze -> context.query -> source.bundle."
+        },
+        {
+          id: "task_evidence_policy",
+          text:
+            "Evidence policy: follow log_files -> external_mod_resolution -> workspace_source -> docs_lookup in order; prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup."
         }
       ])
     );
@@ -132,6 +137,16 @@ describe("buildHarnessTaskBrief", () => {
         {
           id: "task_tool_policy",
           text: "Task tools: context.query -> source.bundle -> workspace.analyze."
+        },
+        {
+          id: "task_evidence_policy",
+          text:
+            "Evidence policy: follow probejs_types -> docs_lookup in order; prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup."
+        },
+        {
+          id: "task_kubejs_scripting_policy",
+          text:
+            "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence and avoid persistent console.* debug output."
         }
       ])
     );

@@ -1,6 +1,10 @@
 import { readFile } from "node:fs/promises";
 
-import type { MdmResourceRegistry } from "./manifest.js";
+import type {
+  MdmResourcePackageMetadata,
+  MdmResourceRegistry
+} from "./manifest.js";
+import { resolveMdmResourcePackageMetadata } from "./package-metadata.js";
 
 export interface MdmReleaseManifestPackage {
   packageId: string;
@@ -13,6 +17,7 @@ export interface MdmReleaseManifestPackage {
   artifactName: string;
   sha256: string;
   sizeBytes: number;
+  metadata?: MdmResourcePackageMetadata;
 }
 
 export interface MdmReleaseManifest {
@@ -91,29 +96,35 @@ export function toMdmResourceRegistryFromReleaseManifest(
   return {
     root: manifest.source,
     schemaVersion: manifest.schemaVersion,
-    packages: manifest.packages.map((resourcePackage) => ({
-      id: resourcePackage.packageId,
-      manifestPath: manifest.source,
-      required: resourcePackage.required,
-      format: resourcePackage.format,
-      currentRelease: {
-        artifactName: resourcePackage.artifactName,
-        sha256: resourcePackage.sha256,
-        sizeBytes: resourcePackage.sizeBytes,
-        builtAt: manifest.generatedAt
-      },
-      detail: {
-        schemaVersion: manifest.schemaVersion,
+    packages: manifest.packages.map((resourcePackage) => {
+      const metadata = resolveReleasePackageMetadata(resourcePackage);
+
+      return {
         id: resourcePackage.packageId,
-        sourcePath: `release:${resourcePackage.artifactName}`,
+        manifestPath: manifest.source,
+        required: resourcePackage.required,
+        format: resourcePackage.format,
+        metadata,
         currentRelease: {
           artifactName: resourcePackage.artifactName,
           sha256: resourcePackage.sha256,
           sizeBytes: resourcePackage.sizeBytes,
           builtAt: manifest.generatedAt
+        },
+        detail: {
+          schemaVersion: manifest.schemaVersion,
+          id: resourcePackage.packageId,
+          sourcePath: `release:${resourcePackage.artifactName}`,
+          metadata,
+          currentRelease: {
+            artifactName: resourcePackage.artifactName,
+            sha256: resourcePackage.sha256,
+            sizeBytes: resourcePackage.sizeBytes,
+            builtAt: manifest.generatedAt
+          }
         }
-      }
-    }))
+      };
+    })
   };
 }
 
@@ -132,8 +143,28 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
     format: stringField(value, "format"),
     artifactName: stringField(value, "artifactName"),
     sha256: stringField(value, "sha256"),
-    sizeBytes: numberField(value, "sizeBytes")
+    sizeBytes: numberField(value, "sizeBytes"),
+    metadata: resolveMdmResourcePackageMetadata(value.metadata, {
+      packageId: stringField(value, "packageId"),
+      required: booleanField(value, "required"),
+      format: stringField(value, "format"),
+      artifactType: stringField(value, "artifactType"),
+      variant: stringField(value, "variant")
+    })
   };
+}
+
+function resolveReleasePackageMetadata(
+  resourcePackage: MdmReleaseManifestPackage
+): MdmResourcePackageMetadata {
+  return resourcePackage.metadata ??
+    resolveMdmResourcePackageMetadata(undefined, {
+      packageId: resourcePackage.packageId,
+      required: resourcePackage.required,
+      format: resourcePackage.format,
+      artifactType: resourcePackage.artifactType,
+      variant: resourcePackage.variant
+    });
 }
 
 async function defaultFetch(url: string): Promise<MdmReleaseFetchResponse> {

@@ -1,12 +1,14 @@
 # Project Delivery Progress
-Date: 2026-05-01
+Date: 2026-05-05
 Author: m1hono
 Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `mdm-resources`
 
 ## Executive Summary
 本地交付闭环切片已经完成。项目现在不再只是 MCP 能力集合，而是有了可验证的资源包源仓库、release artifact、MCP registry reader、runtime cache 状态、checksum 校验，以及 `mc_develop` structuredContent 中的资源状态输出。
 
-功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata 和 compact `datapackVersionProfile`，并能从 `supported_formats` 报告兼容 pack format 范围和已知 MC 版本映射。datapack profile catalog 已修正为官方 `server.jar!/version.json` 的 datapack pack format，覆盖 release `1.18.2` 到 `26.1.2`，并支持 1.21.10+ 的 minor format。resource-pack profile catalog 也已基于官方 `server.jar!/version.json` 的 `pack_version.resource` 建立，覆盖同一 release 范围并与 datapack catalog 分离。source package manager 现在也能在用户确认后从 Mojang/Piston 风格 manifest 下载官方 archive，并生成只含 `data/**` 的 vanilla datapack runtime package 或 canonical `resource-pack` artifact 下只含 `assets/**` 的 vanilla resource-pack runtime package，不把 Mojang 内容存进仓库。旧 `assets` package id/API 仍保留为兼容入口。MCP datapack/resource executor 现在也能在没有本地 datapack/resource roots 时，通过现有 `mc_develop`/`source.bundle` 证据链读取已确认生成的 vanilla datapack package 或 vanilla resource-pack package，并能对 generated vanilla assets 执行显式 blockstate -> model -> texture 引用追踪。datapack 迁移也有了第一层 pack-format migration analysis，可对已知版本输出升级/降级方向、pack format delta、`pack.mcmeta` 更新动作，以及基于项目实际 data kind 的 compact risk hints。assets-only/resource-pack evidence 现在会输出独立的 compact `resourcePackVersionProfile` 和 `resourcePackMigrationAnalysis`，不再把 resource-pack `pack_format` 套用到 datapack catalog 上。显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。external mod acquisition resolver 已开始落地：`@mcpskill/external-mod-resolver` 支持 Modrinth API-first 查询、按 loader/MC 版本过滤版本、选择 primary jar，并返回 hash、download URL、Modrinth Maven method-level Gradle usage 和 confirmation/cache policy；CurseForge 支持无 key setup hint 与 credentialed fixture path 下的 CurseMaven dispatch metadata；ordinary Maven resolver 和 MCP 集成仍在后续切片。
+功能完成阶段已经继续推进到 modpack JAR 底层缓存：mod archive inventory 现在有 runtime SQLite 持久化缓存、entry index、JarJar/content summary 保留、显式 refresh、stale fingerprint 重建、class owner index、以及实际 MCP 返回值验证。资源支持也进入了一等证据域的第一批实现：mod archive asset evidence summary 现在能分类 vanilla asset roots 和 selected GUI-related asset paths，JAR 内显式资源请求能追踪 blockstate -> model -> texture，mod archive inventory 也能对 JAR 内 `data/**` 数据包内容输出 counts-only 分类摘要。loose `assets/**` 能按 vanilla asset format roots 分类，也能用 resource-location metadata 匹配 `demo:item/gear` 这类请求，不读取二进制纹理内容。MCP datapack/resource executor 会返回 counts-only `resourceSummary` metadata 和 compact `datapackVersionProfile`，并能从 `supported_formats` 报告兼容 pack format 范围和已知 MC 版本映射。datapack profile catalog 已修正为官方 `server.jar!/version.json` 的 datapack pack format，覆盖 release `1.18.2` 到 `26.1.2`，并支持 1.21.10+ 的 minor format。resource-pack profile catalog 也已基于官方 `server.jar!/version.json` 的 `pack_version.resource` 建立，覆盖同一 release 范围并与 datapack catalog 分离。source package manager 现在也能在用户确认后从 Mojang/Piston 风格 manifest 下载官方 archive，并生成只含 `data/**` 的 vanilla datapack runtime package 或 canonical `resource-pack` artifact 下只含 `assets/**` 的 vanilla resource-pack runtime package，不把 Mojang 内容存进仓库。旧 `assets` package id/API 仍保留为兼容入口。MCP datapack/resource executor 现在也能在没有本地 datapack/resource roots 时，通过现有 `mc_develop`/`source.bundle` 证据链读取已确认生成的 vanilla datapack package 或 vanilla resource-pack package，并能对 generated vanilla assets 执行显式 blockstate -> model -> texture 引用追踪。datapack 迁移也有了第一层 pack-format migration analysis，可对已知版本输出升级/降级方向、pack format delta、`pack.mcmeta` 更新动作，以及基于项目实际 data kind 的 compact risk hints。assets-only/resource-pack evidence 现在会输出独立的 compact `resourcePackVersionProfile` 和 `resourcePackMigrationAnalysis`，不再把 resource-pack `pack_format` 套用到 datapack catalog 上。显式请求时能追踪 blockstate -> model -> texture 的资源引用链和 missing texture，并且纯 `assets/**` 资源目录不再依赖 `pack.mcmeta` 才能进入资源证据链。external mod acquisition resolver 已落地到本地/Gradle/JAR 优先、Maven coordinate、Modrinth、credentialed CurseForge 的底层解析链；MCP external mod execution 能使用 Gradle-declared dependency cache JAR、local mod archives、runtime classifier JAR、Modrinth Maven/CurseMaven dispatch metadata 和用户显式 credential/fetch options，同时保持默认不自动下载远程 JAR。
+
+本轮并行切片还完成了三个结构性底层改进：`datapack-adapter/src/files.ts` 和 `mod-archive-content-executor.ts` 已拆分出 helper，解除 500 行临界风险；`@mcpskill/resource-registry` 现在能区分 `sqlite_bundle`、`generated_local_cache`、`remote_manifest`、`optional_accelerator`，并把私有派生缓存标记为 `private_generated_cache`；KubeJS/ProbeJS language service 现在能宽容识别 `.probe`、`.probejs`、`probejs`、`kubejs/probejs` 等输出布局和 ProbeJS text snippets。Harness prompt injection 也新增 route-local evidence policy 和 KubeJS scripting policy，使 MCP description/brief 更接近小 agent 的引导效果，而不依赖 Skill。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
@@ -15,9 +17,9 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 - Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
-- Latest committed base before this progress update: `a31c1b7`
+- Latest committed base before this progress update: `e0733d2`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 111 test files and 354 tests
+- Latest full verification: `pnpm test` passed with 142 test files and 451 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -62,7 +64,8 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `2d13229 feat(resource-pack): separate asset version profiles`
 - `7a5183f feat(resource-pack): add official format catalog`
 - `a31c1b7 feat(resource-pack): analyze format migrations`
-- current progress update: external mod Maven dispatch metadata
+- `e0733d2 feat(evidence): expand resource and dependency lookup`
+- current progress update: refactor evidence internals, add harness evidence injection, tolerant ProbeJS discovery, and SQLite package metadata classification
 
 ### `mdm-sources`
 - Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
@@ -90,6 +93,8 @@ Implemented:
 - MCP `@mcpskill/resource-registry` package for local registry reading.
 - MCP runtime cache layout and cache state read/write helpers.
 - MCP resource status summary with `ready`, `missing_required`, `missing_optional`, and `invalid_checksum`.
+- MCP resource package metadata can distinguish required docs, optional datasets, optional accelerators, repository manifests, SQLite bundles, and private generated local caches.
+- SQLite-oriented resource packages can declare database name, minimum user version, and required tables without forcing all packages to be SQLite.
 - `mc_develop` can install an MDM release artifact on request only when `mdmReleaseInstall.downloadPolicy` is explicitly `allowed`.
 - The install flow supports local manifest paths and manifest URLs, verifies SHA-256, and writes runtime cache state.
 - Cached `.mdm-resource.json` docs artifacts are loaded into docs retrieval without treating markdown as runtime content.
@@ -132,11 +137,16 @@ Implemented:
 - Harness and evidence planning now route explicit vanilla assets requests to `datapack_files` without adding a new public MCP tool.
 - Loose resource reference tracing now resolves blockstate model references, model parent references, model texture references, and missing targets without reading binary texture content.
 - MCP datapack/resource executor now includes compact `resourceReferenceTrace` metadata only for explicit trace/reference requests that name traceable `assets/**` paths.
+- Loose `assets/**` evidence can match resource-location metadata such as `demo:item/gear` against item/model/texture paths without dumping binary texture content.
+- Datapack/resource file scanning helpers are split into entry creation, content reading, and resource-location metadata modules; `files.ts` is no longer a 500-line risk.
 - Workspace detector now treats root-level and resource-root `assets/**` as datapack/resource evidence even without `pack.mcmeta` or `data/**`.
 - Harness intent routing now recognizes explicit `data/...` and `assets/...` paths as datapack/resource lookup requests when datapack/resource roots exist.
 - Class owner lookup uses the persistent entry index first and falls back to the existing JarJar scanner when needed.
 - Natural-language refresh requests rebuild the SQLite mod archive inventory cache.
 - Stale mod archive fingerprints rebuild inventory instead of returning old content summaries.
+- Mod archive content execution helpers are split into selection, search, metadata, owner lookup, and constants modules; `mod-archive-content-executor.ts` is no longer a 500-line risk.
+- KubeJS ProbeJS language project discovery supports multiple ProbeJS output layouts and snippet text files while staying scoped to Minecraft/KubeJS evidence.
+- Task briefs now inject route-local evidence policy and KubeJS scripting policy into MCP prompt assembly.
 - Runtime service-profile tests prevent long UI/design methodology from entering guidance.
 - Public MCP tool count remains one.
 - File size guard passes: no source/test JSON/JS/TS file above 500 lines.
@@ -151,7 +161,7 @@ Not implemented in this slice:
 
 ## Completion Estimate
 ### MCP Core Capability
-Estimated completion: 87-91%.
+Estimated completion: 90-93%.
 
 Completed:
 
@@ -166,12 +176,14 @@ Completed:
 - JAR source/content lookup
 - datapack file lookup
 - ProbeJS/KubeJS type lookup and TypeScript language-service integration
+- tolerant ProbeJS declaration/snippet discovery across legacy and `kubejs/probejs` layouts
 - JDTLS runtime, diagnostics registry, lifecycle cleanup, and diagnostic source path bridge
 - on-demand vanilla source acquisition
 - local source package installation
 - SQLite source index build/query/read
 - structured content payload budgeting
 - MDM local registry/cache/status integration
+- MDM package metadata for SQLite bundles, optional accelerators, remote manifests, and private generated caches
 - MDM release manifest read/install/cache flow
 - MDM docs resource loading into docs retrieval
 - Compact MDM docs resource diagnostics
@@ -205,23 +217,23 @@ Completed:
 - Assets-only resource-pack routing without `pack.mcmeta`
 - Assets-only resource-pack profile separation from datapack version profile
 - Runtime guidance boundary guard for resource/UI scope
+- Harness prompt evidence policy and KubeJS scripting policy injection through MCP request assembly
+- Refactored datapack file scanning and mod archive content execution internals below the 500-line danger zone
 
 Still incomplete:
 
 - published release workflow and package retention policy
-- Ordinary Maven repository resolver implementation
-- CurseForge broad search ranking and real-key integration hardening
-- MCP integration for external mod resolver candidates
+- real-key CurseForge smoke validation outside committed tests
 - broader docs retrieval from external resource package indexes
 - versioned resource-pack asset validation
 - full schema-level migration analysis across Java/KubeJS/datapack versions
-- robust modpack-specific derived caches for ProbeJS snippets/items/registries
+- robust modpack-specific derived caches for ProbeJS items/registries/recipes
 - persistent derived indexes beyond class paths and selected/local asset/data summaries, such as detailed item/registry/recipe lookup tables, nested resource reference lookup tables, and crash-triage lookup tables
 - concentrated real-world scenario testing
 - final install/usage docs and UX pass
 
 ### `mdm-sources` / `mdm-resources`
-Estimated completion: 35-40%.
+Estimated completion: 40-45%.
 
 Completed:
 
@@ -231,6 +243,7 @@ Completed:
 - required core docs package
 - deterministic local release artifact builder
 - local release artifact metadata written into registry
+- MCP-side metadata model for SQLite bundles, optional accelerators, remote manifests, and private generated caches
 - CI validation workflow
 
 Still incomplete:
@@ -243,7 +256,7 @@ Still incomplete:
 - real package payload expansion beyond the first required core docs package
 
 ### Overall Deliverability
-Estimated alpha deliverability: 75-79%.
+Estimated alpha deliverability: 78-82%.
 
 Interpretation:
 
@@ -258,11 +271,11 @@ Now that delivery closure is complete, return to MCP capability completion.
 Priority:
 
 1. Expand docs retrieval packages beyond the first required cached docs artifact.
-2. Expand remote/local resource install semantics with confirmation for large/private/generated packages.
+2. Expand remote/local resource install semantics with confirmation UX for large/private/generated packages.
 3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset/data summaries into detailed recipes, datapack content lookup, nested resource reference indexes, full resource evidence, and crash-triage lookup tables.
-4. Expand external mod acquisition resolver from Modrinth into Maven and credentialed CurseForge API, then wire compact candidates into MCP evidence without auto-downloading remote jars by default.
+4. Validate external mod acquisition with real Modrinth/CurseForge/Maven smoke tests while keeping user-supplied credentials out of the repo.
 5. Improve Gradle workspace model extraction.
-6. Expand KubeJS support for d.ts, snippets, items, registries, recipes, and generated ProbeJS variants.
+6. Expand KubeJS support from tolerant d.ts/snippet discovery into item, registry, and recipe lookup tables.
 7. Add migration analysis for Java/KubeJS/datapack version moves.
 8. Harden JDTLS setup guidance and fallback behavior.
 
@@ -337,3 +350,15 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-04-30-datapack-version-profile-verification.md`
 
 `docs/reviews/2026-04-30-datapack-supported-formats-profile-verification.md`
+
+`docs/reviews/2026-05-05-resource-location-metadata-match-verification.md`
+
+`docs/reviews/2026-05-05-external-mod-gradle-dependency-archive-verification.md`
+
+`docs/reviews/2026-05-05-loader-dependency-owner-metadata-verification.md`
+
+`docs/reviews/2026-05-05-agent-harness-evidence-injection-verification.md`
+
+`docs/reviews/2026-05-05-kubejs-probejs-tolerant-discovery-verification.md`
+
+`docs/reviews/2026-05-05-resource-registry-sqlite-package-status-verification.md`

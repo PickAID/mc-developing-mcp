@@ -79,6 +79,16 @@ describe("buildMcpServerRequestPlan", () => {
             id: "task_tool_policy",
             role: "system",
             title: "Task Tool Policy"
+          },
+          {
+            id: "task_evidence_policy",
+            role: "system",
+            title: "Task Evidence Policy"
+          },
+          {
+            id: "task_kubejs_scripting_policy",
+            role: "system",
+            title: "Task KubeJS Scripting Policy"
           }
         ],
         text: expect.stringContaining(
@@ -111,7 +121,9 @@ describe("buildMcpServerRequestPlan", () => {
           "kubejs_authoring_policy",
           "task_intent_summary",
           "task_route_policy",
-          "task_tool_policy"
+          "task_tool_policy",
+          "task_evidence_policy",
+          "task_kubejs_scripting_policy"
         ]
       }
     });
@@ -173,10 +185,14 @@ describe("buildMcpServerRequestPlan", () => {
       "tool_policy",
       "task_intent_summary",
       "task_route_policy",
-      "task_tool_policy"
+      "task_tool_policy",
+      "task_evidence_policy"
     ]);
     expect(plan.prompt.text).toContain(
       "[Task Route Policy]\nTask route: crash_triage via log_files -> external_mod_resolution -> workspace_source -> docs_lookup."
+    );
+    expect(plan.prompt.text).toContain(
+      "[Task Evidence Policy]\nEvidence policy: follow log_files -> external_mod_resolution -> workspace_source -> docs_lookup in order;"
     );
   });
 });

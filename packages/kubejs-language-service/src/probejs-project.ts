@@ -3,9 +3,21 @@ import { join, relative, resolve } from "node:path";
 
 import type {
   DiscoverProbeJsLanguageProjectOptions,
+  KubeJsScriptScope,
   ProbeJsLanguageProject,
   ProbeJsLanguageProjectFile
 } from "./types.js";
+
+const PROBE_BASE_CANDIDATES = [
+  ".probe",
+  ".probejs",
+  "probe",
+  "probejs",
+  "kubejs/probe",
+  "kubejs/.probe",
+  "kubejs/probejs",
+  "kubejs/.probejs"
+];
 
 export async function discoverProbeJsLanguageProject(
   options: DiscoverProbeJsLanguageProjectOptions
@@ -18,13 +30,17 @@ export async function discoverProbeJsLanguageProject(
     scopedRoots.length > 0
       ? scopedRoots
       : await existingRoots(legacyProbeCandidates(workspaceRoot));
-  const allDeclarations = await collectFiles(workspaceRoot, roots, ".d.ts");
+  const allDeclarations = await collectFiles(
+    workspaceRoot,
+    roots,
+    isDeclarationFile
+  );
   const maxDeclarationFiles = normalizeBudget(options.maxDeclarationFiles);
   const declarationFiles = allDeclarations.slice(0, maxDeclarationFiles);
   const snippetFiles = await collectFiles(
     workspaceRoot,
-    await existingRoots([join(workspaceRoot, ".vscode")]),
-    ".code-snippets"
+    await existingRoots(snippetCandidates(workspaceRoot)),
+    isProbeSnippetFile
   );
 
   return {
@@ -40,22 +56,34 @@ export async function discoverProbeJsLanguageProject(
   };
 }
 
-function probeScopeCandidates(workspaceRoot: string, scope: string): string[] {
+function probeScopeCandidates(
+  workspaceRoot: string,
+  scope: KubeJsScriptScope
+): string[] {
+  const bases = probeBaseCandidates(workspaceRoot);
   if (scope === "shared") {
-    return [join(workspaceRoot, ".probe", "shared")];
+    return bases.map((base) => join(base, "shared"));
   }
 
-  return [
-    join(workspaceRoot, ".probe", scope),
-    join(workspaceRoot, ".probe", "shared")
-  ];
+  return bases.flatMap((base) => [join(base, scope), join(base, "shared")]);
 }
 
 function legacyProbeCandidates(workspaceRoot: string): string[] {
+  return probeBaseCandidates(workspaceRoot).flatMap((base) => [
+    base,
+    join(base, "generated")
+  ]);
+}
+
+function snippetCandidates(workspaceRoot: string): string[] {
   return [
-    join(workspaceRoot, ".probe"),
-    join(workspaceRoot, "kubejs", "probe", "generated")
+    join(workspaceRoot, ".vscode"),
+    ...probeBaseCandidates(workspaceRoot).map((base) => join(base, "snippets"))
   ];
+}
+
+function probeBaseCandidates(workspaceRoot: string): string[] {
+  return PROBE_BASE_CANDIDATES.map((candidate) => join(workspaceRoot, candidate));
 }
 
 async function existingRoots(candidates: string[]): Promise<string[]> {
@@ -73,23 +101,23 @@ async function existingRoots(candidates: string[]): Promise<string[]> {
 async function collectFiles(
   workspaceRoot: string,
   roots: string[],
-  extension: string
+  matchesFile: (fileName: string) => boolean
 ): Promise<ProbeJsLanguageProjectFile[]> {
   const files: ProbeJsLanguageProjectFile[] = [];
 
   for (const root of roots) {
-    files.push(...(await walkFiles(workspaceRoot, root, extension)));
+    files.push(...(await walkFiles(workspaceRoot, root, matchesFile)));
   }
 
-  return files.sort((left, right) =>
-    left.relativePath.localeCompare(right.relativePath)
-  );
+  return [
+    ...new Map(files.map((file) => [file.absolutePath, file])).values()
+  ].sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
 async function walkFiles(
   workspaceRoot: string,
   root: string,
-  extension: string
+  matchesFile: (fileName: string) => boolean
 ): Promise<ProbeJsLanguageProjectFile[]> {
   const entries = await readSortedEntries(root);
   const files: ProbeJsLanguageProjectFile[] = [];
@@ -97,10 +125,10 @@ async function walkFiles(
   for (const entry of entries) {
     const absolutePath = join(root, entry.name);
     if (entry.isDirectory()) {
-      files.push(...(await walkFiles(workspaceRoot, absolutePath, extension)));
+      files.push(...(await walkFiles(workspaceRoot, absolutePath, matchesFile)));
       continue;
     }
-    if (!entry.isFile() || !entry.name.endsWith(extension)) {
+    if (!entry.isFile() || !matchesFile(entry.name)) {
       continue;
     }
 
@@ -114,6 +142,14 @@ async function walkFiles(
   }
 
   return files;
+}
+
+function isDeclarationFile(fileName: string): boolean {
+  return fileName.endsWith(".d.ts");
+}
+
+function isProbeSnippetFile(fileName: string): boolean {
+  return fileName.endsWith(".code-snippets") || fileName.endsWith(".txt");
 }
 
 async function readSortedEntries(path: string) {

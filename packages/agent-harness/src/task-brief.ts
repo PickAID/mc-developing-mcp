@@ -43,7 +43,9 @@ export function buildHarnessTaskBriefFromSnapshot(
       ...baseBrief.promptFragments,
       buildTaskIntentSummary(taskRoute),
       buildTaskRoutePolicy(taskRoute),
-      buildTaskToolPolicy(taskRoute)
+      buildTaskToolPolicy(taskRoute),
+      buildTaskEvidencePolicy(taskRoute),
+      ...buildTaskDomainPolicies(taskRoute)
     ]
   };
 }
@@ -75,4 +77,31 @@ function buildTaskToolPolicy(
     id: "task_tool_policy",
     text: `Task tools: ${taskBriefRoute.preferredTools.join(" -> ")}.`
   };
+}
+
+function buildTaskEvidencePolicy(
+  taskBriefRoute: AgentRuntimeTaskBrief["taskRoute"]
+): AgentRuntimePromptFragment {
+  return {
+    id: "task_evidence_policy",
+    text:
+      `Evidence policy: follow ${taskBriefRoute.steps.join(" -> ")} in order; ` +
+      "prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup."
+  };
+}
+
+function buildTaskDomainPolicies(
+  taskBriefRoute: AgentRuntimeTaskBrief["taskRoute"]
+): AgentRuntimePromptFragment[] {
+  if (taskBriefRoute.intent.id !== "kubejs_authoring") {
+    return [];
+  }
+
+  return [
+    {
+      id: "task_kubejs_scripting_policy",
+      text:
+        "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence and avoid persistent console.* debug output."
+    }
+  ];
 }

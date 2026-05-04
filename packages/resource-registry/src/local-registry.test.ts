@@ -23,6 +23,13 @@ describe("readLocalMdmResourceRegistry", () => {
             sha256:
               "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
             sizeBytes: 1201
+          },
+          metadata: {
+            storageKind: "sqlite_bundle",
+            sqlite: {
+              databaseName: "minecraft_docs.sqlite",
+              requiredTables: ["documents"]
+            }
           }
         }
       ]
@@ -51,7 +58,25 @@ describe("readLocalMdmResourceRegistry", () => {
           format: "json",
           detail: {
             id: "core-docs-required",
-            sourcePath: "packages/core/docs/required/package.json"
+            sourcePath: "packages/core/docs/required/package.json",
+            metadata: {
+              storageKind: "sqlite_bundle",
+              installTier: "required_docs",
+              commitPolicy: "repository_manifest",
+              sqlite: {
+                databaseName: "minecraft_docs.sqlite",
+                requiredTables: ["documents"]
+              }
+            }
+          },
+          metadata: {
+            storageKind: "sqlite_bundle",
+            installTier: "required_docs",
+            commitPolicy: "repository_manifest",
+            sqlite: {
+              databaseName: "minecraft_docs.sqlite",
+              requiredTables: ["documents"]
+            }
           }
         }
       ]

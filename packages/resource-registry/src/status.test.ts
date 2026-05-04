@@ -27,8 +27,24 @@ describe("summarizeMdmResourceStatus", () => {
       })
     ).resolves.toMatchObject({
       packages: [
-        { packageId: "core-docs-required", status: "missing_required" },
-        { packageId: "content-docs-optional", status: "missing_optional" }
+        {
+          packageId: "core-docs-required",
+          status: "missing_required",
+          metadata: {
+            storageKind: "remote_manifest",
+            installTier: "required_docs",
+            commitPolicy: "repository_manifest"
+          }
+        },
+        {
+          packageId: "content-docs-optional",
+          status: "missing_optional",
+          metadata: {
+            storageKind: "remote_manifest",
+            installTier: "optional_dataset",
+            commitPolicy: "repository_manifest"
+          }
+        }
       ],
       counts: {
         missing_required: 1,
@@ -64,7 +80,17 @@ describe("summarizeMdmResourceStatus", () => {
         cacheLayout
       })
     ).resolves.toMatchObject({
-      packages: [{ packageId: "core-docs-required", status: "ready" }],
+      packages: [
+        {
+          packageId: "core-docs-required",
+          status: "ready",
+          metadata: {
+            storageKind: "remote_manifest",
+            installTier: "required_docs",
+            commitPolicy: "repository_manifest"
+          }
+        }
+      ],
       counts: {
         missing_required: 0,
         missing_optional: 0,
@@ -99,7 +125,17 @@ describe("summarizeMdmResourceStatus", () => {
         cacheLayout
       })
     ).resolves.toMatchObject({
-      packages: [{ packageId: "core-docs-required", status: "invalid_checksum" }],
+      packages: [
+        {
+          packageId: "core-docs-required",
+          status: "invalid_checksum",
+          metadata: {
+            storageKind: "remote_manifest",
+            installTier: "required_docs",
+            commitPolicy: "repository_manifest"
+          }
+        }
+      ],
       counts: {
         missing_required: 0,
         missing_optional: 0,
@@ -134,6 +170,11 @@ function packageEntry(
       schemaVersion: 1,
       id,
       sourcePath: `packages/${id}/package.json`,
+      metadata: {
+        storageKind: "remote_manifest",
+        installTier: required ? "required_docs" : "optional_dataset",
+        commitPolicy: "repository_manifest"
+      },
       currentRelease: {
         artifactName: `${id}-0.1.0.mdm-resource.json`,
         sha256,

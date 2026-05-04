@@ -6,6 +6,7 @@ import type {
   MdmResourcePackageSummary,
   MdmResourceRegistry
 } from "./manifest.js";
+import { resolveMdmResourcePackageMetadata } from "./package-metadata.js";
 
 export async function readLocalMdmResourceRegistry(
   root: string
@@ -41,15 +42,24 @@ async function readPackageSummary(
 ): Promise<MdmResourcePackageSummary> {
   const manifestPath = stringField(entry, "manifestPath");
   const detailPath = resolveRegistryPath(registryRoot, manifestPath);
-  const detail = await readJson(detailPath);
+  const detail = readDetail(await readJson(detailPath), entry);
+  const id = stringField(entry, "id");
+  const required = booleanField(entry, "required");
+  const format = stringField(entry, "format");
 
   return {
-    id: stringField(entry, "id"),
+    id,
     manifestPath,
-    required: booleanField(entry, "required"),
-    format: stringField(entry, "format"),
+    required,
+    format,
     currentRelease: releaseField(entry.currentRelease),
-    detail: readDetail(detail)
+    metadata: resolveMdmResourcePackageMetadata(entry.metadata, {
+      packageId: id,
+      required,
+      format,
+      sourcePath: detail.sourcePath
+    }),
+    detail
   };
 }
 
@@ -67,16 +77,29 @@ function readPackageEntries(index: unknown): Record<string, unknown>[] {
   });
 }
 
-function readDetail(value: unknown): MdmResourcePackageDetail {
+function readDetail(
+  value: unknown,
+  summary: Record<string, unknown>
+): MdmResourcePackageDetail {
   if (!isRecord(value)) {
     throw new Error("mdm registry package detail must be an object.");
   }
+  const sourcePath = stringField(value, "sourcePath");
+  const id = stringField(value, "id");
+  const required = booleanField(summary, "required");
+  const format = stringField(summary, "format");
 
   return {
     schemaVersion: numberField(value, "schemaVersion"),
-    id: stringField(value, "id"),
-    sourcePath: stringField(value, "sourcePath"),
-    currentRelease: releaseField(value.currentRelease)
+    id,
+    sourcePath,
+    currentRelease: releaseField(value.currentRelease),
+    metadata: resolveMdmResourcePackageMetadata(value.metadata ?? summary.metadata, {
+      packageId: id,
+      required,
+      format,
+      sourcePath
+    })
   };
 }
 

@@ -1,12 +1,21 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import { isAbsolute, join, resolve } from "node:path";
 
 import { discoverRoots } from "./discovery.js";
-import { classifyKind } from "./kinds.js";
-import { isInside, relativePosix } from "./path-utils.js";
+import {
+  findInContent,
+  readTextEntry
+} from "./file-content.js";
+import {
+  createEntry,
+  createSkipped,
+  rootKindForAbsoluteRoot,
+  withinEntryLimit
+} from "./file-entry.js";
+import { isInside } from "./path-utils.js";
+import { findInResourceLocationMetadata } from "./resource-location-metadata.js";
 import type {
   DatapackBudget,
-  DatapackDomain,
   DatapackFileEntry,
   DatapackFileList,
   DatapackFileSummary,
@@ -15,8 +24,6 @@ import type {
   DatapackSearchResult,
   DatapackSkippedFile
 } from "./types.js";
-
-const DEFAULT_MAX_BYTES_PER_FILE = 1024 * 1024;
 
 export async function listDatapackFiles(
   root: string,
@@ -250,233 +257,4 @@ async function* walkFiles(directory: string): AsyncGenerator<string> {
       yield absolutePath;
     }
   }
-}
-
-async function createEntry(input: {
-  scanRoot: string;
-  contentRoot: Pick<DatapackRoot, "absolutePath" | "rootKind">;
-  absolutePath: string;
-}): Promise<DatapackFileEntry | undefined> {
-  const rootRelativePath = toRootRelativePath(
-    input.scanRoot,
-    input.contentRoot.absolutePath
-  );
-  const relativePath = relativePosix(input.contentRoot.absolutePath, input.absolutePath);
-  if (isPackMetadataPath(relativePath)) {
-    return createPackMetadataEntry(input.absolutePath, {
-      relativePath,
-      rootKind: input.contentRoot.rootKind,
-      rootRelativePath
-    });
-  }
-
-  const segments = relativePath.split("/");
-  const domain = segments[0] as DatapackDomain | undefined;
-
-  if (domain !== "data" && domain !== "assets") {
-    return undefined;
-  }
-
-  const namespace = segments[1];
-  if (namespace === undefined || namespace.length === 0) {
-    return undefined;
-  }
-
-  try {
-    const fileStat = await stat(input.absolutePath);
-    if (!fileStat.isFile()) {
-      return undefined;
-    }
-
-    return {
-      absolutePath: input.absolutePath,
-      rootKind: input.contentRoot.rootKind,
-      rootRelativePath,
-      relativePath,
-      namespace,
-      kind: classifyKind(domain, segments[2]),
-      domain,
-      sizeBytes: fileStat.size,
-      resourceLocations: buildResourceLocations(domain, namespace, segments)
-    };
-  } catch {
-    return undefined;
-  }
-}
-
-async function createPackMetadataEntry(
-  absolutePath: string,
-  input: {
-    relativePath: string;
-    rootKind: DatapackRoot["rootKind"];
-    rootRelativePath: string;
-  }
-): Promise<DatapackFileEntry | undefined> {
-  try {
-    const fileStat = await stat(absolutePath);
-    if (!fileStat.isFile()) {
-      return undefined;
-    }
-
-    return {
-      absolutePath,
-      rootKind: input.rootKind,
-      rootRelativePath: input.rootRelativePath,
-      relativePath: input.relativePath,
-      namespace: "",
-      kind: "pack_metadata",
-      domain: "assets",
-      sizeBytes: fileStat.size
-    };
-  } catch {
-    return undefined;
-  }
-}
-
-function isPackMetadataPath(relativePath: string): boolean {
-  return relativePath === "pack.mcmeta" || relativePath === "pack.png";
-}
-
-function rootKindForAbsoluteRoot(
-  absoluteRoot: string,
-  roots: DatapackRoot[]
-): DatapackRoot["rootKind"] {
-  return roots.find((contentRoot) => contentRoot.absolutePath === absoluteRoot)
-    ?.rootKind ?? "workspace_data_root";
-}
-
-function toRootRelativePath(scanRoot: string, contentRoot: string): string {
-  return relativePosix(scanRoot, contentRoot) || ".";
-}
-
-function withinEntryLimit(
-  entries: DatapackFileEntry[],
-  budget: DatapackBudget
-): boolean {
-  return budget.limit === undefined || entries.length < budget.limit;
-}
-
-async function readTextEntry(
-  entry: DatapackFileEntry,
-  maxBytesPerFile = DEFAULT_MAX_BYTES_PER_FILE
-): Promise<string | DatapackSkippedFile> {
-  if (entry.sizeBytes > maxBytesPerFile) {
-    return skippedFromEntry(entry, "too-large");
-  }
-
-  try {
-    const content = await readFile(entry.absolutePath);
-
-    if (isBinary(content)) {
-      return skippedFromEntry(entry, "binary");
-    }
-
-    return content.toString("utf-8");
-  } catch {
-    return skippedFromEntry(entry, "unreadable");
-  }
-}
-
-function findInContent(content: string, query: string) {
-  const index = content.indexOf(query);
-  if (index < 0) {
-    return undefined;
-  }
-
-  const before = content.slice(0, index);
-  const lines = before.split("\n");
-
-  return {
-    line: lines.length,
-    column: lines[lines.length - 1].length + 1,
-    preview: content.split("\n")[lines.length - 1] ?? ""
-  };
-}
-
-function findInResourceLocationMetadata(
-  entry: DatapackFileEntry,
-  query: string
-) {
-  const normalizedQuery = query.toLowerCase();
-  if (!entry.resourceLocations?.includes(normalizedQuery)) {
-    return undefined;
-  }
-
-  return {
-    line: 1,
-    column: 1,
-    preview: `resource-location metadata: ${normalizedQuery}`
-  };
-}
-
-function buildResourceLocations(
-  domain: DatapackDomain,
-  namespace: string,
-  segments: string[]
-): string[] | undefined {
-  if (domain !== "assets") {
-    return undefined;
-  }
-
-  const assetKind = segments[2];
-  const pathSegments = segments.slice(3);
-  const path = stripKnownExtension(pathSegments.join("/"));
-  if (!path) {
-    return undefined;
-  }
-
-  if (assetKind === "items") {
-    return [`${namespace}:item/${path}`];
-  }
-
-  if (assetKind === "models" || assetKind === "textures") {
-    return [`${namespace}:${path}`];
-  }
-
-  return undefined;
-}
-
-function stripKnownExtension(path: string): string {
-  return path.replace(/\.(?:json|png|mcmeta|txt|fsh|vsh)$/i, "").toLowerCase();
-}
-
-function isBinary(content: Buffer): boolean {
-  if (content.includes(0)) {
-    return true;
-  }
-
-  const sampleLength = Math.min(content.length, 512);
-  let controlCharacters = 0;
-
-  for (let index = 0; index < sampleLength; index += 1) {
-    const byte = content[index];
-    if (byte < 32 && byte !== 9 && byte !== 10 && byte !== 13) {
-      controlCharacters += 1;
-    }
-  }
-
-  return sampleLength > 0 && controlCharacters / sampleLength > 0.1;
-}
-
-function createSkipped(
-  root: string,
-  absolutePath: string,
-  reason: DatapackSkippedFile["reason"]
-): DatapackSkippedFile {
-  return {
-    absolutePath,
-    relativePath: relativePosix(root, absolutePath),
-    reason
-  };
-}
-
-function skippedFromEntry(
-  entry: DatapackFileEntry,
-  reason: DatapackSkippedFile["reason"]
-): DatapackSkippedFile {
-  return {
-    absolutePath: entry.absolutePath,
-    relativePath: entry.relativePath,
-    reason
-  };
 }
