@@ -9,6 +9,7 @@ import {
   getKubeJsCompletions,
   getKubeJsDiagnostics,
   getKubeJsQuickInfo,
+  inferKubeJSScriptScope,
   type KubeJsLanguageServiceCache,
   type KubeJsLanguageServiceProject,
   type KubeJsScriptScope
@@ -29,6 +30,7 @@ import {
   summarizeProbeResourcesWithCache,
   type ProbeResourceSummaryCache
 } from "./probejs-resource-summary-cache.js";
+import { buildKubeJsLifecycleEvidence } from "./kubejs-lifecycle-evidence.js";
 
 export interface McpServerProbeJsTypesExecutorOptions {
   languageProjectCache?: KubeJsLanguageServiceCache<KubeJsLanguageServiceProject>;
@@ -92,8 +94,10 @@ async function executeMcpServerProbeJsTypesWithCache(
     };
   }
 
-  const scriptFile = await findBestKubeJsScriptFile(
+  const scriptFiles = await collectKubeJsScripts(workspaceRoot);
+  const scriptFile = findBestKubeJsScriptFile(
     workspaceRoot,
+    scriptFiles,
     input.requestPlan.requestText
   );
   if (!scriptFile) {
@@ -168,6 +172,14 @@ async function executeMcpServerProbeJsTypesWithCache(
     resourceQueries,
     cache: probeResourceSummaryCache
   });
+  const lifecycleEvidence = await buildKubeJsLifecycleEvidence({
+    workspaceRoot,
+    requestText: input.requestPlan.requestText,
+    selectedScriptFile: scriptFile,
+    selectedScope: scope,
+    declarationFiles: probeProject.declarationFiles,
+    scriptFiles
+  });
 
   return {
     matched: true,
@@ -184,6 +196,7 @@ async function executeMcpServerProbeJsTypesWithCache(
       probeResourceCacheHit: probeResourcesResult.cacheHit,
       queryMode: "virtual",
       probeResources: compactProbeResources(probeResourcesResult.summary),
+      ...lifecycleEvidence,
       completions: completions.entries,
       quickInfo: quickInfo.text,
       diagnostics
@@ -191,12 +204,13 @@ async function executeMcpServerProbeJsTypesWithCache(
   };
 }
 
-async function findBestKubeJsScriptFile(
+function findBestKubeJsScriptFile(
   workspaceRoot: string,
+  files: string[],
   requestText?: string
-): Promise<string | undefined> {
-  const scope = inferRequestedScope(requestText);
-  const files = await collectKubeJsScripts(workspaceRoot);
+): string | undefined {
+  const inferred = inferKubeJSScriptScope({ request: requestText });
+  const scope = inferred.scope === "unknown" ? "shared" : inferred.scope;
 
   return (
     files.find(
@@ -246,22 +260,6 @@ async function walkJavaScriptFiles(root: string): Promise<string[]> {
   }
 
   return files;
-}
-
-function inferRequestedScope(requestText?: string): KubeJsScriptScope {
-  const normalized = requestText?.toLowerCase() ?? "";
-
-  if (normalized.includes("startup_scripts") || normalized.includes("startup")) {
-    return "startup";
-  }
-  if (normalized.includes("client_scripts") || normalized.includes("client")) {
-    return "client";
-  }
-  if (normalized.includes("server_scripts") || normalized.includes("server")) {
-    return "server";
-  }
-
-  return "shared";
 }
 
 function extractRequestedSymbol(requestText?: string): string | undefined {

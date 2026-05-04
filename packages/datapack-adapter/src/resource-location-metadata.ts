@@ -36,7 +36,11 @@ export function buildResourceLocations(
     return [`${namespace}:item/${path}`];
   }
 
-  if (assetKind === "models" || assetKind === "textures") {
+  if (
+    assetKind === "blockstates" ||
+    assetKind === "models" ||
+    assetKind === "textures"
+  ) {
     return [`${namespace}:${path}`];
   }
 

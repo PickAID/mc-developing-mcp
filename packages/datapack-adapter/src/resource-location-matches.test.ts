@@ -39,6 +39,30 @@ describe("resource-location metadata matches", () => {
     );
     expect(result.skipped).toEqual([]);
   });
+
+  it("matches block ids across blockstate, model, and texture asset paths", async () => {
+    const root = await createTempRoot();
+
+    await writeFixture(root, "assets/demo/blockstates/block/gear.json", "{}\n");
+    await writeFixture(root, "assets/demo/models/block/gear.json", "{}\n");
+    await writeFixture(
+      root,
+      "assets/demo/textures/block/gear.png",
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00])
+    );
+
+    const result = await searchDatapackFiles(root, "demo:block/gear");
+
+    expect(result.matches.map((match) => match.file.relativePath)).toEqual([
+      "assets/demo/blockstates/block/gear.json",
+      "assets/demo/models/block/gear.json",
+      "assets/demo/textures/block/gear.png"
+    ]);
+    expect(result.matches.every((match) => match.preview.includes("metadata"))).toBe(
+      true
+    );
+    expect(result.skipped).toEqual([]);
+  });
 });
 
 async function createTempRoot(): Promise<string> {

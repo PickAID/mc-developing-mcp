@@ -9,7 +9,13 @@ export {
   getKubeJsQuickInfo
 } from "./language-service.js";
 export { discoverProbeJsLanguageProject } from "./probejs-project.js";
-export { classifyKubeJsScriptScope } from "./scope.js";
+export { classifyKubeJsScriptScope, inferKubeJSScriptScope } from "./scope.js";
+export type {
+  InferKubeJsScriptScopeInput,
+  InferKubeJsScriptScopeResult,
+  InferredKubeJsScriptScope,
+  KubeJsScriptScopeConfidence
+} from "./scope.js";
 export type {
   DisposableKubeJsLanguageProject,
   KubeJsLanguageServiceCache,
