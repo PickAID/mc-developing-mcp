@@ -61,6 +61,11 @@ export function buildClientVisualEvidencePacket(
       missingAssetKinds: missingAssetKinds(input.matches)
     },
     missingEvidence: missingEvidence(input.sourceScan),
+    implementationSkeleton: implementationSkeleton({
+      sourceScan: input.sourceScan,
+      matchedAssetPaths,
+      missingAssetKinds: missingAssetKinds(input.matches)
+    }),
     nextReads: nextAssetReads(input.matches)
   };
 }
@@ -78,6 +83,11 @@ function sourceEvidence(sourceScan: ClientVisualSourceScan | undefined) {
     resourceLocationReferences:
       sourceScan?.counts.resourceLocationReferences ?? 0,
     kubeJsClientHooks: sourceScan?.counts.kubeJsClientHooks ?? 0,
+    dynamicTextureHints: sourceScan?.counts.dynamicTextureHints ?? 0,
+    resourceReloadHooks: sourceScan?.counts.resourceReloadHooks ?? 0,
+    networkSyncHints: sourceScan?.counts.networkSyncHints ?? 0,
+    animationStateHints: sourceScan?.counts.animationStateHints ?? 0,
+    renderPerformanceRisks: sourceScan?.counts.renderPerformanceRisks ?? 0,
     scannedFiles: sourceScan?.scannedFiles ?? 0,
     truncated: sourceScan?.truncated ?? false,
     evidence: sourceScan?.evidence ?? []
@@ -105,6 +115,80 @@ function missingAssetKinds(matches: DatapackSearchMatch[]): string[] {
   const kinds = new Set(matches.map((match) => match.file.kind));
   const expectedKinds = ["blockstates", "models", "textures"] as const;
   return expectedKinds.filter((kind) => !kinds.has(kind));
+}
+
+function implementationSkeleton(input: {
+  sourceScan: ClientVisualSourceScan | undefined;
+  matchedAssetPaths: string[];
+  missingAssetKinds: string[];
+}) {
+  const counts = input.sourceScan?.counts;
+  const evidenceBackedSteps = [
+    ...(counts?.candidateRegistries ? ["registry_id"] : []),
+    ...(counts?.candidateClientInit ? ["client_init"] : []),
+    ...(counts?.candidateRendererBindings ? ["renderer_binding"] : []),
+    ...(counts?.candidateScreenRegistrations ? ["screen_binding"] : []),
+    ...(counts?.candidateModelLayerRegistrations ? ["model_layer_or_loader"] : []),
+    ...(input.matchedAssetPaths.length > 0 ? ["asset_chain"] : []),
+    ...(counts?.networkSyncHints ? ["network_sync"] : []),
+    ...(counts?.animationStateHints ? ["animation_state"] : []),
+    ...(counts?.resourceReloadHooks ? ["resource_reload"] : []),
+    ...(counts?.dynamicTextureHints ? ["dynamic_texture_lifecycle"] : [])
+  ];
+
+  return {
+    tokenPolicy: "compact_client_visual_implementation_skeleton" as const,
+    chain: [
+      "registry_id",
+      "server_state_or_menu",
+      "client_init",
+      "renderer_or_screen_binding",
+      "asset_chain",
+      "sync_or_reload_boundary"
+    ],
+    requiredSteps: [
+      "confirm registry id",
+      "choose static JSON model vs runtime renderer/model loader",
+      "verify blockstate -> model -> texture chain",
+      "bind renderer or screen from client-only initialization",
+      "keep authoritative state server-side",
+      "use interpolation for animated state",
+      "use reload/cache lifecycle for dynamic textures or generated assets"
+    ],
+    evidenceBackedSteps,
+    missingSteps: missingImplementationSteps(evidenceBackedSteps),
+    cautions: implementationCautions(input.sourceScan)
+  };
+}
+
+function missingImplementationSteps(evidenceBackedSteps: string[]): string[] {
+  const backed = new Set(evidenceBackedSteps);
+  return [
+    ["registry_id", "registry evidence missing"],
+    ["client_init", "client-only initialization evidence missing"],
+    ["renderer_binding", "renderer binding evidence missing"],
+    ["asset_chain", "asset chain evidence missing"],
+    ["network_sync", "network or menu sync evidence missing"],
+    ["resource_reload", "resource reload/cache evidence missing"]
+  ]
+    .filter(([key]) => !backed.has(key))
+    .map(([, label]) => label);
+}
+
+function implementationCautions(
+  sourceScan: ClientVisualSourceScan | undefined
+): string[] {
+  const cautions = [
+    "do not collapse moving parts into blockstate explosion",
+    "avoid per-frame file IO, JSON parsing, registration, or texture allocation",
+    "do not let screen or renderer mutate authoritative state directly"
+  ];
+
+  if (sourceScan?.counts.renderPerformanceRisks) {
+    cautions.push("render performance risk evidence found in source scan");
+  }
+
+  return cautions;
 }
 
 function nextAssetReads(matches: DatapackSearchMatch[]): string[] {

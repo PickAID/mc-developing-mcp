@@ -27,7 +27,12 @@ export type ClientVisualSourceEvidenceKind =
   | "candidateScreenRegistrations"
   | "candidateModelLayerRegistrations"
   | "resourceLocationReferences"
-  | "kubeJsClientHooks";
+  | "kubeJsClientHooks"
+  | "dynamicTextureHints"
+  | "resourceReloadHooks"
+  | "networkSyncHints"
+  | "animationStateHints"
+  | "renderPerformanceRisks";
 
 export interface ClientVisualSourceScan {
   tokenPolicy: "compact_client_visual_source_scan";
@@ -106,6 +111,45 @@ const PATTERNS: Record<
   kubeJsClientHooks: [
     { symbol: "ClientEvents", pattern: /\bClientEvents\./ },
     { symbol: "ItemEvents.client", pattern: /\bItemEvents\.client\b/ }
+  ],
+  dynamicTextureHints: [
+    { symbol: "DynamicTexture", pattern: /\bDynamicTexture\b/ },
+    { symbol: "NativeImage", pattern: /\bNativeImage\b/ },
+    { symbol: "TextureManager.register", pattern: /\bTextureManager\b[\s\S]{0,80}\.register\b/ },
+    { symbol: "upload", pattern: /\.upload\s*\(/ },
+    { symbol: "RenderTarget", pattern: /\bRenderTarget\b/ }
+  ],
+  resourceReloadHooks: [
+    { symbol: "ResourceManagerReloadListener", pattern: /\bResourceManagerReloadListener\b/ },
+    { symbol: "PreparableReloadListener", pattern: /\bPreparableReloadListener\b/ },
+    { symbol: "RegisterClientReloadListenersEvent", pattern: /\bRegisterClientReloadListenersEvent\b/ },
+    { symbol: "AddReloadListenerEvent", pattern: /\bAddReloadListenerEvent\b/ },
+    { symbol: "IdentifiableResourceReloadListener", pattern: /\bIdentifiableResourceReloadListener\b/ }
+  ],
+  networkSyncHints: [
+    { symbol: "sendToServer", pattern: /\bsendToServer\s*\(/ },
+    { symbol: "PacketDistributor", pattern: /\bPacketDistributor\b/ },
+    { symbol: "CustomPacketPayload", pattern: /\bCustomPacketPayload\b/ },
+    { symbol: "SimpleChannel", pattern: /\bSimpleChannel\b/ },
+    { symbol: "SynchedEntityData", pattern: /\bSynchedEntityData\b/ },
+    { symbol: "EntityDataAccessor", pattern: /\bEntityDataAccessor\b/ },
+    { symbol: "DataSlot", pattern: /\bDataSlot\b/ },
+    { symbol: "sync", pattern: /\bsync(?:hronise|hronize)?\s*\(/ }
+  ],
+  animationStateHints: [
+    { symbol: "Mth.lerp", pattern: /\bMth\.lerp\s*\(/ },
+    { symbol: "LerpedFloat", pattern: /\bLerpedFloat\b/ },
+    { symbol: "partialTick", pattern: /\bpartialTicks?\b/ },
+    { symbol: "AnimationState", pattern: /\bAnimationState\b/ },
+    { symbol: "previous/current state", pattern: /\bprev(?:ious)?[A-Z]\w*\b.{0,120}\b(?:current|angle|yaw|pitch|state)\w*\b/i },
+    { symbol: "Quaternion interpolation", pattern: /\.(?:slerp|nlerp)\s*\(/ }
+  ],
+  renderPerformanceRisks: [
+    { symbol: "new DynamicTexture", pattern: /\bnew\s+DynamicTexture\b/ },
+    { symbol: "render file IO", pattern: /\brender\w*\s*\([^)]*\)\s*\{[\s\S]{0,500}\b(?:readFile|Files\.|Path\.of)\b/ },
+    { symbol: "render JSON parse", pattern: /\brender\w*\s*\([^)]*\)\s*\{[\s\S]{0,500}\b(?:Gson|JsonParser|parse)\b/ },
+    { symbol: "render network send", pattern: /\brender\w*\s*\([^)]*\)\s*\{[\s\S]{0,500}\bsendToServer\s*\(/ },
+    { symbol: "render texture upload", pattern: /\brender\w*\s*\([^)]*\)\s*\{[\s\S]{0,500}\.upload\s*\(/ }
   ]
 };
 
@@ -162,7 +206,12 @@ function emptyScan(): ClientVisualSourceScan {
       candidateScreenRegistrations: 0,
       candidateModelLayerRegistrations: 0,
       resourceLocationReferences: 0,
-      kubeJsClientHooks: 0
+      kubeJsClientHooks: 0,
+      dynamicTextureHints: 0,
+      resourceReloadHooks: 0,
+      networkSyncHints: 0,
+      animationStateHints: 0,
+      renderPerformanceRisks: 0
     },
     evidence: []
   };
@@ -309,8 +358,6 @@ function firstPatternMatch(
   content: string,
   patterns: ReadonlyArray<{ symbol: string; pattern: RegExp }>
 ): { symbol: string; index: number } | undefined {
-  let earliest: { symbol: string; index: number } | undefined;
-
   for (const { symbol, pattern } of patterns) {
     const match = pattern.exec(content);
     pattern.lastIndex = 0;
@@ -318,12 +365,10 @@ function firstPatternMatch(
       continue;
     }
 
-    if (!earliest || match.index < earliest.index) {
-      earliest = { symbol, index: match.index };
-    }
+    return { symbol, index: match.index };
   }
 
-  return earliest;
+  return undefined;
 }
 
 function scanResourceLocations(input: {

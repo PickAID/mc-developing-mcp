@@ -9,6 +9,8 @@ This slice adds structured client visual evidence behind existing internal route
 - `client_visual_resources` keeps using `datapack_files`, but its evidence provenance is now `resource_pack_files`.
 - `source.bundle` now returns `clientVisualEvidence` for visual resource requests.
 - Client visual evidence now includes bounded source scan counts for registry declarations, client init, renderer bindings, screen/menu registrations, model layer hints, resource-location references, and KubeJS client hooks.
+- Source scan v1 includes dynamic texture, resource reload, network sync, animation state, and render performance risk hints.
+- `clientVisualEvidence` includes a compact deterministic `implementationSkeleton`, so tests can assert implementation-chain guidance instead of only evidence discovery.
 - Resource-location metadata matching was extracted from `source-bundle-datapack.ts` to keep the file below 500 lines.
 
 No public MCP tools were added.
@@ -36,6 +38,11 @@ The tested `source.bundle` payload now includes:
       "candidateScreenRegistrations": 1,
       "candidateModelLayerRegistrations": 1,
       "resourceLocationReferences": 1,
+      "dynamicTextureHints": 1,
+      "resourceReloadHooks": 1,
+      "networkSyncHints": 1,
+      "animationStateHints": 1,
+      "renderPerformanceRisks": 1,
       "scannedFiles": 2,
       "truncated": false,
       "evidence": [
@@ -69,10 +76,38 @@ The tested `source.bundle` payload now includes:
       ],
       "missingAssetKinds": []
     },
-    "missingEvidence": [
-      "source registry scan not implemented",
-      "renderer binding scan not implemented"
-    ],
+    "implementationSkeleton": {
+      "tokenPolicy": "compact_client_visual_implementation_skeleton",
+      "chain": [
+        "registry_id",
+        "server_state_or_menu",
+        "client_init",
+        "renderer_or_screen_binding",
+        "asset_chain",
+        "sync_or_reload_boundary"
+      ],
+      "requiredSteps": [
+        "confirm registry id",
+        "choose static JSON model vs runtime renderer/model loader",
+        "verify blockstate -> model -> texture chain",
+        "bind renderer or screen from client-only initialization",
+        "keep authoritative state server-side",
+        "use interpolation for animated state",
+        "use reload/cache lifecycle for dynamic textures or generated assets"
+      ],
+      "evidenceBackedSteps": [
+        "registry_id",
+        "client_init",
+        "renderer_binding",
+        "asset_chain"
+      ],
+      "cautions": [
+        "do not collapse moving parts into blockstate explosion",
+        "avoid per-frame file IO, JSON parsing, registration, or texture allocation",
+        "do not let screen or renderer mutate authoritative state directly"
+      ]
+    },
+    "missingEvidence": [],
     "nextReads": [
       "assets/demo/blockstates/block/gear.json",
       "assets/demo/models/block/gear.json"
@@ -94,10 +129,10 @@ wc -l apps/mcp-server/src/source-bundle-datapack.ts apps/mcp-server/src/evidence
 
 - Focused source-bundle tests: 2 files passed, 2 tests passed.
 - Client visual harness eval: 6 files passed, 24 tests passed.
-- `@mcpskill/mcp-server`: 64 files passed, 180 tests passed.
+- `@mcpskill/mcp-server`: 66 files passed, 186 tests passed.
 - Line check: `source-bundle-datapack.ts` is 489 lines; touched TS files are below 500 lines.
 
 ## Residual Risks
 
 - `sourceEvidence` is still regex-based bounded evidence. It is useful for grounding and triage, but LSP/source-index integration is still needed before treating it as semantic proof.
-- `clientVisualEvidence` now proves local source/asset links for common patterns, but dynamic texture lifecycle and renderer correctness still require follow-up code review or diagnostics.
+- `implementationSkeleton` is deterministic guidance derived from evidence. It should guide the agent's implementation plan but does not replace loader/version API verification or code review.

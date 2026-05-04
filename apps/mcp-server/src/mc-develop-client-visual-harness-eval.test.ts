@@ -59,6 +59,10 @@ describe("mc_develop client visual harness eval", () => {
         expect.objectContaining({
           id: "task_evidence_policy",
           text: expect.stringContaining("resource reload/cache boundaries")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("loader/version-specific renderer")
         })
       ])
     );
@@ -97,6 +101,25 @@ describe("mc_develop client visual harness eval", () => {
           },
           assetEvidence: {
             binaryContentReturned: false
+          },
+          implementationSkeleton: {
+            tokenPolicy: "compact_client_visual_implementation_skeleton",
+            requiredSteps: expect.arrayContaining([
+              "confirm registry id",
+              "choose static JSON model vs runtime renderer/model loader",
+              "verify blockstate -> model -> texture chain",
+              "bind renderer or screen from client-only initialization",
+              "use reload/cache lifecycle for dynamic textures or generated assets"
+            ]),
+            evidenceBackedSteps: expect.arrayContaining([
+              "registry_id",
+              "client_init",
+              "renderer_binding",
+              "asset_chain"
+            ]),
+            cautions: expect.arrayContaining([
+              "avoid per-frame file IO, JSON parsing, registration, or texture allocation"
+            ])
           }
         }
       }

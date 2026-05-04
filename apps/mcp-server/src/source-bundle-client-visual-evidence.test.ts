@@ -90,6 +90,22 @@ describe("source.bundle client visual evidence", () => {
             missingAssetKinds: []
           },
           missingEvidence: [],
+          implementationSkeleton: {
+            tokenPolicy: "compact_client_visual_implementation_skeleton",
+            evidenceBackedSteps: expect.arrayContaining([
+              "registry_id",
+              "client_init",
+              "renderer_binding",
+              "asset_chain"
+            ]),
+            requiredSteps: expect.arrayContaining([
+              "choose static JSON model vs runtime renderer/model loader",
+              "bind renderer or screen from client-only initialization"
+            ]),
+            cautions: expect.arrayContaining([
+              "do not collapse moving parts into blockstate explosion"
+            ])
+          },
           nextReads: [
             "assets/demo/blockstates/block/gear.json",
             "assets/demo/models/block/gear.json"

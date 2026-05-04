@@ -98,6 +98,69 @@ describe("scanClientVisualSourceEvidence", () => {
       ])
     });
   });
+
+  it("finds dynamic texture, reload, sync, animation, and performance hints", async () => {
+    const root = await createTempRoot();
+    const javaRoot = join(root, "src", "main", "java");
+
+    await writeText(
+      join(javaRoot, "demo", "client", "VisualSystems.java"),
+      [
+        "package demo.client;",
+        "class VisualSystems implements ResourceManagerReloadListener {",
+        "  private DynamicTexture preview;",
+        "  private NativeImage image;",
+        "  private float previousAngle;",
+        "  private float angle;",
+        "  void reload(ResourceManager manager) { image.upload(0, 0, 0, false); }",
+        "  void click() { CHANNEL.sendToServer(new SyncVisualPacket(angle)); }",
+        "  void render(float partialTick) {",
+        "    float value = Mth.lerp(partialTick, previousAngle, angle);",
+        "    new DynamicTexture(image);",
+        "    readFileEveryFrame();",
+        "  }",
+        "}"
+      ].join("\n")
+    );
+
+    await expect(
+      scanClientVisualSourceEvidence({
+        workspaceRoot: root,
+        maxEntriesPerKind: 1
+      })
+    ).resolves.toMatchObject({
+      counts: {
+        dynamicTextureHints: 1,
+        resourceReloadHooks: 1,
+        networkSyncHints: 1,
+        animationStateHints: 1,
+        renderPerformanceRisks: 1
+      },
+      evidence: expect.arrayContaining([
+        expect.objectContaining({
+          kind: "dynamicTextureHints",
+          language: "java",
+          symbol: "DynamicTexture"
+        }),
+        expect.objectContaining({
+          kind: "resourceReloadHooks",
+          symbol: "ResourceManagerReloadListener"
+        }),
+        expect.objectContaining({
+          kind: "networkSyncHints",
+          symbol: "sendToServer"
+        }),
+        expect.objectContaining({
+          kind: "animationStateHints",
+          symbol: "Mth.lerp"
+        }),
+        expect.objectContaining({
+          kind: "renderPerformanceRisks",
+          symbol: "new DynamicTexture"
+        })
+      ])
+    });
+  });
 });
 
 async function createTempRoot(): Promise<string> {

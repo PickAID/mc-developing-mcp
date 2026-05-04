@@ -38,7 +38,31 @@ Mechanical or animated visual:
 - Do not let screen or renderer code mutate server-authoritative state directly.
 - Do not put client-only classes on dedicated-server load paths.
 - Do not invent renderer code without checking registry id, client binding, asset path, and sync evidence.
+- Do not mix loader APIs. Renderer registration, screen binding, model-layer registration, dynamic texture APIs, and resource reload hooks must be proven for the detected loader/version.
 - For KubeJS, do not treat scripts as generic JavaScript. `client_scripts` is the client surface; `startup_scripts` and `server_scripts` have different lifecycle roles.
+
+## Loader And Version API Standard
+
+Before naming a renderer, screen, model-layer, dynamic texture, or reload API, the agent must identify the detected loader and Minecraft version from workspace evidence. API names must come from workspace source, Gradle/source archives, local jars, LSP/source-index evidence, ProbeJS declarations, or versioned docs. If the loader/version proof is missing, the agent should report missing API proof rather than mixing Forge, NeoForge, Fabric, or KubeJS patterns.
+
+Minimum API evidence fields should distinguish:
+
+- Loader family and Minecraft version.
+- API surface: renderer binding, screen binding, model layer, reload listener, dynamic texture, packet/sync.
+- Source proof: file/line, type declaration, dependency source, or versioned docs.
+- Mismatch risk: a pattern that appears to belong to another loader or version.
+
+## Dynamic Texture Lifecycle Checklist
+
+Dynamic texture or preview systems must name:
+
+- Allocation owner.
+- Upload/update cadence.
+- Reload invalidation or cleanup path.
+- Close/dispose path.
+- Bounded cache key.
+- Renderer or screen consumer.
+- Confirmation that texture allocation, file IO, JSON parsing, and network sends are not performed per render frame.
 
 ## Required Output Behavior
 
