@@ -83,4 +83,52 @@ describe("discoverDeclaredDependencyBinaryArchives", () => {
       { archivePath: devJar }
     ]);
   });
+
+  it("locates property-resolved libs jars with build metadata and runtime classifiers", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-dep-bin-workspace-"));
+    const libsRoot = join(workspaceRoot, "libs");
+    const binaryJar = join(libsRoot, "l2core-3.0.8+11.jar");
+    const slimJar = join(libsRoot, "l2library-3.0.4-slim.jar");
+
+    await writeFile(
+      join(workspaceRoot, "build.gradle"),
+      [
+        "dependencies {",
+        '  runtimeOnly "dev.xkmc:l2core:${l2core_ver}"',
+        '  implementation "dev.xkmc:l2library:${l2library_ver}-slim"',
+        "}",
+        ""
+      ].join("\n")
+    );
+    await writeFile(
+      join(workspaceRoot, "gradle.properties"),
+      ["l2core_ver = 3.0.8+11", "l2library_ver = 3.0.4", ""].join("\n")
+    );
+    await mkdir(libsRoot, { recursive: true });
+    await writeFile(binaryJar, Buffer.from("binary jar"));
+    await writeFile(slimJar, Buffer.from("slim jar"));
+    await writeFile(join(libsRoot, "l2core-3.0.8+11-sources.jar"), Buffer.from("sources"));
+
+    await expect(
+      discoverDeclaredDependencyBinaryArchives({
+        workspaceRoot,
+        includeDefaultGradleUserHome: false
+      })
+    ).resolves.toEqual([
+      {
+        archivePath: binaryJar,
+        source: "workspace",
+        confidence: "high",
+        reason:
+          "declared Gradle dependency dev.xkmc:l2core:3.0.8+11 in build.gradle; workspace libs directory"
+      },
+      {
+        archivePath: slimJar,
+        source: "workspace",
+        confidence: "high",
+        reason:
+          "declared Gradle dependency dev.xkmc:l2library:3.0.4-slim in build.gradle; workspace libs directory"
+      }
+    ]);
+  });
 });

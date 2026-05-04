@@ -57,6 +57,7 @@ const LOG_FILE_CANDIDATES = [
 ] as const;
 
 const MOD_ARCHIVE_ROOT_CANDIDATES = [
+  "libs",
   "mods",
   "run/mods",
   "run/client/mods"

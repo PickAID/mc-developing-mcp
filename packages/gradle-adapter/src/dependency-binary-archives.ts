@@ -17,6 +17,24 @@ export interface DiscoverDeclaredDependencyBinaryArchivesInput {
 }
 
 const DEFAULT_MAX_RESULTS = 32;
+type BinaryArchiveRoot =
+  | {
+      kind: "flat";
+      path: string;
+      source: "workspace";
+      reason: string;
+    }
+  | {
+      kind: "gradle-cache";
+      path: string;
+      source: "gradle-cache";
+    };
+
+interface BinaryArchiveMatch {
+  archivePath: string;
+  source: BinaryArchiveRoot["source"];
+  reason: string;
+}
 
 export async function discoverDeclaredDependencyBinaryArchives(
   input: DiscoverDeclaredDependencyBinaryArchivesInput
@@ -24,7 +42,7 @@ export async function discoverDeclaredDependencyBinaryArchives(
   const dependencies =
     input.dependencies ??
     (await readGradleDeclaredDependencies({ workspaceRoot: input.workspaceRoot }));
-  const roots = buildGradleModuleCacheRoots(input);
+  const roots = buildBinaryArchiveRoots(input);
   const maxResults = Math.max(0, Math.floor(input.maxResults ?? DEFAULT_MAX_RESULTS));
   const candidates: GradleSourceArchiveCandidate[] = [];
 
@@ -39,11 +57,11 @@ export async function discoverDeclaredDependencyBinaryArchives(
       }
 
       candidates.push(
-        ...(await findDependencyBinariesInRoot(root, dependency)).map((archivePath) => ({
-          archivePath,
-          source: "gradle-cache" as const,
+        ...(await findDependencyBinariesInRoot(root, dependency)).map((match) => ({
+          archivePath: match.archivePath,
+          source: match.source,
           confidence: "high" as const,
-          reason: `declared Gradle dependency ${dependency.notation} in ${dependency.sourceFile}`
+          reason: formatArchiveReason(dependency, match.reason)
         }))
       );
     }
@@ -53,6 +71,59 @@ export async function discoverDeclaredDependencyBinaryArchives(
 }
 
 async function findDependencyBinariesInRoot(
+  root: BinaryArchiveRoot,
+  dependency: GradleDeclaredDependency
+): Promise<BinaryArchiveMatch[]> {
+  if (root.kind === "flat") {
+    return findDependencyBinariesInFlatRoot(root, dependency);
+  }
+
+  return (await findDependencyBinariesInGradleCacheRoot(root.path, dependency)).map(
+    (archivePath) => ({
+      archivePath,
+      source: root.source,
+      reason: ""
+    })
+  );
+}
+
+function formatArchiveReason(
+  dependency: GradleDeclaredDependency,
+  suffix: string
+): string {
+  const base = `declared Gradle dependency ${dependency.notation} in ${dependency.sourceFile}`;
+
+  return suffix ? `${base}; ${suffix}` : base;
+}
+
+async function findDependencyBinariesInFlatRoot(
+  root: Extract<BinaryArchiveRoot, { kind: "flat" }>,
+  dependency: GradleDeclaredDependency
+): Promise<BinaryArchiveMatch[]> {
+  let files;
+
+  try {
+    files = await readdir(root.path, { withFileTypes: true });
+  } catch (error) {
+    if (isSkippablePathError(error)) {
+      return [];
+    }
+    throw error;
+  }
+
+  return files
+    .filter(
+      (file) => file.isFile() && isDeclaredDependencyBinaryFile(file.name, dependency)
+    )
+    .map((file) => ({
+      archivePath: join(root.path, file.name),
+      source: root.source,
+      reason: root.reason
+    }))
+    .sort((left, right) => left.archivePath.localeCompare(right.archivePath));
+}
+
+async function findDependencyBinariesInGradleCacheRoot(
   root: string,
   dependency: GradleDeclaredDependency
 ): Promise<string[]> {
@@ -134,22 +205,64 @@ function isRuntimeClassifier(classifier: string): boolean {
   return parts.length > 0 && parts.every((part) => !nonRuntimeParts.has(part));
 }
 
-function buildGradleModuleCacheRoots(
+function buildBinaryArchiveRoots(
   input: DiscoverDeclaredDependencyBinaryArchivesInput
-): string[] {
+): BinaryArchiveRoot[] {
   const workspaceRoot = normalize(resolve(input.workspaceRoot));
-  const roots = [
-    join(workspaceRoot, ".gradle", "caches", "modules-2", "files-2.1")
+  const roots: BinaryArchiveRoot[] = [
+    {
+      kind: "flat",
+      path: join(workspaceRoot, "libs"),
+      source: "workspace",
+      reason: "workspace libs directory"
+    },
+    {
+      kind: "flat",
+      path: join(workspaceRoot, "build", "libs"),
+      source: "workspace",
+      reason: "workspace build libs directory"
+    },
+    {
+      kind: "gradle-cache",
+      path: join(workspaceRoot, ".gradle", "caches", "modules-2", "files-2.1"),
+      source: "gradle-cache"
+    }
   ];
 
   if (input.gradleUserHome) {
-    roots.push(join(input.gradleUserHome, "caches", "modules-2", "files-2.1"));
+    roots.push({
+      kind: "gradle-cache",
+      path: join(input.gradleUserHome, "caches", "modules-2", "files-2.1"),
+      source: "gradle-cache"
+    });
   }
   if (input.includeDefaultGradleUserHome !== false) {
-    roots.push(join(homedir(), ".gradle", "caches", "modules-2", "files-2.1"));
+    roots.push({
+      kind: "gradle-cache",
+      path: join(homedir(), ".gradle", "caches", "modules-2", "files-2.1"),
+      source: "gradle-cache"
+    });
   }
 
-  return [...new Set(roots.map((root) => normalize(root)))];
+  return dedupeRoots(roots);
+}
+
+function dedupeRoots(roots: BinaryArchiveRoot[]): BinaryArchiveRoot[] {
+  const seen = new Set<string>();
+  const result: BinaryArchiveRoot[] = [];
+
+  for (const root of roots) {
+    const key = normalize(root.path);
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push({ ...root, path: key });
+  }
+
+  return result;
 }
 
 function dedupeCandidates(

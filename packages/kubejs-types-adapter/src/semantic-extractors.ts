@@ -6,8 +6,10 @@ import {
   isItemTagAttributesFile,
   isLangKeysFile,
   isLegacyClassesFile,
+  isProbeDeclarationFile,
   isRegistryDefinitionsFile
 } from "./semantic-files.js";
+import { extractDtsResourceLiteralEntries } from "./dts-resource-extractor.js";
 import { isSemanticKind } from "./semantic-kinds.js";
 import type {
   KubeJsSemanticResourceEntry,
@@ -46,6 +48,9 @@ export function extractKubeJsSemanticResourceEntries(
   }
   if (isLegacyClassesFile(file)) {
     return extractLegacyClassEntries(file, content);
+  }
+  if (isProbeDeclarationFile(file)) {
+    return extractDtsResourceLiteralEntries(file, content);
   }
   if (isSemanticKind(file.sourceKind)) {
     return extractLineEntries(file, content, file.sourceKind);

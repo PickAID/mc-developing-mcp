@@ -8,12 +8,13 @@ import type {
   DatapackDomain,
   DatapackFileEntry,
   DatapackRoot,
+  DatapackRootProvenance,
   DatapackSkippedFile
 } from "./types.js";
 
 export async function createEntry(input: {
   scanRoot: string;
-  contentRoot: Pick<DatapackRoot, "absolutePath" | "rootKind">;
+  contentRoot: Pick<DatapackRoot, "absolutePath" | "rootKind" | "provenance">;
   absolutePath: string;
 }): Promise<DatapackFileEntry | undefined> {
   const rootRelativePath = toRootRelativePath(
@@ -25,6 +26,7 @@ export async function createEntry(input: {
     return createPackMetadataEntry(input.absolutePath, {
       relativePath,
       rootKind: input.contentRoot.rootKind,
+      provenance: input.contentRoot.provenance,
       rootRelativePath
     });
   }
@@ -50,6 +52,7 @@ export async function createEntry(input: {
     return {
       absolutePath: input.absolutePath,
       rootKind: input.contentRoot.rootKind,
+      provenance: input.contentRoot.provenance,
       rootRelativePath,
       relativePath,
       namespace,
@@ -83,6 +86,14 @@ export function rootKindForAbsoluteRoot(
     ?.rootKind ?? "workspace_data_root";
 }
 
+export function provenanceForAbsoluteRoot(
+  absoluteRoot: string,
+  roots: DatapackRoot[]
+): DatapackRootProvenance {
+  return roots.find((contentRoot) => contentRoot.absolutePath === absoluteRoot)
+    ?.provenance ?? "scan_root";
+}
+
 export function withinEntryLimit(
   entries: DatapackFileEntry[],
   budget: DatapackBudget
@@ -95,6 +106,7 @@ async function createPackMetadataEntry(
   input: {
     relativePath: string;
     rootKind: DatapackRoot["rootKind"];
+    provenance: DatapackRootProvenance;
     rootRelativePath: string;
   }
 ): Promise<DatapackFileEntry | undefined> {
@@ -107,6 +119,7 @@ async function createPackMetadataEntry(
     return {
       absolutePath,
       rootKind: input.rootKind,
+      provenance: input.provenance,
       rootRelativePath: input.rootRelativePath,
       relativePath: input.relativePath,
       namespace: "",

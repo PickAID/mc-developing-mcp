@@ -104,6 +104,27 @@ describe("readGradleDeclaredDependencies", () => {
     });
   });
 
+  it("resolves simple gradle.properties placeholders in dependency notations", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
+
+    await writeGradleFile(
+      workspaceRoot,
+      "build.gradle",
+      'dependencies { runtimeOnly "dev.xkmc:l2core:${l2core_ver}" }\n'
+    );
+    await writeGradleFile(workspaceRoot, "gradle.properties", "l2core_ver = 3.0.8+11\n");
+
+    await expect(readGradleDeclaredDependencies({ workspaceRoot })).resolves.toEqual([
+      {
+        group: "dev.xkmc",
+        artifact: "l2core",
+        version: "3.0.8+11",
+        notation: "dev.xkmc:l2core:3.0.8+11",
+        sourceFile: "build.gradle"
+      }
+    ]);
+  });
+
   it("reads dependency declarations from included Gradle subprojects", async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
 

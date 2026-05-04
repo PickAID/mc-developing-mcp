@@ -43,19 +43,27 @@ function appendRouteSteps(
 
   switch (detection.defaultRoutingScenario) {
     case "project_symbol":
+      const shouldInspectLocalJars =
+        hasModArchives &&
+        (detection.scenario === "java-mod-workspace" ||
+          detection.scenario === "modpack-workspace");
+
       return {
         ...detection,
         reasons: [
           ...detection.reasons,
           "default project-symbol routing should inspect workspace source before docs",
-          ...(detection.scenario === "modpack-workspace" && hasModArchives
-            ? ["modpack routing should inspect discovered mod jars before docs"]
+          ...(shouldInspectLocalJars
+            ? [
+                detection.scenario === "modpack-workspace"
+                  ? "modpack routing should inspect discovered mod jars before docs"
+                  : "Java mod routing should inspect discovered local mod jars before docs"
+              ]
             : [])
         ],
-        steps:
-          detection.scenario === "modpack-workspace" && hasModArchives
-            ? ["workspace_source", "mod_archive_content", "docs_lookup"]
-            : ["workspace_source", "docs_lookup"]
+        steps: shouldInspectLocalJars
+          ? ["workspace_source", "mod_archive_content", "docs_lookup"]
+          : ["workspace_source", "docs_lookup"]
       };
     case "kubejs_script":
       return {

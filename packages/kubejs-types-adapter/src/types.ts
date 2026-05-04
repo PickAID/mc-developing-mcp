@@ -89,6 +89,7 @@ export type KubeJsSemanticResourceKind =
 export type KubeJsSemanticSourceFormat =
   | "probe-class-definitions-json"
   | "probe-classes-text"
+  | "probe-dts-resource-literal"
   | "probe-registry-definitions-json"
   | "text-line-list"
   | "vscode-fluid-attributes-json"

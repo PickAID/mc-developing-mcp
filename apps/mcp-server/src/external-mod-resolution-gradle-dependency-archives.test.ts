@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildMcpServerBootstrap } from "./bootstrap.js";
 import { buildMcpServerEvidencePlan } from "./evidence-plan.js";
+import { resolveGradleDependencyArchiveEvidence } from "./external-mod-gradle-dependency-evidence.js";
 import { executeMcpServerExternalModResolution } from "./external-mod-resolution-executor.js";
 import { buildMcpServerRequestPlan } from "./request-plan.js";
 
@@ -119,6 +120,69 @@ describe("external mod resolution Gradle dependency archives", () => {
           warnings: []
         }
       }
+    });
+  });
+
+  it("uses declared workspace libs binary jars with Gradle property versions", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-gradle-dep-work-");
+    const archivePath = join(workspaceRoot, "libs", "l2core-3.0.8+11.jar");
+
+    await writeText(
+      join(workspaceRoot, "build.gradle"),
+      'dependencies { runtimeOnly "dev.xkmc:l2core:${l2core_ver}" }\n'
+    );
+    await writeText(join(workspaceRoot, "gradle.properties"), "l2core_ver=3.0.8+11\n");
+    await writeZip(archivePath, [
+      {
+        name: "META-INF/neoforge.mods.toml",
+        content: [
+          'modLoader="javafml"',
+          'loaderVersion="[4,)"',
+          '[[mods]]',
+          'modId="l2core"',
+          'version="3.0.8+11"',
+          'displayName="L2Core"',
+          ""
+        ].join("\n")
+      }
+    ]);
+
+    const result = await resolveGradleDependencyArchiveEvidence({
+      workspaceRoot,
+      request: {
+        platform: "modrinth",
+        query: "l2core",
+        loader: "neoforge",
+        minecraftVersion: "1.21.1"
+      },
+      discovery: {
+        includeDefaultGradleUserHome: false
+      }
+    });
+
+    expect(result).toMatchObject({
+      source: "gradle_dependency_archive",
+      query: "l2core",
+      scannedDependencies: 1,
+      scannedArchives: 1,
+      candidates: [
+        {
+          source: "gradle_dependency_archive",
+          coordinate: "dev.xkmc:l2core:3.0.8+11",
+          group: "dev.xkmc",
+          artifact: "l2core",
+          version: "3.0.8+11",
+          modId: "l2core",
+          title: "L2Core",
+          loader: "neoforge",
+          metadataPath: "META-INF/neoforge.mods.toml",
+          archivePath,
+          fileName: "l2core-3.0.8+11.jar",
+          archiveSource: "workspace",
+          archiveReason:
+            "declared Gradle dependency dev.xkmc:l2core:3.0.8+11 in build.gradle; workspace libs directory"
+        }
+      ]
     });
   });
 });

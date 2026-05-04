@@ -2,8 +2,15 @@ import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { classifyKind } from "./kinds.js";
+import { relativePosix } from "./path-utils.js";
 import { classifyDatapackRootKind } from "./root-kind.js";
-import type { AssetKind, DataKind, DatapackDiscovery, DatapackRoot } from "./types.js";
+import type {
+  AssetKind,
+  DataKind,
+  DatapackDiscovery,
+  DatapackRoot,
+  DatapackRootProvenance
+} from "./types.js";
 
 export async function discoverDatapackContent(root: string): Promise<DatapackDiscovery> {
   const roots = await discoverRoots(root);
@@ -28,11 +35,15 @@ export async function discoverRoots(root: string): Promise<DatapackRoot[]> {
   const absoluteRoot = resolve(root);
   const discovered: DatapackRoot[] = [];
 
-  await visitForRoots(absoluteRoot, discovered);
+  await visitForRoots(absoluteRoot, absoluteRoot, discovered);
   return discovered.sort((a, b) => a.absolutePath.localeCompare(b.absolutePath));
 }
 
-async function visitForRoots(directory: string, discovered: DatapackRoot[]): Promise<void> {
+async function visitForRoots(
+  scanRoot: string,
+  directory: string,
+  discovered: DatapackRoot[]
+): Promise<void> {
   const entries = await safeReadDirectory(directory);
   if (entries === undefined) {
     return;
@@ -46,7 +57,9 @@ async function visitForRoots(directory: string, discovered: DatapackRoot[]): Pro
   };
   const root: DatapackRoot = {
     absolutePath: directory,
+    rootRelativePath: rootRelativePath(scanRoot, directory),
     rootKind: classifyDatapackRootKind(rootState),
+    provenance: classifyRootProvenance(scanRoot, directory),
     ...rootState
   };
 
@@ -57,7 +70,7 @@ async function visitForRoots(directory: string, discovered: DatapackRoot[]): Pro
 
   for (const entry of entries) {
     if (entry.isDirectory() && !shouldSkipDirectory(entry.name)) {
-      await visitForRoots(join(directory, entry.name), discovered);
+      await visitForRoots(scanRoot, join(directory, entry.name), discovered);
     }
   }
 }
@@ -120,4 +133,30 @@ async function safeReadDirectory(directory: string) {
 
 function shouldSkipDirectory(name: string): boolean {
   return name === "node_modules" || name === ".git" || name === "dist" || name === "build";
+}
+
+function rootRelativePath(scanRoot: string, contentRoot: string): string {
+  return relativePosix(scanRoot, contentRoot) || ".";
+}
+
+function classifyRootProvenance(
+  scanRoot: string,
+  contentRoot: string
+): DatapackRootProvenance {
+  const relativePath = rootRelativePath(scanRoot, contentRoot);
+
+  if (relativePath === ".") {
+    return "scan_root";
+  }
+  if (relativePath.endsWith("src/main/resources")) {
+    return "main_resources";
+  }
+  if (relativePath.endsWith("src/generated/resources")) {
+    return "generated_resources";
+  }
+  if (relativePath.includes("/resourcepacks/")) {
+    return "nested_resource_pack";
+  }
+
+  return "loose_workspace_root";
 }

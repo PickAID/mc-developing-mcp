@@ -48,7 +48,9 @@ describe("datapack-adapter", () => {
     expect(discovered.roots).toEqual([
       {
         absolutePath: root,
+        rootRelativePath: ".",
         rootKind: "mixed_pack_root",
+        provenance: "scan_root",
         hasPackMcmeta: true,
         hasData: true,
         hasAssets: true
@@ -71,7 +73,9 @@ describe("datapack-adapter", () => {
     expect(discovered.roots).toEqual([
       {
         absolutePath: resourcesRoot,
+        rootRelativePath: "src/main/resources",
         rootKind: "mixed_pack_root",
+        provenance: "main_resources",
         hasPackMcmeta: false,
         hasData: true,
         hasAssets: true
@@ -201,6 +205,9 @@ describe("datapack-adapter", () => {
       },
       byRootKind: {
         mixed_pack_root: 1
+      },
+      byProvenance: {
+        scan_root: 1
       },
       byKind: {
         items: 1,

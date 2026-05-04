@@ -14,6 +14,6 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. packages/kubejs-types-adapter/src/discovery.test.ts packages/kubejs-types-adapter/src/summary.test.ts packages/kubejs-types-adapter/src/summary-filter.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. packages/kubejs-types-adapter/src/discovery.test.ts packages/kubejs-types-adapter/src/summary.test.ts packages/kubejs-types-adapter/src/summary-filter.test.ts packages/kubejs-types-adapter/src/dts-resource-extractor.test.ts"
   }
 }

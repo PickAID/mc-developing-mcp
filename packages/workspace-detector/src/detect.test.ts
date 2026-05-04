@@ -216,6 +216,26 @@ describe("detectWorkspace", () => {
     expect(detected.reasons).toContain("detected runtime mod jars");
   });
 
+  it("detects local libs jars as mod archive evidence in Gradle mod workspaces", async () => {
+    const root = createTempRoot("gradle-libs-heavy");
+
+    mkdirSync(join(root, "libs"), { recursive: true });
+    mkdirSync(join(root, "src", "main", "java", "example"), { recursive: true });
+    writeFileSync(join(root, "settings.gradle"), 'rootProject.name = "demo"');
+    writeFileSync(join(root, "build.gradle"), 'plugins { id "java" }');
+    writeFileSync(join(root, "libs", "l2library-3.0.4.jar"), "");
+    writeFileSync(join(root, "libs", "l2library-3.0.4-sources.jar"), "");
+
+    const detected = await detectWorkspace(root);
+
+    expect(detected.kind).toBe("java-mod");
+    expect(detected.hasModArchives).toBe(true);
+    expect(detected.modArchivePaths).toEqual([
+      join(root, "libs", "l2library-3.0.4.jar")
+    ]);
+    expect(detected.reasons).toContain("detected runtime mod jars");
+  });
+
   it("ignores non-directory log paths during best-effort log discovery", async () => {
     const root = createTempRoot("log-scan");
 

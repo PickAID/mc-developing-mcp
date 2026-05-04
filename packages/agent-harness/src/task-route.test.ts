@@ -338,6 +338,46 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes libs-heavy Java mod workspaces through local jar evidence before docs", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: [
+              "workspace descriptor reports a Java mod workspace",
+              "default project-symbol routing should inspect workspace source before docs",
+              "Java mod routing should inspect discovered local mod jars before docs"
+            ],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            hasModArchives: true,
+            buildFileCount: 2,
+            javaSourceRootCount: 1
+          }
+        }),
+        "Inspect the L2 library integration points in this workspace."
+      )
+    ).toEqual({
+      intent: {
+        id: "workspace_default",
+        confidence: "low",
+        reasons: ["request text does not match a specialized harness intent"]
+      },
+      reasons: [
+        "fall back to the default workspace route when no specialized intent is detected"
+      ],
+      steps: ["workspace_source", "mod_archive_content", "docs_lookup"],
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+  });
+
   it("routes Java diagnostics requests through LSP diagnostics before source and docs", () => {
     expect(
       buildHarnessTaskRoute(

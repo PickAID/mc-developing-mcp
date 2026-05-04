@@ -151,6 +151,52 @@ describe("buildHarnessTaskBrief", () => {
       ])
     );
   });
+
+  it("builds a libs-heavy Java mod task brief with local jar evidence before docs", () => {
+    const brief = buildHarnessTaskBriefFromBootstrap({
+      workspaceContext: createWorkspaceContext({
+        kind: "java-mod",
+        hasGradle: true,
+        hasJavaSource: true,
+        hasModArchives: true,
+        buildFiles: ["/tmp/workspace/settings.gradle", "/tmp/workspace/build.gradle"],
+        javaSourceRoots: ["/tmp/workspace/src/main/java"],
+        modArchivePaths: ["/tmp/workspace/libs/l2library-3.0.4.jar"]
+      }),
+      requestText: "Inspect the L2 library integration points in this workspace."
+    });
+
+    expect(brief).toMatchObject({
+      intent: {
+        id: "workspace_default",
+        confidence: "low",
+        reasons: ["request text does not match a specialized harness intent"]
+      },
+      taskRoute: {
+        reasons: [
+          "fall back to the default workspace route when no specialized intent is detected"
+        ],
+        steps: ["workspace_source", "mod_archive_content", "docs_lookup"],
+        preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+      },
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+
+    expect(brief.promptFragments).toEqual(
+      expect.arrayContaining([
+        {
+          id: "task_route_policy",
+          text:
+            "Task route: workspace_default via workspace_source -> mod_archive_content -> docs_lookup."
+        },
+        {
+          id: "task_evidence_policy",
+          text:
+            "Evidence policy: follow workspace_source -> mod_archive_content -> docs_lookup in order; prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup."
+        }
+      ])
+    );
+  });
 });
 
 function createWorkspaceContext(

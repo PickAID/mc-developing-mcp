@@ -13,6 +13,7 @@ export async function readGradleDeclaredDependencies(input: {
   workspaceRoot: string;
 }): Promise<GradleDeclaredDependency[]> {
   const dependencies: GradleDeclaredDependency[] = [];
+  const properties = await readGradleProperties(input.workspaceRoot);
   const versionCatalog = await readGradleVersionCatalog(input.workspaceRoot);
   const sourceFiles = await discoverGradleDependencyBuildFiles(input.workspaceRoot);
 
@@ -30,10 +31,12 @@ export async function readGradleDeclaredDependencies(input: {
     }
 
     dependencies.push(
-      ...extractGradleDeclaredDependencies(content, versionCatalog).map((dependency) => ({
-        ...dependency,
-        sourceFile
-      }))
+      ...extractGradleDeclaredDependencies(content, versionCatalog, properties).map(
+        (dependency) => ({
+          ...dependency,
+          sourceFile
+        })
+      )
     );
   }
 
@@ -42,7 +45,8 @@ export async function readGradleDeclaredDependencies(input: {
 
 export function extractGradleDeclaredDependencies(
   content: string,
-  versionCatalog: GradleVersionCatalog = new Map()
+  versionCatalog: GradleVersionCatalog = new Map(),
+  properties: GradleProperties = new Map()
 ): Array<Omit<GradleDeclaredDependency, "sourceFile">> {
   const dependencies: Array<Omit<GradleDeclaredDependency, "sourceFile">> = [];
   const patterns = [
@@ -51,17 +55,20 @@ export function extractGradleDeclaredDependencies(
   ];
 
   for (const match of content.matchAll(patterns[0])) {
-    const dependency = parseDependencyNotation(match[1]);
+    const dependency = parseDependencyNotation(resolveGradleProperties(match[1], properties));
     if (dependency) {
       dependencies.push(dependency);
     }
   }
   for (const match of content.matchAll(patterns[1])) {
+    const version = match[3]
+      ? resolveGradleProperties(match[3], properties)
+      : undefined;
     dependencies.push({
       group: match[1],
       artifact: match[2],
-      version: match[3],
-      notation: [match[1], match[2], match[3]].filter(Boolean).join(":")
+      version,
+      notation: [match[1], match[2], version].filter(Boolean).join(":")
     });
   }
   for (const match of content.matchAll(
@@ -80,6 +87,48 @@ type GradleVersionCatalog = Map<
   string,
   Omit<GradleDeclaredDependency, "sourceFile">
 >;
+type GradleProperties = Map<string, string>;
+
+async function readGradleProperties(workspaceRoot: string): Promise<GradleProperties> {
+  try {
+    return parseGradleProperties(
+      await readFile(join(workspaceRoot, "gradle.properties"), "utf-8")
+    );
+  } catch (error) {
+    if (isFileNotFound(error)) {
+      return new Map();
+    }
+    throw error;
+  }
+}
+
+function parseGradleProperties(content: string): GradleProperties {
+  const properties: GradleProperties = new Map();
+
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.replace(/^\s*[#!].*$/, "").trim();
+    const separatorIndex = line.search(/[:=]/);
+
+    if (!line || separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim();
+
+    if (key && value) {
+      properties.set(key, value);
+    }
+  }
+
+  return properties;
+}
+
+function resolveGradleProperties(value: string, properties: GradleProperties): string {
+  return value.replace(/\$\{([A-Za-z0-9_.-]+)\}/g, (match, key: string) => {
+    return properties.get(key) ?? match;
+  });
+}
 
 async function discoverGradleDependencyBuildFiles(
   workspaceRoot: string

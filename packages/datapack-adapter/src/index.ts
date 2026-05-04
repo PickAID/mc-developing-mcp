@@ -22,6 +22,7 @@ export type {
   DatapackKind,
   DatapackReadResult,
   DatapackRootKind,
+  DatapackRootProvenance,
   DatapackResourceReference,
   DatapackResourceReferenceRelation,
   DatapackResourceReferenceStatus,

@@ -9,6 +9,7 @@ import {
 import {
   createEntry,
   createSkipped,
+  provenanceForAbsoluteRoot,
   rootKindForAbsoluteRoot,
   withinEntryLimit
 } from "./file-entry.js";
@@ -77,6 +78,7 @@ export async function listDatapackFiles(
         scanRoot: absoluteRoot,
         contentRoot: contentRoot.absolutePath,
         rootKind: contentRoot.rootKind,
+        provenance: contentRoot.provenance,
         entries,
         skipped,
         budget,
@@ -98,12 +100,15 @@ export async function summarizeDatapackFiles(
   const roots = await discoverRoots(root);
   const listed = await listDatapackFiles(root, budget);
   const byRootKind: DatapackFileSummary["byRootKind"] = {};
+  const byProvenance: DatapackFileSummary["byProvenance"] = {};
   const byDomain: DatapackFileSummary["byDomain"] = {};
   const byKind: DatapackFileSummary["byKind"] = {};
   const byNamespace: DatapackFileSummary["byNamespace"] = {};
 
   for (const contentRoot of roots) {
     byRootKind[contentRoot.rootKind] = (byRootKind[contentRoot.rootKind] ?? 0) + 1;
+    byProvenance[contentRoot.provenance] =
+      (byProvenance[contentRoot.provenance] ?? 0) + 1;
   }
 
   for (const entry of listed.entries) {
@@ -116,6 +121,7 @@ export async function summarizeDatapackFiles(
     rootCount: roots.length,
     entryCount: listed.entries.length,
     byRootKind,
+    byProvenance,
     byDomain,
     byKind,
     byNamespace,
@@ -128,6 +134,7 @@ async function appendPackMetadataEntry(input: {
   scanRoot: string;
   contentRoot: string;
   rootKind: DatapackRoot["rootKind"];
+  provenance: DatapackRoot["provenance"];
   entries: DatapackFileEntry[];
   skipped: DatapackSkippedFile[];
   budget: DatapackBudget;
@@ -143,7 +150,8 @@ async function appendPackMetadataEntry(input: {
     scanRoot: input.scanRoot,
     contentRoot: {
       absolutePath: input.contentRoot,
-      rootKind: input.rootKind
+      rootKind: input.rootKind,
+      provenance: input.provenance
     },
     absolutePath
   });
@@ -207,7 +215,8 @@ export async function readDatapackFile(
     ...roots,
     {
       absolutePath: absoluteRoot,
-      rootKind: rootKindForAbsoluteRoot(absoluteRoot, roots)
+      rootKind: rootKindForAbsoluteRoot(absoluteRoot, roots),
+      provenance: provenanceForAbsoluteRoot(absoluteRoot, roots)
     }
   ];
   let entry: DatapackFileEntry | undefined;

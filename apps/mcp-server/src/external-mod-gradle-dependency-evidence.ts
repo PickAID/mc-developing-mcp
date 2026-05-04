@@ -158,7 +158,7 @@ async function collectCandidates(input: {
     const dependency = input.dependencies.find(
       (entry) =>
         entry.version &&
-        archiveMatchesDependency(archive.archivePath, {
+        archiveMatchesDependency(archive, {
           ...entry,
           version: entry.version
         })
@@ -277,26 +277,28 @@ function toModArchiveCandidate(
   archive: GradleSourceArchiveCandidate,
   dependency: GradleDeclaredDependency & { version: string }
 ): ModArchiveCandidate {
+  const source = archive.source === "workspace" ? "workspace-libs" : "gradle-cache";
+
   return {
     archivePath: archive.archivePath,
     relativePath:
-      `gradle-cache/${dependency.group}/${dependency.artifact}/` +
+      `${source}/${dependency.group}/${dependency.artifact}/` +
       `${dependency.version}/${basename(archive.archivePath)}`,
-    source: "gradle-cache"
+    source
   };
 }
 
 function archiveMatchesDependency(
-  archivePath: string,
+  archive: GradleSourceArchiveCandidate,
   dependency: GradleDeclaredDependency & { version: string }
 ): boolean {
-  const normalizedPath = normalize(archivePath).replaceAll("\\", "/");
+  const normalizedPath = normalize(archive.archivePath).replaceAll("\\", "/");
   const expectedPath =
     `/${dependency.group}/${dependency.artifact}/${dependency.version}/`;
 
   return (
-    normalizedPath.includes(expectedPath) &&
-    isDeclaredDependencyBinaryFile(basename(archivePath), dependency)
+    (archive.source === "workspace" || normalizedPath.includes(expectedPath)) &&
+    isDeclaredDependencyBinaryFile(basename(archive.archivePath), dependency)
   );
 }
 

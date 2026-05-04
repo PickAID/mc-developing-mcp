@@ -57,8 +57,16 @@ export function isLegacyClassesFile(file: KubeJsTypeResourceFile): boolean {
   return file.relativePath.endsWith(".probe/classes.txt");
 }
 
+export function isProbeDeclarationFile(file: KubeJsTypeResourceFile): boolean {
+  return file.sourceKind === "dts";
+}
+
 function isKnownSemanticFile(file: KubeJsTypeResourceFile): boolean {
-  return isKnownJsonSemanticFile(file) || isLegacyClassesFile(file);
+  return (
+    isKnownJsonSemanticFile(file) ||
+    isLegacyClassesFile(file) ||
+    isProbeDeclarationFile(file)
+  );
 }
 
 function isKnownJsonSemanticFile(file: KubeJsTypeResourceFile): boolean {
