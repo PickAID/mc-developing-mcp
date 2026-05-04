@@ -27,7 +27,13 @@ export function buildServiceProfileGuidance(
 
   if (profile.capabilities.datapack.status === "ready") {
     guidance.push(
-      "Use datapack data/assets namespaces and concrete JSON content before docs fallback."
+      "Use datapack data namespaces and concrete JSON content before docs fallback."
+    );
+  }
+
+  if (profile.capabilities.resourcePack.status === "ready") {
+    guidance.push(
+      "Use resource-pack assets, model references, and pack metadata before docs fallback."
     );
   }
 
@@ -53,7 +59,8 @@ export function formatServiceProfilePrompt(profile: MinecraftServiceProfile): st
     `Gradle: ${profile.capabilities.gradle.status}, source archives=${profile.capabilities.gradle.sourceArchiveCount}`,
     `Java LSP: ${profile.capabilities.javaLsp.status}, implemented=${formatImplementedLspOperations(profile)}`,
     `ProbeJS types: ${profile.capabilities.kubejsTypes.status}, files=${profile.capabilities.kubejsTypes.fileCount}`,
-    `Datapack: ${profile.capabilities.datapack.status}, namespaces=${profile.capabilities.datapack.namespaces.join(",") || "none"}`,
+    `Datapack: ${profile.capabilities.datapack.status}, data=${profile.capabilities.datapack.fileCount}, namespaces=${profile.capabilities.datapack.namespaces.join(",") || "none"}`,
+    `Resource pack: ${profile.capabilities.resourcePack.status}, assets=${profile.capabilities.resourcePack.fileCount}, kinds=${profile.capabilities.resourcePack.assetKinds.join(",") || "none"}`,
     `Mod archives: ${profile.capabilities.modArchives.status}, archives=${profile.capabilities.modArchives.archiveCount}`,
     `Source indexes: ${profile.capabilities.sourceIndex.status}, databases=${profile.capabilities.sourceIndex.databaseCount}`,
     ...profile.guidance.map((entry) => `Guidance: ${entry}`)

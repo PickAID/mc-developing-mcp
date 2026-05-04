@@ -126,6 +126,13 @@ describe("buildMinecraftServiceProfile", () => {
       dataKinds: ["recipes"],
       assetKinds: ["lang"]
     });
+    expect(profile.capabilities.resourcePack).toMatchObject({
+      status: "ready",
+      rootCount: 1,
+      fileCount: 1,
+      namespaces: ["demo"],
+      assetKinds: ["lang"]
+    });
     expect(profile.capabilities.packageManager).toMatchObject({
       status: "ready",
       runtimeRoot
@@ -159,6 +166,54 @@ describe("buildMinecraftServiceProfile", () => {
     );
     expect(formatServiceProfilePrompt(profile)).toContain(
       "Mod archives: ready, archives=1"
+    );
+    expect(formatServiceProfilePrompt(profile)).toContain(
+      "Resource pack: ready, assets=1, kinds=lang"
+    );
+  });
+
+  it("keeps assets-only resource packs separate from datapack capability", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-service-assets-"));
+
+    await mkdir(join(workspaceRoot, "assets", "demo", "models", "item"), {
+      recursive: true
+    });
+    await writeFile(
+      join(workspaceRoot, "assets", "demo", "models", "item", "gear.json"),
+      "{\"parent\":\"minecraft:item/generated\"}\n"
+    );
+
+    const profile = await buildMinecraftServiceProfile({
+      workspaceRoot,
+      includeDefaultGradleUserHome: false,
+      executableResolver: async () => undefined,
+      env: {}
+    });
+
+    expect(profile.capabilities.datapack).toMatchObject({
+      status: "not_found",
+      rootCount: 0,
+      fileCount: 0,
+      dataKinds: []
+    });
+    expect(profile.capabilities.resourcePack).toMatchObject({
+      status: "ready",
+      rootCount: 1,
+      fileCount: 1,
+      namespaces: ["demo"],
+      assetKinds: ["models"]
+    });
+    expect(profile.guidance).not.toContain(
+      "Use datapack data namespaces and concrete JSON content before docs fallback."
+    );
+    expect(profile.guidance).toContain(
+      "Use resource-pack assets, model references, and pack metadata before docs fallback."
+    );
+    expect(formatServiceProfilePrompt(profile)).toContain(
+      "Datapack: not_found, data=0, namespaces=none"
+    );
+    expect(formatServiceProfilePrompt(profile)).toContain(
+      "Resource pack: ready, assets=1, kinds=models"
     );
   });
 });

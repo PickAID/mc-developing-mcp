@@ -47,6 +47,14 @@ export interface DatapackServiceCapability {
   assetKinds: string[];
 }
 
+export interface ResourcePackServiceCapability {
+  status: ServiceCapabilityStatus;
+  rootCount: number;
+  fileCount: number;
+  namespaces: string[];
+  assetKinds: string[];
+}
+
 export interface PackageManagerServiceCapability {
   status: ServiceCapabilityStatus;
   runtimeRoot?: string;
@@ -70,6 +78,7 @@ export interface MinecraftServiceCapabilities {
   javaLsp: JdtlsServiceProfile;
   kubejsTypes: KubeJsTypesServiceCapability;
   datapack: DatapackServiceCapability;
+  resourcePack: ResourcePackServiceCapability;
   modArchives: ModArchivesServiceCapability;
   packageManager: PackageManagerServiceCapability;
   sourceIndex: SourceIndexServiceCapability;

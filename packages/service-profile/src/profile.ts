@@ -11,7 +11,9 @@ import { buildServiceProfileGuidance } from "./guidance.js";
 import { findSourceIndexDatabases } from "./source-indexes.js";
 import type {
   BuildMinecraftServiceProfileOptions,
+  DatapackServiceCapability,
   MinecraftServiceProfile,
+  ResourcePackServiceCapability,
   ServiceCapabilityStatus
 } from "./types.js";
 
@@ -29,7 +31,7 @@ export async function buildMinecraftServiceProfile(
     sourceArchives,
     javaLsp,
     kubejsTypes,
-    datapack,
+    resourceCapabilities,
     modArchives,
     sourceIndexDatabases
   ] = await Promise.all([
@@ -50,7 +52,7 @@ export async function buildMinecraftServiceProfile(
       workspaceRoot,
       maxFiles: options.maxProbeFiles ?? DEFAULT_MAX_PROBE_FILES
     }),
-    buildDatapackCapability(
+    buildResourceCapabilities(
       workspaceRoot,
       options.maxDatapackFiles ?? DEFAULT_MAX_DATAPACK_FILES
     ),
@@ -82,7 +84,8 @@ export async function buildMinecraftServiceProfile(
         fileCount: kubejsTypes.summary.fileCount,
         bySourceKind: kubejsTypes.summary.bySourceKind
       },
-      datapack,
+      datapack: resourceCapabilities.datapack,
+      resourcePack: resourceCapabilities.resourcePack,
       modArchives: {
         status: modArchives.archives.length > 0 ? "ready" : "not_found",
         archiveCount: modArchives.archives.length,
@@ -107,23 +110,45 @@ export async function buildMinecraftServiceProfile(
   };
 }
 
-async function buildDatapackCapability(
+async function buildResourceCapabilities(
   workspaceRoot: string,
   maxFiles: number
-): Promise<MinecraftServiceProfile["capabilities"]["datapack"]> {
+): Promise<{
+  datapack: DatapackServiceCapability;
+  resourcePack: ResourcePackServiceCapability;
+}> {
   const [discovery, files] = await Promise.all([
     discoverDatapackContent(workspaceRoot),
     listDatapackFiles(workspaceRoot, { maxFiles })
   ]);
-  const status: ServiceCapabilityStatus =
-    discovery.roots.length > 0 ? "ready" : "not_found";
+  const dataEntries = files.entries.filter((entry) => entry.domain === "data");
+  const assetEntries = files.entries.filter((entry) => entry.domain === "assets");
 
   return {
-    status,
-    rootCount: discovery.roots.length,
-    fileCount: files.entries.length,
-    namespaces: discovery.namespaces,
-    dataKinds: discovery.dataKinds,
-    assetKinds: discovery.assetKinds
+    datapack: {
+      status: statusForCount(dataEntries.length),
+      rootCount: discovery.roots.filter((root) => root.hasData).length,
+      fileCount: dataEntries.length,
+      namespaces: namespacesForEntries(dataEntries),
+      dataKinds: discovery.dataKinds,
+      assetKinds: discovery.assetKinds
+    },
+    resourcePack: {
+      status: statusForCount(assetEntries.length),
+      rootCount: discovery.roots.filter((root) => root.hasAssets).length,
+      fileCount: assetEntries.length,
+      namespaces: namespacesForEntries(assetEntries),
+      assetKinds: discovery.assetKinds
+    }
   };
+}
+
+function namespacesForEntries(
+  entries: Array<{ namespace: string }>
+): string[] {
+  return [...new Set(entries.map((entry) => entry.namespace))].sort();
+}
+
+function statusForCount(count: number): ServiceCapabilityStatus {
+  return count > 0 ? "ready" : "not_found";
 }
