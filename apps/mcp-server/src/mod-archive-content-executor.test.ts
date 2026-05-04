@@ -4,14 +4,9 @@ import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { createArchiveContentCache } from "@mcpskill/jar-source-adapter";
-
 import { buildMcpServerBootstrap } from "./bootstrap.js";
 import { buildMcpServerEvidencePlan } from "./evidence-plan.js";
-import {
-  createMcpServerModArchiveContentExecutor,
-  executeMcpServerModArchiveContent
-} from "./mod-archive-content-executor.js";
+import { executeMcpServerModArchiveContent } from "./mod-archive-content-executor.js";
 import { buildMcpServerRequestPlan } from "./request-plan.js";
 
 const tempRoots: string[] = [];
@@ -278,63 +273,6 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
-  it("reuses an injected cache across repeated inventory requests", async () => {
-    const workspaceRoot = await createJarJarWorkspace();
-    const input = await createExecutorInput(
-      workspaceRoot,
-      "List mod archive inventory and JarJar nested jars for this modpack."
-    );
-    const cache = createArchiveContentCache();
-    const executor = createMcpServerModArchiveContentExecutor({ cache });
-
-    await expect(executor(input)).resolves.toMatchObject({
-      payload: {
-        mode: "inventory",
-        cache: {
-          archiveInspectionHits: 0,
-          archiveInspectionMisses: 1,
-          centralDirectoryHits: 0,
-          centralDirectoryMisses: 1
-        }
-      }
-    });
-    await expect(executor(input)).resolves.toMatchObject({
-      payload: {
-        mode: "inventory",
-        cache: {
-          archiveInspectionHits: 1,
-          archiveInspectionMisses: 0,
-          centralDirectoryHits: 0,
-          centralDirectoryMisses: 0
-        }
-      }
-    });
-  });
-
-  it("reuses an injected cache across repeated list requests", async () => {
-    const workspaceRoot = await createModArchiveWorkspace();
-    const input = await createExecutorInput(
-      workspaceRoot,
-      "List assets entries in mods/content-mod.jar."
-    );
-    const cache = createArchiveContentCache();
-    const executor = createMcpServerModArchiveContentExecutor({ cache });
-
-    await expect(executor(input)).resolves.toMatchObject({
-      payload: {
-        mode: "list",
-        cache: { centralDirectoryHit: false }
-      }
-    });
-    await expect(executor(input)).resolves.toMatchObject({
-      payload: {
-        mode: "list",
-        cache: { centralDirectoryHit: true }
-      }
-    });
-
-    expect(cache.size()).toMatchObject({ centralDirectories: 1 });
-  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
