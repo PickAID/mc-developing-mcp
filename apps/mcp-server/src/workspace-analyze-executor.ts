@@ -228,7 +228,7 @@ function parseCrashSignals(content: string): CrashSignals {
     .filter((frame): frame is CrashStackFrame => frame !== undefined)
     .slice(0, MAX_STACK_FRAMES);
   const classReferences = unique([
-    ...extractMissingClassReferences(content),
+    ...extractErrorClassReferences(content),
     ...stackFrames.map((frame) => frame.className)
   ]);
   const actionableClassReferences = classReferences.filter(isActionableClass);
@@ -251,14 +251,19 @@ function extractExceptionClasses(content: string): string[] {
   return [...matches].map((match) => match[1]).filter(Boolean);
 }
 
-function extractMissingClassReferences(content: string): string[] {
-  const matches = content.matchAll(
+function extractErrorClassReferences(content: string): string[] {
+  const missingClassMatches = content.matchAll(
     /\b(?:NoClassDefFoundError|ClassNotFoundException):\s+((?:[a-z_][\w$]*[./]){2,}[A-Z_$][\w$]*(?:\$[A-Za-z_$][\w$]*)*)/g
   );
+  const linkageOwnerMatches = content.matchAll(
+    /\b(?:NoSuchMethodError|NoSuchFieldError):\s+(?:'[^']*?\s+)?((?:[a-z_][\w$]*\.){2,}[A-Z_$][\w$]*(?:\$[A-Za-z_$][\w$]*)*)[.#]/g
+  );
 
-  return [...matches]
-    .map((match) => match[1]?.replaceAll("/", "."))
-    .filter((value): value is string => value !== undefined);
+  return unique(
+    [...missingClassMatches, ...linkageOwnerMatches]
+      .map((match) => match[1]?.replaceAll("/", "."))
+      .filter((value): value is string => value !== undefined)
+  );
 }
 
 function extractResourceLocations(content: string): string[] {

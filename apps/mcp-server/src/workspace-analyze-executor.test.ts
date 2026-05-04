@@ -119,6 +119,36 @@ describe("executeMcpServerWorkspaceAnalyze", () => {
     });
   });
 
+  it("extracts owner class names from linkage error signatures", async () => {
+    const workspaceRoot = await createCrashWorkspace(
+      [
+        "java.lang.NoSuchMethodError: 'void com.example.api.EnergyApi.transfer(int)'",
+        "\tat net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:900)",
+        ""
+      ].join("\n")
+    );
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "The server crashes with a NoSuchMethodError from a dependency."
+    );
+
+    await expect(executeMcpServerWorkspaceAnalyze(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "workspace_analyze",
+        mode: "log_files",
+        signals: {
+          exceptionClasses: ["java.lang.NoSuchMethodError"],
+          classReferences: [
+            "com.example.api.EnergyApi",
+            "net.minecraft.server.MinecraftServer"
+          ],
+          actionableClassReferences: ["com.example.api.EnergyApi"]
+        }
+      }
+    });
+  });
+
   it("drains pending Java LSP diagnostics into compact workspace evidence", async () => {
     const workspaceRoot = await createCrashWorkspace("not a crash log\n");
     const registry = createLspDiagnosticRegistry();
