@@ -53,6 +53,46 @@ describe("mod archive datapack data summary", () => {
       "data/demo/worldgen/biome/gear_fields.json"
     );
   });
+
+  it("lists bounded recipe entries from the mod archive datapack index", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+    const workspaceRoot = await createDataWorkspace();
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText:
+        "List mod archive inventory and recipe data entries for this modpack."
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "inventory",
+        dataResourceSummary: {
+          tokenPolicy: "counts_only",
+          dataEntryCount: 1,
+          byKind: {
+            recipes: 1
+          }
+        },
+        dataResourceEntries: [
+          {
+            archiveRelativePath: "mods/data-mod.jar",
+            relativePath: "data/demo/recipes/gear.json",
+            dataKind: "recipes"
+          }
+        ]
+      }
+    });
+    expect(JSON.stringify(result.selectedEvidence?.payload)).not.toContain(
+      "data/demo/loot_tables/blocks/gear.json"
+    );
+  });
 });
 
 async function createDataWorkspace(): Promise<string> {

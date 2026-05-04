@@ -87,6 +87,7 @@ export async function queryCachedModArchiveEntries(input: {
   databasePath: string;
   domains?: ArchiveContentDomain[];
   assetKinds?: ModArchiveAssetKind[];
+  dataKinds?: ModArchiveDataKind[];
   maxArchives?: number;
   limit?: number;
   refresh?: boolean;
@@ -138,6 +139,7 @@ export async function queryCachedModArchiveEntries(input: {
       archiveKeys: indexedArchives.map((archive) => archive.archiveKey),
       domains: input.domains ?? DEFAULT_DOMAINS,
       assetKinds: normalizeAssetKinds(input.assetKinds),
+      dataKinds: normalizeDataKinds(input.dataKinds),
       limit: normalizeLimit(input.limit)
     });
 
@@ -312,6 +314,7 @@ function readIndexedEntries(
     archiveKeys: string[];
     domains: ArchiveContentDomain[];
     assetKinds: ModArchiveAssetKind[];
+    dataKinds: ModArchiveDataKind[];
     limit: number;
   }
 ): {
@@ -343,6 +346,12 @@ function readIndexedEntries(
       `AND asset_kind IN (${input.assetKinds.map(() => "?").join(", ")})`
     );
     filterParameters.push(...input.assetKinds);
+  }
+  if (input.dataKinds.length > 0) {
+    filterSqlParts.push(
+      `AND data_kind IN (${input.dataKinds.map(() => "?").join(", ")})`
+    );
+    filterParameters.push(...input.dataKinds);
   }
 
   const filterSql = filterSqlParts.join(" ");
@@ -420,6 +429,19 @@ function normalizeAssetKinds(
     ...new Set(
       (assetKinds ?? []).flatMap((assetKind) => {
         const parsed = parseModArchiveAssetKind(assetKind);
+        return parsed ? [parsed] : [];
+      })
+    )
+  ];
+}
+
+function normalizeDataKinds(
+  dataKinds: ModArchiveDataKind[] | undefined
+): ModArchiveDataKind[] {
+  return [
+    ...new Set(
+      (dataKinds ?? []).flatMap((dataKind) => {
+        const parsed = parseModArchiveDataKind(dataKind);
         return parsed ? [parsed] : [];
       })
     )

@@ -2,7 +2,8 @@ import {
   buildModArchiveInventory,
   buildCachedModArchiveInventory,
   queryCachedModArchiveEntries,
-  type ArchiveContentCache
+  type ArchiveContentCache,
+  type ModArchiveDataKind
 } from "@mcpskill/jar-source-adapter";
 import { join } from "node:path";
 
@@ -13,6 +14,23 @@ import type {
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_NESTED_ARCHIVES = 16;
+const DEFAULT_DATA_ENTRY_LIMIT = 12;
+
+const DATA_KIND_INTENT: ReadonlyArray<{
+  kind: ModArchiveDataKind;
+  patterns: RegExp[];
+}> = [
+  { kind: "recipes", patterns: [/\brecipes?\b/, /配方/] },
+  { kind: "loot_tables", patterns: [/\bloot(?:\s+tables?)?\b/, /战利品|掉落表|掉落/] },
+  { kind: "tags", patterns: [/\btags?\b/, /标签/] },
+  { kind: "functions", patterns: [/\bfunctions?\b/, /函数/] },
+  { kind: "advancements", patterns: [/\badvancements?\b|\bachievements?\b/, /进度|成就/] },
+  { kind: "worldgen", patterns: [/\bworld\s*gen(?:eration)?\b|\bbiomes?\b/, /世界生成|生物群系|地形/] },
+  { kind: "structures", patterns: [/\bstructures?\b/, /结构/] },
+  { kind: "predicates", patterns: [/\bpredicates?\b/, /谓词/] },
+  { kind: "item_modifiers", patterns: [/\bitem[_\s-]?modifiers?\b/, /物品修改器/] },
+  { kind: "registry", patterns: [/\bregistr(?:y|ies)\b/, /注册项|注册表/] }
+];
 
 export function resolveModArchiveInventoryDatabasePath(
   runtimeRoot: string
@@ -81,12 +99,19 @@ export async function listModArchiveInventory(input: {
         maxNestedArchives: DEFAULT_MAX_NESTED_ARCHIVES,
         cache: input.cache
       });
+  const requestedDataKinds = resolveRequestedModArchiveDataKinds(
+    input.executorInput.requestPlan.requestText
+  );
   const entryIndex = input.databasePath
     ? await queryCachedModArchiveEntries({
         workspaceRoot,
         databasePath: input.databasePath,
         maxArchives: DEFAULT_MAX_ARCHIVES,
-        limit: 0,
+        domains: requestedDataKinds.length > 0 ? ["data"] : undefined,
+        dataKinds:
+          requestedDataKinds.length > 0 ? requestedDataKinds : undefined,
+        limit:
+          requestedDataKinds.length > 0 ? DEFAULT_DATA_ENTRY_LIMIT : 0,
         refresh: input.refresh
       })
     : undefined;
@@ -121,9 +146,41 @@ export async function listModArchiveInventory(input: {
               cache: entryIndex.cache
             },
             ...(assetResourceSummary ? { assetResourceSummary } : {}),
-            ...(dataResourceSummary ? { dataResourceSummary } : {})
+            ...(dataResourceSummary ? { dataResourceSummary } : {}),
+            ...(requestedDataKinds.length > 0
+              ? { dataResourceEntries: entryIndex.entries.map(toDataResourceEntry) }
+              : {})
           }
         : {})
     }
+  };
+}
+
+export function resolveRequestedModArchiveDataKinds(
+  requestText?: string
+): ModArchiveDataKind[] {
+  if (!requestText) {
+    return [];
+  }
+
+  const normalizedText = requestText.toLowerCase();
+  return DATA_KIND_INTENT.flatMap(({ kind, patterns }) =>
+    patterns.some((pattern) => pattern.test(normalizedText)) ? [kind] : []
+  );
+}
+
+function toDataResourceEntry(entry: {
+  archiveRelativePath: string;
+  embeddedArchivePath?: string;
+  relativePath: string;
+  dataKind?: ModArchiveDataKind;
+}) {
+  return {
+    archiveRelativePath: entry.archiveRelativePath,
+    ...(entry.embeddedArchivePath
+      ? { embeddedArchivePath: entry.embeddedArchivePath }
+      : {}),
+    relativePath: entry.relativePath,
+    dataKind: entry.dataKind
   };
 }

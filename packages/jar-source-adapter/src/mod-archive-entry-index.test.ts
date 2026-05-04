@@ -242,6 +242,48 @@ describe("queryCachedModArchiveEntries", () => {
     });
   });
 
+  it("filters indexed datapack entries by data kind", async () => {
+    const workspaceRoot = await createWorkspace([
+      {
+        name: "data/demo/loot_tables/blocks/gear.json",
+        content: "{\"pools\":[]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "data/demo/tags/items/gears.json",
+        content: "{\"values\":[\"demo:gear\"]}\n",
+        compressionMethod: 0
+      }
+    ]);
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
+
+    const result = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["data"],
+      dataKinds: ["recipes"],
+      limit: 8
+    });
+
+    expect(result).toMatchObject({
+      entryCount: 1,
+      entries: [
+        {
+          relativePath: "data/demo/recipes/gear.json",
+          domain: "data",
+          dataKind: "recipes"
+        }
+      ],
+      dataSummary: {
+        dataEntryCount: 1,
+        byKind: {
+          recipes: 1
+        }
+      },
+      truncated: false
+    });
+  });
+
   it("migrates legacy SQLite entry indexes that do not have data_kind", async () => {
     const workspaceRoot = await createWorkspace();
     const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
