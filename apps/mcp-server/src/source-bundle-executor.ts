@@ -30,12 +30,14 @@ import {
 import { resolveGradleDependencyArchiveLookup } from "./gradle-dependency-archive-lookup.js";
 import { executeMcpServerDatapackFiles } from "./source-bundle-datapack.js";
 import { resolveMcpServerWorkspaceSource } from "./source-bundle-workspace.js";
+import type { ClientVisualExternalShaderReferenceOptions } from "./client-visual-shader-reference.js";
 
 export interface McpServerSourceBundleExecutorOptions {
   runtimeRoot: string;
   recipes?: SourcePackageRecipeRegistry;
   recipeProvider?: SourcePackageRecipeProvider;
   gradleSourceDiscovery?: McpServerGradleSourceDiscoveryOptions;
+  externalShaderReference?: ClientVisualExternalShaderReferenceOptions;
   executeRecipe: SourcePackageRecipeExecutor;
   fallbackExecutor?: McpServerEvidenceExecutor;
 }
@@ -64,7 +66,8 @@ export function buildMcpServerSourceBundleExecutor(
           recipes: options.recipes,
           recipeProvider: buildVanillaAssetsRecipeProvider(options),
           executeRecipe: options.executeRecipe
-        }
+        },
+        externalShaderReference: options.externalShaderReference
       });
     }
 

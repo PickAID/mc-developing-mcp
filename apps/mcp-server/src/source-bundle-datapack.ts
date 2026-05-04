@@ -33,8 +33,17 @@ import { resolveMcpServerResourcePackEvidence } from "./source-bundle-resource-p
 import { buildClientVisualEvidencePacket } from "./client-visual-evidence-packet.js";
 import { scanClientVisualSourceEvidence } from "./client-visual-source-scanner.js";
 import { findResourceLocationEntryMatches } from "./source-bundle-resource-location-matches.js";
+import {
+  resolveClientVisualExternalShaderReference,
+  type ClientVisualExternalShaderReferenceOptions
+} from "./client-visual-shader-reference.js";
+import {
+  extractDatapackPathQueries,
+  extractResourceLocationQueries,
+  isTraceableAssetPath,
+  mentionsResourceReferenceTrace
+} from "./source-bundle-datapack-query.js";
 
-const MAX_QUERIES = 8;
 const MAX_MATCHES = 16;
 const MAX_LISTED_FILES = 32;
 const MAX_REFERENCE_TRACE_ENTRIES = 24;
@@ -48,6 +57,7 @@ export async function executeMcpServerDatapackFiles(
   options: {
     vanillaDatapackPackage?: McpServerVanillaDatapackPackageOptions;
     vanillaAssetsPackage?: McpServerVanillaAssetsPackageOptions;
+    externalShaderReference?: ClientVisualExternalShaderReferenceOptions;
   } = {}
 ): Promise<McpServerEvidenceExecutorResult> {
   if (input.candidate.routeStep !== "datapack_files") {
@@ -164,6 +174,12 @@ export async function executeMcpServerDatapackFiles(
         workspaceRoot
       })
     : undefined;
+  const externalShaderReference = isClientVisualRequest
+    ? await resolveClientVisualExternalShaderReference({
+        requestText,
+        options: options.externalShaderReference
+      })
+    : undefined;
   const clientVisualEvidence = isClientVisualRequest
     ? buildClientVisualEvidencePacket({
         descriptor: input.requestPlan.requestContext.workspaceContext?.descriptor,
@@ -173,6 +189,7 @@ export async function executeMcpServerDatapackFiles(
         requestedPaths,
         matches: search.matches,
         sourceScan: clientVisualSourceScan,
+        externalShaderReference,
         resourceReferenceTrace
       })
     : undefined;
@@ -381,27 +398,6 @@ function toCompactResourceReference(reference: DatapackResourceReference) {
   };
 }
 
-function extractResourceLocationQueries(requestText: string): string[] {
-  const matches = requestText.matchAll(/\b[a-z0-9_.-]+:[a-z0-9_.\-\/]+\b/gi);
-  return unique([...matches].map((match) => match[0].toLowerCase()))
-    .slice(0, MAX_QUERIES);
-}
-
-function extractDatapackPathQueries(requestText: string): string[] {
-  const matches = requestText.matchAll(/\b(?:data|assets)\/[A-Za-z0-9_.-]+\/[^\s'"`<>]+/g);
-  return unique([...matches].map((match) => trimTrailingPunctuation(match[0])))
-    .slice(0, MAX_QUERIES);
-}
-
-function mentionsResourceReferenceTrace(requestText: string): boolean {
-  return /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i
-    .test(requestText);
-}
-
-function isTraceableAssetPath(path: string): boolean {
-  return /^assets\/[^/]+\/(?:blockstates|items|models)\//.test(path);
-}
-
 async function readRequestedDatapackPaths(
   workspaceRoot: string,
   requestedPaths: string[]
@@ -485,12 +481,4 @@ interface DatapackReadEvidence {
 
 function buildMatchKey(match: DatapackSearchMatch): string {
   return `${match.file.relativePath}:${match.line}:${match.column}`;
-}
-
-function trimTrailingPunctuation(value: string): string {
-  return value.replace(/[),.;:]+$/g, "");
-}
-
-function unique(values: string[]): string[] {
-  return [...new Set(values)];
 }

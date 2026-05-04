@@ -10,6 +10,7 @@ import {
   type ClientVisualApiProof
 } from "./client-visual-api-proof.js";
 import type { ClientVisualSourceScan } from "./client-visual-source-scanner.js";
+import type { ExternalShaderReferenceResult } from "./external-shader-reference.js";
 
 export interface ClientVisualEvidencePacketInput {
   descriptor?: WorkspaceDescriptor;
@@ -23,6 +24,7 @@ export interface ClientVisualEvidencePacketInput {
   requestedPaths: string[];
   matches: DatapackSearchMatch[];
   sourceScan?: ClientVisualSourceScan;
+  externalShaderReference?: ExternalShaderReferenceResult;
   resourceReferenceTrace?: Pick<
     DatapackResourceReferenceTrace,
     "references" | "unresolved" | "truncated"
@@ -70,6 +72,9 @@ export function buildClientVisualEvidencePacket(
       missingAssetKinds: missingAssetKinds(input.matches)
     },
     missingEvidence: missingEvidence(input.sourceScan),
+    ...(input.externalShaderReference
+      ? { externalShaderReference: input.externalShaderReference }
+      : {}),
     implementationSkeleton: implementationSkeleton({
       sourceScan: input.sourceScan,
       apiProof,
