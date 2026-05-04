@@ -20,6 +20,7 @@ export async function resolveClientVisualExternalShaderReference(input: {
 
   return resolveExternalShaderReference({
     ...input.options,
+    allowAmbientEnv: input.options.allowAmbientEnv ?? false,
     query: input.options.query ?? buildShaderReferenceQuery(input.requestText)
   });
 }

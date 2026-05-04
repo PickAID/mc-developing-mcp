@@ -2,6 +2,7 @@ export interface ExternalShaderReferenceInput {
   query: string;
   apiKey?: string;
   credentialProvider?: () => string | undefined;
+  allowAmbientEnv?: boolean;
   fetch?: typeof fetch;
   apiBaseUrl?: string;
 }
@@ -43,7 +44,9 @@ export async function resolveExternalShaderReference(
   const apiKey =
     input.apiKey ??
     input.credentialProvider?.() ??
-    process.env[SHADERTOY_APP_KEY_ENV_VAR];
+    (input.allowAmbientEnv === false
+      ? undefined
+      : process.env[SHADERTOY_APP_KEY_ENV_VAR]);
 
   if (!apiKey) {
     return {

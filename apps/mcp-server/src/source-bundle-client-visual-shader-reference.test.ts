@@ -28,28 +28,38 @@ describe("source.bundle client visual shader references", () => {
   });
 
   it("reports credential setup when shader references are enabled without a key", async () => {
+    const previousKey = process.env.SHADERTOY_APP_KEY;
     let called = false;
+    process.env.SHADERTOY_APP_KEY = "ambient-key";
 
-    const result = await executeClientVisualRequest({
-      externalShaderReference: {
-        enabled: true,
-        credentialProvider: () => undefined,
-        fetch: async () => {
-          called = true;
-          return jsonResponse({});
-        }
-      }
-    });
-
-    expect(called).toBe(false);
-    expect(result.payload).toMatchObject({
-      clientVisualEvidence: {
+    try {
+      const result = await executeClientVisualRequest({
         externalShaderReference: {
-          status: "credentials_required",
-          credentialEnvVar: "SHADERTOY_APP_KEY"
+          enabled: true,
+          credentialProvider: () => undefined,
+          fetch: async () => {
+            called = true;
+            return jsonResponse({});
+          }
         }
+      });
+
+      expect(called).toBe(false);
+      expect(result.payload).toMatchObject({
+        clientVisualEvidence: {
+          externalShaderReference: {
+            status: "credentials_required",
+            credentialEnvVar: "SHADERTOY_APP_KEY"
+          }
+        }
+      });
+    } finally {
+      if (previousKey === undefined) {
+        delete process.env.SHADERTOY_APP_KEY;
+      } else {
+        process.env.SHADERTOY_APP_KEY = previousKey;
       }
-    });
+    }
   });
 
   it("adds compact Minecraft-mapped shader references when enabled with a key", async () => {
