@@ -15,6 +15,13 @@ import {
   type LocalModArchiveInspectionCacheStats,
   type LocalModArchiveInspectionWarning
 } from "./external-mod-local-archive-inspection.js";
+import {
+  collectMetadataOwners,
+  findLoaderDependencyRequester,
+  formatRequesterReference,
+  type LocalArchiveInspectionRecord,
+  type McpServerLocalModArchiveRequester
+} from "./external-mod-local-archive-requester.js";
 
 type LocalModArchiveRequest = McpServerExternalModResolutionRequest & {
   platform: "modrinth" | "curseforge";
@@ -49,6 +56,7 @@ export interface McpServerLocalModArchiveCandidate {
   embeddedArchivePath?: string;
   archiveSource: ModArchiveSource;
   metadataPath: string;
+  loaderDependencyRequester?: McpServerLocalModArchiveRequester;
   requiresConfirmation: false;
   cachePolicy: "metadata_only";
 }
@@ -82,15 +90,25 @@ export async function resolveLocalModArchiveEvidence(input: {
   const cacheStats = input.cache
     ? createLocalModArchiveInspectionCacheStats()
     : undefined;
+  const inspections = await inspectLocalArchives({
+    archives: discovered.archives,
+    warnings,
+    cache: input.cache,
+    cacheStats
+  });
+  const loaderDependencyRequester = request.loaderDependency?.requestedBy
+    ? findLoaderDependencyRequester(
+        request,
+        inspections.flatMap(collectMetadataOwners)
+      )
+    : undefined;
 
-  for (const archive of discovered.archives) {
+  for (const record of inspections) {
     candidates.push(
       ...(await inspectArchiveForLocalCandidates(
         request,
-        archive,
-        warnings,
-        input.cache,
-        cacheStats
+        record,
+        loaderDependencyRequester
       ))
     );
   }
@@ -115,9 +133,19 @@ async function buildLocalCandidate(
   request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
-  embeddedArchivePath?: string
+  embeddedArchivePath?: string,
+  loaderDependencyRequester?: McpServerLocalModArchiveRequester
 ): Promise<McpServerLocalModArchiveCandidate | undefined> {
-  const score = scoreLocalMatch(request, archive, metadata, embeddedArchivePath);
+  const candidateRequester = isLoaderDependencyMetadataMatch(request, metadata)
+    ? loaderDependencyRequester
+    : undefined;
+  const score = scoreLocalMatch(
+    request,
+    archive,
+    metadata,
+    embeddedArchivePath,
+    candidateRequester
+  );
 
   if (!score) {
     return undefined;
@@ -140,41 +168,64 @@ async function buildLocalCandidate(
     embeddedArchivePath,
     archiveSource: archive.source,
     metadataPath: metadata.metadataPath,
+    ...(candidateRequester
+      ? { loaderDependencyRequester: candidateRequester }
+      : {}),
     requiresConfirmation: false,
     cachePolicy: "metadata_only"
   };
 }
 
+async function inspectLocalArchives(input: {
+  archives: ModArchiveCandidate[];
+  warnings: McpServerLocalModArchiveWarning[];
+  cache: ArchiveContentCache | undefined;
+  cacheStats: LocalModArchiveInspectionCacheStats | undefined;
+}): Promise<LocalArchiveInspectionRecord[]> {
+  const records: LocalArchiveInspectionRecord[] = [];
+
+  for (const archive of input.archives) {
+    const inspection = await inspectLocalModArchive({
+      archive,
+      cache: input.cache,
+      cacheStats: input.cacheStats
+    });
+
+    input.warnings.push(...inspection.warnings);
+    records.push({ archive, inspection });
+  }
+
+  return records;
+}
+
 async function inspectArchiveForLocalCandidates(
   request: LocalModArchiveRequest,
-  archive: ModArchiveCandidate,
-  warnings: McpServerLocalModArchiveWarning[],
-  cache: ArchiveContentCache | undefined,
-  cacheStats: LocalModArchiveInspectionCacheStats | undefined
+  record: LocalArchiveInspectionRecord,
+  loaderDependencyRequester: McpServerLocalModArchiveRequester | undefined
 ): Promise<McpServerLocalModArchiveCandidate[]> {
-  const inspection = await inspectLocalModArchive({
-    archive,
-    cache,
-    cacheStats
-  });
   const nestedCandidates = await Promise.all(
-    inspection.nestedArchives.map((nested) =>
+    record.inspection.nestedArchives.map((nested) =>
       nested.embeddedArchiveMetadata
         ? buildLocalCandidate(
             request,
-            archive,
+            record.archive,
             nested.embeddedArchiveMetadata,
-            nested.embeddedArchivePath
+            nested.embeddedArchivePath,
+            loaderDependencyRequester
           )
         : undefined
     )
   );
 
-  warnings.push(...inspection.warnings);
-
   return [
-    inspection.archiveMetadata
-      ? await buildLocalCandidate(request, archive, inspection.archiveMetadata)
+    record.inspection.archiveMetadata
+      ? await buildLocalCandidate(
+          request,
+          record.archive,
+          record.inspection.archiveMetadata,
+          undefined,
+          loaderDependencyRequester
+        )
       : undefined,
     ...nestedCandidates
   ].filter((candidate): candidate is McpServerLocalModArchiveCandidate =>
@@ -186,7 +237,8 @@ function scoreLocalMatch(
   request: LocalModArchiveRequest,
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
-  embeddedArchivePath?: string
+  embeddedArchivePath?: string,
+  loaderDependencyRequester?: McpServerLocalModArchiveRequester
 ): LocalMatchScore | undefined {
   if (
     request.loader &&
@@ -210,7 +262,14 @@ function scoreLocalMatch(
 
   return {
     confidence: isExactMetadataMatch(query, metadata) ? "high" : "medium",
-    reasons: buildMatchReasons(request, archive, metadata, query, embeddedArchivePath)
+    reasons: buildMatchReasons(
+      request,
+      archive,
+      metadata,
+      query,
+      embeddedArchivePath,
+      loaderDependencyRequester
+    )
   };
 }
 
@@ -219,7 +278,8 @@ function buildMatchReasons(
   archive: ModArchiveCandidate,
   metadata: ModArchiveMetadata,
   query: string,
-  embeddedArchivePath?: string
+  embeddedArchivePath?: string,
+  loaderDependencyRequester?: McpServerLocalModArchiveRequester
 ): string[] {
   const reasons: string[] = [];
 
@@ -247,9 +307,14 @@ function buildMatchReasons(
   }
   if (
     request.loaderDependency &&
-    normalizeText(request.loaderDependency.modId) === normalizeText(metadata.modId)
+    isLoaderDependencyMetadataMatch(request, metadata)
   ) {
     reasons.push(formatLoaderDependencyReason(request.loaderDependency));
+    if (loaderDependencyRequester) {
+      reasons.push(
+        `crash dependency requester ${loaderDependencyRequester.modId} ${loaderDependencyRequester.versionNumber} from ${formatRequesterReference(loaderDependencyRequester)}`
+      );
+    }
   }
 
   return reasons;
@@ -263,6 +328,16 @@ function formatLoaderDependencyReason(
   const actual = dependency.actualVersion ?? "unknown version";
 
   return `crash dependency requested by ${requestedBy} expected ${expected} but log reported ${actual}`;
+}
+
+function isLoaderDependencyMetadataMatch(
+  request: LocalModArchiveRequest,
+  metadata: ModArchiveMetadata
+): boolean {
+  return Boolean(
+    request.loaderDependency &&
+      normalizeText(request.loaderDependency.modId) === normalizeText(metadata.modId)
+  );
 }
 
 function toLocalModArchiveRequest(

@@ -239,6 +239,131 @@ describe("executeMcpServerExternalModResolution local archives", () => {
       }
     });
   });
+
+  it("attaches the local requesting mod owner for crash dependency candidates", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-local-requester-"));
+    const requesterJar = join(workspaceRoot, "mods", "demo-addon.jar");
+    const dependencyJar = join(workspaceRoot, "mods", "fabric-api.jar");
+
+    await writeZip(requesterJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "demo_addon",
+          name: "Demo Addon",
+          version: "1.4.0"
+        })
+      }
+    ]);
+    await writeZip(dependencyJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "fabric-api",
+          name: "Fabric API",
+          version: "0.91.0"
+        })
+      }
+    ]);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      [
+        "Find the Modrinth mod for the startup crash fabric 1.20.1.",
+        "Crash log loader dependency: modId=fabric-api; requestedBy=demo_addon; expected=0.92.2 or later; actual=0.91.0; kind=incompatible_dependency"
+      ].join("\n")
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      modrinthResolver: async () => {
+        throw new Error("local archive lookup must not search Modrinth");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        result: {
+          source: "local_archive",
+          candidates: [
+            {
+              modId: "fabric-api",
+              relativePath: "mods/fabric-api.jar",
+              loaderDependencyRequester: {
+                modId: "demo_addon",
+                title: "Demo Addon",
+                versionNumber: "1.4.0",
+                relativePath: "mods/demo-addon.jar",
+                metadataPath: "fabric.mod.json"
+              }
+            }
+          ]
+        }
+      }
+    });
+  });
+
+  it("does not attach the requester to path-only crash dependency matches", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-local-requester-miss-"));
+    const requesterJar = join(workspaceRoot, "mods", "demo-addon.jar");
+    const pathOnlyJar = join(workspaceRoot, "mods", "fabric-api-compat.jar");
+
+    await writeZip(requesterJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "demo_addon",
+          name: "Demo Addon",
+          version: "1.4.0"
+        })
+      }
+    ]);
+    await writeZip(pathOnlyJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "compat",
+          name: "Compatibility Bridge",
+          version: "3.0.0"
+        })
+      }
+    ]);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      [
+        "Find the Modrinth mod for the startup crash fabric 1.20.1.",
+        "Crash log loader dependency: modId=fabric-api; requestedBy=demo_addon; expected=0.92.2 or later; actual=0.91.0; kind=incompatible_dependency"
+      ].join("\n")
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      modrinthResolver: async () => {
+        throw new Error("local archive lookup must not search Modrinth");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        result: {
+          source: "local_archive",
+          candidates: [
+            {
+              modId: "compat",
+              relativePath: "mods/fabric-api-compat.jar"
+            }
+          ]
+        }
+      }
+    });
+    const candidate = result.payload.result.candidates[0];
+
+    expect(candidate).not.toHaveProperty("loaderDependencyRequester");
+    expect(candidate.confidenceReasons).not.toContain(
+      "crash dependency requester demo_addon 1.4.0 from mods/demo-addon.jar"
+    );
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
