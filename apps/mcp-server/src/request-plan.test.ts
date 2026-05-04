@@ -144,8 +144,13 @@ describe("buildMcpServerRequestPlan", () => {
         "context.query",
         "migration.analyze"
       ],
-      preferredTools: ["workspace.analyze", "source.bundle", "context.query"],
-      routeSteps: ["log_files", "workspace_source", "docs_lookup"]
+      preferredTools: ["workspace.analyze", "context.query", "source.bundle"],
+      routeSteps: [
+        "log_files",
+        "external_mod_resolution",
+        "workspace_source",
+        "docs_lookup"
+      ]
     });
     expect(plan.trace).toMatchObject({
       workspaceKind: "java-mod",
@@ -154,7 +159,12 @@ describe("buildMcpServerRequestPlan", () => {
         id: "crash_triage",
         confidence: "high"
       },
-      taskRouteSteps: ["log_files", "workspace_source", "docs_lookup"]
+      taskRouteSteps: [
+        "log_files",
+        "external_mod_resolution",
+        "workspace_source",
+        "docs_lookup"
+      ]
     });
     expect(plan.prompt.sections.map((section) => section.id)).toEqual([
       "request_text",
@@ -166,7 +176,7 @@ describe("buildMcpServerRequestPlan", () => {
       "task_tool_policy"
     ]);
     expect(plan.prompt.text).toContain(
-      "[Task Route Policy]\nTask route: crash_triage via log_files -> workspace_source -> docs_lookup."
+      "[Task Route Policy]\nTask route: crash_triage via log_files -> external_mod_resolution -> workspace_source -> docs_lookup."
     );
   });
 });

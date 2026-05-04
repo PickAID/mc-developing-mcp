@@ -44,8 +44,8 @@ describe("buildHarnessTaskRoute", () => {
       reasons: [
         "crash triage should inspect log files before source or docs"
       ],
-      steps: ["log_files", "workspace_source", "docs_lookup"],
-      preferredTools: ["workspace.analyze", "source.bundle", "context.query"]
+      steps: ["log_files", "external_mod_resolution", "workspace_source", "docs_lookup"],
+      preferredTools: ["workspace.analyze", "context.query", "source.bundle"]
     });
   });
 
@@ -75,6 +75,7 @@ describe("buildHarnessTaskRoute", () => {
       steps: [
         "log_files",
         "mod_archive_content",
+        "external_mod_resolution",
         "workspace_source",
         "docs_lookup"
       ],

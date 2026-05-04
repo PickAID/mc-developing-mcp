@@ -7,6 +7,15 @@ const IGNORED_ACTIONABLE_PREFIXES = [
   "net.minecraft.",
   "com.mojang."
 ];
+const IGNORED_LOADER_MOD_IDS = new Set([
+  "java",
+  "minecraft",
+  "fabricloader",
+  "fabric-loader",
+  "quilt_loader",
+  "forge",
+  "neoforge"
+]);
 
 export interface CrashSignals {
   exceptionClasses: string[];
@@ -14,6 +23,7 @@ export interface CrashSignals {
   resourcePaths: string[];
   classReferences: string[];
   actionableClassReferences: string[];
+  loaderModReferences: CrashLoaderModReference[];
   stackFrames: CrashStackFrame[];
 }
 
@@ -24,10 +34,21 @@ export interface CrashStackFrame {
   lineNumber?: number;
 }
 
+export interface CrashLoaderModReference {
+  modId: string;
+  requestedBy?: string;
+  expectedRange?: string;
+  actualVersion?: string;
+  kind: "missing_dependency" | "incompatible_dependency";
+}
+
 export function parseCrashSignals(content: string): CrashSignals {
   const exceptionClasses = unique(extractExceptionClasses(content));
   const resourceLocations = unique(extractResourceLocations(content));
   const resourcePaths = unique(extractResourcePaths(content));
+  const loaderModReferences = uniqueLoaderModReferences(
+    extractLoaderModReferences(content)
+  );
   const stackFrames = content
     .split(/\r?\n/)
     .map(parseStackFrame)
@@ -46,6 +67,7 @@ export function parseCrashSignals(content: string): CrashSignals {
     resourcePaths,
     classReferences,
     actionableClassReferences,
+    loaderModReferences,
     stackFrames: stackFrames.filter((frame) => isActionableClass(frame.className))
   };
 }
@@ -55,7 +77,8 @@ export function countCrashSignals(signals: CrashSignals): number {
     signals.exceptionClasses.length +
     signals.classReferences.length +
     signals.resourceLocations.length +
-    signals.resourcePaths.length
+    signals.resourcePaths.length +
+    signals.loaderModReferences.length
   );
 }
 
@@ -73,6 +96,9 @@ export function mergeCrashSignals(signals: CrashSignals[]): CrashSignals {
       signals.flatMap((entry) => entry.resourceLocations)
     ),
     resourcePaths: unique(signals.flatMap((entry) => entry.resourcePaths)),
+    loaderModReferences: uniqueLoaderModReferences(
+      signals.flatMap((entry) => entry.loaderModReferences)
+    ),
     classReferences,
     actionableClassReferences: classReferences.filter(isActionableClass),
     stackFrames
@@ -86,15 +112,25 @@ export function formatCrashSignalSummary(
   if (
     signals.actionableClassReferences.length > 0 &&
     signals.resourceLocations.length === 0 &&
-    signals.resourcePaths.length === 0
+    signals.resourcePaths.length === 0 &&
+    signals.loaderModReferences.length === 0
   ) {
     return `Extracted ${signals.actionableClassReferences.length} actionable crash class reference(s) from ${logCount} log file(s).`;
+  }
+  if (
+    signals.loaderModReferences.length > 0 &&
+    signals.actionableClassReferences.length === 0 &&
+    signals.resourceLocations.length === 0 &&
+    signals.resourcePaths.length === 0
+  ) {
+    return `Extracted ${signals.loaderModReferences.length} actionable crash loader mod reference(s) from ${logCount} log file(s).`;
   }
 
   const signalCount =
     signals.actionableClassReferences.length +
     signals.resourceLocations.length +
-    signals.resourcePaths.length;
+    signals.resourcePaths.length +
+    signals.loaderModReferences.length;
 
   return `Extracted ${signalCount} actionable crash signal(s) from ${logCount} log file(s).`;
 }
@@ -130,6 +166,65 @@ function extractMixinTargetClassReferences(content: string): string[] {
   return [...matches]
     .map((match) => match[1])
     .filter((value): value is string => value !== undefined);
+}
+
+function extractLoaderModReferences(content: string): CrashLoaderModReference[] {
+  return [
+    ...extractFabricLoaderModReferences(content),
+    ...extractForgeLoaderModReferences(content)
+  ].filter((reference) => !IGNORED_LOADER_MOD_IDS.has(reference.modId));
+}
+
+function extractFabricLoaderModReferences(
+  content: string
+): CrashLoaderModReference[] {
+  const matches = content.matchAll(
+    /\bMod\s+['"][^'"]+['"]\s+\(([A-Za-z0-9_.-]+)\)[^\n]*?\b(?:requires|depends on)\s+(?:version\s+)?(.+?)\s+of\s+(?:['"][^'"]+['"]\s+\()?([A-Za-z0-9_.-]+)\)?\s*,\s+(?:(which is missing)|(?:but [^\n]*?present:?\s*([^!\n]+)))/gi
+  );
+
+  return [...matches].flatMap((match) => {
+    const modId = normalizeModId(match[3]);
+    if (!modId) {
+      return [];
+    }
+    const actualVersion = match[4] ? "missing" : cleanLoaderText(match[5]);
+
+    return [{
+      modId,
+      requestedBy: normalizeModId(match[1]),
+      expectedRange: cleanLoaderText(match[2]),
+      actualVersion,
+      kind: isMissingActualVersion(actualVersion)
+        ? "missing_dependency"
+        : "incompatible_dependency"
+    }];
+  });
+}
+
+function extractForgeLoaderModReferences(
+  content: string
+): CrashLoaderModReference[] {
+  const matches = content.matchAll(
+    /\bMod ID:\s*['"]?([A-Za-z0-9_.-]+)['"]?\s*,\s*Requested by:\s*['"]?([A-Za-z0-9_.-]+)['"]?\s*,\s*Expected range:\s*['"]?([^'"\n]+)['"]?\s*,\s*Actual version:\s*['"]?([^'"\n]+)['"]?/gi
+  );
+
+  return [...matches].flatMap((match) => {
+    const modId = normalizeModId(match[1]);
+    if (!modId) {
+      return [];
+    }
+    const actualVersion = cleanLoaderText(match[4]);
+
+    return [{
+      modId,
+      requestedBy: normalizeModId(match[2]),
+      expectedRange: cleanLoaderText(match[3]),
+      actualVersion,
+      kind: isMissingActualVersion(actualVersion)
+        ? "missing_dependency"
+        : "incompatible_dependency"
+    }];
+  });
 }
 
 function extractResourceLocations(content: string): string[] {
@@ -189,6 +284,42 @@ function isActionableClass(className: string): boolean {
   return !IGNORED_ACTIONABLE_PREFIXES.some((prefix) =>
     className.startsWith(prefix)
   );
+}
+
+function normalizeModId(value: string | undefined): string | undefined {
+  const cleaned = cleanLoaderText(value)?.toLowerCase();
+  return cleaned && /^[a-z0-9_.-]+$/.test(cleaned) ? cleaned : undefined;
+}
+
+function cleanLoaderText(value: string | undefined): string | undefined {
+  const cleaned = value?.trim().replace(/^['"]|['"]$/g, "");
+  return cleaned && cleaned.length > 0 ? cleaned : undefined;
+}
+
+function isMissingActualVersion(value: string | undefined): boolean {
+  return !value || value.toLowerCase().includes("missing");
+}
+
+function uniqueLoaderModReferences(
+  values: CrashLoaderModReference[]
+): CrashLoaderModReference[] {
+  const seen = new Set<string>();
+
+  return values.filter((value) => {
+    const key = [
+      value.modId,
+      value.requestedBy ?? "",
+      value.expectedRange ?? "",
+      value.actualVersion ?? "",
+      value.kind
+    ].join("\0");
+
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function unique<T>(values: T[]): T[] {

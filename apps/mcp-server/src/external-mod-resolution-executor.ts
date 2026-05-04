@@ -67,7 +67,8 @@ export async function executeMcpServerExternalModResolution(
   options: McpServerExternalModResolutionOptions = {}
 ): Promise<McpServerEvidenceExecutorResult> {
   const request = parseExternalModRequest(
-    input.requestPlan.requestText ?? input.candidate.queryHint ?? ""
+    input.requestPlan.requestText ?? input.candidate.queryHint ?? "",
+    input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
   );
   const localResult = await resolveLocalModArchiveEvidence({
     request,

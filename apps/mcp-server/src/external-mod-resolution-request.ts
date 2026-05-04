@@ -16,6 +16,11 @@ export interface McpServerExternalModMavenRepository {
   url: string;
 }
 
+export interface McpServerExternalModRequestDefaults {
+  loader?: string;
+  minecraftVersion?: string;
+}
+
 interface ExternalModUrlHint {
   platform: "modrinth" | "curseforge";
   query: string;
@@ -41,7 +46,8 @@ export type ResolvableExternalModRequest =
     });
 
 export function parseExternalModRequest(
-  requestText: string
+  requestText: string,
+  defaults: McpServerExternalModRequestDefaults = {}
 ): McpServerExternalModResolutionRequest {
   const coordinate = extractMavenCoordinate(requestText);
 
@@ -58,8 +64,10 @@ export function parseExternalModRequest(
   const urlHint = extractExternalModUrlHint(requestText);
   const constraintHint = extractExplicitConstraintHint(requestText);
   const platform = urlHint?.platform ?? detectPlatform(requestText);
-  const loader = detectLoader(requestText);
-  const minecraftVersion = detectMinecraftVersion(requestText);
+  const loader = detectLoader(requestText) ?? defaults.loader;
+  const minecraftVersion =
+    detectMinecraftVersion(requestText) ?? defaults.minecraftVersion;
+  const crashLoaderModQuery = extractCrashLoaderModQuery(requestText);
 
   return {
     platform,
@@ -68,6 +76,7 @@ export function parseExternalModRequest(
     query:
       urlHint?.query ??
       constraintHint?.query ??
+      crashLoaderModQuery ??
       extractQuery(requestText, loader, minecraftVersion),
     loader,
     minecraftVersion
@@ -177,6 +186,15 @@ function extractQuery(
   const query = meaningful.join(" ").toLowerCase();
 
   return query ? query : undefined;
+}
+
+function extractCrashLoaderModQuery(requestText: string): string | undefined {
+  const match = requestText.match(
+    /^Crash log loader mod ids:\s*([A-Za-z0-9_.-]+(?:\s*,\s*[A-Za-z0-9_.-]+)*)/im
+  );
+  const firstModId = match?.[1]?.split(",")[0]?.trim().toLowerCase();
+
+  return firstModId && firstModId.length > 0 ? firstModId : undefined;
 }
 
 function extractExplicitConstraintHint(

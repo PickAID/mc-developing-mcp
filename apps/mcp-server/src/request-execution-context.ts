@@ -11,6 +11,7 @@ export interface RequestExecutionContext {
   classReferences: string[];
   resourceLocations: string[];
   resourcePaths: string[];
+  loaderModIds: string[];
   javaDiagnostics: string[];
   javaSourcePaths: string[];
 }
@@ -20,6 +21,7 @@ export function createRequestExecutionContext(): RequestExecutionContext {
     classReferences: [],
     resourceLocations: [],
     resourcePaths: [],
+    loaderModIds: [],
     javaDiagnostics: [],
     javaSourcePaths: []
   };
@@ -85,6 +87,10 @@ export function rememberContext(
     ...context.resourcePaths,
     ...extractResourcePaths(payload)
   ]);
+  context.loaderModIds = unique([
+    ...context.loaderModIds,
+    ...extractLoaderModIds(payload)
+  ]);
   context.javaDiagnostics = unique([
     ...context.javaDiagnostics,
     ...extractJavaDiagnosticSummaries(payload)
@@ -136,6 +142,9 @@ function buildContextTexts(context: RequestExecutionContext): string[] {
     ...(context.resourcePaths.length > 0
       ? [`Crash log resource paths: ${context.resourcePaths.join(", ")}`]
       : []),
+    ...(context.loaderModIds.length > 0
+      ? [`Crash log loader mod ids: ${context.loaderModIds.join(", ")}`]
+      : []),
     ...(context.javaDiagnostics.length > 0
       ? [`Java diagnostics: ${context.javaDiagnostics.join("; ")}`]
       : []),
@@ -149,7 +158,8 @@ function extractCrashLogContextQueries(payload: unknown): string[] {
   return [
     ...extractActionableClassReferences(payload),
     ...extractResourceLocations(payload),
-    ...extractResourcePaths(payload)
+    ...extractResourcePaths(payload),
+    ...extractLoaderModIds(payload)
   ];
 }
 
@@ -189,6 +199,24 @@ function extractResourcePaths(payload: unknown): string[] {
 
   return signals.resourcePaths.filter(
     (value): value is string => typeof value === "string" && value.length > 0
+  );
+}
+
+function extractLoaderModIds(payload: unknown): string[] {
+  const signals = extractWorkspaceAnalyzeSignals(payload);
+
+  if (!signals || !Array.isArray(signals.loaderModReferences)) {
+    return [];
+  }
+
+  return unique(
+    signals.loaderModReferences
+      .map((reference) =>
+        isRecord(reference) && typeof reference.modId === "string"
+          ? reference.modId
+          : undefined
+      )
+      .filter((value): value is string => value !== undefined && value.length > 0)
   );
 }
 

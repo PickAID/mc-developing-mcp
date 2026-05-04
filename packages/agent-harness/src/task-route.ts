@@ -37,13 +37,19 @@ export function buildHarnessTaskRoute(
           ? [
               "log_files",
               "mod_archive_content",
+              "external_mod_resolution",
               "workspace_source",
               "docs_lookup"
             ]
-          : ["log_files", "workspace_source", "docs_lookup"],
+          : [
+              "log_files",
+              "external_mod_resolution",
+              "workspace_source",
+              "docs_lookup"
+            ],
         preferredTools: snapshot.facts.hasModArchives
           ? ["workspace.analyze", "context.query", "source.bundle"]
-          : ["workspace.analyze", "source.bundle", "context.query"]
+          : ["workspace.analyze", "context.query", "source.bundle"]
       };
     case "kubejs_authoring":
       return {

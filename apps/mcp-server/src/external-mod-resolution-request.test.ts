@@ -108,4 +108,21 @@ describe("parseExternalModRequest", () => {
       minecraftVersion: "1.20.1"
     });
   });
+
+  it("uses crash loader mod ids with workspace runtime defaults", () => {
+    expect(
+      parseExternalModRequest(
+        [
+          "The modpack crashes during startup.",
+          "Crash log loader mod ids: fabric-api"
+        ].join("\n"),
+        { loader: "fabric", minecraftVersion: "1.20.1" }
+      )
+    ).toMatchObject({
+      platform: "modrinth",
+      query: "fabric-api",
+      loader: "fabric",
+      minecraftVersion: "1.20.1"
+    });
+  });
 });

@@ -117,6 +117,12 @@ describe("executeMcpServerRequestHandler", () => {
         },
         "context.query": ({ candidate }) => {
           callOrder.push(candidate.id);
+          if (candidate.routeStep === "external_mod_resolution") {
+            return {
+              matched: false,
+              summary: "No external mod candidate matched the crash context."
+            };
+          }
 
           return {
             matched: true,
@@ -132,11 +138,12 @@ describe("executeMcpServerRequestHandler", () => {
 
     expect(callOrder).toEqual([
       "candidate-1-log_files",
-      "candidate-2-workspace_source",
-      "candidate-3-docs_lookup"
+      "candidate-2-external_mod_resolution",
+      "candidate-3-workspace_source",
+      "candidate-4-docs_lookup"
     ]);
     expect(result.selectedEvidence).toMatchObject({
-      candidateId: "candidate-3-docs_lookup",
+      candidateId: "candidate-4-docs_lookup",
       status: "fallback",
       attempted: true,
       payload: {
@@ -152,40 +159,56 @@ describe("executeMcpServerRequestHandler", () => {
         summary: "latest.log did not isolate the offending mod."
       },
       {
-        candidateId: "candidate-2-workspace_source",
+        candidateId: "candidate-2-external_mod_resolution",
+        status: "skipped",
+        attempted: true,
+        summary: "No external mod candidate matched the crash context."
+      },
+      {
+        candidateId: "candidate-3-workspace_source",
         status: "failed",
         attempted: true,
         summary: "Executor failed for source.bundle.",
         error: "jar source unavailable"
       },
       {
-        candidateId: "candidate-3-docs_lookup",
+        candidateId: "candidate-4-docs_lookup",
         status: "fallback",
         attempted: true,
         summary: "Resolved against the offline docs index."
       }
     ]);
     expect(result.trace).toEqual({
-      routeSteps: ["log_files", "workspace_source", "docs_lookup"],
+      routeSteps: [
+        "log_files",
+        "external_mod_resolution",
+        "workspace_source",
+        "docs_lookup"
+      ],
       candidateIds: [
         "candidate-1-log_files",
-        "candidate-2-workspace_source",
-        "candidate-3-docs_lookup"
+        "candidate-2-external_mod_resolution",
+        "candidate-3-workspace_source",
+        "candidate-4-docs_lookup"
       ],
       executedCandidateIds: [
         "candidate-1-log_files",
-        "candidate-2-workspace_source",
-        "candidate-3-docs_lookup"
+        "candidate-2-external_mod_resolution",
+        "candidate-3-workspace_source",
+        "candidate-4-docs_lookup"
       ],
-      failedCandidateIds: ["candidate-2-workspace_source"],
-      skippedCandidateIds: ["candidate-1-log_files"],
-      docsSelectionCandidateIds: ["candidate-3-docs_lookup"],
+      failedCandidateIds: ["candidate-3-workspace_source"],
+      skippedCandidateIds: [
+        "candidate-1-log_files",
+        "candidate-2-external_mod_resolution"
+      ],
+      docsSelectionCandidateIds: ["candidate-4-docs_lookup"],
       selectedDocsPackageIds: [],
-      selectedCandidateId: "candidate-3-docs_lookup",
+      selectedCandidateId: "candidate-4-docs_lookup",
       fallbackUsed: true
     });
-    expect(result.executions[2]).toMatchObject({
-      candidateId: "candidate-3-docs_lookup",
+    expect(result.executions[3]).toMatchObject({
+      candidateId: "candidate-4-docs_lookup",
       docsSelection: {
         selections: [],
         trace: {

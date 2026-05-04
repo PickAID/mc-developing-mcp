@@ -98,8 +98,19 @@ describe("buildMcpServerEvidencePlan", () => {
           ]
         },
         {
-          id: "candidate-2-workspace_source",
+          id: "candidate-2-external_mod_resolution",
           priority: 2,
+          tier: "primary",
+          routeStep: "external_mod_resolution",
+          provenance: "external_mod_resolution",
+          preferredTool: "context.query",
+          estimatedCost: "low",
+          reliability: "high",
+          pathHints: []
+        },
+        {
+          id: "candidate-3-workspace_source",
+          priority: 3,
           tier: "primary",
           routeStep: "workspace_source",
           provenance: "workspace_source",
@@ -113,8 +124,8 @@ describe("buildMcpServerEvidencePlan", () => {
           ]
         },
         {
-          id: "candidate-3-docs_lookup",
-          priority: 3,
+          id: "candidate-4-docs_lookup",
+          priority: 4,
           tier: "fallback",
           routeStep: "docs_lookup",
           provenance: "docs",
@@ -124,8 +135,13 @@ describe("buildMcpServerEvidencePlan", () => {
         }
       ],
       trace: {
-        routeSteps: ["log_files", "workspace_source", "docs_lookup"],
-        fallbackCandidateIds: ["candidate-3-docs_lookup"]
+        routeSteps: [
+          "log_files",
+          "external_mod_resolution",
+          "workspace_source",
+          "docs_lookup"
+        ],
+        fallbackCandidateIds: ["candidate-4-docs_lookup"]
       }
     });
   });
@@ -158,12 +174,18 @@ describe("buildMcpServerEvidencePlan", () => {
           pathHints: [expect.stringContaining("mods/content-mod.jar")]
         },
         {
-          id: "candidate-3-workspace_source",
+          id: "candidate-3-external_mod_resolution",
+          routeStep: "external_mod_resolution",
+          provenance: "external_mod_resolution",
+          preferredTool: "context.query"
+        },
+        {
+          id: "candidate-4-workspace_source",
           routeStep: "workspace_source",
           provenance: "workspace_source"
         },
         {
-          id: "candidate-4-docs_lookup",
+          id: "candidate-5-docs_lookup",
           provenance: "docs"
         }
       ],
@@ -171,10 +193,11 @@ describe("buildMcpServerEvidencePlan", () => {
         routeSteps: [
           "log_files",
           "mod_archive_content",
+          "external_mod_resolution",
           "workspace_source",
           "docs_lookup"
         ],
-        fallbackCandidateIds: ["candidate-4-docs_lookup"]
+        fallbackCandidateIds: ["candidate-5-docs_lookup"]
       }
     });
   });

@@ -19,4 +19,32 @@ describe("parseCrashSignals", () => {
       actionableClassReferences: ["com.example.compat.TargetApi"]
     });
   });
+
+  it("extracts loader dependency mod ids from Fabric and NeoForge crash text", () => {
+    const signals = parseCrashSignals(
+      [
+        "- Mod 'Demo Addon' (demo_addon) 1.0.0 requires version 0.92.2 or later of fabric-api, which is missing!",
+        "Missing or unsupported mandatory dependencies:",
+        "Mod ID: 'geckolib', Requested by: 'spell_mod', Expected range: '[4.4,)', Actual version: '[MISSING]'",
+        ""
+      ].join("\n")
+    );
+
+    expect(signals.loaderModReferences).toEqual([
+      {
+        modId: "fabric-api",
+        requestedBy: "demo_addon",
+        expectedRange: "0.92.2 or later",
+        actualVersion: "missing",
+        kind: "missing_dependency"
+      },
+      {
+        modId: "geckolib",
+        requestedBy: "spell_mod",
+        expectedRange: "[4.4,)",
+        actualVersion: "[MISSING]",
+        kind: "missing_dependency"
+      }
+    ]);
+  });
 });

@@ -28,14 +28,19 @@ describe("buildHarnessTaskBrief", () => {
         confidence: "high"
       },
       taskRoute: {
-        steps: ["log_files", "workspace_source", "docs_lookup"],
+        steps: [
+          "log_files",
+          "external_mod_resolution",
+          "workspace_source",
+          "docs_lookup"
+        ],
         preferredTools: [
           "workspace.analyze",
-          "source.bundle",
-          "context.query"
+          "context.query",
+          "source.bundle"
         ]
       },
-      preferredTools: ["workspace.analyze", "source.bundle", "context.query"]
+      preferredTools: ["workspace.analyze", "context.query", "source.bundle"]
     });
 
     const brief = buildHarnessTaskBrief(
@@ -64,11 +69,11 @@ describe("buildHarnessTaskBrief", () => {
         {
           id: "task_route_policy",
           text:
-            "Task route: crash_triage via log_files -> workspace_source -> docs_lookup."
+            "Task route: crash_triage via log_files -> external_mod_resolution -> workspace_source -> docs_lookup."
         },
         {
           id: "task_tool_policy",
-          text: "Task tools: workspace.analyze -> source.bundle -> context.query."
+          text: "Task tools: workspace.analyze -> context.query -> source.bundle."
         }
       ])
     );
