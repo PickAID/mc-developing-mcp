@@ -1,5 +1,12 @@
 export type DatapackDomain = "data" | "assets";
 
+export type DatapackRootKind =
+  | "datapack_root"
+  | "resource_pack_root"
+  | "mixed_pack_root"
+  | "workspace_assets_root"
+  | "workspace_data_root";
+
 export type DataKind =
   | "functions"
   | "recipes"
@@ -36,6 +43,7 @@ export type DatapackKind = DataKind | AssetKind;
 
 export interface DatapackRoot {
   absolutePath: string;
+  rootKind: DatapackRootKind;
   hasPackMcmeta: boolean;
   hasData: boolean;
   hasAssets: boolean;
@@ -50,6 +58,8 @@ export interface DatapackDiscovery {
 
 export interface DatapackFileEntry {
   absolutePath: string;
+  rootKind: DatapackRootKind;
+  rootRelativePath: string;
   relativePath: string;
   namespace: string;
   kind: DatapackKind;
@@ -80,6 +90,7 @@ export interface DatapackFileList {
 export interface DatapackFileSummary {
   rootCount: number;
   entryCount: number;
+  byRootKind: Partial<Record<DatapackRootKind, number>>;
   byDomain: Partial<Record<DatapackDomain, number>>;
   byKind: Partial<Record<DatapackKind, number>>;
   byNamespace: Record<string, number>;

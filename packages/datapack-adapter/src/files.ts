@@ -11,6 +11,7 @@ import type {
   DatapackFileList,
   DatapackFileSummary,
   DatapackReadResult,
+  DatapackRoot,
   DatapackSearchResult,
   DatapackSkippedFile
 } from "./types.js";
@@ -21,9 +22,10 @@ export async function listDatapackFiles(
   root: string,
   budget: DatapackBudget = {}
 ): Promise<DatapackFileList> {
+  const absoluteRoot = resolve(root);
   const entries: DatapackFileEntry[] = [];
   const skipped: DatapackSkippedFile[] = [];
-  const roots = await discoverRoots(root);
+  const roots = await discoverRoots(absoluteRoot);
   let visitedFiles = 0;
   let truncated = false;
 
@@ -36,7 +38,11 @@ export async function listDatapackFiles(
           break;
         }
 
-        const entry = await createEntry(contentRoot.absolutePath, absolutePath);
+        const entry = await createEntry({
+          scanRoot: absoluteRoot,
+          contentRoot,
+          absolutePath
+        });
         if (entry === undefined) {
           skipped.push(createSkipped(contentRoot.absolutePath, absolutePath, "unreadable"));
           continue;
@@ -61,7 +67,9 @@ export async function listDatapackFiles(
 
     if (contentRoot.hasPackMcmeta) {
       const metadataResult = await appendPackMetadataEntry({
+        scanRoot: absoluteRoot,
         contentRoot: contentRoot.absolutePath,
+        rootKind: contentRoot.rootKind,
         entries,
         skipped,
         budget,
@@ -82,9 +90,14 @@ export async function summarizeDatapackFiles(
 ): Promise<DatapackFileSummary> {
   const roots = await discoverRoots(root);
   const listed = await listDatapackFiles(root, budget);
+  const byRootKind: DatapackFileSummary["byRootKind"] = {};
   const byDomain: DatapackFileSummary["byDomain"] = {};
   const byKind: DatapackFileSummary["byKind"] = {};
   const byNamespace: DatapackFileSummary["byNamespace"] = {};
+
+  for (const contentRoot of roots) {
+    byRootKind[contentRoot.rootKind] = (byRootKind[contentRoot.rootKind] ?? 0) + 1;
+  }
 
   for (const entry of listed.entries) {
     byDomain[entry.domain] = (byDomain[entry.domain] ?? 0) + 1;
@@ -95,6 +108,7 @@ export async function summarizeDatapackFiles(
   return {
     rootCount: roots.length,
     entryCount: listed.entries.length,
+    byRootKind,
     byDomain,
     byKind,
     byNamespace,
@@ -104,7 +118,9 @@ export async function summarizeDatapackFiles(
 }
 
 async function appendPackMetadataEntry(input: {
+  scanRoot: string;
   contentRoot: string;
+  rootKind: DatapackRoot["rootKind"];
   entries: DatapackFileEntry[];
   skipped: DatapackSkippedFile[];
   budget: DatapackBudget;
@@ -116,7 +132,14 @@ async function appendPackMetadataEntry(input: {
   }
 
   const absolutePath = join(input.contentRoot, "pack.mcmeta");
-  const entry = await createEntry(input.contentRoot, absolutePath);
+  const entry = await createEntry({
+    scanRoot: input.scanRoot,
+    contentRoot: {
+      absolutePath: input.contentRoot,
+      rootKind: input.rootKind
+    },
+    absolutePath
+  });
   if (entry !== undefined && withinEntryLimit(input.entries, input.budget)) {
     input.entries.push(entry);
     return { visitedFiles, truncated: false };
@@ -168,18 +191,25 @@ export async function readDatapackFile(
 
   const roots = await discoverRoots(absoluteRoot);
   const candidateRoots = [
-    absoluteRoot,
-    ...roots.map((contentRoot) => contentRoot.absolutePath)
+    ...roots,
+    {
+      absolutePath: absoluteRoot,
+      rootKind: rootKindForAbsoluteRoot(absoluteRoot, roots)
+    }
   ];
   let entry: DatapackFileEntry | undefined;
 
   for (const candidateRoot of candidateRoots) {
-    const candidatePath = resolve(candidateRoot, relativePath);
-    if (!isInside(candidateRoot, candidatePath)) {
+    const candidatePath = resolve(candidateRoot.absolutePath, relativePath);
+    if (!isInside(candidateRoot.absolutePath, candidatePath)) {
       continue;
     }
 
-    entry = await createEntry(candidateRoot, candidatePath);
+    entry = await createEntry({
+      scanRoot: absoluteRoot,
+      contentRoot: candidateRoot,
+      absolutePath: candidatePath
+    });
     if (entry !== undefined) {
       break;
     }
@@ -216,10 +246,22 @@ async function* walkFiles(directory: string): AsyncGenerator<string> {
   }
 }
 
-async function createEntry(root: string, absolutePath: string): Promise<DatapackFileEntry | undefined> {
-  const relativePath = relativePosix(root, absolutePath);
+async function createEntry(input: {
+  scanRoot: string;
+  contentRoot: Pick<DatapackRoot, "absolutePath" | "rootKind">;
+  absolutePath: string;
+}): Promise<DatapackFileEntry | undefined> {
+  const rootRelativePath = toRootRelativePath(
+    input.scanRoot,
+    input.contentRoot.absolutePath
+  );
+  const relativePath = relativePosix(input.contentRoot.absolutePath, input.absolutePath);
   if (isPackMetadataPath(relativePath)) {
-    return createPackMetadataEntry(absolutePath, relativePath);
+    return createPackMetadataEntry(input.absolutePath, {
+      relativePath,
+      rootKind: input.contentRoot.rootKind,
+      rootRelativePath
+    });
   }
 
   const segments = relativePath.split("/");
@@ -235,13 +277,15 @@ async function createEntry(root: string, absolutePath: string): Promise<Datapack
   }
 
   try {
-    const fileStat = await stat(absolutePath);
+    const fileStat = await stat(input.absolutePath);
     if (!fileStat.isFile()) {
       return undefined;
     }
 
     return {
-      absolutePath,
+      absolutePath: input.absolutePath,
+      rootKind: input.contentRoot.rootKind,
+      rootRelativePath,
       relativePath,
       namespace,
       kind: classifyKind(domain, segments[2]),
@@ -255,7 +299,11 @@ async function createEntry(root: string, absolutePath: string): Promise<Datapack
 
 async function createPackMetadataEntry(
   absolutePath: string,
-  relativePath: string
+  input: {
+    relativePath: string;
+    rootKind: DatapackRoot["rootKind"];
+    rootRelativePath: string;
+  }
 ): Promise<DatapackFileEntry | undefined> {
   try {
     const fileStat = await stat(absolutePath);
@@ -265,7 +313,9 @@ async function createPackMetadataEntry(
 
     return {
       absolutePath,
-      relativePath,
+      rootKind: input.rootKind,
+      rootRelativePath: input.rootRelativePath,
+      relativePath: input.relativePath,
       namespace: "",
       kind: "pack_metadata",
       domain: "assets",
@@ -278,6 +328,18 @@ async function createPackMetadataEntry(
 
 function isPackMetadataPath(relativePath: string): boolean {
   return relativePath === "pack.mcmeta" || relativePath === "pack.png";
+}
+
+function rootKindForAbsoluteRoot(
+  absoluteRoot: string,
+  roots: DatapackRoot[]
+): DatapackRoot["rootKind"] {
+  return roots.find((contentRoot) => contentRoot.absolutePath === absoluteRoot)
+    ?.rootKind ?? "workspace_data_root";
+}
+
+function toRootRelativePath(scanRoot: string, contentRoot: string): string {
+  return relativePosix(scanRoot, contentRoot) || ".";
 }
 
 function withinEntryLimit(

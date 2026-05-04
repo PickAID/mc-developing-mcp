@@ -2,6 +2,7 @@ import { readdir, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { classifyKind } from "./kinds.js";
+import { classifyDatapackRootKind } from "./root-kind.js";
 import type { AssetKind, DataKind, DatapackDiscovery, DatapackRoot } from "./types.js";
 
 export async function discoverDatapackContent(root: string): Promise<DatapackDiscovery> {
@@ -38,11 +39,15 @@ async function visitForRoots(directory: string, discovered: DatapackRoot[]): Pro
   }
 
   const names = new Set(entries.map((entry) => entry.name));
-  const root: DatapackRoot = {
-    absolutePath: directory,
+  const rootState = {
     hasPackMcmeta: names.has("pack.mcmeta"),
     hasData: names.has("data") && entries.some((entry) => entry.name === "data" && entry.isDirectory()),
     hasAssets: names.has("assets") && entries.some((entry) => entry.name === "assets" && entry.isDirectory())
+  };
+  const root: DatapackRoot = {
+    absolutePath: directory,
+    rootKind: classifyDatapackRootKind(rootState),
+    ...rootState
   };
 
   if (root.hasPackMcmeta || root.hasData || root.hasAssets) {

@@ -65,6 +65,8 @@ export async function executeMcpServerDatapackFiles(
   }
 
   const requestText = input.requestPlan.requestText ?? "";
+  const isResourcePackRequest =
+    input.requestPlan.trace.taskIntent.id === "resource_pack_lookup";
   const queries = extractResourceLocationQueries(requestText);
   const requestedPaths = extractDatapackPathQueries(requestText);
   const discovery = await discoverDatapackContent(workspaceRoot);
@@ -106,6 +108,9 @@ export async function executeMcpServerDatapackFiles(
     ...DATAPACK_BUDGET
   });
   const compactResourceSummary = toCompactResourceSummary(resourceSummary);
+  const resourceRootSummary = isResourcePackRequest
+    ? compactResourceSummary
+    : undefined;
   const hasDatapackEvidence =
     discovery.dataKinds.length > 0 || discovery.roots.some((root) => root.hasData);
   const hasResourcePackEvidence =
@@ -150,14 +155,20 @@ export async function executeMcpServerDatapackFiles(
   });
 
   if (queries.length === 0 && requestedPaths.length === 0) {
-    const listed = await listDatapackFiles(workspaceRoot, {
-      ...DATAPACK_BUDGET,
-      limit: MAX_LISTED_FILES
-    });
+    const listed = isResourcePackRequest
+      ? { entries: [], skipped: [], truncated: false }
+      : await listDatapackFiles(workspaceRoot, {
+          ...DATAPACK_BUDGET,
+          limit: MAX_LISTED_FILES
+        });
 
     return {
-      matched: listed.entries.length > 0,
-      summary: `Listed ${listed.entries.length} local datapack or asset file(s).`,
+      matched: isResourcePackRequest
+        ? compactResourceSummary.entryCount > 0
+        : listed.entries.length > 0,
+      summary: isResourcePackRequest
+        ? `Summarized ${compactResourceSummary.entryCount} local resource asset file(s).`
+        : `Listed ${listed.entries.length} local datapack or asset file(s).`,
       payload: {
         source: "datapack_files",
         workspaceRoot,
@@ -169,7 +180,8 @@ export async function executeMcpServerDatapackFiles(
         ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
         ...(resourcePackMigrationAnalysis ? { resourcePackMigrationAnalysis } : {}),
         resourceSummary: compactResourceSummary,
-        files: listed.entries,
+        ...(resourceRootSummary ? { resourceRootSummary } : {}),
+        ...(isResourcePackRequest ? {} : { files: listed.entries }),
         skipped: listed.skipped,
         truncated: listed.truncated
       }
@@ -286,6 +298,7 @@ function toCompactResourceSummary(summary: DatapackFileSummary) {
     tokenPolicy: "counts_only" as const,
     rootCount: summary.rootCount,
     entryCount: summary.entryCount,
+    byRootKind: summary.byRootKind,
     byDomain: summary.byDomain,
     byKind: summary.byKind,
     byNamespace: summary.byNamespace,
