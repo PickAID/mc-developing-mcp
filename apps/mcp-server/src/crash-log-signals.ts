@@ -35,6 +35,7 @@ export function parseCrashSignals(content: string): CrashSignals {
     .slice(0, MAX_STACK_FRAMES);
   const classReferences = unique([
     ...extractErrorClassReferences(content),
+    ...extractMixinTargetClassReferences(content),
     ...stackFrames.map((frame) => frame.className)
   ]);
   const actionableClassReferences = classReferences.filter(isActionableClass);
@@ -119,6 +120,16 @@ function extractErrorClassReferences(content: string): string[] {
       .map((match) => match[1]?.replaceAll("/", "."))
       .filter((value): value is string => value !== undefined)
   );
+}
+
+function extractMixinTargetClassReferences(content: string): string[] {
+  const matches = content.matchAll(
+    /\bMixin apply failed\b.*?->\s+((?:[a-z_][\w$]*\.){2,}[A-Z_$][\w$]*(?:\$[A-Za-z_$][\w$]*)*)\b/gi
+  );
+
+  return [...matches]
+    .map((match) => match[1])
+    .filter((value): value is string => value !== undefined);
 }
 
 function extractResourceLocations(content: string): string[] {
