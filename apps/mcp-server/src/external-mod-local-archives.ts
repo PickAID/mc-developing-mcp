@@ -245,8 +245,24 @@ function buildMatchReasons(
       `local metadata does not declare Minecraft version ${request.minecraftVersion}`
     );
   }
+  if (
+    request.loaderDependency &&
+    normalizeText(request.loaderDependency.modId) === normalizeText(metadata.modId)
+  ) {
+    reasons.push(formatLoaderDependencyReason(request.loaderDependency));
+  }
 
   return reasons;
+}
+
+function formatLoaderDependencyReason(
+  dependency: NonNullable<LocalModArchiveRequest["loaderDependency"]>
+): string {
+  const requestedBy = dependency.requestedBy ?? "unknown mod";
+  const expected = dependency.expectedRange ?? "unknown range";
+  const actual = dependency.actualVersion ?? "unknown version";
+
+  return `crash dependency requested by ${requestedBy} expected ${expected} but log reported ${actual}`;
 }
 
 function toLocalModArchiveRequest(

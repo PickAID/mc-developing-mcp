@@ -1,3 +1,9 @@
+import {
+  extractCrashLoaderDependency,
+  extractCrashLoaderModQuery,
+  type McpServerExternalModLoaderDependency
+} from "./external-mod-loader-dependency.js";
+
 export type McpServerExternalModPlatform = "maven" | "modrinth" | "curseforge";
 
 export interface McpServerExternalModResolutionRequest {
@@ -9,6 +15,7 @@ export interface McpServerExternalModResolutionRequest {
   query?: string;
   loader?: string;
   minecraftVersion?: string;
+  loaderDependency?: McpServerExternalModLoaderDependency;
 }
 
 export interface McpServerExternalModMavenRepository {
@@ -67,7 +74,9 @@ export function parseExternalModRequest(
   const loader = detectLoader(requestText) ?? defaults.loader;
   const minecraftVersion =
     detectMinecraftVersion(requestText) ?? defaults.minecraftVersion;
-  const crashLoaderModQuery = extractCrashLoaderModQuery(requestText);
+  const loaderDependency = extractCrashLoaderDependency(requestText);
+  const crashLoaderModQuery =
+    loaderDependency?.modId ?? extractCrashLoaderModQuery(requestText);
 
   return {
     platform,
@@ -79,7 +88,8 @@ export function parseExternalModRequest(
       crashLoaderModQuery ??
       extractQuery(requestText, loader, minecraftVersion),
     loader,
-    minecraftVersion
+    minecraftVersion,
+    loaderDependency
   };
 }
 
@@ -186,15 +196,6 @@ function extractQuery(
   const query = meaningful.join(" ").toLowerCase();
 
   return query ? query : undefined;
-}
-
-function extractCrashLoaderModQuery(requestText: string): string | undefined {
-  const match = requestText.match(
-    /^Crash log loader mod ids:\s*([A-Za-z0-9_.-]+(?:\s*,\s*[A-Za-z0-9_.-]+)*)/im
-  );
-  const firstModId = match?.[1]?.split(",")[0]?.trim().toLowerCase();
-
-  return firstModId && firstModId.length > 0 ? firstModId : undefined;
 }
 
 function extractExplicitConstraintHint(

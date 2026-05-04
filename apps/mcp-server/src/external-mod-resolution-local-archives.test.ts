@@ -181,6 +181,64 @@ describe("executeMcpServerExternalModResolution local archives", () => {
       }
     });
   });
+
+  it("keeps crash dependency version expectations on local archive candidates", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-local-crash-extmod-"));
+    const modJar = join(workspaceRoot, "mods", "fabric-api.jar");
+
+    await writeZip(modJar, [
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({
+          id: "fabric-api",
+          name: "Fabric API",
+          version: "0.91.0"
+        })
+      }
+    ]);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      [
+        "Find the Modrinth mod for the startup crash fabric 1.20.1.",
+        "Crash log loader dependency: modId=fabric-api; requestedBy=demo_addon; expected=0.92.2 or later; actual=0.91.0; kind=incompatible_dependency"
+      ].join("\n")
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      modrinthResolver: async () => {
+        throw new Error("local archive lookup must not search Modrinth");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      summary: "Resolved local mod archive: mods/fabric-api.jar.",
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          loaderDependency: {
+            modId: "fabric-api",
+            requestedBy: "demo_addon",
+            expectedRange: "0.92.2 or later",
+            actualVersion: "0.91.0",
+            kind: "incompatible_dependency"
+          }
+        },
+        result: {
+          source: "local_archive",
+          candidates: [
+            {
+              modId: "fabric-api",
+              versionNumber: "0.91.0",
+              confidenceReasons: expect.arrayContaining([
+                "crash dependency requested by demo_addon expected 0.92.2 or later but log reported 0.91.0"
+              ])
+            }
+          ]
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {

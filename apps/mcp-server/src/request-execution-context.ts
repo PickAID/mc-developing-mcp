@@ -12,6 +12,7 @@ export interface RequestExecutionContext {
   resourceLocations: string[];
   resourcePaths: string[];
   loaderModIds: string[];
+  loaderDependencySummaries: string[];
   javaDiagnostics: string[];
   javaSourcePaths: string[];
 }
@@ -22,6 +23,7 @@ export function createRequestExecutionContext(): RequestExecutionContext {
     resourceLocations: [],
     resourcePaths: [],
     loaderModIds: [],
+    loaderDependencySummaries: [],
     javaDiagnostics: [],
     javaSourcePaths: []
   };
@@ -91,6 +93,10 @@ export function rememberContext(
     ...context.loaderModIds,
     ...extractLoaderModIds(payload)
   ]);
+  context.loaderDependencySummaries = unique([
+    ...context.loaderDependencySummaries,
+    ...extractLoaderDependencySummaries(payload)
+  ]);
   context.javaDiagnostics = unique([
     ...context.javaDiagnostics,
     ...extractJavaDiagnosticSummaries(payload)
@@ -145,6 +151,9 @@ function buildContextTexts(context: RequestExecutionContext): string[] {
     ...(context.loaderModIds.length > 0
       ? [`Crash log loader mod ids: ${context.loaderModIds.join(", ")}`]
       : []),
+    ...context.loaderDependencySummaries.map(
+      (summary) => `Crash log loader dependency: ${summary}`
+    ),
     ...(context.javaDiagnostics.length > 0
       ? [`Java diagnostics: ${context.javaDiagnostics.join("; ")}`]
       : []),
@@ -218,6 +227,42 @@ function extractLoaderModIds(payload: unknown): string[] {
       )
       .filter((value): value is string => value !== undefined && value.length > 0)
   );
+}
+
+function extractLoaderDependencySummaries(payload: unknown): string[] {
+  const signals = extractWorkspaceAnalyzeSignals(payload);
+
+  if (!signals || !Array.isArray(signals.loaderModReferences)) {
+    return [];
+  }
+
+  return signals.loaderModReferences
+    .map((reference) =>
+      isRecord(reference) && typeof reference.modId === "string"
+        ? formatLoaderDependencySummary(reference)
+        : undefined
+    )
+    .filter((value): value is string => value !== undefined);
+}
+
+function formatLoaderDependencySummary(
+  reference: Record<string, unknown>
+): string {
+  return [
+    `modId=${reference.modId}`,
+    typeof reference.requestedBy === "string"
+      ? `requestedBy=${reference.requestedBy}`
+      : undefined,
+    typeof reference.expectedRange === "string"
+      ? `expected=${reference.expectedRange}`
+      : undefined,
+    typeof reference.actualVersion === "string"
+      ? `actual=${reference.actualVersion}`
+      : undefined,
+    typeof reference.kind === "string" ? `kind=${reference.kind}` : undefined
+  ]
+    .filter((value): value is string => value !== undefined)
+    .join("; ");
 }
 
 function extractWorkspaceAnalyzeSignals(

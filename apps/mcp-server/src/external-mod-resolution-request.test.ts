@@ -125,4 +125,28 @@ describe("parseExternalModRequest", () => {
       minecraftVersion: "1.20.1"
     });
   });
+
+  it("extracts crash loader dependency details with runtime defaults", () => {
+    expect(
+      parseExternalModRequest(
+        [
+          "The modpack crashes during startup.",
+          "Crash log loader dependency: modId=fabric-api; requestedBy=demo_addon; expected=0.92.2 or later; actual=0.91.0; kind=incompatible_dependency"
+        ].join("\n"),
+        { loader: "fabric", minecraftVersion: "1.20.1" }
+      )
+    ).toMatchObject({
+      platform: "modrinth",
+      query: "fabric-api",
+      loader: "fabric",
+      minecraftVersion: "1.20.1",
+      loaderDependency: {
+        modId: "fabric-api",
+        requestedBy: "demo_addon",
+        expectedRange: "0.92.2 or later",
+        actualVersion: "0.91.0",
+        kind: "incompatible_dependency"
+      }
+    });
+  });
 });

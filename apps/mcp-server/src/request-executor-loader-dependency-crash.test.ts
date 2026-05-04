@@ -32,6 +32,9 @@ describe("executeMcpServerRequest loader dependency crash chaining", () => {
           expect(requestPlan.requestText).toContain(
             "Crash log loader mod ids: fabric-api"
           );
+          expect(requestPlan.requestText).toContain(
+            "Crash log loader dependency: modId=fabric-api; requestedBy=demo_addon; expected=any version; actual=missing; kind=missing_dependency"
+          );
 
           return {
             matched: true,
