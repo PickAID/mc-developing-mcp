@@ -45,6 +45,10 @@ export interface McpServerExternalModResolutionOptions {
   modrinthResolver?: (
     input: ResolveModrinthModInput
   ) => Promise<ExternalModResolverResult>;
+  curseForgeApiKey?: string;
+  curseForgeCredentialProvider?: () => string | undefined;
+  curseForgeFetch?: ResolveCurseForgeModInput["fetch"];
+  curseForgeApiBaseUrl?: string;
   curseForgeResolver?: (
     input: ResolveCurseForgeModInput
   ) => Promise<ExternalModResolverResult>;
@@ -166,7 +170,11 @@ async function resolveByPlatform(
       projectId: request.projectId,
       query: request.query,
       loader: request.loader,
-      minecraftVersion: request.minecraftVersion
+      minecraftVersion: request.minecraftVersion,
+      apiKey: options.curseForgeApiKey,
+      credentialProvider: options.curseForgeCredentialProvider,
+      fetch: options.curseForgeFetch,
+      apiBaseUrl: options.curseForgeApiBaseUrl
     });
   }
 

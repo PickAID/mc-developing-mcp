@@ -2,7 +2,8 @@ import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
 import type { DocsPackageRecord } from "@mcpskill/docs-retrieval";
 import {
   createFileMavenMetadataCache,
-  type MavenMetadataCache
+  type MavenMetadataCache,
+  type ResolveCurseForgeModInput
 } from "@mcpskill/external-mod-resolver";
 import { readGradleMavenRepositories } from "@mcpskill/gradle-adapter";
 
@@ -24,6 +25,10 @@ export interface McpServerContextQueryExecutorOptions {
   externalModMavenMetadataCache?: MavenMetadataCache;
   externalModMavenRepositories?: McpServerExternalModMavenRepository[];
   externalModGradleDependencyDiscovery?: GradleSourceArchiveDiscoveryOptions;
+  externalModCurseForgeApiKey?: string;
+  externalModCurseForgeCredentialProvider?: () => string | undefined;
+  externalModCurseForgeFetch?: ResolveCurseForgeModInput["fetch"];
+  externalModCurseForgeApiBaseUrl?: string;
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
@@ -88,6 +93,10 @@ async function executeExternalModResolution(
       options.externalModMavenRepositories ??
       (await readWorkspaceMavenRepositories(input)),
     gradleDependencyDiscovery: options.externalModGradleDependencyDiscovery,
+    curseForgeApiKey: options.externalModCurseForgeApiKey,
+    curseForgeCredentialProvider: options.externalModCurseForgeCredentialProvider,
+    curseForgeFetch: options.externalModCurseForgeFetch,
+    curseForgeApiBaseUrl: options.externalModCurseForgeApiBaseUrl,
     modArchiveContentCache: options.modArchiveContentCache
   });
 }

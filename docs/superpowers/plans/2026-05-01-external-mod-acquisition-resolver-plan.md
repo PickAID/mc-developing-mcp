@@ -24,7 +24,8 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Gradle-declared dependency discovery now reads included subproject `build.gradle(.kts)` files from static `settings.gradle(.kts)` `include` declarations.
 - Gradle-declared dependency discovery now honors simple workspace-relative `project(":x").projectDir = file("...")` mappings without executing Gradle.
 - Gradle-declared binary archive discovery now accepts runtime classifier JARs such as `-all`, `-shadow`, `-dev`, and `-remapped` while excluding sources/javadoc classifiers.
-- Broader remote candidate ranking remains pending.
+- Modrinth and CurseForge broad search now support conservative strong-identity ranking for project id, slug, and title/name matches while preserving ambiguity for weak broad queries.
+- MCP internal external mod resolution can pass user-provided CurseForge credential/fetch/base URL options into the default API-backed resolver.
 
 ## Constraints
 - TypeScript only.
@@ -49,7 +50,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Test with fixture metadata and real URL-shape assertions.
 
 ## Task 3: Modrinth Resolver
-- Status: initial implementation complete; Maven dispatch complete; direct slug/project id lookup complete; runtime jar selection complete; broad ambiguous search handling complete; ranking expansion remains pending.
+- Status: initial implementation complete; Maven dispatch complete; direct slug/project id lookup complete; runtime jar selection complete; broad ambiguous search handling complete; conservative strong-identity search ranking complete.
 - Search by query/slug/id using API endpoints, preferring direct project lookup before broad search.
 - Filter project versions by Minecraft version and loader.
 - Select primary runtime jar files, avoid known sidecar `file_type` entries, and preserve hash metadata.
@@ -57,7 +58,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for exact slug, exact project id, ambiguous query, missing loader, and file selection.
 
 ## Task 4: CurseForge Resolver
-- Status: initial implementation complete for credentials handling, exact slug fixture resolution, broad ambiguous search handling, download-url fallback, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
+- Status: initial implementation complete for credentials handling, exact slug fixture resolution, broad ambiguous search handling, conservative strong-identity search ranking, download-url fallback, file selection, and CurseMaven dispatch; real API smoke with user key should be done separately and never committed with the key.
 - Add API-key/config-driven resolver using `CURSEFORGE_API_KEY` as the default environment variable.
 - Return `credentials_required` with the setup URL `https://console.curseforge.com/?#/api-keys` when no credential provider supplies a key.
 - Search mods and list files through official API.
@@ -67,7 +68,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Add fixture tests for credential presence, missing credential, ambiguous query, and file selection.
 
 ## Task 5: Orchestrator
-- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, Gradle-declared dependency/cache-JAR priority including runtime classifier JARs, included subprojects, and simple `projectDir` mappings, compact ambiguous remote search reports, URL-backed slug extraction, explicit slug/project-id constraint parsing, and broad CurseForge query preservation inside MCP external mod resolution.
+- Status: partial implementation complete for explicit Maven-coordinate priority, runtime-local Maven metadata cache, Gradle-declared Maven repository priority, Gradle-declared dependency/cache-JAR priority including runtime classifier JARs, included subprojects, and simple `projectDir` mappings, compact ambiguous remote search reports, conservative strong-identity remote ranking, URL-backed slug extraction, explicit slug/project-id constraint parsing, broad CurseForge query preservation, and internal CurseForge credential option pass-through inside MCP external mod resolution.
 - Implement resolver priority:
   1. local/Gradle/JAR evidence;
   2. Maven coordinate;

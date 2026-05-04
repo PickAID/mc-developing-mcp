@@ -112,6 +112,80 @@ describe("executeMcpServerExternalModResolution", () => {
     });
   });
 
+  it("passes configured CurseForge credentials into the default resolver", async () => {
+    const input = await createExecutorInput(
+      "Find the CurseForge mod jei forge 1.20.1."
+    );
+    const requestHeaders: string[] = [];
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      curseForgeApiKey: "test-key",
+      curseForgeFetch: async (url, init) => {
+        const headers = init?.headers as Record<string, string>;
+        requestHeaders.push(headers["x-api-key"]);
+
+        if (url.toString().includes("/v1/mods/search")) {
+          return jsonResponse({
+            data: [
+              {
+                id: 238222,
+                name: "Just Enough Items (JEI)",
+                slug: "jei",
+                classId: 6
+              }
+            ]
+          });
+        }
+
+        return jsonResponse({
+          data: [
+            {
+              id: 7920915,
+              displayName: "15.20.0.130 for Forge 1.20.1",
+              fileName: "jei-1.20.1-forge-15.20.0.130.jar",
+              downloadUrl: "https://mediafilez.forgecdn.net/files/7920/915/jei.jar",
+              gameVersions: ["1.20.1", "Forge"],
+              hashes: []
+            }
+          ]
+        });
+      }
+    });
+
+    expect(requestHeaders).toEqual(["test-key", "test-key"]);
+    expect(result).toMatchObject({
+      matched: true,
+      summary:
+        "Resolved external mod Maven coordinates: curse.maven:jei-238222:7920915.",
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "curseforge",
+          query: "jei",
+          loader: "forge",
+          minecraftVersion: "1.20.1"
+        },
+        result: {
+          source: "curseforge",
+          warnings: [],
+          candidates: [
+            {
+              source: "curseforge",
+              projectId: "238222",
+              slug: "jei",
+              fileName: "jei-1.20.1-forge-15.20.0.130.jar",
+              mavenArtifacts: [
+                {
+                  coordinates: "curse.maven:jei-238222:7920915"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    });
+  });
+
   it("passes broad CurseForge queries without a slug so ambiguity can be reported", async () => {
     const input = await createExecutorInput(
       "Find the CurseForge mod energy forge 1.20.1."
@@ -384,4 +458,13 @@ function createMavenResult(): ExternalModResolverResult {
     ],
     warnings: []
   };
+}
+
+function jsonResponse(payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: {
+      "content-type": "application/json"
+    }
+  });
 }
