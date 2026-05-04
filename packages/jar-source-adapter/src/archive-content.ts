@@ -257,6 +257,17 @@ export async function searchArchiveContent(input: {
       }
       continue;
     }
+    if (archiveEntry.contentEntry.domain === "metadata") {
+      const match = findPathMatch(archiveEntry.contentEntry, input.query);
+      if (match) {
+        if (matches.length >= limit) {
+          truncated = true;
+          break;
+        }
+        matches.push(match);
+        continue;
+      }
+    }
 
     const budgetSkip = shouldSkipArchiveEntry(
       archiveEntry.contentEntry,
@@ -369,6 +380,24 @@ function findClassPathMatch(
     entry,
     line: 1,
     column: Math.max(1, relativePath.toLowerCase().indexOf(normalizedQuery) + 1),
+    preview: relativePath
+  };
+}
+
+function findPathMatch(
+  entry: ArchiveContentEntry,
+  query: string
+): ArchiveContentSearchMatch | undefined {
+  const relativePath = entry.relativePath;
+  const column = relativePath.toLowerCase().indexOf(query.toLowerCase());
+  if (column === -1) {
+    return undefined;
+  }
+
+  return {
+    entry,
+    line: 1,
+    column: column + 1,
     preview: relativePath
   };
 }

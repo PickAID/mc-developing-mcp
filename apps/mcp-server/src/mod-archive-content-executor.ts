@@ -432,6 +432,9 @@ function extractModArchiveQueries(requestText?: string): string[] {
   for (const className of normalizedText.match(/\b(?:[a-z_][\w$]*\.){2,}[A-Z_$][\w$]*\b/g) ?? []) {
     addQuery(queries, className);
   }
+  for (const path of normalizedText.match(/\b(?:(?:data|assets)\/[A-Za-z0-9_./+$-]+\.(?:json|mcmeta|txt|toml|lang|png)|[A-Za-z0-9_.-]+\.mixins?\.json|(?:fabric|quilt)\.mod\.json|pack\.mcmeta|META-INF\/(?:mods|neoforge\.mods)\.toml)\b/g) ?? []) {
+    addQuery(queries, path);
+  }
   for (const word of normalizedText.match(/\b[A-Za-z0-9_$.-]{5,}\b/g) ?? []) {
     if (!isStopWord(word)) {
       addQuery(queries, word);

@@ -156,11 +156,16 @@ function isLikelyResourceLocationMatch(
 }
 
 function extractResourcePaths(content: string): string[] {
-  const matches = content.matchAll(
+  const assetDataMatches = content.matchAll(
     /\b((?:data|assets)\/[a-z0-9_.-]+\/[a-z0-9_./-]+\.(?:json|mcmeta|txt|toml|lang))\b/g
   );
+  const metadataMatches = content.matchAll(
+    /\b((?:[A-Za-z0-9_.-]+\.mixins?\.json|(?:fabric|quilt)\.mod\.json|pack\.mcmeta|META-INF\/(?:mods|neoforge\.mods)\.toml))\b/g
+  );
 
-  return [...matches].map((match) => match[1]).filter(Boolean);
+  return [...assetDataMatches, ...metadataMatches]
+    .map((match) => match[1])
+    .filter(Boolean);
 }
 
 function parseStackFrame(line: string): CrashStackFrame | undefined {
