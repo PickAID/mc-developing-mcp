@@ -81,6 +81,44 @@ describe("executeMcpServerWorkspaceAnalyze", () => {
     });
   });
 
+  it("extracts missing class names from class loading exceptions", async () => {
+    const workspaceRoot = await createCrashWorkspace(
+      [
+        "java.lang.NoClassDefFoundError: com/example/api/EnergyApi",
+        "Caused by: java.lang.ClassNotFoundException: com.example.lib.Helper",
+        "\tat net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:900)",
+        ""
+      ].join("\n")
+    );
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "The server crashes on startup with a missing class."
+    );
+
+    await expect(executeMcpServerWorkspaceAnalyze(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "workspace_analyze",
+        mode: "log_files",
+        signals: {
+          exceptionClasses: [
+            "java.lang.NoClassDefFoundError",
+            "java.lang.ClassNotFoundException"
+          ],
+          classReferences: [
+            "com.example.api.EnergyApi",
+            "com.example.lib.Helper",
+            "net.minecraft.server.MinecraftServer"
+          ],
+          actionableClassReferences: [
+            "com.example.api.EnergyApi",
+            "com.example.lib.Helper"
+          ]
+        }
+      }
+    });
+  });
+
   it("drains pending Java LSP diagnostics into compact workspace evidence", async () => {
     const workspaceRoot = await createCrashWorkspace("not a crash log\n");
     const registry = createLspDiagnosticRegistry();
