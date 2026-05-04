@@ -38,6 +38,7 @@ import {
   readSelectedEntry
 } from "./mod-archive-entry-operations.js";
 import {
+  traceFirstMatchingModArchiveResourceReferences,
   traceSelectedModArchiveResourceReferences,
   traceSelectedNestedModArchiveResourceReferences
 } from "./mod-archive-resource-references.js";
@@ -147,6 +148,16 @@ export async function executeMcpServerModArchiveContent(
   if (selectedArchive) {
     const resourceTrace = await traceSelectedModArchiveResourceReferences({
       sourceArchive: selectedArchive.archivePath,
+      requestText,
+      cache: options.cache
+    });
+    if (resourceTrace) {
+      return resourceTrace;
+    }
+  }
+  if (!selectedArchive) {
+    const resourceTrace = await traceFirstMatchingModArchiveResourceReferences({
+      sourceArchives: archives.archives.map((archive) => archive.archivePath),
       requestText,
       cache: options.cache
     });

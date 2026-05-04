@@ -31,22 +31,36 @@ export async function traceSelectedModArchiveResourceReferences(input: {
     cache: input.cache
   });
 
-  return {
-    matched: trace.references.length > 0,
-    summary:
-      trace.references.length > 0
-        ? `Traced ${trace.references.length} mod archive resource reference(s).`
-        : "No mod archive resource references were traced.",
-    payload: {
-      source: "mod_archive_content",
-      mode: "resource_reference_trace",
-      sourceArchive: input.sourceArchive,
-      archiveMetadata: await readModArchiveMetadata(input.sourceArchive).catch(
-        () => undefined
-      ),
-      resourceReferenceTrace: toCompactResourceReferenceTrace(trace)
+  return buildModArchiveResourceTraceResult(trace);
+}
+
+export async function traceFirstMatchingModArchiveResourceReferences(input: {
+  sourceArchives: string[];
+  requestText?: string;
+  cache?: ArchiveContentCache;
+}): Promise<McpServerEvidenceExecutorResult | undefined> {
+  const startPaths = extractTraceableAssetPaths(input.requestText);
+  if (
+    startPaths.length === 0 ||
+    !mentionsResourceReferenceTrace(input.requestText)
+  ) {
+    return undefined;
+  }
+
+  for (const sourceArchive of input.sourceArchives) {
+    const trace = await traceModArchiveResourceReferences({
+      sourceArchive,
+      startPaths,
+      maxReferences: MAX_REFERENCE_TRACE_ENTRIES,
+      cache: input.cache
+    });
+
+    if (trace.references.length > 0) {
+      return buildModArchiveResourceTraceResult(trace);
     }
-  };
+  }
+
+  return undefined;
 }
 
 export async function traceSelectedNestedModArchiveResourceReferences(input: {
@@ -84,6 +98,27 @@ export async function traceSelectedNestedModArchiveResourceReferences(input: {
       sourceArchive: input.sourceArchive,
       embeddedArchivePath: trace.embeddedArchivePath,
       archiveMetadata: await readModArchiveMetadata(input.sourceArchive).catch(
+        () => undefined
+      ),
+      resourceReferenceTrace: toCompactResourceReferenceTrace(trace)
+    }
+  };
+}
+
+async function buildModArchiveResourceTraceResult(
+  trace: ModArchiveResourceReferenceTrace
+): Promise<McpServerEvidenceExecutorResult> {
+  return {
+    matched: trace.references.length > 0,
+    summary:
+      trace.references.length > 0
+        ? `Traced ${trace.references.length} mod archive resource reference(s).`
+        : "No mod archive resource references were traced.",
+    payload: {
+      source: "mod_archive_content",
+      mode: "resource_reference_trace",
+      sourceArchive: trace.sourceArchive,
+      archiveMetadata: await readModArchiveMetadata(trace.sourceArchive).catch(
         () => undefined
       ),
       resourceReferenceTrace: toCompactResourceReferenceTrace(trace)
@@ -151,7 +186,7 @@ function extractNestedTraceableAssetPaths(
 
 function mentionsResourceReferenceTrace(requestText?: string): boolean {
   return requestText !== undefined &&
-    /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i.test(
+    /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|Crash log resource paths:|引用|依赖|追踪|缺失|丢失|找不到/i.test(
       requestText
     );
 }
