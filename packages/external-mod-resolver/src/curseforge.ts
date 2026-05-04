@@ -1,4 +1,5 @@
 import { buildCurseMavenArtifact } from "./maven.js";
+import { chooseStrongCurseForgeProjectMatch } from "./curseforge-ranking.js";
 import type {
   ExternalModCandidate,
   ExternalModProjectHint,
@@ -261,7 +262,7 @@ function chooseProject(
     return projects.find((project) => project.slug.toLowerCase() === slug);
   }
 
-  return projects[0];
+  return chooseStrongCurseForgeProjectMatch(projects, input.query) ?? projects[0];
 }
 
 function detectAmbiguousProjectMatch(
@@ -271,6 +272,10 @@ function detectAmbiguousProjectMatch(
   const slug = input.slug?.toLowerCase();
 
   if (projects.length <= 1 || slug) {
+    return undefined;
+  }
+
+  if (chooseStrongCurseForgeProjectMatch(projects, input.query)) {
     return undefined;
   }
 
