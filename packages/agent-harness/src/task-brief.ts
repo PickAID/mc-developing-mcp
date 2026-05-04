@@ -6,6 +6,7 @@ import type {
 } from "@mcpskill/shared-types";
 
 import { buildHarnessBriefFromSnapshot } from "./brief.js";
+import { KUBEJS_SCRIPTING_POLICY_TEXT } from "./kubejs-policy-text.js";
 import { buildHarnessSnapshot } from "./snapshot.js";
 import { buildHarnessTaskRoute } from "./task-route.js";
 
@@ -103,8 +104,7 @@ function buildTaskDomainPolicies(
     return [
       {
         id: "task_kubejs_scripting_policy",
-        text:
-          "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence and avoid persistent console.* debug output."
+        text: KUBEJS_SCRIPTING_POLICY_TEXT
       }
     ];
   }

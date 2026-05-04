@@ -8,6 +8,10 @@ import type {
 } from "@mcpskill/shared-types";
 
 import { buildHarnessSnapshot } from "./snapshot.js";
+import {
+  KUBEJS_GLOBAL_STATE_POLICY,
+  KUBEJS_NATIVE_EVENT_POLICY
+} from "./kubejs-policy-text.js";
 
 const AVAILABLE_HARNESS_TOOLS: AgentRuntimeToolName[] = [
   "workspace.analyze",
@@ -148,6 +152,8 @@ function buildAuthoringPolicyFragment(
       authoringPolicy.requireExplicitDebugGate
         ? " prefer explicit debug gating for temporary diagnostics,"
         : "",
+      KUBEJS_NATIVE_EVENT_POLICY,
+      KUBEJS_GLOBAL_STATE_POLICY,
       authoringPolicy.preferDocBackedAnswers
         ? " and rely on ProbeJS, workspace facts, and modding docs before generic JavaScript guesses."
         : ""

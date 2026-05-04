@@ -176,6 +176,15 @@ describe("buildHarnessBrief", () => {
     expect(kubejsPolicy?.text).toContain(
       "rely on ProbeJS, workspace facts, and modding docs before generic JavaScript guesses"
     );
+    expect(kubejsPolicy?.text).toContain(
+      "core KubeJS 1.20.1 ForgeEvents is startup_scripts-only"
+    );
+    expect(kubejsPolicy?.text).toContain(
+      "NativeEvents needs EventJS on 1.20.1 or core KubeJS 1.21.1+"
+    );
+    expect(kubejsPolicy?.text).toContain(
+      "global/Global usage as shared KubeJS state"
+    );
   });
 });
 

@@ -84,6 +84,64 @@ ProbeJS evidence should be compact:
 
 The agent should never invent KubeJS API names when ProbeJS exists and disagrees.
 
+## Native Event Standard
+
+Native event APIs are version- and addon-sensitive. The MCP must verify them from
+runtime facts, ProbeJS/d.ts, source/docs evidence, or existing scripts before
+recommending code.
+
+Rules verified from the current MCP corpus:
+
+- In core KubeJS 1.20.1, `ForgeEvents.onEvent(...)` and `ForgeModEvents.onEvent(...)` are bound only for `startup_scripts`.
+- In core KubeJS 1.20.1, native Forge event handlers in `server_scripts` or `client_scripts` require an addon-provided native event surface.
+- In 1.20.1 with an appropriate native-event addon, `NativeEvents.onEvent(...)` can be available in startup, server, and client scripts. The MCP must confirm the addon or existing ProbeJS declaration before relying on it.
+- In core KubeJS 1.21.1+, `NativeEvents` is built into KubeJS and can register native event listeners by script type.
+- Native event handlers receive raw platform event objects, so mutability must be verified from the platform event class. A getter does not imply a setter.
+- Native event handlers must not be moved across script scopes unless the API surface for that scope is confirmed.
+
+Invalid answer patterns:
+
+- Suggesting `ForgeEvents.onEvent(...)` in `server_scripts` on core KubeJS 1.20.1.
+- Suggesting `NativeEvents` on 1.20.1 without confirming the addon or ProbeJS declaration.
+- Assuming Forge event class names still exist after a migration to a different loader/version.
+- Assuming mutation methods such as `setAmount` or `setDamage` exist without source verification.
+
+The harness must remind agents to check `ForgeEvents`, `NativeEvents`, runtime
+version, loader, addons, and ProbeJS declarations before prescribing native
+event code.
+
+## Shared Global State Standard
+
+KubeJS `global` / `Global` style state is shared scripting state, not a casual
+JavaScript namespace. The MCP must treat it as lifecycle-sensitive evidence.
+
+Required checks:
+
+- Which script scope defines the global key or function.
+- Which script scopes read it.
+- Whether the value is a function, registry map, mutable list, task table, cache, or debug flag.
+- Whether initialization order is stable for the scopes involved.
+- Whether reload behavior can leave stale values.
+- Whether an existing workspace naming convention exists.
+
+Safe usage:
+
+- Named global functions that bridge event definitions to implementation files.
+- Explicit tables initialized in one known scope and consumed by later handlers.
+- Debug flags with obvious names and bounded lifetime.
+- Compatibility callbacks required by a local addon, when existing scripts or docs prove the callback contract.
+
+Risky usage:
+
+- Hidden mutable arrays/maps appended from multiple scopes.
+- Top-level globals initialized from runtime world/server/client state.
+- Reusing short generic names such as `global.data`, `global.list`, or `Global.temp`.
+- Storing Java objects whose lifetime crosses reloads without a cleanup path.
+- Treating `global` as a substitute for clear script/module structure.
+
+Agent answers must identify global ownership. If ownership is unclear, the next
+step should be to search existing scripts for the key before changing it.
+
 ## Script Style Standard
 
 KubeJS scripts should optimize for lifecycle clarity and reload/debug safety.

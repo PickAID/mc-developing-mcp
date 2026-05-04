@@ -389,3 +389,5 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-05-05-anonymized-client-visual-systems-spec-verification.md`
 
 `docs/reviews/2026-05-05-client-visual-and-kubejs-standards-verification.md`
+
+`docs/reviews/2026-05-05-kubejs-native-events-global-harness-verification.md`

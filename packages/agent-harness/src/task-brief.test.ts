@@ -146,7 +146,7 @@ describe("buildHarnessTaskBrief", () => {
         {
           id: "task_kubejs_scripting_policy",
           text:
-            "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence and avoid persistent console.* debug output."
+            "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence; verify ForgeEvents, NativeEvents, and global/Global usage against runtime/addons and existing scripts; avoid persistent console.* debug output."
         }
       ])
     );
