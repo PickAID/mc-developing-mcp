@@ -25,6 +25,7 @@ const ASSET_KINDS = new Set<AssetKind>([
   "items",
   "lang",
   "models",
+  "nine_slice_metadata",
   "pack_metadata",
   "particles",
   "post_effect",
@@ -86,6 +87,9 @@ function classifyVisualAssetKind(relativePath: string): AssetKind | undefined {
   if (isBlockEntityRendererAssetPath(relativePath)) {
     return "block_entity_renderer_asset";
   }
+  if (isNineSliceMetadataPath(relativePath)) {
+    return "nine_slice_metadata";
+  }
   return undefined;
 }
 
@@ -101,6 +105,12 @@ function isConnectedTextureMetadataPath(relativePath: string): boolean {
 
 function isBlockEntityRendererAssetPath(relativePath: string): boolean {
   return /^assets\/[^/]+\/textures\/(?:block_entity|entity\/(?:block_entity|banner|bed|chest|signs|shulker))\/.+\.png$/i.test(
+    relativePath
+  );
+}
+
+function isNineSliceMetadataPath(relativePath: string): boolean {
+  return /^assets\/[^/]+\/(?:gui|textures\/gui|textures\/gui\/sprites)\/.+(?:\.9\.png|\.nineslice\.json|\.nine_slice\.json)$/i.test(
     relativePath
   );
 }

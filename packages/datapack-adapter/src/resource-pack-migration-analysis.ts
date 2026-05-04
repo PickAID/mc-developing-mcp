@@ -103,6 +103,10 @@ const RISK_HINTS: Record<
     severity: "medium",
     summary: "Review model parents, overrides, and texture references against the target version."
   },
+  nine_slice_metadata: {
+    severity: "medium",
+    summary: "Review scalable UI asset metadata and draw abstraction against the target version."
+  },
   pack_metadata: {
     severity: "low",
     summary: "Review pack.mcmeta fields and pack format for the target version."

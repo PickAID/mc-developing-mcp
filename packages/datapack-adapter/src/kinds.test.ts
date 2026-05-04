@@ -24,5 +24,11 @@ describe("classifyKind", () => {
     expect(
       classifyKind("assets", "models", "assets/demo/models/block/gear.gltf")
     ).toBe("custom_model_format");
+    expect(
+      classifyKind("assets", "gui", "assets/demo/gui/sprites/button.nineslice.json")
+    ).toBe("nine_slice_metadata");
+    expect(
+      classifyKind("assets", "textures", "assets/demo/textures/gui/button.9.png")
+    ).toBe("nine_slice_metadata");
   });
 });

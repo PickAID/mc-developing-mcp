@@ -107,6 +107,31 @@ describe("buildClientVisualApiProof", () => {
     });
     expect(apiProof.apiMismatchRisks).toEqual([]);
   });
+
+  it("classifies UI, render pipeline, and shader pipeline evidence", () => {
+    const apiProof = buildClientVisualApiProof({
+      currentRuntime: runtime("neoforge", "1.21.1"),
+      sourceScan: scan([
+        evidence("uiLayoutHints", "GuiGraphics.blit"),
+        evidence("renderPipelineHints", "RenderSystem"),
+        evidence("shaderPipelineHints", "PostChain")
+      ])
+    });
+
+    expect(apiProof).toMatchObject({
+      apiSurfaces: {
+        ui: { count: 1 },
+        renderPipeline: { count: 1 },
+        shader: { count: 1 }
+      },
+      apiMismatchRisks: []
+    });
+    expect(apiProof.apiSurfaces.shader.evidence[0]).toMatchObject({
+      surface: "shader",
+      loaderHint: "common",
+      symbol: "PostChain"
+    });
+  });
 });
 
 function runtime(loader: "forge" | "neoforge" | "fabric", minecraftVersion: string) {

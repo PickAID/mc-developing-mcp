@@ -57,10 +57,40 @@ Resource-pack assets are implementation evidence, not decoration. For client vis
 - `assets/<namespace>/sounds.json`
 - `assets/<namespace>/font/**/*.json`
 - `assets/<namespace>/shaders/**/*.json` when relevant to the target version and loader
+- UI stretch/slicing metadata or naming conventions, GUI sprite atlases, and widget texture regions.
 
 Default output should be counts by namespace and kind, with a small bounded sample only when it helps route the next read. Full JSON reads require an explicit path or a narrow task such as tracing a missing model parent or unresolved texture reference.
 
 Binary assets should stay metadata-only by default. The MCP may record path, size, namespace, kind, and source provenance. It should not dump binary bytes into context.
+
+Stretchable UI assets are implementation rules, not merely images. Evidence should identify the texture path, metadata path when present, fixed regions, stretchable regions, target widget bounds, scaling behavior, and fallback when the current version uses a different GUI drawing abstraction. If formal metadata is absent, the MCP may report naming/path evidence only and require the agent to verify dimensions before giving coordinates.
+
+## Shader And External Visual Reference Policy
+Shader work should be grounded in Minecraft resource and renderer evidence first:
+
+- Local shader JSON, post-processing chain, core shader resources, uniforms, samplers, and referenced textures.
+- Renderer or screen code that binds the shader, render target, buffer source, render type, or post chain.
+- Reload lifecycle and fallback behavior when shaders are disabled, missing, or unsupported by the current loader/version.
+- Version-specific proof for the rendering abstraction before naming concrete classes or methods.
+
+External shader-reference services may be used only as optional inspiration or formula lookup when local evidence is insufficient and the task explicitly needs shader design help. They must not become a public-tool explosion. The MCP should expose them through an internal provider behind an existing progressive evidence route, with these constraints:
+
+- Require an explicit user-provided API key when the provider is activated.
+- Report `credentials_required` with the env var name, setup URL, and the fact that local/offline evidence can continue without the provider.
+- Cache only compact, non-private derived summaries needed for the current task.
+- Convert formulas and techniques into Minecraft evidence terms: uniforms, sampler inputs, time/state source, resolution/source texture, render target ownership, and reload/fallback path.
+- Never paste large shader bodies or treat web examples as project code.
+
+## Version-Resilience Policy
+Client APIs can be renamed, moved, or structurally replaced across Minecraft and loader versions. The agent must not answer by memorizing one version's class names. It should use this order:
+
+1. Identify the workspace runtime and confidence.
+2. Inspect local source, imports, Gradle dependencies, generated source archives, LSP/source index, or docs package evidence.
+3. Map the requested task to stable roles: draw context, pose/buffer owner, screen/widget owner, shader/post-chain owner, render target owner, reload owner, state sync owner.
+4. Name concrete APIs only after evidence proves the current version surface.
+5. If a familiar API is missing, search for role-equivalent replacements instead of failing or hallucinating.
+
+When a major version has rendering or GUI changes, the answer should provide the role formula and the evidence path first, then the version-specific API names if proven.
 
 ## Asset Reference Policy
 The MCP should trace client asset references as a graph when enough JSON evidence exists:
@@ -189,10 +219,21 @@ Add a renderer data sync checklist that can identify update tags, packets, entit
 ### Slice 6: Verification Fixtures
 Add anonymized fixtures for screens, menus, block entity renderers, entity renderers, multipart models, and asset graphs. Fixtures must use invented names and minimal JSON or source snippets written for the tests.
 
+### Slice 7: UI, Render Pipeline, And Shader Evidence
+Add compact source evidence for UI layout/widgets, render pipeline state, and shader/post-processing chains. Tests should verify that the source scanner, API proof, and implementation skeleton distinguish UI layout from renderer state and shader ownership.
+
+### Slice 8: External Shader Reference Provider
+Design an optional internal provider for external shader formula/reference lookup. Tests should verify `credentials_required` behavior, env-var guidance, no public-tool expansion, and conversion from external shader concepts into Minecraft uniforms, samplers, render target, and reload evidence.
+
+### Slice 9: Version-Resilient Visual API Mapping
+Add harness and docs behavior that treats version-specific class names as evidence, not assumptions. Tests should simulate a missing familiar GUI/rendering API and require role-equivalent replacement guidance instead of hard-coded class advice.
+
 ## Acceptance Criteria
 - The spec remains anonymized and generic.
 - No implementation-specific project names or local paths appear in the document.
 - The MCP guidance prioritizes evidence over generic advice.
 - Resource-pack evidence covers blockstates, models, textures, atlases, language files, particles, and sounds where relevant.
+- UI evidence covers GUI textures, sprites, stretch/scaling metadata, widget layout, fonts, and language keys.
+- Shader evidence covers local shader/post-chain assets, render pipeline owners, uniforms/samplers, reload lifecycle, and optional credential-gated external references.
 - Renderer basics cover registration, binding, assets, data sync, and client-only boundaries.
 - Future slices include testable outcomes.

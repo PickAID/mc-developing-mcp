@@ -39,6 +39,7 @@ export type AssetKind =
   | "items"
   | "lang"
   | "models"
+  | "nine_slice_metadata"
   | "pack_metadata"
   | "particles"
   | "post_effect"

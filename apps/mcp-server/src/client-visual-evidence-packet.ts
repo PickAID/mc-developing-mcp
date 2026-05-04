@@ -97,6 +97,9 @@ function sourceEvidence(sourceScan: ClientVisualSourceScan | undefined) {
     resourceReloadHooks: sourceScan?.counts.resourceReloadHooks ?? 0,
     networkSyncHints: sourceScan?.counts.networkSyncHints ?? 0,
     animationStateHints: sourceScan?.counts.animationStateHints ?? 0,
+    uiLayoutHints: sourceScan?.counts.uiLayoutHints ?? 0,
+    renderPipelineHints: sourceScan?.counts.renderPipelineHints ?? 0,
+    shaderPipelineHints: sourceScan?.counts.shaderPipelineHints ?? 0,
     renderPerformanceRisks: sourceScan?.counts.renderPerformanceRisks ?? 0,
     scannedFiles: sourceScan?.scannedFiles ?? 0,
     truncated: sourceScan?.truncated ?? false,
@@ -149,7 +152,10 @@ function implementationSkeleton(input: {
     ...(counts?.networkSyncHints ? ["network_sync"] : []),
     ...(counts?.animationStateHints ? ["animation_state"] : []),
     ...(counts?.resourceReloadHooks ? ["resource_reload"] : []),
-    ...(counts?.dynamicTextureHints ? ["dynamic_texture_lifecycle"] : [])
+    ...(counts?.dynamicTextureHints ? ["dynamic_texture_lifecycle"] : []),
+    ...(counts?.uiLayoutHints ? ["ui_layout"] : []),
+    ...(counts?.renderPipelineHints ? ["render_pipeline_state"] : []),
+    ...(counts?.shaderPipelineHints ? ["shader_or_post_chain"] : [])
   ];
 
   return {
@@ -168,6 +174,7 @@ function implementationSkeleton(input: {
       "verify blockstate -> model -> texture chain",
       "bind renderer or screen from client-only initialization",
       "prove loader/version-specific client API before naming methods or events",
+      "separate UI layout, render pipeline state, and shader/post chain ownership",
       "keep authoritative state server-side",
       "use interpolation for animated state",
       "use reload/cache lifecycle for dynamic textures or generated assets"
@@ -186,6 +193,9 @@ function missingImplementationSteps(evidenceBackedSteps: string[]): string[] {
     ["renderer_binding", "renderer binding evidence missing"],
     ["loader_version_api_proof", "loader/version-specific API proof missing"],
     ["asset_chain", "asset chain evidence missing"],
+    ["ui_layout", "UI layout evidence missing"],
+    ["render_pipeline_state", "render pipeline state evidence missing"],
+    ["shader_or_post_chain", "shader or post-processing evidence missing"],
     ["network_sync", "network or menu sync evidence missing"],
     ["resource_reload", "resource reload/cache evidence missing"]
   ]

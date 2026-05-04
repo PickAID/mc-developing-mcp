@@ -192,6 +192,32 @@ describe("detectHarnessTaskIntent", () => {
     });
   });
 
+  it("detects UI slicing, shader, and render pipeline requests as client visual resources", () => {
+    for (const requestText of [
+      "Fix the nine-slice GUI sprite scaling for this screen.",
+      "Find the shader post chain and render pipeline state for this client effect.",
+      "界面九宫格和着色器后处理在新版渲染 API 下怎么接起来。"
+    ]) {
+      expect(
+        detectHarnessTaskIntent(
+          createSnapshot({
+            workspaceKind: "java-mod",
+            facts: {
+              ...createFacts(),
+              hasGradle: true,
+              hasJavaSource: true,
+              hasResourcePack: true
+            }
+          }),
+          requestText
+        )
+      ).toMatchObject({
+        id: "client_visual_resources",
+        confidence: "high"
+      });
+    }
+  });
+
   it("prioritizes KubeJS client visual requests over generic KubeJS authoring", () => {
     expect(
       detectHarnessTaskIntent(

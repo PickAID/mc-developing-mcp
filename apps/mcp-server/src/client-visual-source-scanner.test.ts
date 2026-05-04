@@ -161,6 +161,58 @@ describe("scanClientVisualSourceEvidence", () => {
       ])
     });
   });
+
+  it("finds UI layout, render pipeline, and shader pipeline hints", async () => {
+    const root = await createTempRoot();
+    const javaRoot = join(root, "src", "main", "java");
+
+    await writeText(
+      join(javaRoot, "demo", "client", "AdvancedVisuals.java"),
+      [
+        "package demo.client;",
+        "class AdvancedVisuals extends Screen {",
+        "  void init() { addRenderableWidget(new Button.Builder(Component.literal(\"Go\"), b -> {}).pos(leftPos + 8, topPos + 8).size(80, 20).build()); }",
+        "  void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {",
+        "    RenderSystem.enableBlend();",
+        "    MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();",
+        "    graphics.blit(new ResourceLocation(\"demo\", \"textures/gui/gear.png\"), leftPos, topPos, 0, 0, imageWidth, imageHeight);",
+        "  }",
+        "  void shaders() {",
+        "    PostChain chain;",
+        "    ShaderInstance shader;",
+        "    RenderType.entityTranslucent(new ResourceLocation(\"demo\", \"textures/block/glow.png\"));",
+        "  }",
+        "}"
+      ].join("\n")
+    );
+
+    await expect(
+      scanClientVisualSourceEvidence({
+        workspaceRoot: root
+      })
+    ).resolves.toMatchObject({
+      counts: {
+        uiLayoutHints: 1,
+        renderPipelineHints: 1,
+        shaderPipelineHints: 1,
+        resourceLocationReferences: 2
+      },
+      evidence: expect.arrayContaining([
+        expect.objectContaining({
+          kind: "uiLayoutHints",
+          symbol: "GuiGraphics.blit"
+        }),
+        expect.objectContaining({
+          kind: "renderPipelineHints",
+          symbol: "RenderSystem"
+        }),
+        expect.objectContaining({
+          kind: "shaderPipelineHints",
+          symbol: "PostChain"
+        })
+      ])
+    });
+  });
 });
 
 async function createTempRoot(): Promise<string> {

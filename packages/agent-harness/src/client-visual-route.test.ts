@@ -101,6 +101,22 @@ describe("client visual task routes", () => {
           text: expect.stringContaining("clientVisualEvidence.apiProof")
         }),
         expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("shader or post-processing chain")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("source, asset, archive, docs")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("scalable UI asset semantics")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("role-equivalent evidence")
+        }),
+        expect.objectContaining({
           id: "task_kubejs_scripting_policy"
         })
       ])

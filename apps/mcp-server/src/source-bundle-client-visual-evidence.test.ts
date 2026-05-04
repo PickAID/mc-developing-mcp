@@ -62,6 +62,9 @@ describe("source.bundle client visual evidence", () => {
             candidateRegistries: 1,
             candidateClientInit: 1,
             candidateRendererBindings: 1,
+            uiLayoutHints: 1,
+            renderPipelineHints: 1,
+            shaderPipelineHints: 1,
             scannedFiles: 1,
             evidence: expect.arrayContaining([
               expect.objectContaining({
@@ -77,6 +80,9 @@ describe("source.bundle client visual evidence", () => {
             minecraftVersion: "1.20.1",
             apiSurfaces: {
               renderer: { count: 1 },
+              ui: { count: 1 },
+              renderPipeline: { count: 1 },
+              shader: { count: 1 },
               clientInit: { count: 1 }
             },
             apiMismatchRisks: []
@@ -107,11 +113,15 @@ describe("source.bundle client visual evidence", () => {
               "client_init",
               "renderer_binding",
               "loader_version_api_proof",
+              "ui_layout",
+              "render_pipeline_state",
+              "shader_or_post_chain",
               "asset_chain"
             ]),
             requiredSteps: expect.arrayContaining([
               "choose static JSON model vs runtime renderer/model loader",
-              "bind renderer or screen from client-only initialization"
+              "bind renderer or screen from client-only initialization",
+              "separate UI layout, render pipeline state, and shader/post chain ownership"
             ]),
             cautions: expect.arrayContaining([
               "do not collapse moving parts into blockstate explosion"
@@ -147,6 +157,10 @@ async function createVisualWorkspace(): Promise<string> {
       "  DeferredRegister<Block> blocks;",
       "  void client(FMLClientSetupEvent event) {",
       "    BlockEntityRenderers.register(DemoBlockEntities.GEAR.get(), GearRenderer::new);",
+      "    GuiGraphics graphics;",
+      "    graphics.blit(new ResourceLocation(\"demo\", \"textures/gui/gear.png\"), 0, 0, 0, 0, 176, 166);",
+      "    RenderSystem.enableBlend();",
+      "    PostChain chain;",
       "  }",
       "}"
     ].join("\n")

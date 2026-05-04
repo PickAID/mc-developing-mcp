@@ -69,6 +69,10 @@ Scope: `mdm-sources` 正式资料包仓库、registry/release 模型、以及 `S
 - `packages/minecraft/26.1/source-pack/named/...`
 - `packages/minecraft/26.1/source-index/named/...`
 - `packages/minecraft/26.1/docs/core/...`
+- `packages/minecraft/26.1/docs/ui/...`
+- `packages/minecraft/26.1/docs/rendering/...`
+- `packages/minecraft/26.1/docs/shader/...`
+- `packages/minecraft/26.1/docs/coremod/...`
 - `packages/neoforge/26.1/docs/core/...`
 - `packages/mod/jei/<version>/source-pack/...`
 
@@ -191,6 +195,18 @@ mdm-sources/
           core/
             package.json
             payload/
+          ui/
+            package.json
+            payload/
+          rendering/
+            package.json
+            payload/
+          shader/
+            package.json
+            payload/
+          coremod/
+            package.json
+            payload/
       26.1.1/
         source-pack/
           named/
@@ -225,8 +241,12 @@ mdm-sources/
   - `source-index`
   - `docs/core`
   - `docs/search`
+  - `docs/ui`
+  - `docs/rendering`
+  - `docs/shader`
+  - `docs/coremod`
   - `jar-content-index`
-  - 后续可扩展 `symbols`、`snippets`、`migration-map`
+  - 后续可扩展 `symbols`、`snippets`、`migration-map`、`distilled-patterns`、`api-proof-index`
 - `variant`
   - `named`
   - `official`
@@ -239,8 +259,23 @@ mdm-sources/
 - `tooling`
 - `api`
 - `docs`
+- `client-visual`
+- `ui`
+- `rendering`
+- `shader`
+- `coremod`
 
 不进入正式路径。
+
+### Client Visual 与源码/文档预留
+UI、rendering、shader、coremod 不能混进 `docs/core` 变成大包。它们应作为可选小包发布，并允许 MCP 本地派生索引：
+
+- `docs/ui`：GUI 绘制抽象、widget/layout、stretch/scaling metadata、font/lang、input/narration。
+- `docs/rendering`：renderer ownership、buffer/render type、blend/depth/cull/light state、render target lifecycle。
+- `docs/shader`：shader/post chain resource、uniform/sampler formula、reload/fallback、可选外部参考 provider 的摘要。
+- `docs/coremod`：mixin/transformer/coremod 边界、崩溃排查、安全限制、版本迁移风险。
+
+外部 shader 参考不进入正式仓库原文。若以后支持，应由 MCP 作为本地可选 provider 获取，要求用户提供 API key，并只派生当前任务需要的 compact formula/evidence summary。
 
 ## Package Manifest
 每个正式包都要有一个 manifest，建议字段如下：

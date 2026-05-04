@@ -13,5 +13,11 @@ describe("classifyModArchiveAssetKind", () => {
     expect(classifyModArchiveAssetKind("assets/demo/models/block/gear.glb")).toBe(
       "custom_model_format"
     );
+    expect(
+      classifyModArchiveAssetKind("assets/demo/gui/sprites/button.nineslice.json")
+    ).toBe("nine_slice_metadata");
+    expect(
+      classifyModArchiveAssetKind("assets/demo/textures/gui/button.9.png")
+    ).toBe("nine_slice_metadata");
   });
 });

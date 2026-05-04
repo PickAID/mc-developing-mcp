@@ -84,9 +84,12 @@ describe("mc_develop client visual harness eval", () => {
           },
           sourceEvidence: {
             candidateRegistries: expect.any(Number),
-            candidateClientInit: expect.any(Number),
-            candidateRendererBindings: expect.any(Number),
-            scannedFiles: expect.any(Number),
+              candidateClientInit: expect.any(Number),
+              candidateRendererBindings: expect.any(Number),
+              uiLayoutHints: expect.any(Number),
+              renderPipelineHints: expect.any(Number),
+              shaderPipelineHints: expect.any(Number),
+              scannedFiles: expect.any(Number),
             evidence: expect.arrayContaining([
               expect.objectContaining({
                 kind: "candidateRendererBindings",
@@ -102,6 +105,9 @@ describe("mc_develop client visual harness eval", () => {
               renderer: { count: expect.any(Number) },
               screen: { count: expect.any(Number) },
               model: { count: expect.any(Number) },
+              ui: { count: expect.any(Number) },
+              renderPipeline: { count: expect.any(Number) },
+              shader: { count: expect.any(Number) },
               clientInit: { count: expect.any(Number) }
             },
             apiMismatchRisks: []
@@ -132,6 +138,9 @@ describe("mc_develop client visual harness eval", () => {
               "client_init",
               "renderer_binding",
               "loader_version_api_proof",
+              "ui_layout",
+              "render_pipeline_state",
+              "shader_or_post_chain",
               "asset_chain"
             ]),
             cautions: expect.arrayContaining([
@@ -172,6 +181,10 @@ async function createClientVisualWorkspace(): Promise<string> {
       "    BlockEntityRenderers.register(DemoBlockEntities.GEAR.get(), MachineRenderer::new);",
       "    MenuScreens.register(DemoMenus.GEAR.get(), MachineScreen::new);",
       "    ModelLayerLocation layer = new ModelLayerLocation(new ResourceLocation(\"demo\", \"block/gear\"), \"main\");",
+      "    GuiGraphics graphics;",
+      "    graphics.blit(new ResourceLocation(\"demo\", \"textures/gui/gear.png\"), 0, 0, 0, 0, 176, 166);",
+      "    RenderSystem.enableBlend();",
+      "    PostChain postChain;",
       "  }",
       "}"
     ].join("\n")

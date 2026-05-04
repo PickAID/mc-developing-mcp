@@ -15,7 +15,10 @@ type ApiSurfaceName =
   | "dynamicTexture"
   | "network"
   | "clientInit"
-  | "kubejs";
+  | "kubejs"
+  | "ui"
+  | "renderPipeline"
+  | "shader";
 type LoaderHint = SupportedLoader | "common" | "kubejs" | "unknown";
 
 export interface ClientVisualApiProofInput {
@@ -134,7 +137,10 @@ function emptyProof(
       dynamicTexture: emptySurface(),
       network: emptySurface(),
       clientInit: emptySurface(),
-      kubejs: emptySurface()
+      kubejs: emptySurface(),
+      ui: emptySurface(),
+      renderPipeline: emptySurface(),
+      shader: emptySurface()
     },
     apiMismatchRisks: []
   };
@@ -164,6 +170,12 @@ function classifyEvidence(
       return { surface: "clientInit", loaderHint: symbolLoader(evidence.symbol) };
     case "kubeJsClientHooks":
       return { surface: "kubejs", loaderHint: "kubejs" };
+    case "uiLayoutHints":
+      return { surface: "ui", loaderHint: symbolLoader(evidence.symbol) };
+    case "renderPipelineHints":
+      return { surface: "renderPipeline", loaderHint: "common" };
+    case "shaderPipelineHints":
+      return { surface: "shader", loaderHint: "common" };
     default:
       return undefined;
   }
@@ -216,7 +228,11 @@ function symbolLoader(symbol: string | undefined): LoaderHint {
     symbol === "SynchedEntityData" ||
     symbol === "EntityDataAccessor" ||
     symbol === "DataSlot" ||
-    symbol === "sync"
+    symbol === "sync" ||
+    symbol === "GuiGraphics.blit" ||
+    symbol === "addRenderableWidget" ||
+    symbol === "leftPos/topPos" ||
+    symbol === "Screen.render"
   ) {
     return "common";
   }
