@@ -3,6 +3,8 @@ import type { DocsPackageRecord } from "@mcpskill/docs-retrieval";
 import {
   createFileMavenMetadataCache,
   type MavenMetadataCache,
+  type ResolveMavenArtifactInput,
+  type ResolveModrinthModInput,
   type ResolveCurseForgeModInput
 } from "@mcpskill/external-mod-resolver";
 import { readGradleMavenRepositories } from "@mcpskill/gradle-adapter";
@@ -23,8 +25,11 @@ export interface McpServerContextQueryExecutorOptions {
   probejsTypesExecutor?: McpServerEvidenceExecutor;
   externalModResolutionExecutor?: McpServerEvidenceExecutor;
   externalModMavenMetadataCache?: MavenMetadataCache;
+  externalModMavenFetch?: ResolveMavenArtifactInput["fetch"];
   externalModMavenRepositories?: McpServerExternalModMavenRepository[];
   externalModGradleDependencyDiscovery?: GradleSourceArchiveDiscoveryOptions;
+  externalModModrinthFetch?: ResolveModrinthModInput["fetch"];
+  externalModModrinthApiBaseUrl?: string;
   externalModCurseForgeApiKey?: string;
   externalModCurseForgeCredentialProvider?: () => string | undefined;
   externalModCurseForgeFetch?: ResolveCurseForgeModInput["fetch"];
@@ -93,6 +98,9 @@ async function executeExternalModResolution(
       options.externalModMavenRepositories ??
       (await readWorkspaceMavenRepositories(input)),
     gradleDependencyDiscovery: options.externalModGradleDependencyDiscovery,
+    mavenFetch: options.externalModMavenFetch,
+    modrinthFetch: options.externalModModrinthFetch,
+    modrinthApiBaseUrl: options.externalModModrinthApiBaseUrl,
     curseForgeApiKey: options.externalModCurseForgeApiKey,
     curseForgeCredentialProvider: options.externalModCurseForgeCredentialProvider,
     curseForgeFetch: options.externalModCurseForgeFetch,

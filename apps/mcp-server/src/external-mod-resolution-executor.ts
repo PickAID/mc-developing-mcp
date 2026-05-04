@@ -39,9 +39,12 @@ export interface McpServerExternalModResolutionOptions {
   mavenRepositories?: McpServerExternalModMavenRepository[];
   modArchiveContentCache?: ArchiveContentCache;
   gradleDependencyDiscovery?: GradleSourceArchiveDiscoveryOptions;
+  mavenFetch?: ResolveMavenArtifactInput["fetch"];
   mavenResolver?: (
     input: ResolveMavenArtifactInput
   ) => Promise<ExternalModResolverResult>;
+  modrinthFetch?: ResolveModrinthModInput["fetch"];
+  modrinthApiBaseUrl?: string;
   modrinthResolver?: (
     input: ResolveModrinthModInput
   ) => Promise<ExternalModResolverResult>;
@@ -158,6 +161,7 @@ async function resolveByPlatform(
       coordinate: request.coordinate,
       repositories: buildMavenRepositories(request, options.mavenRepositories),
       includeSources: true,
+      fetch: options.mavenFetch,
       metadataCache: options.mavenMetadataCache
     });
   }
@@ -182,7 +186,9 @@ async function resolveByPlatform(
   return await resolver({
     query: request.query,
     loader: request.loader,
-    minecraftVersion: request.minecraftVersion
+    minecraftVersion: request.minecraftVersion,
+    fetch: options.modrinthFetch,
+    apiBaseUrl: options.modrinthApiBaseUrl
   });
 }
 
