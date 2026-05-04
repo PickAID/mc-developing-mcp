@@ -188,7 +188,7 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
-  it("routes vanilla asset lookups to datapack files even without local resource roots", () => {
+  it("routes vanilla asset lookups as resource-pack lookups using shared resource files evidence", () => {
     expect(
       buildHarnessTaskRoute(
         createTaskRouteSnapshot({
@@ -217,9 +217,12 @@ describe("buildHarnessTaskRoute", () => {
       )
     ).toMatchObject({
       intent: {
-        id: "datapack_lookup",
+        id: "resource_pack_lookup",
         confidence: "high"
       },
+      reasons: [
+        "resource-pack lookup should inspect assets evidence before docs"
+      ],
       steps: ["datapack_files", "docs_lookup"],
       preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
     });

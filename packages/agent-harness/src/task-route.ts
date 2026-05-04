@@ -87,6 +87,18 @@ export function buildHarnessTaskRoute(
         ),
         preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
       };
+    case "resource_pack_lookup":
+      return {
+        intent,
+        reasons: [
+          "resource-pack lookup should inspect assets evidence before docs"
+        ],
+        steps: withModArchiveContent(
+          ["datapack_files", "docs_lookup"],
+          snapshot.facts.hasModArchives
+        ),
+        preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+      };
     case "workspace_default":
       return {
         intent,

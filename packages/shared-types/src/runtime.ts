@@ -126,7 +126,8 @@ export type AgentRuntimeTaskIntentId =
   | "external_mod_resolution"
   | "java_diagnostics"
   | "kubejs_authoring"
-  | "datapack_lookup";
+  | "datapack_lookup"
+  | "resource_pack_lookup";
 
 export interface AgentRuntimeTaskIntent {
   id: AgentRuntimeTaskIntentId;

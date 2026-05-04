@@ -121,11 +121,27 @@ describe("detectHarnessTaskIntent", () => {
         "Trace references for assets/demo/blockstates/gear.json."
       )
     ).toEqual({
-      id: "datapack_lookup",
+      id: "resource_pack_lookup",
       confidence: "high",
       reasons: [
-        "request text mentions datapack or resource-pack keywords",
-        "workspace snapshot exposes datapack or resource-pack content"
+        "request text mentions resource-pack asset keywords or assets path",
+        "workspace snapshot exposes resource-pack asset content"
+      ]
+    });
+  });
+
+  it("detects generated vanilla asset requests as resource-pack lookups", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot(),
+        "Read the vanilla official asset assets/minecraft/models/item/stone.json"
+      )
+    ).toEqual({
+      id: "resource_pack_lookup",
+      confidence: "high",
+      reasons: [
+        "request text mentions vanilla resource-pack asset evidence",
+        "vanilla assets content can be resolved from generated official packages"
       ]
     });
   });

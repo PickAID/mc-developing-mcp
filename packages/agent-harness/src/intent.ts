@@ -35,8 +35,6 @@ const KUBEJS_KEYWORDS = [
 const DATAPACK_KEYWORDS = [
   "datapack",
   "data pack",
-  "resource pack",
-  "resource-pack",
   "pack.mcmeta",
   "worldgen",
   "loot table",
@@ -47,15 +45,22 @@ const DATAPACK_KEYWORDS = [
   "dimension",
   "configured_feature",
   "placed_feature",
+  "数据包",
+  "世界生成"
+];
+
+const RESOURCE_PACK_KEYWORDS = [
+  "resource pack",
+  "resource-pack",
   "blockstate",
   "blockstates",
   "block model",
   "item model",
+  "model reference",
+  "model references",
   "texture",
   "textures",
-  "数据包",
-  "资源包",
-  "世界生成"
+  "资源包"
 ];
 
 const JAVA_DIAGNOSTIC_KEYWORDS = [
@@ -157,35 +162,54 @@ export function detectHarnessTaskIntent(
     };
   }
 
-  const datapackOrResourceRequest =
-    matchesAny(normalized, DATAPACK_KEYWORDS) ||
-    mentionsDatapackOrResourcePath(normalized);
-  const vanillaGeneratedResourceRequest =
-    datapackOrResourceRequest &&
-    mentionsVanillaGeneratedResourceRequest(normalized);
+  const datapackRequest =
+    matchesAny(normalized, DATAPACK_KEYWORDS) || mentionsDataPath(normalized);
+  const resourcePackRequest =
+    matchesAny(normalized, RESOURCE_PACK_KEYWORDS) ||
+    mentionsAssetsPath(normalized);
+  const vanillaGeneratedDatapackRequest =
+    datapackRequest && mentionsVanillaGeneratedDatapackRequest(normalized);
+  const vanillaGeneratedResourcePackRequest =
+    resourcePackRequest && mentionsVanillaGeneratedResourcePackRequest(normalized);
 
   if (
-    datapackOrResourceRequest &&
+    resourcePackRequest &&
     (
       snapshot.facts.hasDatapack ||
       snapshot.facts.datapackRootCount > 0 ||
-      vanillaGeneratedResourceRequest
+      vanillaGeneratedResourcePackRequest
     )
   ) {
-    const assetRequest = mentionsDatapackOrResourcePath(normalized);
+    return {
+      id: "resource_pack_lookup",
+      confidence: "high",
+      reasons: vanillaGeneratedResourcePackRequest
+        ? [
+            "request text mentions vanilla resource-pack asset evidence",
+            "vanilla assets content can be resolved from generated official packages"
+          ]
+        : [
+            "request text mentions resource-pack asset keywords or assets path",
+            "workspace snapshot exposes resource-pack asset content"
+          ]
+    };
+  }
 
+  if (
+    datapackRequest &&
+    (
+      snapshot.facts.hasDatapack ||
+      snapshot.facts.datapackRootCount > 0 ||
+      vanillaGeneratedDatapackRequest
+    )
+  ) {
     return {
       id: "datapack_lookup",
       confidence: "high",
-      reasons: vanillaGeneratedResourceRequest
+      reasons: vanillaGeneratedDatapackRequest
         ? [
-            "request text mentions vanilla datapack or asset evidence",
-            "vanilla data/assets content can be resolved from generated official packages"
-          ]
-        : assetRequest
-        ? [
-            "request text mentions datapack or resource-pack keywords",
-            "workspace snapshot exposes datapack or resource-pack content"
+            "request text mentions vanilla datapack evidence",
+            "vanilla data content can be resolved from generated official packages"
           ]
         : [
             "request text mentions datapack or worldgen keywords",
@@ -212,15 +236,26 @@ function matchesAny(requestText: string, keywords: string[]): boolean {
   return keywords.some((keyword) => requestText.includes(keyword));
 }
 
-function mentionsDatapackOrResourcePath(requestText: string): boolean {
-  return /\b(?:data|assets)\/[a-z0-9_.-]+\/[a-z0-9_./-]+/.test(requestText);
+function mentionsDataPath(requestText: string): boolean {
+  return /\bdata\/[a-z0-9_.-]+\/[a-z0-9_./-]+/.test(requestText);
 }
 
-function mentionsVanillaGeneratedResourceRequest(requestText: string): boolean {
+function mentionsAssetsPath(requestText: string): boolean {
+  return /\bassets\/[a-z0-9_.-]+\/[a-z0-9_./-]+/.test(requestText);
+}
+
+function mentionsVanillaGeneratedDatapackRequest(requestText: string): boolean {
   return (
     /\b(?:vanilla|official)\b|原版|官方/.test(requestText) &&
-    /\bminecraft:[a-z0-9_.\/-]+\b|data\/minecraft\/|assets\/minecraft\//.test(
-      requestText
-    )
+    /\bminecraft:[a-z0-9_.\/-]+\b|data\/minecraft\//.test(requestText)
+  );
+}
+
+function mentionsVanillaGeneratedResourcePackRequest(
+  requestText: string
+): boolean {
+  return (
+    /\b(?:vanilla|official)\b|原版|官方/.test(requestText) &&
+    /assets\/minecraft\//.test(requestText)
   );
 }
