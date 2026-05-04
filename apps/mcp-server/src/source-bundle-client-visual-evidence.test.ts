@@ -59,8 +59,17 @@ describe("source.bundle client visual evidence", () => {
             hasResourcePack: true
           },
           sourceEvidence: {
-            candidateRegistries: 0,
-            candidateRendererBindings: 0
+            candidateRegistries: 1,
+            candidateClientInit: 1,
+            candidateRendererBindings: 1,
+            scannedFiles: 1,
+            evidence: expect.arrayContaining([
+              expect.objectContaining({
+                kind: "candidateRendererBindings",
+                file: "src/main/java/demo/VisualBlock.java",
+                language: "java"
+              })
+            ])
           },
           assetEvidence: {
             namespaces: ["demo"],
@@ -80,10 +89,7 @@ describe("source.bundle client visual evidence", () => {
             ],
             missingAssetKinds: []
           },
-          missingEvidence: [
-            "source registry scan not implemented",
-            "renderer binding scan not implemented"
-          ],
+          missingEvidence: [],
           nextReads: [
             "assets/demo/blockstates/block/gear.json",
             "assets/demo/models/block/gear.json"
@@ -98,7 +104,18 @@ async function createVisualWorkspace(): Promise<string> {
   const root = await createTempRoot("mcpskill-client-visual-");
 
   await writeText(join(root, "build.gradle"), "plugins { id 'java' }\n");
-  await writeText(join(root, "src", "main", "java", "demo", "VisualBlock.java"), "\n");
+  await writeText(
+    join(root, "src", "main", "java", "demo", "VisualBlock.java"),
+    [
+      "package demo;",
+      "class VisualBlock {",
+      "  DeferredRegister<Block> blocks;",
+      "  void client(FMLClientSetupEvent event) {",
+      "    BlockEntityRenderers.register(DemoBlockEntities.GEAR.get(), GearRenderer::new);",
+      "  }",
+      "}"
+    ].join("\n")
+  );
   await writeText(join(root, "assets", "demo", "blockstates", "block", "gear.json"), "{}\n");
   await writeText(join(root, "assets", "demo", "models", "block", "gear.json"), "{}\n");
   await writeText(

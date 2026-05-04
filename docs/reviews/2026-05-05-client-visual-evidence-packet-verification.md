@@ -8,6 +8,7 @@ This slice adds structured client visual evidence behind existing internal route
 
 - `client_visual_resources` keeps using `datapack_files`, but its evidence provenance is now `resource_pack_files`.
 - `source.bundle` now returns `clientVisualEvidence` for visual resource requests.
+- Client visual evidence now includes bounded source scan counts for registry declarations, client init, renderer bindings, screen/menu registrations, model layer hints, resource-location references, and KubeJS client hooks.
 - Resource-location metadata matching was extracted from `source-bundle-datapack.ts` to keep the file below 500 lines.
 
 No public MCP tools were added.
@@ -29,10 +30,23 @@ The tested `source.bundle` payload now includes:
       "hasResourcePack": true
     },
     "sourceEvidence": {
-      "candidateRegistries": 0,
-      "candidateClientInit": 0,
-      "candidateRendererBindings": 0,
-      "candidateSyncPaths": 0
+      "candidateRegistries": 1,
+      "candidateClientInit": 1,
+      "candidateRendererBindings": 1,
+      "candidateScreenRegistrations": 1,
+      "candidateModelLayerRegistrations": 1,
+      "resourceLocationReferences": 1,
+      "scannedFiles": 2,
+      "truncated": false,
+      "evidence": [
+        {
+          "kind": "candidateRendererBindings",
+          "file": "src/main/java/demo/ClientInit.java",
+          "line": 4,
+          "language": "java",
+          "symbol": "BlockEntityRenderers.register"
+        }
+      ]
     },
     "assetEvidence": {
       "namespaces": ["demo"],
@@ -71,6 +85,7 @@ The tested `source.bundle` payload now includes:
 
 ```sh
 pnpm exec vitest run --root . apps/mcp-server/src/source-bundle-client-visual-evidence.test.ts apps/mcp-server/src/source-bundle-resource-location.test.ts
+pnpm exec vitest run --root . apps/mcp-server/src/mc-develop-client-visual-harness-eval.test.ts apps/mcp-server/src/client-visual-source-scanner.test.ts apps/mcp-server/src/source-bundle-client-visual-evidence.test.ts packages/agent-harness/src/client-visual-route.test.ts packages/agent-harness/src/task-brief.test.ts packages/agent-harness/src/intent.test.ts
 pnpm --filter @mcpskill/mcp-server test
 wc -l apps/mcp-server/src/source-bundle-datapack.ts apps/mcp-server/src/evidence-plan.ts apps/mcp-server/src/evidence-plan-resource-pack.test.ts apps/mcp-server/src/client-visual-evidence-packet.ts apps/mcp-server/src/source-bundle-resource-location-matches.ts apps/mcp-server/src/source-bundle-client-visual-evidence.test.ts
 ```
@@ -78,10 +93,11 @@ wc -l apps/mcp-server/src/source-bundle-datapack.ts apps/mcp-server/src/evidence
 ## Results
 
 - Focused source-bundle tests: 2 files passed, 2 tests passed.
+- Client visual harness eval: 6 files passed, 24 tests passed.
 - `@mcpskill/mcp-server`: 64 files passed, 180 tests passed.
 - Line check: `source-bundle-datapack.ts` is 489 lines; touched TS files are below 500 lines.
 
 ## Residual Risks
 
-- `sourceEvidence` is intentionally zero-count in this slice. The next implementation should add source-side registry/client-init/renderer binding scanning.
-- `clientVisualEvidence` is currently asset evidence plus honest missing-source indicators; it should not be presented as complete visual correctness proof.
+- `sourceEvidence` is still regex-based bounded evidence. It is useful for grounding and triage, but LSP/source-index integration is still needed before treating it as semantic proof.
+- `clientVisualEvidence` now proves local source/asset links for common patterns, but dynamic texture lifecycle and renderer correctness still require follow-up code review or diagnostics.

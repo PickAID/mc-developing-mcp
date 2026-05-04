@@ -31,6 +31,7 @@ import {
 } from "./source-bundle-vanilla-assets.js";
 import { resolveMcpServerResourcePackEvidence } from "./source-bundle-resource-pack.js";
 import { buildClientVisualEvidencePacket } from "./client-visual-evidence-packet.js";
+import { scanClientVisualSourceEvidence } from "./client-visual-source-scanner.js";
 import { findResourceLocationEntryMatches } from "./source-bundle-resource-location-matches.js";
 
 const MAX_QUERIES = 8;
@@ -158,6 +159,11 @@ export async function executeMcpServerDatapackFiles(
     requestText,
     requestedPaths
   });
+  const clientVisualSourceScan = isClientVisualRequest
+    ? await scanClientVisualSourceEvidence({
+        workspaceRoot
+      })
+    : undefined;
   const clientVisualEvidence = isClientVisualRequest
     ? buildClientVisualEvidencePacket({
         descriptor: input.requestPlan.requestContext.workspaceContext?.descriptor,
@@ -166,6 +172,7 @@ export async function executeMcpServerDatapackFiles(
         queries,
         requestedPaths,
         matches: search.matches,
+        sourceScan: clientVisualSourceScan,
         resourceReferenceTrace
       })
     : undefined;

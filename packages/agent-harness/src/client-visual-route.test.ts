@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { buildHarnessTaskBriefFromSnapshot } from "./task-brief.js";
 import { buildHarnessTaskRoute } from "./task-route.js";
 import {
   createTaskRouteFacts,
@@ -58,5 +59,47 @@ describe("client visual task routes", () => {
       },
       steps: ["datapack_files", "docs_lookup"]
     });
+  });
+
+  it("adds strong client visual capability guidance for KubeJS visual work", () => {
+    const brief = buildHarnessTaskBriefFromSnapshot(
+      createTaskRouteSnapshot({
+        workspaceKind: "kubejs",
+        routePlan: {
+          scenario: "kubejs-workspace",
+          reasons: ["workspace descriptor reports a kubejs workspace"],
+          defaultRoutingScenario: "kubejs_script",
+          steps: ["probejs_types", "docs_lookup"]
+        },
+        facts: {
+          ...createTaskRouteFacts(),
+          hasKubeJS: true,
+          hasProbeJS: true,
+          hasResourcePack: true,
+          resourcePackRootCount: 1
+        }
+      }),
+      "KubeJS client_scripts 里做动态材质和机器视觉，模型显示不出来。"
+    );
+
+    expect(brief.intent).toMatchObject({
+      id: "client_visual_resources",
+      confidence: "high"
+    });
+    expect(brief.promptFragments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("dynamic textures")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("client_scripts")
+        }),
+        expect.objectContaining({
+          id: "task_kubejs_scripting_policy"
+        })
+      ])
+    );
   });
 });

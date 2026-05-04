@@ -154,6 +154,7 @@ export type AgentRuntimePromptFragmentId =
   | "task_route_policy"
   | "task_tool_policy"
   | "task_evidence_policy"
+  | "task_client_visual_capability_policy"
   | "task_kubejs_scripting_policy";
 
 export interface AgentRuntimePromptFragment {

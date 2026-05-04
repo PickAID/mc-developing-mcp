@@ -6,6 +6,7 @@ import type {
 } from "@mcpskill/shared-types";
 
 import { buildHarnessBriefFromSnapshot } from "./brief.js";
+import { CLIENT_VISUAL_CAPABILITY_POLICY_TEXT } from "./client-visual-policy-text.js";
 import { KUBEJS_SCRIPTING_POLICY_TEXT } from "./kubejs-policy-text.js";
 import { buildHarnessSnapshot } from "./snapshot.js";
 import { buildHarnessTaskRoute } from "./task-route.js";
@@ -85,7 +86,7 @@ function buildTaskEvidencePolicy(
 ): AgentRuntimePromptFragment {
   const clientPolicy =
     taskBriefRoute.intent.id === "client_visual_resources"
-      ? " Check assets, models, blockstates, registries, client init, and renderer bindings before docs."
+      ? " Check registry-to-asset links, client-only init, renderer/screen/model bindings, asset reference graphs, rendered state sync, and resource reload/cache boundaries before docs."
       : "";
 
   return {
@@ -100,6 +101,26 @@ function buildTaskEvidencePolicy(
 function buildTaskDomainPolicies(
   taskBriefRoute: AgentRuntimeTaskBrief["taskRoute"]
 ): AgentRuntimePromptFragment[] {
+  if (taskBriefRoute.intent.id === "client_visual_resources") {
+    const kubeJsPolicy: AgentRuntimePromptFragment[] =
+      taskBriefRoute.steps.includes("probejs_types")
+        ? [
+            {
+              id: "task_kubejs_scripting_policy",
+              text: KUBEJS_SCRIPTING_POLICY_TEXT
+            }
+          ]
+        : [];
+
+    return [
+      {
+        id: "task_client_visual_capability_policy",
+        text: CLIENT_VISUAL_CAPABILITY_POLICY_TEXT
+      },
+      ...kubeJsPolicy
+    ];
+  }
+
   if (taskBriefRoute.intent.id === "kubejs_authoring") {
     return [
       {

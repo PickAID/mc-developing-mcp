@@ -242,11 +242,18 @@ describe("buildHarnessTaskBrief", () => {
           text:
             "Task route: client_visual_resources via workspace_source -> datapack_files -> mod_archive_content -> docs_lookup."
         },
-        {
+        expect.objectContaining({
           id: "task_evidence_policy",
-          text:
-            "Evidence policy: follow workspace_source -> datapack_files -> mod_archive_content -> docs_lookup in order; prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup. Check assets, models, blockstates, registries, client init, and renderer bindings before docs."
-        }
+          text: expect.stringContaining(
+            "Check registry-to-asset links, client-only init, renderer/screen/model bindings, asset reference graphs, rendered state sync, and resource reload/cache boundaries before docs."
+          )
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining(
+            "translate low-knowledge visual requests into concrete Minecraft implementation chains"
+          )
+        })
       ])
     );
   });
