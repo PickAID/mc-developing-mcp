@@ -12,6 +12,7 @@ export type McpServerEvidenceProvenance =
   | "mod_archive_content"
   | "external_mod_resolution"
   | "probejs_types"
+  | "resource_pack_files"
   | "datapack_files"
   | "docs";
 
@@ -81,6 +82,8 @@ function buildCandidate(
   const vanillaAssetsRequest = mentionsVanillaAssetsRequest(
     requestPlan.requestText
   );
+  const resourcePackRequest =
+    requestPlan.trace.taskIntent.id === "resource_pack_lookup";
 
   switch (routeStep) {
     case "java_diagnostics":
@@ -180,7 +183,9 @@ function buildCandidate(
         priority,
         tier: "primary",
         routeStep,
-        provenance: "datapack_files",
+        provenance: resourcePackRequest
+          ? "resource_pack_files"
+          : "datapack_files",
         preferredTool: "source.bundle",
         estimatedCost: "medium",
         reliability: "high",
@@ -192,6 +197,8 @@ function buildCandidate(
           ? buildVanillaDatapackReason(
               descriptor?.currentRuntime.minecraftVersion
             )
+          : resourcePackRequest
+          ? "Inspect resource-pack assets before secondary docs."
           : "Inspect datapack files before secondary docs.",
         pathHints: vanillaAssetsRequest
           ? collectVanillaAssetsHints(descriptor)
