@@ -47,6 +47,12 @@ export function buildSourcePackageManifest(
     stepKinds: string[];
     fileCount?: number;
     installedAt?: string;
+    capabilities?: string[];
+    docDomains?: string[];
+    sourceDomains?: string[];
+    credentialPolicy?: SourcePackageManifest["credentialPolicy"];
+    evidenceAuthority?: SourcePackageManifest["evidenceAuthority"];
+    migrationCoverage?: string[];
   }
 ): SourcePackageManifest {
   return {
@@ -58,7 +64,17 @@ export function buildSourcePackageManifest(
     provenance: input.provenance,
     installedAt: input.installedAt ?? new Date().toISOString(),
     stepKinds: [...input.stepKinds],
-    fileCount: input.fileCount
+    fileCount: input.fileCount,
+    ...(input.capabilities ? { capabilities: [...input.capabilities] } : {}),
+    ...(input.docDomains ? { docDomains: [...input.docDomains] } : {}),
+    ...(input.sourceDomains ? { sourceDomains: [...input.sourceDomains] } : {}),
+    ...(input.credentialPolicy
+      ? { credentialPolicy: { ...input.credentialPolicy } }
+      : {}),
+    ...(input.evidenceAuthority ? { evidenceAuthority: input.evidenceAuthority } : {}),
+    ...(input.migrationCoverage
+      ? { migrationCoverage: [...input.migrationCoverage] }
+      : {})
   };
 }
 

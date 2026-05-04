@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import type {
   AgentRuntimeTaskIntentId,
   CurrentRuntime,
+  DocsPackageManifest,
   McpServerRequestPlan,
   WorkspaceKind
 } from "@mcpskill/shared-types";
+import { buildPackageRegistry } from "@mcpskill/package-registry";
 
 import {
   buildBuiltinDocsRegistry,
@@ -121,6 +123,69 @@ describe("selectDocsPackages", () => {
       domain: "kubejs",
       language: "zh-CN",
       minecraftVersions: ["1.20.1"]
+    });
+  });
+
+  it("matches client visual docs with asset, shader, API, and migration signals", () => {
+    const shaderDocs: DocsPackageManifest = {
+      packageId: "minecraft-26.1-docs-shader-client-visual",
+      origin: "mdm",
+      title: "Minecraft Client Visual Shader Notes",
+      language: "en",
+      domain: "shader",
+      summary: "Client visual shader, UI, render pipeline, and migration evidence.",
+      minecraftVersions: ["26.1"],
+      preferredIntents: ["client_visual_resources"],
+      kinds: ["shader-reference", "format-reference", "migration-map"],
+      topics: ["shader", "post chain", "scalable ui", "render pipeline"],
+      querySignals: {
+        queryTerms: ["shader", "post chain"],
+        addonNames: [],
+        scriptScopes: [],
+        eventNames: [],
+        assetKinds: ["shaders", "post_effect", "nine_slice_metadata"],
+        resourceFormats: ["scalable-ui", "shader-json"],
+        shaderTerms: ["uniform", "sampler"],
+        apiSymbols: ["draw-context-role"],
+        migrationTerms: ["role-equivalent"]
+      },
+      versionFence: {
+        minecraftVersions: ["26.1"],
+        strict: true
+      }
+    };
+
+    const result = selectDocsPackages({
+      requestPlan: createRequestPlan({
+        requestText:
+          "Need shader post chain uniform sampler role-equivalent migration with scalable-ui asset evidence in 26.1.",
+        taskIntentId: "client_visual_resources",
+        workspaceKind: "java-mod",
+        runtime: {
+          minecraftVersion: "26.1",
+          source: "workspace-detect",
+          confidence: "high",
+          evidenceSources: ["build.gradle"],
+          candidates: [],
+          evidence: []
+        },
+        hasKubeJS: false,
+        hasProbeJS: false
+      }),
+      routeStep: "docs_lookup",
+      registry: buildPackageRegistry([shaderDocs])
+    });
+
+    expect(result.selections[0]).toMatchObject({
+      packageId: shaderDocs.packageId,
+      matchedSignals: expect.arrayContaining([
+        "shader",
+        "post chain",
+        "uniform",
+        "sampler",
+        "scalable-ui",
+        "role-equivalent"
+      ])
     });
   });
 });

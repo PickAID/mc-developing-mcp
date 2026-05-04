@@ -13,7 +13,15 @@ export type SourcePackageArtifactType =
   | "source-index"
   | "datapack"
   | "resource-pack"
-  | "assets";
+  | "assets"
+  | "docs/core"
+  | "docs/search"
+  | "docs/ui"
+  | "docs/rendering"
+  | "docs/shader"
+  | "docs/coremod"
+  | "distilled-patterns"
+  | "api-proof-index";
 
 export type SourcePackageVariant = "named" | "official" | "intermediary";
 
@@ -34,6 +42,16 @@ export interface SourcePackageManifest extends SourcePackageCoordinate {
   installedAt: string;
   stepKinds: string[];
   fileCount?: number;
+  capabilities?: string[];
+  docDomains?: string[];
+  sourceDomains?: string[];
+  credentialPolicy?: {
+    required: boolean;
+    envVars: string[];
+    summary: string;
+  };
+  evidenceAuthority?: "required-backend" | "optional-accelerator" | "local-derived";
+  migrationCoverage?: string[];
 }
 
 export interface SourcePackageConfirmation extends SourcePackageCoordinate {

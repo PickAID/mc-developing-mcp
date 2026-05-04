@@ -168,7 +168,12 @@ function collectMatchedSignals(
     ...manifest.querySignals.queryTerms,
     ...manifest.querySignals.addonNames,
     ...manifest.querySignals.scriptScopes,
-    ...manifest.querySignals.eventNames
+    ...manifest.querySignals.eventNames,
+    ...(manifest.querySignals.assetKinds ?? []),
+    ...(manifest.querySignals.resourceFormats ?? []),
+    ...(manifest.querySignals.shaderTerms ?? []),
+    ...(manifest.querySignals.apiSymbols ?? []),
+    ...(manifest.querySignals.migrationTerms ?? [])
   ]) {
     if (requestText.includes(signal.toLowerCase())) {
       matched.add(signal.toLowerCase());
