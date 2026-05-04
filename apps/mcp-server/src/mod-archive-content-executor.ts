@@ -8,7 +8,6 @@ import {
   searchArchiveSetContent,
   type ArchiveContentCache,
   type ArchiveContentSkippedEntry,
-  type ArchiveContentDomain,
   type ArchiveSetContentSearchMatch,
   type ModArchiveMetadata
 } from "@mcpskill/jar-source-adapter";
@@ -42,38 +41,17 @@ import {
   traceSelectedModArchiveResourceReferences,
   traceSelectedNestedModArchiveResourceReferences
 } from "./mod-archive-resource-references.js";
+import {
+  MOD_ARCHIVE_QUERY_LIMIT,
+  MOD_ARCHIVE_SEARCH_DOMAINS,
+  extractListDomains,
+  extractModArchiveQueries
+} from "./mod-archive-content-query.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_MATCHES = 12;
 const DEFAULT_MAX_BYTES_PER_FILE = 65_536;
-const DEFAULT_MAX_QUERIES = 4;
 const CLASS_OWNER_IGNORED_PACKAGE_PREFIXES = ["java.", "javax.", "jdk.", "sun."];
-const SEARCH_DOMAINS: ArchiveContentDomain[] = [
-  "data",
-  "assets",
-  "java",
-  "class",
-  "metadata"
-];
-const QUERY_STOP_WORDS = new Set([
-  "crash",
-  "crashes",
-  "server",
-  "modpack",
-  "recipe",
-  "recipes",
-  "datapack",
-  "kubejs",
-  "startup",
-  "startup_scripts",
-  "content",
-  "latest",
-  "latest.log",
-  "exception",
-  "metadata",
-  "resource",
-  "paths"
-]);
 
 export interface McpServerModArchiveContentExecutorOptions {
   cache?: ArchiveContentCache;
@@ -240,7 +218,7 @@ export async function executeMcpServerModArchiveContent(
   });
   const payload = {
     source: "mod_archive_content",
-    domains: SEARCH_DOMAINS,
+    domains: MOD_ARCHIVE_SEARCH_DOMAINS,
     queries,
     archiveCount: archives.archives.length,
     searchedArchives: result.searchedArchives,
@@ -274,7 +252,7 @@ async function lookupClassOwners(input: {
 }): Promise<McpServerEvidenceExecutorResult | undefined> {
   const requestedClasses = extractJavaClassReferences(input.requestText, {
     ignoredPackagePrefixes: CLASS_OWNER_IGNORED_PACKAGE_PREFIXES,
-    limit: DEFAULT_MAX_QUERIES
+    limit: MOD_ARCHIVE_QUERY_LIMIT
   });
 
   if (requestedClasses.length === 0) {
@@ -331,7 +309,7 @@ async function lookupClassOwners(input: {
 function buildEmptyPayload(queries: string[], archiveCount: number) {
   return {
     source: "mod_archive_content",
-    domains: SEARCH_DOMAINS,
+    domains: MOD_ARCHIVE_SEARCH_DOMAINS,
     queries,
     archiveCount,
     searchedArchives: 0,
@@ -360,7 +338,7 @@ async function searchQueries(input: {
 
     const result = await searchArchiveSetContent({
       sourceArchives: input.archivePaths,
-      domains: SEARCH_DOMAINS,
+      domains: MOD_ARCHIVE_SEARCH_DOMAINS,
       query,
       maxArchives: DEFAULT_MAX_ARCHIVES,
       maxMatches: remainingMatches,
@@ -418,32 +396,6 @@ async function readArchiveMetadata(
   return readModArchiveMetadata(sourceArchive).catch(() => undefined);
 }
 
-function extractModArchiveQueries(requestText?: string): string[] {
-  if (!requestText) {
-    return [];
-  }
-
-  const queries: string[] = [];
-  const normalizedText = requestText.replace(/[`"'“”‘’]/g, " ");
-
-  for (const resourceId of normalizedText.match(/#?[a-z0-9_.-]+:[a-z0-9_./-]+/gi) ?? []) {
-    addQuery(queries, resourceId.replace(/^#/, ""));
-  }
-  for (const className of normalizedText.match(/\b(?:[a-z_][\w$]*\.){2,}[A-Z_$][\w$]*\b/g) ?? []) {
-    addQuery(queries, className);
-  }
-  for (const path of normalizedText.match(/\b(?:(?:data|assets)\/[A-Za-z0-9_./+$-]+\.(?:json|mcmeta|txt|toml|lang|png)|[A-Za-z0-9_.-]+\.mixins?\.json|(?:fabric|quilt)\.mod\.json|pack\.mcmeta|META-INF\/(?:mods|neoforge\.mods)\.toml)\b/g) ?? []) {
-    addQuery(queries, path);
-  }
-  for (const word of normalizedText.match(/\b[A-Za-z0-9_$.-]{5,}\b/g) ?? []) {
-    if (!isStopWord(word)) {
-      addQuery(queries, word);
-    }
-  }
-
-  return queries.slice(0, DEFAULT_MAX_QUERIES);
-}
-
 function selectArchive(
   archives: Array<{ archivePath: string; relativePath: string }>,
   requestText?: string
@@ -466,27 +418,4 @@ function selectArchive(
       normalizedText.includes(archiveName)
     );
   });
-}
-
-function extractListDomains(requestText?: string): ArchiveContentDomain[] | undefined {
-  if (!requestText || !/\b(list|show|entries|列出|查看)\b/i.test(requestText)) {
-    return undefined;
-  }
-
-  const normalizedText = requestText.toLowerCase();
-  const domains = SEARCH_DOMAINS.filter((domain) =>
-    normalizedText.includes(domain)
-  );
-
-  return domains.length > 0 ? domains : SEARCH_DOMAINS;
-}
-
-function addQuery(queries: string[], query: string): void {
-  if (query.length > 0 && !queries.includes(query)) {
-    queries.push(query);
-  }
-}
-
-function isStopWord(word: string): boolean {
-  return QUERY_STOP_WORDS.has(word.toLowerCase());
 }
