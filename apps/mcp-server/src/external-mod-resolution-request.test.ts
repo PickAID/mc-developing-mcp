@@ -82,4 +82,17 @@ describe("parseExternalModRequest", () => {
       minecraftVersion: "1.20.1"
     });
   });
+
+  it("keeps multi-word natural mod names before loader and version constraints", () => {
+    expect(
+      parseExternalModRequest(
+        "Find the CurseForge mod Just Enough Items forge 1.20.1."
+      )
+    ).toMatchObject({
+      platform: "curseforge",
+      query: "just enough items",
+      loader: "forge",
+      minecraftVersion: "1.20.1"
+    });
+  });
 });

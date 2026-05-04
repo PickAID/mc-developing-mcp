@@ -174,8 +174,9 @@ function extractQuery(
   const meaningful = tokens.filter(
     (token) => !isQueryStopToken(token, loader, minecraftVersion)
   );
+  const query = meaningful.join(" ").toLowerCase();
 
-  return meaningful[0]?.toLowerCase();
+  return query ? query : undefined;
 }
 
 function extractExplicitConstraintHint(
