@@ -4,6 +4,7 @@ import {
   extractJavaClassReferences,
   findArchiveSetClassOwners,
   findCachedModArchiveClassOwners,
+  findModArchiveInventoryMetadataOwners,
   readModArchiveMetadata,
   searchArchiveSetContent,
   type ArchiveContentCache,
@@ -48,6 +49,7 @@ import {
   extractListDomains,
   extractModArchiveQueries
 } from "./mod-archive-content-query.js";
+import { extractCrashLoaderDependency } from "./external-mod-loader-dependency.js";
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_MATCHES = 12;
@@ -115,6 +117,15 @@ export async function executeMcpServerModArchiveContent(
       summary: "No mod archives were discovered in this workspace.",
       payload: buildEmptyPayload(queries, 0)
     };
+  }
+
+  const loaderDependencyOwnerResult = await lookupLoaderDependencyOwner({
+    workspaceRoot,
+    requestText,
+    cache: options.cache
+  });
+  if (loaderDependencyOwnerResult) {
+    return loaderDependencyOwnerResult;
   }
 
   const selectedArchive = selectArchive(archives.archives, requestText);
@@ -250,6 +261,50 @@ export async function executeMcpServerModArchiveContent(
     matched: true,
     summary: `Found ${result.matches.length} mod archive content match(es).`,
     payload
+  };
+}
+
+async function lookupLoaderDependencyOwner(input: {
+  workspaceRoot: string;
+  requestText?: string;
+  cache?: ArchiveContentCache;
+}): Promise<McpServerEvidenceExecutorResult | undefined> {
+  if (!input.requestText) {
+    return undefined;
+  }
+
+  const dependency = extractCrashLoaderDependency(input.requestText);
+  if (!dependency?.requestedBy) {
+    return undefined;
+  }
+
+  const ownerResult = await findModArchiveInventoryMetadataOwners({
+    workspaceRoot: input.workspaceRoot,
+    modIds: [dependency.requestedBy],
+    maxArchives: DEFAULT_MAX_ARCHIVES,
+    cache: input.cache
+  });
+  const owner = ownerResult.matches[0];
+  if (!owner) {
+    return undefined;
+  }
+
+  return {
+    matched: false,
+    summary: `Located loader dependency requester ${dependency.requestedBy} in mod archive metadata.`,
+    payload: {
+      source: "mod_archive_content",
+      mode: "loader_dependency_owner",
+      missingDependencyModId: dependency.modId,
+      requestedBy: dependency.requestedBy,
+      kind: dependency.kind,
+      expectedRange: dependency.expectedRange,
+      actualVersion: dependency.actualVersion,
+      owner,
+      requestedModIds: ownerResult.requestedModIds,
+      searchedArchives: ownerResult.searchedArchives,
+      truncated: ownerResult.truncated
+    }
   };
 }
 

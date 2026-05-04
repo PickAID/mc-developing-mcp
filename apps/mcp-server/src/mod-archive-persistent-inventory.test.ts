@@ -201,6 +201,46 @@ describe("persistent mod archive inventory", () => {
       "assets/demo/models/block/gear.json"
     );
   });
+
+  it("lists bounded model asset entries from the mod archive asset index", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-"));
+    const workspaceRoot = await createAssetWorkspace();
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText:
+        "List mod archive inventory and model asset entries for this modpack."
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "inventory",
+        assetResourceSummary: {
+          tokenPolicy: "counts_only",
+          assetEntryCount: 1,
+          byKind: {
+            models: 1
+          }
+        },
+        assetResourceEntries: [
+          {
+            archiveRelativePath: "mods/asset-mod.jar",
+            relativePath: "assets/demo/models/block/gear.json",
+            assetKind: "models"
+          }
+        ]
+      }
+    });
+    expect(JSON.stringify(result.selectedEvidence?.payload)).not.toContain(
+      "assets/demo/blockstates/gear.json"
+    );
+  });
 });
 
 async function createWorkspace(): Promise<string> {

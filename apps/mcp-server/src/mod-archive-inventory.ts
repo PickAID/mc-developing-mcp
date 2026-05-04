@@ -3,6 +3,7 @@ import {
   buildCachedModArchiveInventory,
   queryCachedModArchiveEntries,
   type ArchiveContentCache,
+  type ModArchiveAssetKind,
   type ModArchiveDataKind
 } from "@mcpskill/jar-source-adapter";
 import { join } from "node:path";
@@ -14,7 +15,25 @@ import type {
 
 const DEFAULT_MAX_ARCHIVES = 64;
 const DEFAULT_MAX_NESTED_ARCHIVES = 16;
-const DEFAULT_DATA_ENTRY_LIMIT = 12;
+const DEFAULT_RESOURCE_ENTRY_LIMIT = 12;
+
+const ASSET_KIND_INTENT: ReadonlyArray<{
+  kind: ModArchiveAssetKind;
+  patterns: RegExp[];
+}> = [
+  { kind: "models", patterns: [/\bmodels?\b|\bblock models?\b|\bitem models?\b/, /模型/] },
+  { kind: "blockstates", patterns: [/\bblockstates?\b/, /方块状态/] },
+  { kind: "items", patterns: [/\bitems?\b/, /物品定义|物品模型/] },
+  { kind: "textures", patterns: [/\btextures?\b/, /贴图|纹理/] },
+  { kind: "gui_texture", patterns: [/\bgui textures?\b/, /界面贴图/] },
+  { kind: "gui_sprite", patterns: [/\bgui sprites?\b|\bsprites?\b/, /精灵图/] },
+  { kind: "atlas", patterns: [/\batlases?\b/, /图集/] },
+  { kind: "font", patterns: [/\bfonts?\b/, /字体/] },
+  { kind: "lang", patterns: [/\blang(?:uage)?\b|\btranslations?\b/, /语言|翻译/] },
+  { kind: "particles", patterns: [/\bparticles?\b/, /粒子/] },
+  { kind: "shaders", patterns: [/\bshaders?\b/, /着色器/] },
+  { kind: "sounds", patterns: [/\bsounds?\b/, /声音|音效/] }
+];
 
 const DATA_KIND_INTENT: ReadonlyArray<{
   kind: ModArchiveDataKind;
@@ -102,16 +121,25 @@ export async function listModArchiveInventory(input: {
   const requestedDataKinds = resolveRequestedModArchiveDataKinds(
     input.executorInput.requestPlan.requestText
   );
+  const requestedAssetKinds = resolveRequestedModArchiveAssetKinds(
+    input.executorInput.requestPlan.requestText
+  );
+  const requestedDomains = [
+    ...(requestedDataKinds.length > 0 ? ["data" as const] : []),
+    ...(requestedAssetKinds.length > 0 ? ["assets" as const] : [])
+  ];
   const entryIndex = input.databasePath
     ? await queryCachedModArchiveEntries({
         workspaceRoot,
         databasePath: input.databasePath,
         maxArchives: DEFAULT_MAX_ARCHIVES,
-        domains: requestedDataKinds.length > 0 ? ["data"] : undefined,
+        domains: requestedDomains.length > 0 ? requestedDomains : undefined,
+        assetKinds:
+          requestedAssetKinds.length > 0 ? requestedAssetKinds : undefined,
         dataKinds:
           requestedDataKinds.length > 0 ? requestedDataKinds : undefined,
         limit:
-          requestedDataKinds.length > 0 ? DEFAULT_DATA_ENTRY_LIMIT : 0,
+          requestedDomains.length > 0 ? DEFAULT_RESOURCE_ENTRY_LIMIT : 0,
         refresh: input.refresh
       })
     : undefined;
@@ -147,6 +175,9 @@ export async function listModArchiveInventory(input: {
             },
             ...(assetResourceSummary ? { assetResourceSummary } : {}),
             ...(dataResourceSummary ? { dataResourceSummary } : {}),
+            ...(requestedAssetKinds.length > 0
+              ? { assetResourceEntries: entryIndex.entries.map(toAssetResourceEntry) }
+              : {}),
             ...(requestedDataKinds.length > 0
               ? { dataResourceEntries: entryIndex.entries.map(toDataResourceEntry) }
               : {})
@@ -154,6 +185,19 @@ export async function listModArchiveInventory(input: {
         : {})
     }
   };
+}
+
+export function resolveRequestedModArchiveAssetKinds(
+  requestText?: string
+): ModArchiveAssetKind[] {
+  if (!requestText) {
+    return [];
+  }
+
+  const normalizedText = requestText.toLowerCase();
+  return ASSET_KIND_INTENT.flatMap(({ kind, patterns }) =>
+    patterns.some((pattern) => pattern.test(normalizedText)) ? [kind] : []
+  );
 }
 
 export function resolveRequestedModArchiveDataKinds(
@@ -167,6 +211,22 @@ export function resolveRequestedModArchiveDataKinds(
   return DATA_KIND_INTENT.flatMap(({ kind, patterns }) =>
     patterns.some((pattern) => pattern.test(normalizedText)) ? [kind] : []
   );
+}
+
+function toAssetResourceEntry(entry: {
+  archiveRelativePath: string;
+  embeddedArchivePath?: string;
+  relativePath: string;
+  assetKind?: ModArchiveAssetKind;
+}) {
+  return {
+    archiveRelativePath: entry.archiveRelativePath,
+    ...(entry.embeddedArchivePath
+      ? { embeddedArchivePath: entry.embeddedArchivePath }
+      : {}),
+    relativePath: entry.relativePath,
+    assetKind: entry.assetKind
+  };
 }
 
 function toDataResourceEntry(entry: {

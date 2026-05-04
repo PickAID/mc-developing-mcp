@@ -357,29 +357,20 @@ function toCompactResourceReference(reference: DatapackResourceReference) {
 }
 
 function extractResourceLocationQueries(requestText: string): string[] {
-  const matches = requestText.matchAll(
-    /\b[a-z0-9_.-]+:[a-z0-9_.\-\/]+\b/gi
-  );
-
-  return unique([...matches].map((match) => match[0].toLowerCase())).slice(
-    0,
-    MAX_QUERIES
-  );
+  const matches = requestText.matchAll(/\b[a-z0-9_.-]+:[a-z0-9_.\-\/]+\b/gi);
+  return unique([...matches].map((match) => match[0].toLowerCase()))
+    .slice(0, MAX_QUERIES);
 }
 
 function extractDatapackPathQueries(requestText: string): string[] {
-  const matches = requestText.matchAll(
-    /\b(?:data|assets)\/[A-Za-z0-9_.-]+\/[^\s'"`<>]+/g
-  );
-
+  const matches = requestText.matchAll(/\b(?:data|assets)\/[A-Za-z0-9_.-]+\/[^\s'"`<>]+/g);
   return unique([...matches].map((match) => trimTrailingPunctuation(match[0])))
     .slice(0, MAX_QUERIES);
 }
 
 function mentionsResourceReferenceTrace(requestText: string): boolean {
-  return /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i.test(
-    requestText
-  );
+  return /\b(?:trace|reference|references|dependency|dependencies|missing|unresolved)\b|引用|依赖|追踪|缺失|丢失|找不到/i
+    .test(requestText);
 }
 
 function isTraceableAssetPath(path: string): boolean {
@@ -424,6 +415,17 @@ async function searchRequestedResourceLocations(
   let truncated = false;
 
   for (const query of queries) {
+    for (const match of await findResourceLocationEntryMatches(workspaceRoot, query)) {
+      matches.set(buildMatchKey(match), match);
+      if (matches.size >= MAX_MATCHES) {
+        truncated = true;
+        break;
+      }
+    }
+    if (truncated || matches.size > 0) {
+      continue;
+    }
+
     const result = await searchDatapackFiles(workspaceRoot, query, {
       ...DATAPACK_BUDGET
     });
@@ -449,6 +451,32 @@ async function searchRequestedResourceLocations(
     skipped,
     truncated
   };
+}
+
+async function findResourceLocationEntryMatches(
+  workspaceRoot: string,
+  query: string
+): Promise<DatapackSearchMatch[]> {
+  const listed = await listDatapackFiles(workspaceRoot, { ...DATAPACK_BUDGET });
+  return listed.entries.flatMap((file) => entryResourceLocation(file) === query
+    ? [{ file, line: 1, column: 1, preview: `resource-location metadata: ${query}` }]
+    : []);
+}
+
+function entryResourceLocation(entry: DatapackFileEntry): string | undefined {
+  if (entry.domain !== "assets") {
+    return undefined;
+  }
+  const segments = entry.relativePath.split("/");
+  const assetKind = segments[2];
+  const path = segments.slice(3).join("/").replace(/\.(?:json|png)$/i, "");
+  if (!entry.namespace || !path) {
+    return undefined;
+  }
+  if (assetKind === "items") return `${entry.namespace}:item/${path}`;
+  return assetKind === "models" || assetKind === "textures"
+    ? `${entry.namespace}:${path}`
+    : undefined;
 }
 
 interface DatapackReadEvidence {

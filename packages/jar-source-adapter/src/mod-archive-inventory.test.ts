@@ -6,7 +6,10 @@ import { deflateRawSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createArchiveContentCache } from "./archive-content-cache.js";
-import { buildModArchiveInventory } from "./mod-archive-inventory.js";
+import {
+  buildModArchiveInventory,
+  findModArchiveInventoryMetadataOwners
+} from "./mod-archive-inventory.js";
 
 const tempRoots: string[] = [];
 
@@ -107,6 +110,29 @@ describe("buildModArchiveInventory", () => {
         }
       ],
       truncated: true
+    });
+  });
+
+  it("locates mod archive metadata owners by mod id", async () => {
+    const workspaceRoot = await createInventoryWorkspace();
+
+    await expect(
+      findModArchiveInventoryMetadataOwners({
+        workspaceRoot,
+        modIds: ["outer_mod", "missing_mod"]
+      })
+    ).resolves.toMatchObject({
+      requestedModIds: ["outer_mod", "missing_mod"],
+      matches: [
+        {
+          archiveRelativePath: "mods/outer-mod.jar",
+          modId: "outer_mod",
+          version: "1.0.0",
+          loader: "fabric"
+        }
+      ],
+      searchedArchives: 1,
+      truncated: false
     });
   });
 });

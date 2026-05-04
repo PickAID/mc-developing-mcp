@@ -5,6 +5,7 @@ export * from "./archive-content.js";
 export * from "./archive-set.js";
 export * from "./class-owner.js";
 export * from "./mod-archive-class-owner-index.js";
+export * from "./mod-archive-asset-kind.js";
 export * from "./mod-archive-data-kind.js";
 export * from "./mod-archive-entry-index.js";
 export * from "./mod-archive-inventory.js";

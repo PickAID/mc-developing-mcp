@@ -161,6 +161,12 @@ export async function searchDatapackFiles(
   const skipped = [...listed.skipped];
 
   for (const entry of listed.entries) {
+    const metadataMatch = findInResourceLocationMetadata(entry, query);
+    if (metadataMatch !== undefined) {
+      matches.push({ file: entry, ...metadataMatch });
+      continue;
+    }
+
     const content = await readTextEntry(entry, budget.maxBytesPerFile);
 
     if (typeof content !== "string") {
@@ -290,7 +296,8 @@ async function createEntry(input: {
       namespace,
       kind: classifyKind(domain, segments[2]),
       domain,
-      sizeBytes: fileStat.size
+      sizeBytes: fileStat.size,
+      resourceLocations: buildResourceLocations(domain, namespace, segments)
     };
   } catch {
     return undefined;
@@ -384,6 +391,53 @@ function findInContent(content: string, query: string) {
     column: lines[lines.length - 1].length + 1,
     preview: content.split("\n")[lines.length - 1] ?? ""
   };
+}
+
+function findInResourceLocationMetadata(
+  entry: DatapackFileEntry,
+  query: string
+) {
+  const normalizedQuery = query.toLowerCase();
+  if (!entry.resourceLocations?.includes(normalizedQuery)) {
+    return undefined;
+  }
+
+  return {
+    line: 1,
+    column: 1,
+    preview: `resource-location metadata: ${normalizedQuery}`
+  };
+}
+
+function buildResourceLocations(
+  domain: DatapackDomain,
+  namespace: string,
+  segments: string[]
+): string[] | undefined {
+  if (domain !== "assets") {
+    return undefined;
+  }
+
+  const assetKind = segments[2];
+  const pathSegments = segments.slice(3);
+  const path = stripKnownExtension(pathSegments.join("/"));
+  if (!path) {
+    return undefined;
+  }
+
+  if (assetKind === "items") {
+    return [`${namespace}:item/${path}`];
+  }
+
+  if (assetKind === "models" || assetKind === "textures") {
+    return [`${namespace}:${path}`];
+  }
+
+  return undefined;
+}
+
+function stripKnownExtension(path: string): string {
+  return path.replace(/\.(?:json|png|mcmeta|txt|fsh|vsh)$/i, "").toLowerCase();
 }
 
 function isBinary(content: Buffer): boolean {

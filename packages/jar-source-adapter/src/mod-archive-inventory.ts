@@ -48,6 +48,23 @@ export interface ModArchiveInventoryCacheMetadata {
   centralDirectoryMisses: number;
 }
 
+export interface ModArchiveInventoryMetadataOwner {
+  archivePath: string;
+  archiveRelativePath: string;
+  modId: string;
+  version?: string;
+  name?: string;
+  loader: ModArchiveMetadata["loader"];
+  metadataPath: string;
+}
+
+export interface ModArchiveInventoryMetadataOwnerResult {
+  requestedModIds: string[];
+  matches: ModArchiveInventoryMetadataOwner[];
+  searchedArchives: number;
+  truncated: boolean;
+}
+
 export async function buildModArchiveInventory(input: {
   workspaceRoot: string;
   maxArchives?: number;
@@ -83,6 +100,45 @@ export async function buildModArchiveInventory(input: {
     truncated:
       discovered.truncated || inspectedArchives.some((result) => result.truncated),
     cache: input.cache ? cacheMetadata : undefined
+  };
+}
+
+export async function findModArchiveInventoryMetadataOwners(input: {
+  workspaceRoot: string;
+  modIds: string[];
+  maxArchives?: number;
+  maxNestedArchives?: number;
+  cache?: ArchiveContentCache;
+}): Promise<ModArchiveInventoryMetadataOwnerResult> {
+  const requestedModIds = uniqueNormalizedModIds(input.modIds);
+  const inventory = await buildModArchiveInventory({
+    workspaceRoot: input.workspaceRoot,
+    maxArchives: input.maxArchives,
+    maxNestedArchives: input.maxNestedArchives,
+    cache: input.cache
+  });
+  const requested = new Set(requestedModIds);
+
+  return {
+    requestedModIds,
+    matches: inventory.archives.flatMap((archive) => {
+      const metadata = archive.archiveMetadata;
+      if (!metadata || !requested.has(normalizeModId(metadata.modId))) {
+        return [];
+      }
+
+      return [{
+        archivePath: archive.archivePath,
+        archiveRelativePath: archive.relativePath,
+        modId: metadata.modId,
+        version: metadata.version,
+        name: metadata.name,
+        loader: metadata.loader,
+        metadataPath: metadata.metadataPath
+      }];
+    }),
+    searchedArchives: inventory.archiveCount,
+    truncated: inventory.truncated
   };
 }
 
@@ -283,4 +339,12 @@ function readMetadataSafely(archive: Buffer): ModArchiveMetadata | undefined {
 
 function normalizeLimit(limit: number | undefined, fallback: number): number {
   return Math.max(0, Math.floor(limit ?? fallback));
+}
+
+function uniqueNormalizedModIds(modIds: string[]): string[] {
+  return [...new Set(modIds.map(normalizeModId).filter((value) => value.length > 0))];
+}
+
+function normalizeModId(modId: string): string {
+  return modId.trim().toLowerCase();
 }

@@ -65,6 +65,7 @@ export interface DatapackFileEntry {
   kind: DatapackKind;
   domain: DatapackDomain;
   sizeBytes: number;
+  resourceLocations?: string[];
 }
 
 export type DatapackSkipReason = "unreadable" | "binary" | "too-large";
