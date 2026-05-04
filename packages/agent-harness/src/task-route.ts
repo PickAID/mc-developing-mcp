@@ -77,6 +77,15 @@ export function buildHarnessTaskRoute(
         ),
         preferredTools: ["workspace.analyze", "source.bundle", "context.query"]
       };
+    case "client_visual_resources":
+      return {
+        intent,
+        reasons: [
+          "client visual and resource tasks should inspect workspace source, assets, renderer bindings, and local mod archive content before docs"
+        ],
+        steps: buildClientVisualResourceSteps(snapshot),
+        preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+      };
     case "datapack_lookup":
       return {
         intent,
@@ -162,6 +171,40 @@ function withExplicitModArchiveContent(
   return steps.length === 0
     ? ["mod_archive_content", "docs_lookup"]
     : [...steps, "mod_archive_content"];
+}
+
+function buildClientVisualResourceSteps(
+  snapshot: AgentRuntimeHarnessSnapshot
+): AgentRuntimeTaskRouteStep[] {
+  const steps: AgentRuntimeTaskRouteStep[] = [];
+
+  if (snapshot.facts.hasProbeJS || snapshot.facts.hasKubeJS) {
+    steps.push("probejs_types");
+  }
+
+  if (snapshot.facts.hasJavaSource || snapshot.facts.hasGradle) {
+    steps.push("workspace_source");
+  }
+
+  if (
+    snapshot.facts.hasDatapack ||
+    snapshot.facts.datapackRootCount > 0 ||
+    snapshot.facts.hasResourcePack ||
+    snapshot.facts.resourcePackRootCount > 0 ||
+    snapshot.facts.hasJavaSource ||
+    snapshot.facts.hasGradle ||
+    snapshot.facts.hasKubeJS ||
+    snapshot.facts.hasProbeJS
+  ) {
+    steps.push("datapack_files");
+  }
+
+  if (snapshot.facts.hasModArchives) {
+    steps.push("mod_archive_content");
+  }
+
+  steps.push("docs_lookup");
+  return steps;
 }
 
 export function buildHarnessTaskRouteFromSnapshot(

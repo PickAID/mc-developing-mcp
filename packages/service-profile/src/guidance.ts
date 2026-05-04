@@ -35,6 +35,9 @@ export function buildServiceProfileGuidance(
     guidance.push(
       "Use resource-pack assets, model references, and pack metadata before docs fallback."
     );
+    guidance.push(
+      "For client visual tasks, check assets/models/blockstates plus registry and renderer wiring before docs."
+    );
   }
 
   if (profile.capabilities.modArchives.status === "ready") {

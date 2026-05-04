@@ -56,7 +56,7 @@ export async function createEntry(input: {
       rootRelativePath,
       relativePath,
       namespace,
-      kind: classifyKind(domain, segments[2]),
+      kind: classifyKind(domain, segments[2], relativePath),
       domain,
       sizeBytes: fileStat.size,
       resourceLocations: buildResourceLocations(domain, namespace, segments)

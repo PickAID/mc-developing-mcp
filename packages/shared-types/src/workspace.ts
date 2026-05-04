@@ -43,10 +43,12 @@ export interface WorkspaceDescriptor {
   hasModArchives: boolean;
   hasJavaSource: boolean;
   hasDatapack: boolean;
+  hasResourcePack?: boolean;
   buildFiles: string[];
   javaSourceRoots: string[];
   modArchivePaths: string[];
   datapackRoots: string[];
+  resourcePackRoots?: string[];
   logPaths: string[];
   reasons: string[];
   currentRuntime: CurrentRuntime;

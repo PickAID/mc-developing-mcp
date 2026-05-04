@@ -146,6 +146,73 @@ describe("detectHarnessTaskIntent", () => {
     });
   });
 
+  it("detects client visual resource requests from renderer and asset wiring wording", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "java-mod",
+          facts: {
+            ...createFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            hasDatapack: true,
+            hasModArchives: true,
+            javaSourceRootCount: 1,
+            datapackRootCount: 1
+          }
+        }),
+        "Wire the block entity renderer, blockstate, model registration, and client init for this visual block."
+      )
+    ).toEqual({
+      id: "client_visual_resources",
+      confidence: "high",
+      reasons: [
+        "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
+        "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
+      ]
+    });
+  });
+
+  it("detects connected texture client work as client visual resources", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "java-mod",
+          facts: {
+            ...createFacts(),
+            hasGradle: true,
+            hasJavaSource: true
+          }
+        }),
+        "Fix connected textures and renderer bindings for the client screen."
+      )
+    ).toMatchObject({
+      id: "client_visual_resources",
+      confidence: "high"
+    });
+  });
+
+  it("prioritizes KubeJS client visual requests over generic KubeJS authoring", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "kubejs",
+          facts: {
+            ...createFacts(),
+            hasKubeJS: true,
+            hasProbeJS: true,
+            hasResourcePack: true,
+            resourcePackRootCount: 1
+          }
+        }),
+        "Fix a KubeJS client_scripts screen renderer binding with model assets."
+      )
+    ).toMatchObject({
+      id: "client_visual_resources",
+      confidence: "high"
+    });
+  });
+
   it("detects Java diagnostics requests when the workspace has Java sources", () => {
     expect(
       detectHarnessTaskIntent(
@@ -210,10 +277,13 @@ function createFacts() {
     hasJavaSource: false,
     hasKubeJS: false,
     hasProbeJS: false,
+    hasModArchives: false,
     hasDatapack: false,
+    hasResourcePack: false,
     buildFileCount: 0,
     javaSourceRootCount: 0,
     datapackRootCount: 0,
+    resourcePackRootCount: 0,
     logPathCount: 0
   };
 }

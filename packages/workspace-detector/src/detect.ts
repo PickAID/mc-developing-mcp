@@ -41,10 +41,12 @@ export async function detectWorkspace(
     hasModArchives: scan.hasModArchives,
     hasJavaSource: scan.hasJavaSource,
     hasDatapack: scan.hasDatapack,
+    hasResourcePack: scan.hasResourcePack,
     buildFiles: scan.buildFiles,
     javaSourceRoots: scan.javaSourceRoots,
     modArchivePaths: scan.modArchivePaths,
     datapackRoots: scan.datapackRoots,
+    resourcePackRoots: scan.resourcePackRoots,
     logPaths: scan.logPaths,
     reasons: buildReasons(scan, hintFacts.length > 0),
     currentRuntime

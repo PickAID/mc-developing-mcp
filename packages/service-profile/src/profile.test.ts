@@ -157,6 +157,9 @@ describe("buildMinecraftServiceProfile", () => {
     expect(profile.guidance).toContain(
       "Use discovered mod jar data/assets/source content for external mod evidence before assuming it is absent."
     );
+    expect(profile.guidance).toContain(
+      "For client visual tasks, check assets/models/blockstates plus registry and renderer wiring before docs."
+    );
     for (const entry of profile.guidance) {
       expect(entry.length).toBeLessThanOrEqual(160);
       expect(entry).not.toMatch(/nine-slice|grid|dynamic-window/i);
@@ -208,6 +211,9 @@ describe("buildMinecraftServiceProfile", () => {
     );
     expect(profile.guidance).toContain(
       "Use resource-pack assets, model references, and pack metadata before docs fallback."
+    );
+    expect(profile.guidance).toContain(
+      "For client visual tasks, check assets/models/blockstates plus registry and renderer wiring before docs."
     );
     expect(formatServiceProfilePrompt(profile)).toContain(
       "Datapack: not_found, data=0, namespaces=none"

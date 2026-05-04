@@ -198,6 +198,63 @@ describe("queryCachedModArchiveEntries", () => {
     });
   });
 
+  it("summarizes anonymous advanced visual asset evidence from mod archives", async () => {
+    const workspaceRoot = await createWorkspace([
+      {
+        name: "assets/demo/ctm/block/gear.properties",
+        content: "matchBlocks=demo:gear\nmethod=ctm\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/models/block/ornate.obj",
+        content: "o ornate\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/block_entity/display/core.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/gui/sprites/panel/active.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/atlases/blocks.json",
+        content: "{\"sources\":[]}\n",
+        compressionMethod: 0
+      }
+    ]);
+    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
+
+    const result = await queryCachedModArchiveEntries({
+      workspaceRoot,
+      databasePath,
+      domains: ["assets"],
+      limit: 0
+    });
+
+    expect(result).toMatchObject({
+      entries: [],
+      assetSummary: {
+        assetEntryCount: 6,
+        uiAssetCount: 3,
+        byKind: {
+          atlas: 1,
+          block_entity_renderer_asset: 1,
+          connected_texture_metadata: 1,
+          custom_model_format: 1,
+          gui_sprite: 1,
+          lang: 1
+        }
+      },
+      truncated: true
+    });
+    expect(JSON.stringify(result.assetSummary)).not.toContain("ctm/block");
+    expect(JSON.stringify(result.assetSummary)).not.toContain("ornate.obj");
+  });
+
   it("summarizes datapack data roots from mod archives without path dumping", async () => {
     const workspaceRoot = await createWorkspace([
       {

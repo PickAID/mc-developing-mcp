@@ -10,11 +10,13 @@ export interface WorkspaceScan {
   hasModArchives: boolean;
   hasJavaSource: boolean;
   hasDatapack: boolean;
+  hasResourcePack: boolean;
   buildFiles: string[];
   javaSourceRoots: string[];
   modArchivePaths: string[];
   resourceRoots: string[];
   datapackRoots: string[];
+  resourcePackRoots: string[];
   logPaths: string[];
 }
 
@@ -78,6 +80,10 @@ export async function scanWorkspace(root: string): Promise<WorkspaceScan> {
   const hasKubeJS = await pathIsDirectory(join(normalizedRoot, "kubejs"));
   const modArchivePaths = await findRuntimeModArchives(normalizedRoot);
   const datapackRoots = await findDatapackRoots(normalizedRoot, resourceRoots);
+  const resourcePackRoots = await findResourcePackRoots(
+    normalizedRoot,
+    resourceRoots
+  );
   const logPaths = await findLogPaths(normalizedRoot);
 
   return {
@@ -88,11 +94,13 @@ export async function scanWorkspace(root: string): Promise<WorkspaceScan> {
     hasModArchives: modArchivePaths.length > 0,
     hasJavaSource: javaSourceRoots.length > 0,
     hasDatapack: datapackRoots.length > 0,
+    hasResourcePack: resourcePackRoots.length > 0,
     buildFiles,
     javaSourceRoots,
     modArchivePaths,
     resourceRoots,
     datapackRoots,
+    resourcePackRoots,
     logPaths
   };
 }
@@ -140,10 +148,36 @@ async function findDatapackRoots(
   return uniquePaths(datapackRoots);
 }
 
+async function findResourcePackRoots(
+  root: string,
+  resourceRoots: string[]
+): Promise<string[]> {
+  const resourcePackRoots: string[] = [];
+
+  if (await hasResourcePackContent(root)) {
+    resourcePackRoots.push(root);
+  }
+
+  for (const resourceRoot of resourceRoots) {
+    if (await hasResourcePackContent(resourceRoot)) {
+      resourcePackRoots.push(resourceRoot);
+    }
+  }
+
+  return uniquePaths(resourcePackRoots);
+}
+
 async function hasDatapackOrResourceContent(root: string): Promise<boolean> {
   return (
     (await pathIsFile(join(root, "pack.mcmeta"))) ||
     (await pathIsDirectory(join(root, "data"))) ||
+    (await pathIsDirectory(join(root, "assets")))
+  );
+}
+
+async function hasResourcePackContent(root: string): Promise<boolean> {
+  return (
+    (await pathIsFile(join(root, "pack.png"))) ||
     (await pathIsDirectory(join(root, "assets")))
   );
 }

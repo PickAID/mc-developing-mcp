@@ -197,6 +197,59 @@ describe("buildHarnessTaskBrief", () => {
       ])
     );
   });
+
+  it("builds a client visual resource task brief with source and asset guidance before docs", () => {
+    const brief = buildHarnessTaskBriefFromBootstrap({
+      workspaceContext: createWorkspaceContext({
+        kind: "java-mod",
+        hasGradle: true,
+        hasJavaSource: true,
+        hasDatapack: true,
+        hasModArchives: true,
+        buildFiles: ["/tmp/workspace/build.gradle"],
+        javaSourceRoots: ["/tmp/workspace/src/main/java"],
+        datapackRoots: ["/tmp/workspace/src/main/resources"],
+        modArchivePaths: ["/tmp/workspace/mods/visual-helper.jar"]
+      }),
+      requestText:
+        "Wire the block entity renderer, model registration, blockstate, and client init for this visual block."
+    });
+
+    expect(brief).toMatchObject({
+      intent: {
+        id: "client_visual_resources",
+        confidence: "high"
+      },
+      taskRoute: {
+        reasons: [
+          "client visual and resource tasks should inspect workspace source, assets, renderer bindings, and local mod archive content before docs"
+        ],
+        steps: [
+          "workspace_source",
+          "datapack_files",
+          "mod_archive_content",
+          "docs_lookup"
+        ],
+        preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+      },
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+
+    expect(brief.promptFragments).toEqual(
+      expect.arrayContaining([
+        {
+          id: "task_route_policy",
+          text:
+            "Task route: client_visual_resources via workspace_source -> datapack_files -> mod_archive_content -> docs_lookup."
+        },
+        {
+          id: "task_evidence_policy",
+          text:
+            "Evidence policy: follow workspace_source -> datapack_files -> mod_archive_content -> docs_lookup in order; prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup. Check assets, models, blockstates, registries, client init, and renderer bindings before docs."
+        }
+      ])
+    );
+  });
 });
 
 function createWorkspaceContext(

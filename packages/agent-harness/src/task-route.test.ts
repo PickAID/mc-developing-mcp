@@ -228,6 +228,82 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes client visual resources through source, assets, mod archives, then docs", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            hasDatapack: true,
+            hasModArchives: true,
+            buildFileCount: 1,
+            javaSourceRootCount: 1,
+            datapackRootCount: 1
+          }
+        }),
+        "Wire a block entity renderer, model registration, blockstate, and client init for this visual block."
+      )
+    ).toEqual({
+      intent: {
+        id: "client_visual_resources",
+        confidence: "high",
+        reasons: [
+          "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
+          "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
+        ]
+      },
+      reasons: [
+        "client visual and resource tasks should inspect workspace source, assets, renderer bindings, and local mod archive content before docs"
+      ],
+      steps: [
+        "workspace_source",
+        "datapack_files",
+        "mod_archive_content",
+        "docs_lookup"
+      ],
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+  });
+
+  it("routes source-backed client visual resources through assets before docs without archives", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            javaSourceRootCount: 1
+          }
+        }),
+        "Fix the client UI screen renderer binding and model/blockstate registry wiring."
+      )
+    ).toMatchObject({
+      intent: {
+        id: "client_visual_resources",
+        confidence: "high"
+      },
+      steps: ["workspace_source", "datapack_files", "docs_lookup"],
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+  });
+
   it("falls back to the workspace default route when no strong intent is present", () => {
     expect(
       buildHarnessTaskRoute(

@@ -71,6 +71,18 @@ const RISK_HINTS: Record<
     severity: "medium",
     summary: "Review blockstate model references against the target version."
   },
+  block_entity_renderer_asset: {
+    severity: "medium",
+    summary: "Review block-entity renderer assets against the target version."
+  },
+  connected_texture_metadata: {
+    severity: "medium",
+    summary: "Review connected-texture descriptors against the target version."
+  },
+  custom_model_format: {
+    severity: "medium",
+    summary: "Review custom model format assets against the target version."
+  },
   equipment: {
     severity: "medium",
     summary: "Review equipment asset definitions against the target version."

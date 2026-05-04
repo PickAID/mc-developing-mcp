@@ -82,26 +82,32 @@ function buildTaskToolPolicy(
 function buildTaskEvidencePolicy(
   taskBriefRoute: AgentRuntimeTaskBrief["taskRoute"]
 ): AgentRuntimePromptFragment {
+  const clientPolicy =
+    taskBriefRoute.intent.id === "client_visual_resources"
+      ? " Check assets, models, blockstates, registries, client init, and renderer bindings before docs."
+      : "";
+
   return {
     id: "task_evidence_policy",
     text:
       `Evidence policy: follow ${taskBriefRoute.steps.join(" -> ")} in order; ` +
-      "prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup."
+      "prefer local Gradle, LSP, ProbeJS, datapack/assets, logs, and JAR evidence before optional docs or remote lookup." +
+      clientPolicy
   };
 }
 
 function buildTaskDomainPolicies(
   taskBriefRoute: AgentRuntimeTaskBrief["taskRoute"]
 ): AgentRuntimePromptFragment[] {
-  if (taskBriefRoute.intent.id !== "kubejs_authoring") {
-    return [];
+  if (taskBriefRoute.intent.id === "kubejs_authoring") {
+    return [
+      {
+        id: "task_kubejs_scripting_policy",
+        text:
+          "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence and avoid persistent console.* debug output."
+      }
+    ];
   }
 
-  return [
-    {
-      id: "task_kubejs_scripting_policy",
-      text:
-        "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence and avoid persistent console.* debug output."
-    }
-  ];
+  return [];
 }

@@ -63,6 +63,38 @@ const RESOURCE_PACK_KEYWORDS = [
   "资源包"
 ];
 
+const CLIENT_VISUAL_RESOURCE_KEYWORDS = [
+  "client ui",
+  "client-side ui",
+  "screen",
+  "screens",
+  "menu screen",
+  "client menu",
+  "block entity renderer",
+  "blockentityrenderer",
+  "ber",
+  "renderer",
+  "rendering",
+  "connected texture",
+  "connected textures",
+  "ctm",
+  "model registration",
+  "blockstate registration",
+  "asset registration",
+  "register model",
+  "register renderer",
+  "registry wiring",
+  "client init",
+  "client initializer",
+  "renderer binding",
+  "renderer bindings",
+  "client setup",
+  "客户端",
+  "渲染器",
+  "渲染",
+  "模型注册"
+];
+
 const JAVA_DIAGNOSTIC_KEYWORDS = [
   "compile error",
   "compilation error",
@@ -135,20 +167,6 @@ export function detectHarnessTaskIntent(
   }
 
   if (
-    matchesAny(normalized, KUBEJS_KEYWORDS) &&
-    (snapshot.facts.hasKubeJS || snapshot.facts.hasProbeJS)
-  ) {
-    return {
-      id: "kubejs_authoring",
-      confidence: "high",
-      reasons: [
-        "request text mentions KubeJS scripting keywords",
-        "workspace snapshot exposes KubeJS or ProbeJS signals"
-      ]
-    };
-  }
-
-  if (
     matchesAny(normalized, JAVA_DIAGNOSTIC_KEYWORDS) &&
     (snapshot.facts.hasJavaSource || snapshot.facts.hasGradle)
   ) {
@@ -167,10 +185,42 @@ export function detectHarnessTaskIntent(
   const resourcePackRequest =
     matchesAny(normalized, RESOURCE_PACK_KEYWORDS) ||
     mentionsAssetsPath(normalized);
+  const clientVisualResourceRequest =
+    matchesAny(normalized, CLIENT_VISUAL_RESOURCE_KEYWORDS) ||
+    (resourcePackRequest && mentionsClientVisualResourceContext(normalized));
   const vanillaGeneratedDatapackRequest =
     datapackRequest && mentionsVanillaGeneratedDatapackRequest(normalized);
   const vanillaGeneratedResourcePackRequest =
     resourcePackRequest && mentionsVanillaGeneratedResourcePackRequest(normalized);
+
+  if (
+    clientVisualResourceRequest &&
+    !vanillaGeneratedResourcePackRequest &&
+    hasClientVisualResourceEvidence(snapshot)
+  ) {
+    return {
+      id: "client_visual_resources",
+      confidence: "high",
+      reasons: [
+        "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
+        "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
+      ]
+    };
+  }
+
+  if (
+    matchesAny(normalized, KUBEJS_KEYWORDS) &&
+    (snapshot.facts.hasKubeJS || snapshot.facts.hasProbeJS)
+  ) {
+    return {
+      id: "kubejs_authoring",
+      confidence: "high",
+      reasons: [
+        "request text mentions KubeJS scripting keywords",
+        "workspace snapshot exposes KubeJS or ProbeJS signals"
+      ]
+    };
+  }
 
   if (
     resourcePackRequest &&
@@ -242,6 +292,26 @@ function mentionsDataPath(requestText: string): boolean {
 
 function mentionsAssetsPath(requestText: string): boolean {
   return /\bassets\/[a-z0-9_.-]+\/[a-z0-9_./-]+/.test(requestText);
+}
+
+function mentionsClientVisualResourceContext(requestText: string): boolean {
+  return /\b(?:client|screen|menu|render|renderer|rendering|model|blockstate|registry|registr(?:y|ation)|asset)\b/.test(requestText);
+}
+
+function hasClientVisualResourceEvidence(
+  snapshot: AgentRuntimeHarnessSnapshot
+): boolean {
+  return (
+    snapshot.facts.hasJavaSource ||
+    snapshot.facts.hasGradle ||
+    snapshot.facts.hasKubeJS ||
+    snapshot.facts.hasProbeJS ||
+    snapshot.facts.hasDatapack ||
+    snapshot.facts.datapackRootCount > 0 ||
+    snapshot.facts.hasResourcePack ||
+    snapshot.facts.resourcePackRootCount > 0 ||
+    snapshot.facts.hasModArchives
+  );
 }
 
 function mentionsVanillaGeneratedDatapackRequest(requestText: string): boolean {

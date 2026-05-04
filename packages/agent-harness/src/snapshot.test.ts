@@ -28,9 +28,11 @@ describe("buildHarnessSnapshot", () => {
         hasProbeJS: false,
         hasModArchives: false,
         hasDatapack: false,
+        hasResourcePack: false,
         buildFileCount: 0,
         javaSourceRootCount: 0,
         datapackRootCount: 0,
+        resourcePackRootCount: 0,
         logPathCount: 0
       }
     });
@@ -68,9 +70,11 @@ describe("buildHarnessSnapshot", () => {
         hasProbeJS: false,
         hasModArchives: false,
         hasDatapack: false,
+        hasResourcePack: false,
         buildFileCount: 1,
         javaSourceRootCount: 1,
         datapackRootCount: 0,
+        resourcePackRootCount: 0,
         logPathCount: 0
       }
     });

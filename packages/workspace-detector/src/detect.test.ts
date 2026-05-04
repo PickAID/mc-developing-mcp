@@ -120,6 +120,7 @@ describe("detectWorkspace", () => {
     const detected = await detectWorkspace(root);
 
     expect(detected.hasDatapack).toBe(true);
+    expect(detected.hasResourcePack).toBe(false);
     expect(detected.currentRuntime.minecraftVersion).toBe("1.20.1");
     expect(detected.currentRuntime.loader).toBeUndefined();
   });
@@ -136,7 +137,9 @@ describe("detectWorkspace", () => {
     const detected = await detectWorkspace(root);
 
     expect(detected.hasDatapack).toBe(true);
+    expect(detected.hasResourcePack).toBe(true);
     expect(detected.datapackRoots).toEqual([root]);
+    expect(detected.resourcePackRoots).toEqual([root]);
     expect(detected.reasons).toContain("detected datapack or resource-pack content");
   });
 

@@ -3,6 +3,9 @@ export type ModArchiveAssetKind =
   | "gui_sprite"
   | "atlas"
   | "blockstates"
+  | "block_entity_renderer_asset"
+  | "connected_texture_metadata"
+  | "custom_model_format"
   | "equipment"
   | "font"
   | "items"
@@ -27,6 +30,9 @@ const ASSET_KINDS = new Set<ModArchiveAssetKind>([
   "gui_sprite",
   "atlas",
   "blockstates",
+  "block_entity_renderer_asset",
+  "connected_texture_metadata",
+  "custom_model_format",
   "equipment",
   "font",
   "items",
@@ -51,6 +57,15 @@ const UI_ASSET_KINDS = new Set<ModArchiveAssetKind>([
 export function classifyModArchiveAssetKind(
   relativePath: string
 ): ModArchiveAssetKind | undefined {
+  if (isConnectedTextureMetadataPath(relativePath)) {
+    return "connected_texture_metadata";
+  }
+  if (isCustomModelFormatPath(relativePath)) {
+    return "custom_model_format";
+  }
+  if (isBlockEntityRendererAssetPath(relativePath)) {
+    return "block_entity_renderer_asset";
+  }
   if (/^assets\/[^/]+\/textures\/gui\/sprites\/.+\.png$/i.test(relativePath)) {
     return "gui_sprite";
   }
@@ -68,6 +83,22 @@ export function classifyModArchiveAssetKind(
   }
 
   return parseModArchiveAssetKind(relativePath.split("/")[2]);
+}
+
+function isConnectedTextureMetadataPath(relativePath: string): boolean {
+  return /^assets\/[^/]+\/(?:ctm|connected_textures|optifine\/ctm)\/.+\.(?:json|properties|mcmeta)$/i.test(
+    relativePath
+  );
+}
+
+function isCustomModelFormatPath(relativePath: string): boolean {
+  return /^assets\/[^/]+\/models\/.+\.(?:obj|gltf|glb)$/i.test(relativePath);
+}
+
+function isBlockEntityRendererAssetPath(relativePath: string): boolean {
+  return /^assets\/[^/]+\/textures\/(?:block_entity|entity\/(?:block_entity|banner|bed|chest|signs|shulker))\/.+\.png$/i.test(
+    relativePath
+  );
 }
 
 export function parseModArchiveAssetKind(

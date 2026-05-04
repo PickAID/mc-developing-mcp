@@ -31,6 +31,9 @@ export type DataKind =
 export type AssetKind =
   | "atlases"
   | "blockstates"
+  | "block_entity_renderer_asset"
+  | "connected_texture_metadata"
+  | "custom_model_format"
   | "equipment"
   | "font"
   | "items"

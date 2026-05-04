@@ -97,6 +97,55 @@ describe("standard mod workspace resource root provenance", () => {
       main_resources: 1
     });
   });
+
+  it("summarizes generated advanced visual resource evidence anonymously", async () => {
+    const root = await createTempRoot("visual-resource-evidence");
+
+    await writeFixture(root, "src/main/resources/pack.mcmeta", "{}\n");
+    await writeFixture(
+      root,
+      "src/generated/resources/assets/demo/ctm/block/gear.properties",
+      "matchBlocks=demo:gear\n"
+    );
+    await writeFixture(
+      root,
+      "src/generated/resources/assets/demo/models/block/ornate.obj",
+      "o ornate\n"
+    );
+    await writeFixture(
+      root,
+      "src/generated/resources/assets/demo/textures/block_entity/display/core.png",
+      "png\n"
+    );
+
+    const summary = await summarizeDatapackFiles(root);
+
+    expect(summary).toMatchObject({
+      rootCount: 2,
+      entryCount: 4,
+      byDomain: {
+        assets: 4
+      },
+      byProvenance: {
+        generated_resources: 1,
+        main_resources: 1
+      },
+      byKind: {
+        block_entity_renderer_asset: 1,
+        connected_texture_metadata: 1,
+        custom_model_format: 1,
+        pack_metadata: 1
+      },
+      byNamespace: {
+        "": 1,
+        demo: 3
+      },
+      skipped: [],
+      truncated: false
+    });
+    expect(JSON.stringify(summary)).not.toContain("ctm/block");
+    expect(JSON.stringify(summary)).not.toContain("ornate.obj");
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

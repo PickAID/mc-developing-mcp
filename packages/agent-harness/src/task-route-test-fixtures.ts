@@ -29,9 +29,11 @@ export function createTaskRouteFacts() {
     hasProbeJS: false,
     hasModArchives: false,
     hasDatapack: false,
+    hasResourcePack: false,
     buildFileCount: 0,
     javaSourceRootCount: 0,
     datapackRootCount: 0,
+    resourcePackRootCount: 0,
     logPathCount: 0
   };
 }

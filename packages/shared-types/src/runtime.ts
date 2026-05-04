@@ -87,9 +87,11 @@ export interface AgentRuntimeHarnessFacts {
   hasProbeJS: boolean;
   hasModArchives: boolean;
   hasDatapack: boolean;
+  hasResourcePack: boolean;
   buildFileCount: number;
   javaSourceRootCount: number;
   datapackRootCount: number;
+  resourcePackRootCount: number;
   logPathCount: number;
 }
 
@@ -125,6 +127,7 @@ export type AgentRuntimeTaskIntentId =
   | "crash_triage"
   | "external_mod_resolution"
   | "java_diagnostics"
+  | "client_visual_resources"
   | "kubejs_authoring"
   | "datapack_lookup"
   | "resource_pack_lookup";

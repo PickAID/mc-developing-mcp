@@ -35,9 +35,11 @@ export function buildHarnessSnapshot(
       hasProbeJS: descriptor.hasProbeJS,
       hasModArchives: descriptor.hasModArchives,
       hasDatapack: descriptor.hasDatapack,
+      hasResourcePack: descriptor.hasResourcePack ?? false,
       buildFileCount: descriptor.buildFiles.length,
       javaSourceRootCount: descriptor.javaSourceRoots.length,
       datapackRootCount: descriptor.datapackRoots.length,
+      resourcePackRootCount: descriptor.resourcePackRoots?.length ?? 0,
       logPathCount: descriptor.logPaths.length
     }
   };
@@ -57,9 +59,11 @@ function createEmptyFacts(): AgentRuntimeHarnessFacts {
     hasProbeJS: false,
     hasModArchives: false,
     hasDatapack: false,
+    hasResourcePack: false,
     buildFileCount: 0,
     javaSourceRootCount: 0,
     datapackRootCount: 0,
+    resourcePackRootCount: 0,
     logPathCount: 0
   };
 }

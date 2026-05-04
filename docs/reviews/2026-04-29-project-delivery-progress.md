@@ -10,18 +10,18 @@ Scope: `mc-developing-mcp` `skill-update`, sibling `mdm-sources`, conceptual `md
 
 本轮并行切片还完成了三个结构性底层改进：`datapack-adapter/src/files.ts` 和 `mod-archive-content-executor.ts` 已拆分出 helper，解除 500 行临界风险；`@mcpskill/resource-registry` 现在能区分 `sqlite_bundle`、`generated_local_cache`、`remote_manifest`、`optional_accelerator`，并把私有派生缓存标记为 `private_generated_cache`；KubeJS/ProbeJS language service 现在能宽容识别 `.probe`、`.probejs`、`probejs`、`kubejs/probejs` 等输出布局和 ProbeJS text snippets。Harness prompt injection 也新增 route-local evidence policy 和 KubeJS scripting policy，使 MCP description/brief 更接近小 agent 的引导效果，而不依赖 Skill。
 
-本轮外部案例驱动切片从 `/Users/gedwen/Documents/programing/MC/_external` 抽取了 L2 系列 libs-heavy 项目、JEI 多版本多 loader KTS 项目、Create/Irons generated resources 和 Simulated multi-module NeoForge 结构。实现上已经把 root `libs/*.jar` 视为 Java mod workspace 的本地 JAR evidence，Gradle dependency evidence 能解析 root `gradle.properties` 的简单 `${prop}` 版本并匹配 workspace `libs/`、`build/libs/` 内的 `+build` 和 `-slim` runtime JAR，datapack/resource roots 现在带 `main_resources` / `generated_resources` provenance，ProbeJS `.d.ts` 也能抽取 item/fluid/tag/registry resource literals。这些都没有增加新的 public MCP tool。
+本轮兼容性切片覆盖了 local-library-heavy workspace、多版本多 loader KTS workspace、generated resources workspace 和 multi-module NeoForge workspace 结构。实现上已经把 root `libs/*.jar` 视为 Java mod workspace 的本地 JAR evidence，Gradle dependency evidence 能解析 root `gradle.properties` 的简单 `${prop}` 版本并匹配 workspace `libs/`、`build/libs/` 内的 `+build` 和 `-slim` runtime JAR，datapack/resource roots 现在带 `main_resources` / `generated_resources` provenance，ProbeJS `.d.ts` 也能抽取 item/fluid/tag/registry resource literals。这些都没有增加新的 public MCP tool。
 
 当前仍不能视为完整公开交付版，因为远程下载/安装、资源包发布 workflow 的实际发布、资源驱动 docs retrieval、真实整合包大场景验证和 UX 文档还没有完成。但 alpha 本地闭环已经成立，可以回到功能完成阶段。
 
 ## Current Repository State
 ### MCP
-- Worktree: `/Users/gedwen/Documents/programing/MCProgrammingSkill/SKillUpdate`
+- Worktree: local `SKillUpdate`
 - Branch: `skill-update`
 - Remote: `origin/skill-update`
 - Latest committed base before this progress update: `85fd0d1`
 - Public MCP surface: one tool, `mc_develop`
-- Latest full verification: `pnpm test` passed with 144 test files and 459 tests
+- Latest full verification: `pnpm test` passed with 146 test files and 471 tests
 - Latest typecheck: `pnpm typecheck` passed
 
 Recent MCP resource, diagnostics, and mod archive commits:
@@ -68,10 +68,10 @@ Recent MCP resource, diagnostics, and mod archive commits:
 - `a31c1b7 feat(resource-pack): analyze format migrations`
 - `e0733d2 feat(evidence): expand resource and dependency lookup`
 - `85fd0d1 feat(core): harden evidence foundations`
-- current progress update: external-case harness, resource provenance, Gradle libs evidence, and ProbeJS d.ts resource literals
+- current progress update: compatibility harness, resource provenance, Gradle libs evidence, and ProbeJS d.ts resource literals
 
 ### `mdm-sources`
-- Path: `/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources`
+- Path: sibling `mdm-sources`
 - Branch: `main`
 - Remote state: `origin/main`
 - Git state after verification: clean
@@ -146,7 +146,7 @@ Implemented:
 - Workspace detector now treats root-level and resource-root `assets/**` as datapack/resource evidence even without `pack.mcmeta` or `data/**`.
 - Workspace detector now treats root `libs/*.jar` as local mod archive evidence while continuing to ignore `*-sources.jar`.
 - Harness intent routing now recognizes explicit `data/...` and `assets/...` paths as datapack/resource lookup requests when datapack/resource roots exist.
-- Java mod workspaces with local libs JARs now route `workspace_source -> mod_archive_content -> docs_lookup` by default, matching L2-style external workspaces.
+- Java mod workspaces with local libs JARs now route `workspace_source -> mod_archive_content -> docs_lookup` by default, matching local-library-heavy workspace fixtures.
 - Gradle dependency parsing now resolves simple root `gradle.properties` placeholders inside dependency notations.
 - Gradle dependency binary archive discovery now checks workspace `libs/` and `build/libs/` flat directories and accepts runtime filenames with build metadata and classifiers such as `+11` and `-slim`.
 - MCP Gradle dependency archive evidence now accepts workspace libs candidates and labels them separately from Gradle cache candidates.
@@ -289,7 +289,7 @@ Priority:
 2. Expand remote/local resource install semantics with confirmation UX for large/private/generated packages.
 3. Expand persistent modpack JAR indexes beyond inventory/class ownership/asset/data summaries into detailed recipes, datapack content lookup, nested resource reference indexes, full resource evidence, and crash-triage lookup tables.
 4. Validate external mod acquisition with real Modrinth/CurseForge/Maven smoke tests while keeping user-supplied credentials out of the repo.
-5. Improve Gradle workspace model extraction for JEI-style multi-loader KTS modules and aggregate NeoForge run modules.
+5. Improve Gradle workspace model extraction for multi-loader KTS modules and aggregate loader run modules.
 6. Expand KubeJS support from d.ts resource literal extraction into persistent item, registry, and recipe lookup tables.
 7. Add migration analysis for Java/KubeJS/datapack version moves.
 8. Harden JDTLS setup guidance and fallback behavior.
@@ -385,3 +385,5 @@ Detailed verification output is recorded in:
 `docs/reviews/2026-05-05-external-case-gradle-jar-evidence-verification.md`
 
 `docs/reviews/2026-05-05-external-case-kubejs-data-evidence-verification.md`
+
+`docs/reviews/2026-05-05-anonymized-client-visual-systems-spec-verification.md`
