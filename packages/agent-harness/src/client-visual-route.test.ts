@@ -97,6 +97,10 @@ describe("client visual task routes", () => {
           text: expect.stringContaining("client_scripts")
         }),
         expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("clientVisualEvidence.apiProof")
+        }),
+        expect.objectContaining({
           id: "task_kubejs_scripting_policy"
         })
       ])

@@ -71,6 +71,16 @@ describe("source.bundle client visual evidence", () => {
               })
             ])
           },
+          apiProof: {
+            tokenPolicy: "compact_client_visual_api_proof",
+            loader: "forge",
+            minecraftVersion: "1.20.1",
+            apiSurfaces: {
+              renderer: { count: 1 },
+              clientInit: { count: 1 }
+            },
+            apiMismatchRisks: []
+          },
           assetEvidence: {
             namespaces: ["demo"],
             byKind: {
@@ -96,6 +106,7 @@ describe("source.bundle client visual evidence", () => {
               "registry_id",
               "client_init",
               "renderer_binding",
+              "loader_version_api_proof",
               "asset_chain"
             ]),
             requiredSteps: expect.arrayContaining([
@@ -119,7 +130,15 @@ describe("source.bundle client visual evidence", () => {
 async function createVisualWorkspace(): Promise<string> {
   const root = await createTempRoot("mcpskill-client-visual-");
 
-  await writeText(join(root, "build.gradle"), "plugins { id 'java' }\n");
+  await writeText(
+    join(root, "build.gradle"),
+    [
+      'plugins { id "net.minecraftforge.gradle" }',
+      "dependencies {",
+      '  minecraft "net.minecraftforge:forge:1.20.1-47.2.0"',
+      "}"
+    ].join("\n")
+  );
   await writeText(
     join(root, "src", "main", "java", "demo", "VisualBlock.java"),
     [

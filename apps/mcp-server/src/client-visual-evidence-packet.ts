@@ -5,6 +5,10 @@ import type {
 } from "@mcpskill/datapack-adapter";
 import type { WorkspaceDescriptor } from "@mcpskill/shared-types";
 
+import {
+  buildClientVisualApiProof,
+  type ClientVisualApiProof
+} from "./client-visual-api-proof.js";
 import type { ClientVisualSourceScan } from "./client-visual-source-scanner.js";
 
 export interface ClientVisualEvidencePacketInput {
@@ -32,6 +36,10 @@ export function buildClientVisualEvidencePacket(
   const requestedResourceLocations = input.queries.filter((query) =>
     query.includes(":")
   );
+  const apiProof = buildClientVisualApiProof({
+    descriptor: input.descriptor,
+    sourceScan: input.sourceScan
+  });
 
   return {
     intent: "client_visual_resources" as const,
@@ -44,6 +52,7 @@ export function buildClientVisualEvidencePacket(
       hasResourcePack: input.discovery.assetKinds.length > 0
     },
     sourceEvidence: sourceEvidence(input.sourceScan),
+    apiProof,
     assetEvidence: {
       namespaces: Object.keys(input.resourceSummary.byNamespace).sort(),
       byDomain: input.resourceSummary.byDomain,
@@ -63,6 +72,7 @@ export function buildClientVisualEvidencePacket(
     missingEvidence: missingEvidence(input.sourceScan),
     implementationSkeleton: implementationSkeleton({
       sourceScan: input.sourceScan,
+      apiProof,
       matchedAssetPaths,
       missingAssetKinds: missingAssetKinds(input.matches)
     }),
@@ -119,16 +129,22 @@ function missingAssetKinds(matches: DatapackSearchMatch[]): string[] {
 
 function implementationSkeleton(input: {
   sourceScan: ClientVisualSourceScan | undefined;
+  apiProof: ClientVisualApiProof;
   matchedAssetPaths: string[];
   missingAssetKinds: string[];
 }) {
   const counts = input.sourceScan?.counts;
+  const hasApiProof =
+    input.apiProof.loader !== undefined &&
+    input.apiProof.minecraftVersion !== undefined &&
+    input.apiProof.apiMismatchRisks.length === 0;
   const evidenceBackedSteps = [
     ...(counts?.candidateRegistries ? ["registry_id"] : []),
     ...(counts?.candidateClientInit ? ["client_init"] : []),
     ...(counts?.candidateRendererBindings ? ["renderer_binding"] : []),
     ...(counts?.candidateScreenRegistrations ? ["screen_binding"] : []),
     ...(counts?.candidateModelLayerRegistrations ? ["model_layer_or_loader"] : []),
+    ...(hasApiProof ? ["loader_version_api_proof"] : []),
     ...(input.matchedAssetPaths.length > 0 ? ["asset_chain"] : []),
     ...(counts?.networkSyncHints ? ["network_sync"] : []),
     ...(counts?.animationStateHints ? ["animation_state"] : []),
@@ -151,13 +167,14 @@ function implementationSkeleton(input: {
       "choose static JSON model vs runtime renderer/model loader",
       "verify blockstate -> model -> texture chain",
       "bind renderer or screen from client-only initialization",
+      "prove loader/version-specific client API before naming methods or events",
       "keep authoritative state server-side",
       "use interpolation for animated state",
       "use reload/cache lifecycle for dynamic textures or generated assets"
     ],
     evidenceBackedSteps,
     missingSteps: missingImplementationSteps(evidenceBackedSteps),
-    cautions: implementationCautions(input.sourceScan)
+    cautions: implementationCautions(input.sourceScan, input.apiProof)
   };
 }
 
@@ -167,6 +184,7 @@ function missingImplementationSteps(evidenceBackedSteps: string[]): string[] {
     ["registry_id", "registry evidence missing"],
     ["client_init", "client-only initialization evidence missing"],
     ["renderer_binding", "renderer binding evidence missing"],
+    ["loader_version_api_proof", "loader/version-specific API proof missing"],
     ["asset_chain", "asset chain evidence missing"],
     ["network_sync", "network or menu sync evidence missing"],
     ["resource_reload", "resource reload/cache evidence missing"]
@@ -176,7 +194,8 @@ function missingImplementationSteps(evidenceBackedSteps: string[]): string[] {
 }
 
 function implementationCautions(
-  sourceScan: ClientVisualSourceScan | undefined
+  sourceScan: ClientVisualSourceScan | undefined,
+  apiProof: ClientVisualApiProof
 ): string[] {
   const cautions = [
     "do not collapse moving parts into blockstate explosion",
@@ -186,6 +205,9 @@ function implementationCautions(
 
   if (sourceScan?.counts.renderPerformanceRisks) {
     cautions.push("render performance risk evidence found in source scan");
+  }
+  if (apiProof.apiMismatchRisks.length > 0) {
+    cautions.push("loader/version API mismatch risk found; do not mix loader patterns");
   }
 
   return cautions;

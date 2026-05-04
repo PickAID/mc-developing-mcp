@@ -45,12 +45,16 @@ Mechanical or animated visual:
 
 Before naming a renderer, screen, model-layer, dynamic texture, or reload API, the agent must identify the detected loader and Minecraft version from workspace evidence. API names must come from workspace source, Gradle/source archives, local jars, LSP/source-index evidence, ProbeJS declarations, or versioned docs. If the loader/version proof is missing, the agent should report missing API proof rather than mixing Forge, NeoForge, Fabric, or KubeJS patterns.
 
+`clientVisualEvidence.apiProof` is required structured evidence when local client visual source evidence is available. It is not only prompt guidance. The agent must inspect this proof before emitting loader-specific method names, event names, or imports. If `apiProof` reports missing loader, missing Minecraft version, or a mismatch risk, the implementation plan must downgrade to a verification/fix plan for that API surface.
+
 Minimum API evidence fields should distinguish:
 
 - Loader family and Minecraft version.
 - API surface: renderer binding, screen binding, model layer, reload listener, dynamic texture, packet/sync.
 - Source proof: file/line, type declaration, dependency source, or versioned docs.
 - Mismatch risk: a pattern that appears to belong to another loader or version.
+
+Common symbols are not enough to prove a loader family by themselves. Shared or near-shared client APIs must be paired with Gradle/runtime evidence, imports, local source archives, LSP/source-index evidence, or versioned documentation. KubeJS client hooks prove a KubeJS client surface only; they do not replace Java loader API proof.
 
 ## Dynamic Texture Lifecycle Checklist
 

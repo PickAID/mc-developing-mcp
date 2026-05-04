@@ -63,6 +63,10 @@ describe("mc_develop client visual harness eval", () => {
         expect.objectContaining({
           id: "task_client_visual_capability_policy",
           text: expect.stringContaining("loader/version-specific renderer")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("clientVisualEvidence.apiProof")
         })
       ])
     );
@@ -90,6 +94,18 @@ describe("mc_develop client visual harness eval", () => {
               })
             ])
           },
+          apiProof: {
+            tokenPolicy: "compact_client_visual_api_proof",
+            loader: "forge",
+            minecraftVersion: "1.20.1",
+            apiSurfaces: {
+              renderer: { count: expect.any(Number) },
+              screen: { count: expect.any(Number) },
+              model: { count: expect.any(Number) },
+              clientInit: { count: expect.any(Number) }
+            },
+            apiMismatchRisks: []
+          },
           registryToAssetSummary: {
             requestedResourceLocations: expect.arrayContaining(["demo:block/gear"]),
             matchedAssetPaths: expect.arrayContaining([
@@ -115,6 +131,7 @@ describe("mc_develop client visual harness eval", () => {
               "registry_id",
               "client_init",
               "renderer_binding",
+              "loader_version_api_proof",
               "asset_chain"
             ]),
             cautions: expect.arrayContaining([
@@ -133,7 +150,15 @@ describe("mc_develop client visual harness eval", () => {
 async function createClientVisualWorkspace(): Promise<string> {
   const root = await createTempRoot("mcpskill-client-visual-eval-");
 
-  await writeText(join(root, "build.gradle"), "plugins { id 'java' }\n");
+  await writeText(
+    join(root, "build.gradle"),
+    [
+      'plugins { id "net.minecraftforge.gradle" }',
+      "dependencies {",
+      '  minecraft "net.minecraftforge:forge:1.20.1-47.2.0"',
+      "}"
+    ].join("\n")
+  );
   await writeText(
     join(root, "src", "main", "java", "demo", "Registry.java"),
     "class Registry { DeferredRegister<Block> BLOCKS; RegistryObject<Block> GEAR; }\n"
