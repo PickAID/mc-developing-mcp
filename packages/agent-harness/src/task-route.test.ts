@@ -1,92 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import type {
-  AgentRuntimeHarnessSnapshot,
-  CurrentRuntime
-} from "@mcpskill/shared-types";
-
 import {
   buildHarnessTaskRoute,
   buildHarnessTaskRouteFromSnapshot
 } from "./task-route.js";
+import {
+  createTaskRouteFacts,
+  createTaskRouteSnapshot
+} from "./task-route-test-fixtures.js";
 
 describe("buildHarnessTaskRoute", () => {
-  it("routes crash triage requests to logs before source and docs", () => {
-    expect(
-      buildHarnessTaskRoute(
-        createSnapshot({
-          workspaceKind: "modpack",
-          routePlan: {
-            scenario: "modpack-workspace",
-            reasons: ["workspace descriptor reports a modpack workspace"],
-            defaultRoutingScenario: "project_symbol",
-            steps: ["workspace_source", "docs_lookup"]
-          },
-          facts: {
-            ...createFacts(),
-            hasGradle: true,
-            hasKubeJS: true,
-            hasProbeJS: true,
-            logPathCount: 2
-          }
-        }),
-        "The pack crashes and latest.log shows a mixin exception."
-      )
-    ).toEqual({
-      intent: {
-        id: "crash_triage",
-        confidence: "high",
-        reasons: [
-          "request text mentions crash or log-triage keywords",
-          "workspace snapshot exposes log files for crash triage"
-        ]
-      },
-      reasons: [
-        "crash triage should inspect log files before source or docs"
-      ],
-      steps: ["log_files", "external_mod_resolution", "workspace_source", "docs_lookup"],
-      preferredTools: ["workspace.analyze", "context.query", "source.bundle"]
-    });
-  });
-
-  it("adds mod archive content before docs for crash triage in modpacks", () => {
-    expect(
-      buildHarnessTaskRoute(
-        createSnapshot({
-          workspaceKind: "modpack",
-          routePlan: {
-            scenario: "modpack-workspace",
-            reasons: ["workspace descriptor reports a modpack workspace"],
-            defaultRoutingScenario: "project_symbol",
-            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
-          },
-          facts: {
-            ...createFacts(),
-            hasModArchives: true,
-            logPathCount: 1
-          }
-        }),
-        "The server crashes in com.example.problem.CrashHandler."
-      )
-    ).toMatchObject({
-      reasons: [
-        "crash triage should inspect log files before source, mod jars, or docs"
-      ],
-      steps: [
-        "log_files",
-        "mod_archive_content",
-        "external_mod_resolution",
-        "workspace_source",
-        "docs_lookup"
-      ],
-      preferredTools: ["workspace.analyze", "context.query", "source.bundle"]
-    });
-  });
-
   it("routes KubeJS authoring requests to ProbeJS before docs", () => {
     expect(
       buildHarnessTaskRouteFromSnapshot(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "modpack",
           routePlan: {
             scenario: "modpack-workspace",
@@ -110,7 +37,7 @@ describe("buildHarnessTaskRoute", () => {
             preferDocBackedAnswers: true
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasKubeJS: true,
             hasProbeJS: true
@@ -138,7 +65,7 @@ describe("buildHarnessTaskRoute", () => {
   it("adds mod archive content after ProbeJS for KubeJS modpack authoring", () => {
     expect(
       buildHarnessTaskRouteFromSnapshot(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "modpack",
           routePlan: {
             scenario: "modpack-workspace",
@@ -147,7 +74,7 @@ describe("buildHarnessTaskRoute", () => {
             steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasKubeJS: true,
             hasProbeJS: true,
             hasModArchives: true
@@ -164,7 +91,7 @@ describe("buildHarnessTaskRoute", () => {
   it("routes datapack lookup requests to datapack files before docs", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "modpack",
           routePlan: {
             scenario: "modpack-workspace",
@@ -173,7 +100,7 @@ describe("buildHarnessTaskRoute", () => {
             steps: ["workspace_source", "docs_lookup"]
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasDatapack: true,
             datapackRootCount: 1
@@ -201,7 +128,7 @@ describe("buildHarnessTaskRoute", () => {
   it("adds mod archive content after datapack files for modpack data lookups", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "modpack",
           routePlan: {
             scenario: "modpack-workspace",
@@ -210,7 +137,7 @@ describe("buildHarnessTaskRoute", () => {
             steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasDatapack: true,
             hasModArchives: true,
             datapackRootCount: 1
@@ -227,7 +154,7 @@ describe("buildHarnessTaskRoute", () => {
   it("routes vanilla datapack lookups to datapack files even without local datapack roots", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "java-mod",
           routePlan: {
             scenario: "java-mod-workspace",
@@ -244,7 +171,7 @@ describe("buildHarnessTaskRoute", () => {
             evidence: []
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasJavaSource: true
           }
@@ -264,7 +191,7 @@ describe("buildHarnessTaskRoute", () => {
   it("routes vanilla asset lookups to datapack files even without local resource roots", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "java-mod",
           routePlan: {
             scenario: "java-mod-workspace",
@@ -281,7 +208,7 @@ describe("buildHarnessTaskRoute", () => {
             evidence: []
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasJavaSource: true
           }
@@ -301,7 +228,7 @@ describe("buildHarnessTaskRoute", () => {
   it("falls back to the workspace default route when no strong intent is present", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "modpack",
           routePlan: {
             scenario: "modpack-workspace",
@@ -310,7 +237,7 @@ describe("buildHarnessTaskRoute", () => {
             steps: ["workspace_source", "docs_lookup"]
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasKubeJS: true,
             hasProbeJS: true
@@ -335,7 +262,7 @@ describe("buildHarnessTaskRoute", () => {
   it("routes external mod coordinate requests to API-backed resolution before docs", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot(),
+        createTaskRouteSnapshot(),
         "Find the CurseMaven coordinate for JEI forge 1.20.1."
       )
     ).toEqual({
@@ -357,7 +284,7 @@ describe("buildHarnessTaskRoute", () => {
   it("routes explicit mod archive inventory requests even before archives exist", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot(),
+        createTaskRouteSnapshot(),
         "List mod archive inventory and JarJar nested jars for this modpack."
       )
     ).toMatchObject({
@@ -377,7 +304,7 @@ describe("buildHarnessTaskRoute", () => {
   it("keeps vanilla source questions on source-side evidence before docs", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "java-mod",
           routePlan: {
             scenario: "java-mod-workspace",
@@ -386,7 +313,7 @@ describe("buildHarnessTaskRoute", () => {
             steps: ["workspace_source", "docs_lookup"]
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasJavaSource: true
           }
@@ -411,7 +338,7 @@ describe("buildHarnessTaskRoute", () => {
   it("routes Java diagnostics requests through LSP diagnostics before source and docs", () => {
     expect(
       buildHarnessTaskRoute(
-        createSnapshot({
+        createTaskRouteSnapshot({
           workspaceKind: "java-mod",
           routePlan: {
             scenario: "java-mod-workspace",
@@ -420,7 +347,7 @@ describe("buildHarnessTaskRoute", () => {
             steps: ["workspace_source", "docs_lookup"]
           },
           facts: {
-            ...createFacts(),
+            ...createTaskRouteFacts(),
             hasGradle: true,
             hasJavaSource: true,
             javaSourceRootCount: 1
@@ -445,46 +372,3 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 });
-
-function createSnapshot(
-  overrides: Partial<AgentRuntimeHarnessSnapshot> = {}
-): AgentRuntimeHarnessSnapshot {
-  return {
-    workspaceRoot: "/tmp/workspace",
-    workspaceKind: "unknown",
-    detectorReasons: [],
-    currentRuntime: createCurrentRuntime(),
-    routePlan: {
-      scenario: "unknown-workspace",
-      reasons: ["workspace context is unavailable"],
-      steps: []
-    },
-    facts: createFacts(),
-    ...overrides
-  };
-}
-
-function createFacts() {
-  return {
-    hasGradle: false,
-    hasJavaSource: false,
-    hasKubeJS: false,
-    hasProbeJS: false,
-    hasModArchives: false,
-    hasDatapack: false,
-    buildFileCount: 0,
-    javaSourceRootCount: 0,
-    datapackRootCount: 0,
-    logPathCount: 0
-  };
-}
-
-function createCurrentRuntime(): CurrentRuntime {
-  return {
-    source: "unknown",
-    confidence: "unknown",
-    evidenceSources: [],
-    candidates: [],
-    evidence: []
-  };
-}
