@@ -101,6 +101,9 @@ function collectReferences(
   if (entry.kind === "blockstates") {
     return collectBlockstateReferences(entry, value, entriesByPath);
   }
+  if (entry.kind === "items") {
+    return collectItemReferences(entry, value, entriesByPath);
+  }
   if (entry.kind === "models") {
     return collectModelReferences(entry, value, entriesByPath);
   }
@@ -117,6 +120,23 @@ function collectBlockstateReferences(
       entry,
       entriesByPath,
       relation: "blockstate_model",
+      toKind: "models",
+      toPath: toModelPath(model, entry.namespace),
+      value: model
+    })
+  );
+}
+
+function collectItemReferences(
+  entry: DatapackFileEntry,
+  value: unknown,
+  entriesByPath: Map<string, DatapackFileEntry>
+): DatapackResourceReference[] {
+  return collectNamedStrings(value, "model").map((model) =>
+    createReference({
+      entry,
+      entriesByPath,
+      relation: "item_model",
       toKind: "models",
       toPath: toModelPath(model, entry.namespace),
       value: model
@@ -263,7 +283,7 @@ function parseJson(
 }
 
 function isTraceableAssetKind(kind: DatapackKind): boolean {
-  return kind === "blockstates" || kind === "models";
+  return kind === "blockstates" || kind === "items" || kind === "models";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -228,6 +228,104 @@ describe("source.bundle vanilla assets package execution", () => {
       }
     });
   });
+
+  it("traces item definition references inside a generated vanilla assets package", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createForgeWorkspace();
+    const clientJar = join(runtimeRoot, "minecraft-client.jar");
+
+    await writeSourcePackageConfirmation(
+      {
+        root: runtimeRoot,
+        downloads: join(runtimeRoot, "downloads"),
+        installs: join(runtimeRoot, "installs"),
+        locks: join(runtimeRoot, "locks")
+      },
+      createVanillaResourcePackConfirmation("1.20.1")
+    );
+    await writeText(
+      clientJar,
+      createZip([
+        {
+          name: "assets/minecraft/items/stone.json",
+          content:
+            "{\"model\":{\"type\":\"minecraft:model\",\"model\":\"minecraft:item/stone\"}}\n"
+        },
+        {
+          name: "assets/minecraft/models/item/stone.json",
+          content: "{\"textures\":{\"layer0\":\"minecraft:item/stone\"}}\n"
+        },
+        {
+          name: "assets/minecraft/textures/item/stone.png",
+          content: "png"
+        }
+      ])
+    );
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Trace vanilla official references for assets/minecraft/items/stone.json"
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const candidate = evidencePlan.candidates.find(
+      (entry) => entry.routeStep === "datapack_files"
+    );
+
+    if (!candidate) {
+      throw new Error("datapack_files candidate missing");
+    }
+
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      recipes: {
+        "minecraft-1.20.1-vanilla-resource-pack-official":
+          buildVanillaResourcePackArchiveRecipe({
+            minecraftVersion: "1.20.1",
+            sourceArchive: clientJar
+          })
+      },
+      executeRecipe: buildLocalSourcePackageRecipeExecutor()
+    });
+
+    await expect(
+      executor({
+        candidate,
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "vanilla_assets",
+        result: {
+          resourceReferenceTrace: {
+            tokenPolicy: "explicit_trace",
+            startPaths: ["assets/minecraft/items/stone.json"],
+            references: [
+              {
+                fromPath: "assets/minecraft/items/stone.json",
+                fromKind: "items",
+                relation: "item_model",
+                toPath: "assets/minecraft/models/item/stone.json",
+                status: "resolved"
+              },
+              {
+                fromPath: "assets/minecraft/models/item/stone.json",
+                relation: "model_texture",
+                toPath: "assets/minecraft/textures/item/stone.png",
+                status: "resolved"
+              }
+            ],
+            truncated: false
+          }
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

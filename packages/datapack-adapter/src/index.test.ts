@@ -358,4 +358,60 @@ describe("datapack-adapter", () => {
       truncated: false
     });
   });
+
+  it("traces item definition models and model textures", async () => {
+    const root = await createTempRoot("resource-item-trace");
+
+    await writeFixture(
+      root,
+      "assets/demo/items/gear.json",
+      JSON.stringify({
+        model: {
+          type: "minecraft:model",
+          model: "demo:item/gear"
+        }
+      })
+    );
+    await writeFixture(
+      root,
+      "assets/demo/models/item/gear.json",
+      JSON.stringify({
+        textures: {
+          layer0: "demo:item/gear"
+        }
+      })
+    );
+    await writeFixture(root, "assets/demo/textures/item/gear.png", Buffer.from([1, 2, 3]));
+
+    await expect(
+      traceDatapackResourceReferences(root, {
+        paths: ["assets/demo/items/gear.json"]
+      })
+    ).resolves.toMatchObject({
+      startPaths: ["assets/demo/items/gear.json"],
+      references: [
+        {
+          fromPath: "assets/demo/items/gear.json",
+          fromKind: "items",
+          relation: "item_model",
+          value: "demo:item/gear",
+          toPath: "assets/demo/models/item/gear.json",
+          toKind: "models",
+          status: "resolved"
+        },
+        {
+          fromPath: "assets/demo/models/item/gear.json",
+          fromKind: "models",
+          relation: "model_texture",
+          value: "demo:item/gear",
+          toPath: "assets/demo/textures/item/gear.png",
+          toKind: "textures",
+          status: "resolved"
+        }
+      ],
+      unresolved: [],
+      skipped: [],
+      truncated: false
+    });
+  });
 });

@@ -370,7 +370,7 @@ function mentionsResourceReferenceTrace(requestText: string): boolean {
 }
 
 function isTraceableAssetPath(path: string): boolean {
-  return /^assets\/[^/]+\/(?:blockstates|models)\//.test(path);
+  return /^assets\/[^/]+\/(?:blockstates|items|models)\//.test(path);
 }
 
 async function readRequestedDatapackPaths(

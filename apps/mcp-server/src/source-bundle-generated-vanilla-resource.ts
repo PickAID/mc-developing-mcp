@@ -298,6 +298,7 @@ function isTraceableAssetPath(path: string): boolean {
     path.startsWith("assets/") &&
     (
       path.includes("/blockstates/") ||
+      path.includes("/items/") ||
       path.includes("/models/")
     ) &&
     path.endsWith(".json")

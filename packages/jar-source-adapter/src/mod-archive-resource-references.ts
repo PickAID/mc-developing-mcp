@@ -9,12 +9,14 @@ import { readNestedArchiveContentFile } from "./nested-archive-read.js";
 
 export type ModArchiveResourceReferenceKind =
   | "blockstates"
+  | "items"
   | "models"
   | "textures"
   | "other";
 
 export type ModArchiveResourceReferenceRelation =
   | "blockstate_model"
+  | "item_model"
   | "model_parent"
   | "model_texture";
 
@@ -221,6 +223,19 @@ function collectReferences(
       })
     );
   }
+  if (fromKind === "items") {
+    return collectNamedStrings(value, "model").map((model) =>
+      createReference({
+        entriesByPath,
+        fromKind,
+        fromPath,
+        relation: "item_model",
+        toKind: "models",
+        toPath: toModelPath(model, namespaceFromPath(fromPath)),
+        value: model
+      })
+    );
+  }
   if (fromKind !== "models" || !isRecord(value)) {
     return [];
   }
@@ -311,7 +326,12 @@ function namespaceFromPath(relativePath: string): string {
 
 function classifyTraceAssetKind(path: string): ModArchiveResourceReferenceKind {
   const segment = path.split("/")[2];
-  if (segment === "blockstates" || segment === "models" || segment === "textures") {
+  if (
+    segment === "blockstates" ||
+    segment === "items" ||
+    segment === "models" ||
+    segment === "textures"
+  ) {
     return segment;
   }
   return "other";
@@ -358,7 +378,7 @@ function parseJson(
 }
 
 function isTraceableAssetPath(path: string): boolean {
-  return /^assets\/[^/]+\/(?:blockstates|models)\//.test(path);
+  return /^assets\/[^/]+\/(?:blockstates|items|models)\//.test(path);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

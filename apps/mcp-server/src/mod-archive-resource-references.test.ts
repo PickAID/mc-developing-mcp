@@ -83,6 +83,42 @@ describe("mod archive resource reference tracing", () => {
       }
     });
   });
+
+  it("returns compact explicit trace payloads for mod archive item definitions", async () => {
+    const workspaceRoot = await createItemWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Trace references for assets/demo/items/gear.json in mods/content-mod.jar."
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "mod_archive_content",
+        mode: "resource_reference_trace",
+        resourceReferenceTrace: {
+          tokenPolicy: "explicit_trace",
+          startPaths: ["assets/demo/items/gear.json"],
+          references: [
+            {
+              fromPath: "assets/demo/items/gear.json",
+              fromKind: "items",
+              relation: "item_model",
+              toPath: "assets/demo/models/item/gear.json",
+              status: "resolved"
+            },
+            {
+              fromPath: "assets/demo/models/item/gear.json",
+              relation: "model_texture",
+              toPath: "assets/demo/textures/item/gear.png",
+              status: "resolved"
+            }
+          ],
+          truncated: false
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
@@ -174,6 +210,38 @@ async function createNestedWorkspace(): Promise<string> {
         name: "META-INF/jarjar/nested-content.jar",
         content: nestedArchive,
         compressionMethod: 8
+      }
+    ])
+  );
+  return workspaceRoot;
+}
+
+async function createItemWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-item-trace-mcp-"));
+  tempRoots.push(workspaceRoot);
+  await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+  await writeFile(
+    join(workspaceRoot, "mods", "content-mod.jar"),
+    createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({ id: "content_mod", version: "1.0.0" }),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/items/gear.json",
+        content: "{\"model\":{\"type\":\"minecraft:model\",\"model\":\"demo:item/gear\"}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/models/item/gear.json",
+        content: "{\"textures\":{\"layer0\":\"demo:item/gear\"}}\n",
+        compressionMethod: 8
+      },
+      {
+        name: "assets/demo/textures/item/gear.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
       }
     ])
   );

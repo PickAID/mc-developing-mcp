@@ -144,6 +144,113 @@ describe("traceModArchiveResourceReferences", () => {
       truncated: false
     });
   });
+
+  it("traces item definition models and textures inside a mod archive", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-jar-item-trace-"));
+    const archivePath = join(runtimeRoot, "content-mod.jar");
+
+    await writeFile(
+      archivePath,
+      createZip([
+        {
+          name: "assets/demo/items/gear.json",
+          content: "{\"model\":{\"type\":\"minecraft:model\",\"model\":\"demo:item/gear\"}}\n",
+          compressionMethod: 0
+        },
+        {
+          name: "assets/demo/models/item/gear.json",
+          content: "{\"textures\":{\"layer0\":\"demo:item/gear\"}}\n",
+          compressionMethod: 8
+        },
+        {
+          name: "assets/demo/textures/item/gear.png",
+          content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+          compressionMethod: 0
+        }
+      ])
+    );
+
+    await expect(
+      traceModArchiveResourceReferences({
+        sourceArchive: archivePath,
+        startPaths: ["assets/demo/items/gear.json"]
+      })
+    ).resolves.toMatchObject({
+      startPaths: ["assets/demo/items/gear.json"],
+      references: [
+        {
+          fromPath: "assets/demo/items/gear.json",
+          fromKind: "items",
+          relation: "item_model",
+          value: "demo:item/gear",
+          toPath: "assets/demo/models/item/gear.json",
+          toKind: "models",
+          status: "resolved"
+        },
+        {
+          fromPath: "assets/demo/models/item/gear.json",
+          fromKind: "models",
+          relation: "model_texture",
+          toPath: "assets/demo/textures/item/gear.png",
+          status: "resolved"
+        }
+      ],
+      unresolved: [],
+      skipped: [],
+      truncated: false
+    });
+  });
+
+  it("traces item definition models inside nested mod archives", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-nested-item-trace-"));
+    const archivePath = join(runtimeRoot, "outer-mod.jar");
+    const nestedArchive = createZip([
+      {
+        name: "assets/demo/items/gear.json",
+        content: "{\"model\":{\"type\":\"minecraft:model\",\"model\":\"demo:item/gear\"}}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/models/item/gear.json",
+        content: "{}\n",
+        compressionMethod: 8
+      }
+    ]);
+
+    await writeFile(
+      archivePath,
+      createZip([
+        {
+          name: "META-INF/jarjar/nested-content.jar",
+          content: nestedArchive,
+          compressionMethod: 8
+        }
+      ])
+    );
+
+    await expect(
+      traceNestedModArchiveResourceReferences({
+        sourceArchive: archivePath,
+        embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+        startPaths: ["assets/demo/items/gear.json"]
+      })
+    ).resolves.toMatchObject({
+      embeddedArchivePath: "META-INF/jarjar/nested-content.jar",
+      startPaths: ["assets/demo/items/gear.json"],
+      references: [
+        {
+          fromPath: "assets/demo/items/gear.json",
+          fromKind: "items",
+          relation: "item_model",
+          toPath: "assets/demo/models/item/gear.json",
+          status: "resolved"
+        }
+      ],
+      unresolved: [],
+      skipped: [],
+      truncated: false
+    });
+  });
 });
 
 interface ZipFixtureEntry {

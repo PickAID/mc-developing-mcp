@@ -108,6 +108,7 @@ export interface DatapackReadResult {
 
 export type DatapackResourceReferenceRelation =
   | "blockstate_model"
+  | "item_model"
   | "model_parent"
   | "model_texture";
 

@@ -124,7 +124,7 @@ function extractTraceableAssetPaths(requestText?: string): string[] {
   }
 
   const matches = requestText.matchAll(
-    /\bassets\/[A-Za-z0-9_.-]+\/(?:blockstates|models)\/[A-Za-z0-9_./+$-]+\.json\b/g
+    /\bassets\/[A-Za-z0-9_.-]+\/(?:blockstates|items|models)\/[A-Za-z0-9_./+$-]+\.json\b/g
   );
   return unique([...matches].map((match) => match[0].replace(/[),.;:]+$/g, "")))
     .slice(0, 8);
@@ -141,7 +141,7 @@ function extractNestedTraceableAssetPaths(
   const escapedArchivePath = escapeRegExp(embeddedArchivePath);
   const matches = requestText.matchAll(
     new RegExp(
-      `\\b${escapedArchivePath}!/(assets/[A-Za-z0-9_.-]+/(?:blockstates|models)/[A-Za-z0-9_./+$-]+\\.json)\\b`,
+      `\\b${escapedArchivePath}!/(assets/[A-Za-z0-9_.-]+/(?:blockstates|items|models)/[A-Za-z0-9_./+$-]+\\.json)\\b`,
       "g"
     )
   );
