@@ -26,7 +26,7 @@ Build a bottom-layer external mod resolver that can locate the right mod artifac
 - Gradle-declared binary archive discovery now accepts runtime classifier JARs such as `-all`, `-shadow`, `-dev`, and `-remapped` while excluding sources/javadoc classifiers.
 - Modrinth and CurseForge broad search now support conservative strong-identity ranking for project id, slug, and title/name matches while preserving ambiguity for weak broad queries.
 - MCP internal external mod resolution can pass user-provided CurseForge credential/fetch/base URL options and Modrinth/Maven fetch fixture options into the default resolvers.
-- MCP external mod request parsing preserves multi-word natural mod names such as `Just Enough Items` when loader/version constraints follow the name.
+- MCP external mod request parsing preserves multi-word natural mod names such as `Just Enough Items` when loader/version constraints follow the name and removes common conversational lead-in words.
 
 ## Constraints
 - TypeScript only.

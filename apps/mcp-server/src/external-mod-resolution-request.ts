@@ -308,6 +308,14 @@ function isQueryStopToken(
   const normalized = token.toLowerCase();
   const stopTokens = new Set([
     "find",
+    "can",
+    "you",
+    "please",
+    "i",
+    "me",
+    "need",
+    "want",
+    "get",
     "lookup",
     "resolve",
     "search",

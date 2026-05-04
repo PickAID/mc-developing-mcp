@@ -95,4 +95,17 @@ describe("parseExternalModRequest", () => {
       minecraftVersion: "1.20.1"
     });
   });
+
+  it("drops conversational lead-in words from natural mod names", () => {
+    expect(
+      parseExternalModRequest(
+        "Can you please find the Modrinth mod Architectury API fabric 1.20.1?"
+      )
+    ).toMatchObject({
+      platform: "modrinth",
+      query: "architectury api",
+      loader: "fabric",
+      minecraftVersion: "1.20.1"
+    });
+  });
 });
