@@ -96,6 +96,7 @@ async function* walkRoot(
       relativePath,
       sourceKind: classifyKubeJsTypeResource(relativePath),
       sizeBytes: fileStat.size,
+      mtimeMs: fileStat.mtimeMs,
       rootKind: root.rootKind
     };
   }

@@ -18,6 +18,7 @@ export interface KubeJsTypeResourceFile {
   relativePath: string;
   sourceKind: KubeJsTypeSourceKind;
   sizeBytes: number;
+  mtimeMs: number;
   rootKind: KubeJsTypeRootKind;
 }
 

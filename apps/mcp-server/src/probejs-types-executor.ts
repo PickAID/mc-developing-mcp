@@ -14,7 +14,6 @@ import {
   type KubeJsScriptScope
 } from "@mcpskill/kubejs-language-service";
 import {
-  summarizeKubeJsTypeResources,
   type KubeJsSemanticResourceEntry,
   type KubeJsSemanticResourceKind,
   type KubeJsTypeSemanticSummary,
@@ -25,9 +24,15 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
+import {
+  createProbeResourceSummaryCache,
+  summarizeProbeResourcesWithCache,
+  type ProbeResourceSummaryCache
+} from "./probejs-resource-summary-cache.js";
 
 export interface McpServerProbeJsTypesExecutorOptions {
   languageProjectCache?: KubeJsLanguageServiceCache<KubeJsLanguageServiceProject>;
+  probeResourceSummaryCache?: ProbeResourceSummaryCache;
 }
 
 const defaultProbeJsTypesExecutor = createMcpServerProbeJsTypesExecutor();
@@ -40,9 +45,16 @@ export function createMcpServerProbeJsTypesExecutor(
     createKubeJsLanguageServiceCache<KubeJsLanguageServiceProject>({
       maxEntries: 1
     });
+  const probeResourceSummaryCache =
+    options.probeResourceSummaryCache ??
+    createProbeResourceSummaryCache({ maxEntries: 2 });
 
   return (input: McpServerEvidenceExecutorInput) =>
-    executeMcpServerProbeJsTypesWithCache(input, languageProjectCache);
+    executeMcpServerProbeJsTypesWithCache(
+      input,
+      languageProjectCache,
+      probeResourceSummaryCache
+    );
 }
 
 export async function executeMcpServerProbeJsTypes(
@@ -53,7 +65,8 @@ export async function executeMcpServerProbeJsTypes(
 
 async function executeMcpServerProbeJsTypesWithCache(
   input: McpServerEvidenceExecutorInput,
-  languageProjectCache: KubeJsLanguageServiceCache<KubeJsLanguageServiceProject>
+  languageProjectCache: KubeJsLanguageServiceCache<KubeJsLanguageServiceProject>,
+  probeResourceSummaryCache: ProbeResourceSummaryCache
 ): Promise<McpServerEvidenceExecutorResult> {
   if (input.candidate.routeStep !== "probejs_types") {
     return {
@@ -146,13 +159,14 @@ async function executeMcpServerProbeJsTypesWithCache(
     input.requestPlan.requestText,
     symbol
   );
-  const probeResources = await summarizeKubeJsTypeResources({
+  const probeResourcesResult = await summarizeProbeResourcesWithCache({
     workspaceRoot,
     includeUnknownResources: resourceQueries.length === 0,
     maxFiles: 200,
     maxBytesPerFile: 65_536,
     maxEntriesPerKind: 20,
-    resourceQueries
+    resourceQueries,
+    cache: probeResourceSummaryCache
   });
 
   return {
@@ -167,8 +181,9 @@ async function executeMcpServerProbeJsTypesWithCache(
       declarationBytes: probeProject.totalDeclarationBytes,
       snippetCount: probeProject.snippetFiles.length,
       cacheHit,
+      probeResourceCacheHit: probeResourcesResult.cacheHit,
       queryMode: "virtual",
-      probeResources: compactProbeResources(probeResources),
+      probeResources: compactProbeResources(probeResourcesResult.summary),
       completions: completions.entries,
       quickInfo: quickInfo.text,
       diagnostics
