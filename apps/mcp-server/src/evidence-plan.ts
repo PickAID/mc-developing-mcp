@@ -84,6 +84,8 @@ function buildCandidate(
   );
   const resourcePackRequest =
     requestPlan.trace.taskIntent.id === "resource_pack_lookup";
+  const clientVisualRequest =
+    requestPlan.trace.taskIntent.id === "client_visual_resources";
 
   switch (routeStep) {
     case "java_diagnostics":
@@ -183,7 +185,7 @@ function buildCandidate(
         priority,
         tier: "primary",
         routeStep,
-        provenance: resourcePackRequest
+        provenance: resourcePackRequest || clientVisualRequest
           ? "resource_pack_files"
           : "datapack_files",
         preferredTool: "source.bundle",
@@ -197,6 +199,8 @@ function buildCandidate(
           ? buildVanillaDatapackReason(
               descriptor?.currentRuntime.minecraftVersion
             )
+          : clientVisualRequest
+          ? "Inspect resource-pack assets, models, blockstates, textures, and client visual evidence before docs."
           : resourcePackRequest
           ? "Inspect resource-pack assets before secondary docs."
           : "Inspect datapack files before secondary docs.",
@@ -204,6 +208,8 @@ function buildCandidate(
           ? collectVanillaAssetsHints(descriptor)
           : vanillaDatapackRequest
           ? collectVanillaDatapackHints(descriptor)
+          : resourcePackRequest || clientVisualRequest
+          ? collectResourcePackHints(descriptor, workspaceRoot)
           : [...(descriptor?.datapackRoots ?? [])],
         queryHint: requestPlan.requestText
       };
@@ -270,6 +276,15 @@ function collectModArchiveHints(
   }
 
   return workspaceRoot ? [`${workspaceRoot}/mods`] : [];
+}
+
+function collectResourcePackHints(
+  descriptor?: { resourcePackRoots?: string[] },
+  workspaceRoot?: string
+): string[] {
+  const roots = descriptor?.resourcePackRoots ?? [];
+
+  return roots.length > 0 ? roots : workspaceRoot ? [workspaceRoot] : [];
 }
 
 function mentionsVanillaSourceRequest(requestText?: string): boolean {

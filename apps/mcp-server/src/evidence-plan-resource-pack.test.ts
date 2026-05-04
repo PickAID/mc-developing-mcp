@@ -76,6 +76,39 @@ describe("buildMcpServerEvidencePlan resource-pack evidence", () => {
       ]
     });
   });
+
+  it("marks client visual datapack_files candidates as resource-pack visual evidence", async () => {
+    const workspaceRoot = await createClientVisualWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot: "/tmp/mcpskill-runtime",
+      workspace: { workspaceRoot }
+    });
+
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Fix the custom block client visual model using assets/demo/models/block/gear.json and blockstates."
+    );
+
+    expect(buildMcpServerEvidencePlan(requestPlan)).toMatchObject({
+      requestPlan: {
+        trace: {
+          taskIntent: {
+            id: "client_visual_resources"
+          }
+        }
+      },
+      candidates: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "datapack_files",
+          provenance: "resource_pack_files",
+          preferredTool: "source.bundle",
+          reason:
+            "Inspect resource-pack assets, models, blockstates, textures, and client visual evidence before docs.",
+          pathHints: [workspaceRoot]
+        })
+      ])
+    });
+  });
 });
 
 async function createForgeWorkspace(): Promise<string> {
@@ -103,6 +136,27 @@ async function createResourcePackWorkspace(): Promise<string> {
   await mkdir(join(workspaceRoot, "assets", "demo", "blockstates"), {
     recursive: true
   });
+  await writeFile(
+    join(workspaceRoot, "assets", "demo", "blockstates", "gear.json"),
+    "{\"variants\":{}}\n"
+  );
+
+  return workspaceRoot;
+}
+
+async function createClientVisualWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-client-visual-"));
+
+  await mkdir(join(workspaceRoot, "assets", "demo", "models", "block"), {
+    recursive: true
+  });
+  await mkdir(join(workspaceRoot, "assets", "demo", "blockstates"), {
+    recursive: true
+  });
+  await writeFile(
+    join(workspaceRoot, "assets", "demo", "models", "block", "gear.json"),
+    "{\"parent\":\"minecraft:block/cube_all\"}\n"
+  );
   await writeFile(
     join(workspaceRoot, "assets", "demo", "blockstates", "gear.json"),
     "{\"variants\":{}}\n"

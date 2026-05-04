@@ -30,6 +30,8 @@ import {
   type McpServerVanillaAssetsPackageOptions
 } from "./source-bundle-vanilla-assets.js";
 import { resolveMcpServerResourcePackEvidence } from "./source-bundle-resource-pack.js";
+import { buildClientVisualEvidencePacket } from "./client-visual-evidence-packet.js";
+import { findResourceLocationEntryMatches } from "./source-bundle-resource-location-matches.js";
 
 const MAX_QUERIES = 8;
 const MAX_MATCHES = 16;
@@ -65,8 +67,11 @@ export async function executeMcpServerDatapackFiles(
   }
 
   const requestText = input.requestPlan.requestText ?? "";
+  const isClientVisualRequest =
+    input.requestPlan.trace.taskIntent.id === "client_visual_resources";
   const isResourcePackRequest =
-    input.requestPlan.trace.taskIntent.id === "resource_pack_lookup";
+    input.requestPlan.trace.taskIntent.id === "resource_pack_lookup" ||
+    isClientVisualRequest;
   const queries = extractResourceLocationQueries(requestText);
   const requestedPaths = extractDatapackPathQueries(requestText);
   const discovery = await discoverDatapackContent(workspaceRoot);
@@ -153,6 +158,17 @@ export async function executeMcpServerDatapackFiles(
     requestText,
     requestedPaths
   });
+  const clientVisualEvidence = isClientVisualRequest
+    ? buildClientVisualEvidencePacket({
+        descriptor: input.requestPlan.requestContext.workspaceContext?.descriptor,
+        discovery,
+        resourceSummary: compactResourceSummary,
+        queries,
+        requestedPaths,
+        matches: search.matches,
+        resourceReferenceTrace
+      })
+    : undefined;
 
   if (queries.length === 0 && requestedPaths.length === 0) {
     const listed = isResourcePackRequest
@@ -181,6 +197,7 @@ export async function executeMcpServerDatapackFiles(
         ...(resourcePackMigrationAnalysis ? { resourcePackMigrationAnalysis } : {}),
         resourceSummary: compactResourceSummary,
         ...(resourceRootSummary ? { resourceRootSummary } : {}),
+        ...(clientVisualEvidence ? { clientVisualEvidence } : {}),
         ...(isResourcePackRequest ? {} : { files: listed.entries }),
         skipped: listed.skipped,
         truncated: listed.truncated
@@ -208,6 +225,7 @@ export async function executeMcpServerDatapackFiles(
       resourceSummary: compactResourceSummary,
       reads: reads.files,
       matches: search.matches,
+      ...(clientVisualEvidence ? { clientVisualEvidence } : {}),
       ...(resourceReferenceTrace ? { resourceReferenceTrace } : {}),
       skipped: [...reads.skipped, ...search.skipped],
       truncated: search.truncated
@@ -451,32 +469,6 @@ async function searchRequestedResourceLocations(
     skipped,
     truncated
   };
-}
-
-async function findResourceLocationEntryMatches(
-  workspaceRoot: string,
-  query: string
-): Promise<DatapackSearchMatch[]> {
-  const listed = await listDatapackFiles(workspaceRoot, { ...DATAPACK_BUDGET });
-  return listed.entries.flatMap((file) => entryResourceLocation(file) === query
-    ? [{ file, line: 1, column: 1, preview: `resource-location metadata: ${query}` }]
-    : []);
-}
-
-function entryResourceLocation(entry: DatapackFileEntry): string | undefined {
-  if (entry.domain !== "assets") {
-    return undefined;
-  }
-  const segments = entry.relativePath.split("/");
-  const assetKind = segments[2];
-  const path = segments.slice(3).join("/").replace(/\.(?:json|png)$/i, "");
-  if (!entry.namespace || !path) {
-    return undefined;
-  }
-  if (assetKind === "items") return `${entry.namespace}:item/${path}`;
-  return assetKind === "models" || assetKind === "textures"
-    ? `${entry.namespace}:${path}`
-    : undefined;
 }
 
 interface DatapackReadEvidence {
