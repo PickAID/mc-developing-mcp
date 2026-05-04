@@ -4,6 +4,7 @@ import type {
   ExternalModResolverResult
 } from "./types.js";
 import { buildModrinthMavenArtifact } from "./maven.js";
+import { chooseStrongModrinthProjectMatch } from "./modrinth-ranking.js";
 
 const MODRINTH_API_BASE_URL = "https://api.modrinth.com";
 const MODRINTH_USER_AGENT = "PickAID-mc-developing-mcp/0.0.0";
@@ -234,25 +235,18 @@ function chooseProject(
   hits: ModrinthProjectHit[],
   query: string
 ): ModrinthProjectHit | undefined {
-  const normalizedQuery = query.toLowerCase();
-
-  return (
-    hits.find((hit) => matchesProjectIdentity(hit, normalizedQuery)) ??
-    hits[0]
-  );
+  return chooseStrongModrinthProjectMatch(hits, query) ?? hits[0];
 }
 
 function detectAmbiguousProjectMatch(
   hits: ModrinthProjectHit[],
   query: string
 ): ExternalModProjectHint[] | undefined {
-  const normalizedQuery = query.toLowerCase();
-
   if (hits.length <= 1) {
     return undefined;
   }
 
-  if (hits.some((hit) => matchesProjectIdentity(hit, normalizedQuery))) {
+  if (chooseStrongModrinthProjectMatch(hits, query)) {
     return undefined;
   }
 
@@ -263,16 +257,6 @@ function detectAmbiguousProjectMatch(
     title: hit.title,
     downloads: hit.downloads
   }));
-}
-
-function matchesProjectIdentity(
-  hit: ModrinthProjectHit,
-  normalizedQuery: string
-): boolean {
-  return (
-    hit.slug.toLowerCase() === normalizedQuery ||
-    hit.project_id.toLowerCase() === normalizedQuery
-  );
 }
 
 function toProjectHit(project: ModrinthProjectDetail): ModrinthProjectHit {
