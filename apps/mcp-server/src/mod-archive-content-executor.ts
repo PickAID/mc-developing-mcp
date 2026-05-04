@@ -52,7 +52,8 @@ const SEARCH_DOMAINS: ArchiveContentDomain[] = [
   "data",
   "assets",
   "java",
-  "class"
+  "class",
+  "metadata"
 ];
 const QUERY_STOP_WORDS = new Set([
   "crash",
@@ -68,7 +69,10 @@ const QUERY_STOP_WORDS = new Set([
   "content",
   "latest",
   "latest.log",
-  "exception"
+  "exception",
+  "metadata",
+  "resource",
+  "paths"
 ]);
 
 export interface McpServerModArchiveContentExecutorOptions {

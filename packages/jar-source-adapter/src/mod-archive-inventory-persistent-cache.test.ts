@@ -46,10 +46,11 @@ describe("buildCachedModArchiveInventory", () => {
           relativePath: "mods/content-mod.jar",
           archiveMetadata: { modId: "content_mod" },
           contentSummary: {
-            fileCount: 2,
+            fileCount: 3,
             byDomain: {
               data: 1,
-              assets: 1
+              assets: 1,
+              metadata: 1
             }
           }
         }
@@ -84,10 +85,11 @@ describe("buildCachedModArchiveInventory", () => {
       archives: [
         {
           contentSummary: {
-            fileCount: 3,
+            fileCount: 4,
             byDomain: {
               data: 2,
-              assets: 1
+              assets: 1,
+              metadata: 1
             }
           }
         }

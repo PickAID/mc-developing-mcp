@@ -222,7 +222,8 @@ function summarizeContentEntries(entries: ZipEntry[]): ModArchiveContentSummary 
     java: 0,
     data: 0,
     assets: 0,
-    class: 0
+    class: 0,
+    metadata: 0
   };
 
   for (const entry of entries) {
@@ -240,7 +241,7 @@ function summarizeContentEntries(entries: ZipEntry[]): ModArchiveContentSummary 
   }
 
   return {
-    fileCount: byDomain.java + byDomain.data + byDomain.assets + byDomain.class,
+    fileCount: Object.values(byDomain).reduce((total, count) => total + count, 0),
     byDomain
   };
 }
@@ -257,7 +258,19 @@ function classifyArchiveContentDomain(
   if (relativePath.startsWith("data/")) {
     return "data";
   }
-  return relativePath.startsWith("assets/") ? "assets" : undefined;
+  if (relativePath.startsWith("assets/")) {
+    return "assets";
+  }
+  return isArchiveMetadataPath(relativePath) ? "metadata" : undefined;
+}
+
+function isArchiveMetadataPath(relativePath: string): boolean {
+  return (
+    /^(?:fabric|quilt)\.mod\.json$/i.test(relativePath) ||
+    /^[^/]+\.mixins?\.json$/i.test(relativePath) ||
+    relativePath === "pack.mcmeta" ||
+    /^META-INF\/(?:mods|neoforge\.mods)\.toml$/i.test(relativePath)
+  );
 }
 
 function readMetadataSafely(archive: Buffer): ModArchiveMetadata | undefined {

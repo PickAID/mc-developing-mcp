@@ -12,7 +12,12 @@ import type { ArchiveContentCache } from "./archive-content-cache.js";
 export { createArchiveContentCache } from "./archive-content-cache.js";
 export type { ArchiveContentCache } from "./archive-content-cache.js";
 
-export type ArchiveContentDomain = "java" | "data" | "assets" | "class";
+export type ArchiveContentDomain =
+  | "java"
+  | "data"
+  | "assets"
+  | "class"
+  | "metadata";
 
 export type ArchiveContentSkipReason = "not-found" | "too-large" | "binary";
 
@@ -76,7 +81,8 @@ export async function extractArchiveContent(input: {
     java: 0,
     data: 0,
     assets: 0,
-    class: 0
+    class: 0,
+    metadata: 0
   };
 
   for (const entry of entries) {
@@ -102,7 +108,7 @@ export async function extractArchiveContent(input: {
   }
 
   return {
-    fileCount: byDomain.java + byDomain.data + byDomain.assets + byDomain.class,
+    fileCount: Object.values(byDomain).reduce((total, count) => total + count, 0),
     byDomain
   };
 }
@@ -327,8 +333,20 @@ function classifyArchiveContentDomain(
   if (relativePath.startsWith("assets/")) {
     return "assets";
   }
+  if (isArchiveMetadataPath(relativePath)) {
+    return "metadata";
+  }
 
   return undefined;
+}
+
+function isArchiveMetadataPath(relativePath: string): boolean {
+  return (
+    /^(?:fabric|quilt)\.mod\.json$/i.test(relativePath) ||
+    /^[^/]+\.mixins?\.json$/i.test(relativePath) ||
+    relativePath === "pack.mcmeta" ||
+    /^META-INF\/(?:mods|neoforge\.mods)\.toml$/i.test(relativePath)
+  );
 }
 
 function findClassPathMatch(

@@ -31,12 +31,13 @@ describe("buildModArchiveInventory", () => {
             name: "Outer Mod"
           },
           contentSummary: {
-            fileCount: 4,
+            fileCount: 5,
             byDomain: {
               java: 1,
               data: 1,
               assets: 1,
-              class: 1
+              class: 1,
+              metadata: 1
             }
           },
           nestedArchives: [
@@ -47,10 +48,11 @@ describe("buildModArchiveInventory", () => {
                 modId: "nested_content"
               },
               contentSummary: {
-                fileCount: 2,
+                fileCount: 3,
                 byDomain: {
                   data: 1,
-                  assets: 1
+                  assets: 1,
+                  metadata: 1
                 }
               }
             }

@@ -62,7 +62,8 @@ describe("extractArchiveContent", () => {
         java: 1,
         data: 1,
         assets: 1,
-        class: 0
+        class: 0,
+        metadata: 0
       }
     });
     await expect(
@@ -223,6 +224,53 @@ describe("extractArchiveContent", () => {
           },
           line: 1,
           preview: "com/example/problem/CrashHandler.class"
+        }
+      ],
+      skipped: [],
+      truncated: false
+    });
+  });
+
+  it("searches root and META-INF metadata entries for loader and mixin evidence", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-archive-meta-"));
+    const archivePath = join(runtimeRoot, "metadata-mod.jar");
+
+    await writeFile(
+      archivePath,
+      createZip([
+        {
+          name: "fabric.mod.json",
+          content: "{\"id\":\"demo\"}\n",
+          compressionMethod: 0
+        },
+        {
+          name: "demo.mixins.json",
+          content: "{\"package\":\"com.example.mixin\"}\n",
+          compressionMethod: 0
+        },
+        {
+          name: "META-INF/mods.toml",
+          content: "modLoader='javafml'\n",
+          compressionMethod: 0
+        }
+      ])
+    );
+
+    await expect(
+      searchArchiveContent({
+        sourceArchive: archivePath,
+        domains: ["metadata"],
+        query: "com.example.mixin",
+        maxBytesPerFile: 100
+      })
+    ).resolves.toMatchObject({
+      matches: [
+        {
+          entry: {
+            domain: "metadata",
+            relativePath: "demo.mixins.json"
+          },
+          preview: "{\"package\":\"com.example.mixin\"}"
         }
       ],
       skipped: [],
