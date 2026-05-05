@@ -17,6 +17,9 @@
     "build": "tsc -b",
     "test": "tsc -b . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
   },
+  "dependencies": {
+    "@mcpskill/package-registry": "workspace:*"
+  },
   "author": "m1hono",
   "license": "UNLICENSED",
   "repository": {

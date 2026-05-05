@@ -133,7 +133,11 @@ importers:
 
   packages/package-registry: {}
 
-  packages/resource-registry: {}
+  packages/resource-registry:
+    dependencies:
+      '@mcpskill/package-registry':
+        specifier: workspace:*
+        version: link:../package-registry
 
   packages/runtime-manager:
     dependencies:

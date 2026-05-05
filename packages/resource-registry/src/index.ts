@@ -6,3 +6,4 @@ export * from "./cache.js";
 export * from "./status.js";
 export * from "./release-manifest.js";
 export * from "./installer.js";
+export * from "./v2-adapter.js";
