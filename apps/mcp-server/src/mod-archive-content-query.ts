@@ -70,6 +70,18 @@ export function extractListDomains(
   return domains.length > 0 ? domains : MOD_ARCHIVE_SEARCH_DOMAINS;
 }
 
+export function isModArchivePreDecompileAnalysisRequest(
+  requestText?: string
+): boolean {
+  return Boolean(
+    requestText &&
+      /\b(?:analy[sz]e|inspect|summari[sz]e|check)\b/i.test(requestText) &&
+      /\b(?:pre-?decompile|before\s+decompil(?:e|ing|ation)|decompil(?:e|ing|ation))\b/i.test(
+        requestText
+      )
+  );
+}
+
 function addQuery(queries: string[], query: string): void {
   if (query.length > 0 && !queries.includes(query)) {
     queries.push(query);

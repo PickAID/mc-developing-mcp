@@ -30,6 +30,10 @@ Date: 2026-05-05
 - `pnpm --filter @mcpskill/source-index test` 通过。
 - `pnpm test` 中 `packages/source-index/src/indexer.test.ts` 4 个测试通过。
 - 覆盖 chunk line range、match reasons、punctuation-heavy query fallback。
+- Follow-up 接入验证：vanilla source resolver 已消费已安装 package 的
+  `source-index.sqlite`，并把 bounded `startLine`、`endLine`、`totalLines`、
+  `chunkId`、`matchReasons` 传入 `source.bundle` / `mc_develop` evidence
+  payload。
 
 ### Docs MatchReasons
 
@@ -62,6 +66,10 @@ Date: 2026-05-05
 - `pnpm test` 中 `packages/jar-source-adapter/src/mod-archive-analysis.test.ts`
   1 个测试通过。
 - 当前实现使用 ZIP central directory，不读取 class bytecode，不做 decompile。
+- Follow-up 接入验证：`mod_archive_content` internal route 现在支持显式
+  pre-decompile analysis request，返回 `mode: "pre_decompile_analysis"`、
+  selected archive、relative archive path、metadata、counts-only analysis 和
+  `compact_mod_archive_pre_decompile_analysis` token policy；未新增 public tool。
 
 ### Source Acquisition Job State
 
@@ -116,7 +124,10 @@ Date: 2026-05-05
 - `pnpm --filter @mcpskill/jar-source-adapter test`: passed.
 - `pnpm --filter @mcpskill/mcp-server test -- mixin-target-verifier.test.ts`:
   passed; package script ran 71 test files and 202 tests.
-- `pnpm test`: passed; 160 test files and 518 tests.
+- `pnpm --filter @mcpskill/vanilla-source-adapter test`: passed; 7 tests.
+- `pnpm --filter @mcpskill/mcp-server test -- source-bundle-executor.test.ts mod-archive-pre-decompile-analysis.test.ts`:
+  passed; package script ran 72 test files and 203 tests.
+- `pnpm test`: passed; 161 test files and 520 tests.
 - `find apps packages tests -name '*.ts' -o -name '*.tsx' | xargs wc -l | awk '$1 > 500 && $2 != "total" { print }'`: no output.
 - `git diff --check`: no output.
 

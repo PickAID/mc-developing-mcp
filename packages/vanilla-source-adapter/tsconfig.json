@@ -8,6 +8,7 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     { "path": "../shared-types" },
+    { "path": "../source-index" },
     { "path": "../source-package-manager" }
   ]
 }

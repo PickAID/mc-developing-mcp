@@ -1,4 +1,5 @@
 import {
+  analyzeModArchiveBeforeDecompile,
   createArchiveContentCache,
   discoverModArchives,
   type ArchiveContentCache
@@ -37,7 +38,8 @@ import {
 import {
   MOD_ARCHIVE_SEARCH_DOMAINS,
   extractListDomains,
-  extractModArchiveQueries
+  extractModArchiveQueries,
+  isModArchivePreDecompileAnalysisRequest
 } from "./mod-archive-content-query.js";
 import {
   DEFAULT_MAX_ARCHIVES
@@ -126,6 +128,26 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const selectedArchive = selectArchive(archives.archives, requestText);
+  if (selectedArchive && isModArchivePreDecompileAnalysisRequest(requestText)) {
+    const [analyzed] = await attachArchiveMetadata([
+      await analyzeModArchiveBeforeDecompile({
+        sourceArchive: selectedArchive.archivePath
+      })
+    ]);
+
+    return {
+      matched: true,
+      summary: "Analyzed selected mod archive before decompile.",
+      payload: {
+        source: "mod_archive_content",
+        mode: "pre_decompile_analysis",
+        sourceArchive: selectedArchive.archivePath,
+        archiveRelativePath: selectedArchive.relativePath,
+        analysis: analyzed
+      }
+    };
+  }
+
   const nestedEntryPathRequest = extractNestedArchiveEntryPathRequest(requestText);
   if (nestedEntryPathRequest.requests.length > 1 && selectedArchive) {
     return readSelectedNestedEntries({

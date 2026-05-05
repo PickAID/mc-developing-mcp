@@ -262,7 +262,12 @@ describe("buildMcpServerSourceBundleExecutor", () => {
           status: "ready",
           references: [
             {
-              relativePath: "net/minecraft/world/item/ItemStack.java"
+              relativePath: "net/minecraft/world/item/ItemStack.java",
+              reason: "indexed vanilla source match",
+              startLine: 1,
+              endLine: 3,
+              totalLines: 3,
+              matchReasons: ["path_exact"]
             }
           ]
         }

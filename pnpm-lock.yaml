@@ -183,6 +183,9 @@ importers:
       '@mcpskill/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      '@mcpskill/source-index':
+        specifier: workspace:*
+        version: link:../source-index
       '@mcpskill/source-package-manager':
         specifier: workspace:*
         version: link:../source-package-manager

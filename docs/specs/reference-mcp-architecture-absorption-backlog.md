@@ -195,6 +195,9 @@ Completed or verified in this absorption round:
 - Source-index chunks: source indexing now has chunk-aware search, including
   bounded snippets, path/line metadata, chunk id, and
   `matchReasons`.
+- Source.bundle source-index consumption: installed vanilla source packages now
+  use `source-index.sqlite` for bounded reads and evidence reasons before
+  falling back to direct file reads or budgeted scans.
 - Source-index fallback: the search pipeline uses FTS-first lookup with bounded
   fallback behavior when FTS syntax fails or returns no useful result.
 - Docs `matchReasons`: documentation retrieval results expose compact reasons
@@ -203,6 +206,9 @@ Completed or verified in this absorption round:
 - Mod archive pre-decompile analysis: mod archives should be inspected before
   full decompilation for mixin configs, access wideners, service providers,
   class files, assets, and datapack content.
+- Mod archive pre-decompile route: explicit pre-decompile requests are handled
+  by the existing `mod_archive_content` internal route with compact analysis
+  payloads, not a new public tool.
 - Source acquisition job state: source package acquisition should report
   explicit job/cache state such as jar, mappings, remapped jar, decompiled
   source, source index, and job status.

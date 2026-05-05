@@ -2,6 +2,11 @@ import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
 import {
+  querySourceIndex,
+  readIndexedSourceFile,
+  type SourceIndexMatch
+} from "@mcpskill/source-index";
+import {
   buildVanillaSourcePackCoordinate,
   ensureSourcePackageInstalled,
   type SourcePackageRecipeExecutor,
@@ -26,6 +31,11 @@ export interface VanillaSourceReference {
   relativePath: string;
   content: string;
   reason: string;
+  startLine?: number;
+  endLine?: number;
+  totalLines?: number;
+  chunkId?: string;
+  matchReasons?: string[];
 }
 
 export interface ResolveVanillaSourceInput {
@@ -141,6 +151,14 @@ async function resolveSourceReferences(
     return [];
   }
 
+  const indexedReferences = await tryResolveIndexedReferences(
+    installPath,
+    request
+  );
+  if (indexedReferences.length > 0) {
+    return indexedReferences;
+  }
+
   const exactRelativePath = deriveVanillaRelativePath(request);
   const exactReference = exactRelativePath
     ? await tryReadReference(installPath, exactRelativePath, "exact vanilla source pack match")
@@ -157,6 +175,101 @@ async function resolveSourceReferences(
   }
 
   return scanForMatches(installPath, fileName, scanBudget);
+}
+
+async function tryResolveIndexedReferences(
+  installPath: string,
+  request: VanillaSourceRequest
+): Promise<VanillaSourceReference[]> {
+  const databasePath = join(installPath, "source-index.sqlite");
+  const matches = selectIndexedMatches(databasePath, request);
+  const references = await Promise.all(
+    matches.map((match) => readIndexedReference(installPath, databasePath, match))
+  );
+
+  return references.filter(
+    (reference): reference is VanillaSourceReference => reference !== undefined
+  );
+}
+
+function selectIndexedMatches(
+  databasePath: string,
+  request: VanillaSourceRequest
+): SourceIndexMatch[] {
+  try {
+    const exactRelativePath = deriveVanillaRelativePath(request);
+    const exactMatches = exactRelativePath
+      ? querySourceIndex({
+          databasePath,
+          pathLike: exactRelativePath,
+          limit: 1
+        }).matches.filter((match) => match.path === exactRelativePath)
+      : [];
+
+    if (exactMatches.length > 0) {
+      return exactMatches.map((match) => ({
+        ...match,
+        matchReasons: ["path_exact"]
+      }));
+    }
+
+    if (request.symbol) {
+      const symbolMatches = querySourceIndex({
+        databasePath,
+        symbol: request.symbol,
+        limit: request.maxFiles ?? 3
+      }).matches;
+
+      if (symbolMatches.length > 0) {
+        return symbolMatches;
+      }
+    }
+
+    const text = request.symbol ?? request.relativePath ?? request.packageHint;
+    return text
+      ? querySourceIndex({
+          databasePath,
+          text,
+          limit: request.maxFiles ?? 3
+        }).matches
+      : [];
+  } catch (error) {
+    if (isFileNotFound(error)) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function readIndexedReference(
+  installPath: string,
+  databasePath: string,
+  match: SourceIndexMatch
+): Promise<VanillaSourceReference | undefined> {
+  const file = await readIndexedSourceFile({
+    sourceRoot: installPath,
+    databasePath,
+    path: match.path,
+    startLine: match.startLine,
+    maxLines: 120
+  });
+
+  if (!file) {
+    return undefined;
+  }
+
+  return {
+    path: join(installPath, file.path),
+    relativePath: file.path,
+    content: file.content,
+    reason: "indexed vanilla source match",
+    startLine: file.startLine,
+    endLine: file.endLine,
+    totalLines: file.totalLines,
+    chunkId: match.chunkId,
+    matchReasons: match.matchReasons
+  };
 }
 
 async function tryReadReference(

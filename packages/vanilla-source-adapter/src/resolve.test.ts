@@ -92,12 +92,67 @@ describe("resolveVanillaSource", () => {
       "package net.minecraft.world.item;\npublic class ItemStack {}\n"
     );
 
+    const result = await resolveVanillaSource({
+      runtimeLayout,
+      currentRuntime: createCurrentRuntime("1.20.1"),
+      request: {
+        symbol: "net.minecraft.world.item.ItemStack"
+      },
+      recipes: {
+        "minecraft-1.20.1-source-pack-named": buildVanillaSourcePackCopyRecipe({
+          minecraftVersion: "1.20.1",
+          sourceRoot
+        })
+      },
+      executeRecipe: buildLocalSourcePackageRecipeExecutor()
+    });
+
+    expect(result).toMatchObject({
+      status: "ready",
+      packageId: "minecraft-1.20.1-source-pack-named",
+      references: [
+        {
+          relativePath: "net/minecraft/world/item/ItemStack.java",
+          reason: "indexed vanilla source match",
+          startLine: 1,
+          endLine: 3,
+          totalLines: 3,
+          matchReasons: ["path_exact"]
+        }
+      ]
+    });
+  });
+
+  it("returns chunk line ranges for indexed vanilla source text matches", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-vanilla-source-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-materialized-"));
+
+    await writeSourcePackageConfirmation(
+      runtimeLayout,
+      createConfirmation("1.20.1")
+    );
+    await mkdir(join(sourceRoot, "net", "minecraft", "client", "gui"), {
+      recursive: true
+    });
+    await writeFile(
+      join(sourceRoot, "net", "minecraft", "client", "gui", "GuiGraphics.java"),
+      [
+        "package net.minecraft.client.gui;",
+        "public class GuiGraphics {",
+        "  void render() {",
+        "    RenderSystem.enableBlend();",
+        "  }",
+        "}"
+      ].join("\n")
+    );
+
     await expect(
       resolveVanillaSource({
         runtimeLayout,
         currentRuntime: createCurrentRuntime("1.20.1"),
         request: {
-          symbol: "net.minecraft.world.item.ItemStack"
+          packageHint: "RenderSystem enableBlend"
         },
         recipes: {
           "minecraft-1.20.1-source-pack-named": buildVanillaSourcePackCopyRecipe({
@@ -112,8 +167,15 @@ describe("resolveVanillaSource", () => {
       packageId: "minecraft-1.20.1-source-pack-named",
       references: [
         {
-          relativePath: "net/minecraft/world/item/ItemStack.java",
-          reason: "exact vanilla source pack match"
+          relativePath: "net/minecraft/client/gui/GuiGraphics.java",
+          reason: "indexed vanilla source match",
+          startLine: 1,
+          endLine: 6,
+          chunkId: "lines-1-6",
+          matchReasons: expect.arrayContaining([
+            "fts_chunk",
+            "term:RenderSystem"
+          ])
         }
       ]
     });
