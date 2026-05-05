@@ -1,11 +1,12 @@
 {
   "name": "@mcpskill/external-mod-resolver",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,5 +16,15 @@
   "scripts": {
     "build": "tsc -b",
     "test": "tsc -b . && vitest run --root ../.. packages/external-mod-resolver/src/modrinth.test.ts packages/external-mod-resolver/src/curseforge.test.ts packages/external-mod-resolver/src/maven-repository.test.ts packages/external-mod-resolver/src/metadata-cache.test.ts"
+  },
+  "author": "m1hono",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
+    "directory": "packages/external-mod-resolver"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

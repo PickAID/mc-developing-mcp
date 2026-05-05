@@ -1,11 +1,12 @@
 {
   "name": "@mcpskill/runtime-manager",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -18,5 +19,15 @@
   },
   "dependencies": {
     "@mcpskill/shared-types": "workspace:*"
+  },
+  "author": "m1hono",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
+    "directory": "packages/runtime-manager"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

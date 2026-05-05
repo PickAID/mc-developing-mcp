@@ -1,11 +1,12 @@
 {
   "name": "@mcpskill/jar-source-adapter",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,5 +16,15 @@
   "scripts": {
     "build": "tsc -b",
     "test": "tsc -b . && vitest run --root ../.. packages/jar-source-adapter/src/java-source-archive.test.ts packages/jar-source-adapter/src/archive-content.test.ts packages/jar-source-adapter/src/archive-set.test.ts packages/jar-source-adapter/src/class-owner.test.ts packages/jar-source-adapter/src/mod-archive-analysis.test.ts packages/jar-source-adapter/src/mod-archive-asset-kind.test.ts packages/jar-source-adapter/src/mod-archive-class-owner-index.test.ts packages/jar-source-adapter/src/mod-archive-entry-index.test.ts packages/jar-source-adapter/src/mod-archive-inventory.test.ts packages/jar-source-adapter/src/mod-archive-inventory-persistent-cache.test.ts packages/jar-source-adapter/src/mod-archive-resource-references.test.ts packages/jar-source-adapter/src/mod-archives.test.ts packages/jar-source-adapter/src/nested-archive-list.test.ts packages/jar-source-adapter/src/nested-archive-read.test.ts"
+  },
+  "author": "m1hono",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
+    "directory": "packages/jar-source-adapter"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

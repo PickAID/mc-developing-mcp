@@ -1,11 +1,12 @@
 {
   "name": "@mcpskill/vanilla-source-adapter",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -20,5 +21,15 @@
     "@mcpskill/shared-types": "workspace:*",
     "@mcpskill/source-index": "workspace:*",
     "@mcpskill/source-package-manager": "workspace:*"
+  },
+  "author": "m1hono",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
+    "directory": "packages/vanilla-source-adapter"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

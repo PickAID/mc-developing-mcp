@@ -1,11 +1,12 @@
 {
   "name": "@mcpskill/docs-retrieval",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -19,5 +20,15 @@
   "dependencies": {
     "@mcpskill/package-registry": "workspace:*",
     "@mcpskill/shared-types": "workspace:*"
+  },
+  "author": "m1hono",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
+    "directory": "packages/docs-retrieval"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
