@@ -7,7 +7,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   createMcpSkillServer,
   type McpSkillServerOptions
-} from "./mcp-server.js";
+} from "./core/server/mcp-server.js";
 
 export async function runMcpServerStdio(
   options: McpSkillServerOptions = {}

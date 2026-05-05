@@ -16,8 +16,10 @@
     }
   },
   "scripts": {
-    "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
+    "clean:dist": "rm -rf dist tsconfig.tsbuildinfo",
+    "build": "pnpm run clean:dist && tsc -b",
+    "smoke:real-workspace": "tsx src/smoke/real-workspace/real-workspace-smoke.ts",
+    "test": "pnpm run clean:dist && tsc -b . && vitest run --root ../.. \"$PWD/src\""
   },
   "dependencies": {
     "@mcpskill/agent-harness": "workspace:*",
@@ -33,6 +35,7 @@
     "@mcpskill/runtime-manager": "workspace:*",
     "@mcpskill/service-profile": "workspace:*",
     "@mcpskill/shared-types": "workspace:*",
+    "@mcpskill/source-index": "workspace:*",
     "@mcpskill/source-package-manager": "workspace:*",
     "@mcpskill/vanilla-source-adapter": "workspace:*",
     "@mcpskill/workspace-detector": "workspace:*",

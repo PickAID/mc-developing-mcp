@@ -5,7 +5,7 @@
     "outDir": "dist"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test-support.ts"],
   "references": [
     { "path": "../../packages/agent-harness" },
     { "path": "../../packages/datapack-adapter" },
@@ -19,6 +19,7 @@
     { "path": "../../packages/resource-registry" },
     { "path": "../../packages/runtime-manager" },
     { "path": "../../packages/service-profile" },
+    { "path": "../../packages/source-index" },
     { "path": "../../packages/source-package-manager" },
     { "path": "../../packages/shared-types" },
     { "path": "../../packages/vanilla-source-adapter" },
