@@ -10,7 +10,9 @@ import {
   buildSourcePackageAcquisitionEvidence,
   buildVanillaSourcePackCoordinate,
   ensureSourcePackageInstalled,
+  readSourceAcquisitionJobState,
   type SourcePackageAcquisitionEvidence,
+  type SourceAcquisitionJobRunner,
   type SourcePackageRecipeExecutor,
   type SourcePackageRecipeProvider,
   type SourcePackageRecipeRegistry
@@ -38,6 +40,7 @@ export interface VanillaSourceReference {
   totalLines?: number;
   chunkId?: string;
   matchReasons?: string[];
+  nextReads?: string[];
 }
 
 export interface ResolveVanillaSourceInput {
@@ -47,6 +50,7 @@ export interface ResolveVanillaSourceInput {
   recipes: SourcePackageRecipeRegistry;
   recipeProvider?: SourcePackageRecipeProvider;
   executeRecipe: SourcePackageRecipeExecutor;
+  jobRunner?: SourceAcquisitionJobRunner;
   scanBudget?: number;
 }
 
@@ -80,7 +84,14 @@ export async function resolveVanillaSource(
     sourcePackage,
     recipes: input.recipes,
     recipeProvider: input.recipeProvider,
-    executeRecipe: input.executeRecipe
+    executeRecipe: input.executeRecipe,
+    jobRunner: input.jobRunner
+  });
+  const acquisition = buildSourcePackageAcquisitionEvidence(ensureResult, {
+    sourceJob: await readSourceAcquisitionJobState(
+      input.runtimeLayout,
+      sourcePackage
+    )
   });
 
   if (ensureResult.status === "needs_confirmation") {
@@ -89,7 +100,7 @@ export async function resolveVanillaSource(
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
       summary: ensureResult.summary,
-      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult)
+      acquisition
     };
   }
 
@@ -99,7 +110,7 @@ export async function resolveVanillaSource(
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
       summary: ensureResult.summary,
-      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
+      acquisition,
       error: ensureResult.error
     };
   }
@@ -110,7 +121,7 @@ export async function resolveVanillaSource(
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
       summary: ensureResult.summary,
-      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
+      acquisition,
       error: ensureResult.error
     };
   }
@@ -121,7 +132,7 @@ export async function resolveVanillaSource(
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
       summary: ensureResult.summary,
-      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult)
+      acquisition
     };
   }
 
@@ -136,7 +147,7 @@ export async function resolveVanillaSource(
       status: "installed_but_no_match",
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
-      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
+      acquisition,
       summary: `Vanilla source package ${sourcePackage.packageId} is installed but no matching source file was found.`
     };
   }
@@ -146,7 +157,7 @@ export async function resolveVanillaSource(
     minecraftVersion: sourcePackage.minecraftVersion,
     packageId: sourcePackage.packageId,
     references,
-    acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
+    acquisition,
     summary: `Resolved ${references.length} vanilla source file(s) from ${sourcePackage.packageId}.`
   };
 }
@@ -277,8 +288,25 @@ async function readIndexedReference(
     endLine: file.endLine,
     totalLines: file.totalLines,
     chunkId: match.chunkId,
-    matchReasons: match.matchReasons
+    matchReasons: match.matchReasons,
+    nextReads: buildSourceReadNextReads(
+      file.path,
+      file.startLine,
+      file.endLine
+    )
   };
+}
+
+function buildSourceReadNextReads(
+  relativePath: string,
+  startLine?: number,
+  endLine?: number
+): string[] {
+  if (startLine === undefined || endLine === undefined) {
+    return [];
+  }
+
+  return [`source.read ${relativePath}:${startLine}-${endLine}`];
 }
 
 async function tryReadReference(

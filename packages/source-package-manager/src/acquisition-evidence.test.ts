@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildSourcePackageAcquisitionEvidence } from "./acquisition-evidence.js";
+import { createSourceAcquisitionJobState } from "./source-job-state.js";
 
 describe("source package acquisition evidence", () => {
   it("maps source-pack confirmation status to a source job snapshot", () => {
@@ -17,7 +18,8 @@ describe("source package acquisition evidence", () => {
       sourceJob: {
         status: "needs_confirmation",
         hasJar: false,
-        hasSourceIndex: false
+        hasSourceIndex: false,
+        statusReason: expect.stringContaining("explicit package-version")
       }
     });
   });
@@ -44,7 +46,8 @@ describe("source package acquisition evidence", () => {
         hasMappings: true,
         hasRemappedJar: true,
         hasDecompiledSource: true,
-        hasSourceIndex: true
+        hasSourceIndex: true,
+        statusReason: expect.stringContaining("present and indexed")
       }
     });
   });
@@ -67,6 +70,108 @@ describe("source package acquisition evidence", () => {
       artifactType: "datapack",
       installPath: "/tmp/datapack"
     });
+  });
+
+  it("prefers a persisted source job snapshot over synthesized evidence", () => {
+    const persistedSourceJob = {
+      ...createSourceAcquisitionJobState({
+        packageId: "minecraft-1.20.1-source-pack-named",
+        minecraftVersion: "1.20.1",
+        artifact: "merged"
+      }),
+      status: "installing" as const,
+      hasJar: true
+    };
+
+    expect(
+      buildSourcePackageAcquisitionEvidence(
+        {
+          status: "ready",
+          package: sourcePackage("source-pack"),
+          installState: {
+            ...sourcePackage("source-pack"),
+            status: "ready",
+            updatedAt: "2026-05-05T00:00:00Z",
+            installPath: "/tmp/source-pack"
+          },
+          summary: "ready"
+        },
+        { sourceJob: persistedSourceJob }
+      )
+    ).toMatchObject({
+      status: "ready",
+      sourceJob: {
+        status: "installing",
+        hasJar: true,
+        hasMappings: false
+      }
+    });
+  });
+
+  it("passes through source job supervision for source package evidence", () => {
+    const persistedSourceJob = {
+      ...createSourceAcquisitionJobState({
+        packageId: "minecraft-1.20.1-source-pack-named",
+        minecraftVersion: "1.20.1",
+        artifact: "merged"
+      }),
+      status: "installing" as const,
+      activeLockPath: "/tmp/source.lock"
+    };
+
+    expect(
+      buildSourcePackageAcquisitionEvidence(
+        {
+          status: "installing",
+          package: sourcePackage("source-pack"),
+          summary: "installing"
+        },
+        {
+          sourceJob: persistedSourceJob,
+          sourceJobSupervision: {
+            state: persistedSourceJob,
+            lock: {
+              path: "/tmp/source.lock",
+              exists: true,
+              stale: false
+            }
+          }
+        }
+      )
+    ).toMatchObject({
+      sourceJobSupervision: {
+        lock: {
+          path: "/tmp/source.lock",
+          exists: true,
+          stale: false
+        }
+      }
+    });
+  });
+
+  it("does not attach source jobs to non-source packages", () => {
+    expect(
+      buildSourcePackageAcquisitionEvidence(
+        {
+          status: "ready",
+          package: sourcePackage("datapack"),
+          installState: {
+            ...sourcePackage("datapack"),
+            status: "ready",
+            updatedAt: "2026-05-05T00:00:00Z",
+            installPath: "/tmp/datapack"
+          },
+          summary: "ready"
+        },
+        {
+          sourceJob: createSourceAcquisitionJobState({
+            packageId: "minecraft-1.20.1-source-pack-named",
+            minecraftVersion: "1.20.1",
+            artifact: "merged"
+          })
+        }
+      )
+    ).not.toHaveProperty("sourceJob");
   });
 });
 

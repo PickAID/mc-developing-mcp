@@ -8,7 +8,9 @@ import {
   createSourceAcquisitionJobState,
   transitionSourceAcquisitionJobState,
   type SourceAcquisitionJobEvent,
-  type SourceAcquisitionJobState
+  type SourceAcquisitionJobExecutionEvidence,
+  type SourceAcquisitionJobState,
+  type SourceAcquisitionJobSupervisionSnapshot
 } from "./source-job-state.js";
 
 export type SourcePackageAcquisitionStatus =
@@ -29,10 +31,18 @@ export interface SourcePackageAcquisitionEvidence {
   error?: string;
   summary: string;
   sourceJob?: SourceAcquisitionJobState;
+  sourceJobExecution?: SourceAcquisitionJobExecutionEvidence;
+  sourceJobSupervision?: SourceAcquisitionJobSupervisionSnapshot;
+}
+
+export interface BuildSourcePackageAcquisitionEvidenceOptions {
+  sourceJob?: SourceAcquisitionJobState;
+  sourceJobSupervision?: SourceAcquisitionJobSupervisionSnapshot;
 }
 
 export function buildSourcePackageAcquisitionEvidence(
-  ensureResult: SourcePackageEnsureResult
+  ensureResult: SourcePackageEnsureResult,
+  options: BuildSourcePackageAcquisitionEvidenceOptions = {}
 ): SourcePackageAcquisitionEvidence {
   const sourcePackage = ensureResult.package;
   const status = normalizeInstallStatus(ensureResult.status);
@@ -42,7 +52,7 @@ export function buildSourcePackageAcquisitionEvidence(
 
   const sourceJob =
     sourcePackage.artifactType === "source-pack"
-      ? buildSourceJobEvidence(sourcePackage, status)
+      ? options.sourceJob ?? buildSourceJobEvidence(sourcePackage, status)
       : undefined;
 
   return {
@@ -59,7 +69,14 @@ export function buildSourcePackageAcquisitionEvidence(
     installPath,
     error,
     summary: ensureResult.summary,
-    ...(sourceJob ? { sourceJob } : {})
+    ...(sourceJob ? { sourceJob } : {}),
+    ...(sourceJob?.execution
+      ? { sourceJobExecution: sourceJob.execution }
+      : {}),
+    ...(sourcePackage.artifactType === "source-pack" &&
+    options.sourceJobSupervision
+      ? { sourceJobSupervision: options.sourceJobSupervision }
+      : {})
   };
 }
 
@@ -74,16 +91,28 @@ function buildSourceJobEvidence(
   });
 
   if (status === "needs_confirmation") {
-    return initial;
+    return {
+      ...initial,
+      statusReason:
+        "Installation is gated until explicit package-version confirmation is recorded."
+    };
   }
   if (status === "failed") {
-    return transitionSourceAcquisitionJobState(
+    const failed = transitionSourceAcquisitionJobState(
       transitionSourceAcquisitionJobState(initial, "confirm"),
       "fail"
     );
+    return {
+      ...failed,
+      statusReason: "Installation failed before all source acquisition artifacts were ready."
+    };
   }
   if (status === "installing") {
-    return transitionSourceAcquisitionJobState(initial, "confirm");
+    return {
+      ...transitionSourceAcquisitionJobState(initial, "confirm"),
+      statusReason:
+        "Installation is in progress or another process currently owns the package install lock."
+    };
   }
 
   const readyEvents: SourceAcquisitionJobEvent[] = [
@@ -95,7 +124,11 @@ function buildSourceJobEvidence(
     "indexed"
   ];
 
-  return readyEvents.reduce(transitionSourceAcquisitionJobState, initial);
+  const ready = readyEvents.reduce(transitionSourceAcquisitionJobState, initial);
+  return {
+    ...ready,
+    statusReason: "All source acquisition artifacts are present and indexed."
+  };
 }
 
 function normalizeInstallStatus(

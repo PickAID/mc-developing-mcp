@@ -10,6 +10,7 @@ import type {
   SourcePackageConfirmation
 } from "@mcpskill/shared-types";
 import {
+  buildFileQueuedSourceAcquisitionJobRunner,
   buildLocalSourcePackageRecipeExecutor,
   buildVanillaSourcePackCopyRecipe,
   writeSourcePackageConfirmation
@@ -84,6 +85,57 @@ describe("resolveVanillaSource", () => {
     });
   });
 
+  it("returns queued acquisition evidence when a source job runner defers install", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-vanilla-source-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-materialized-"));
+
+    await writeSourcePackageConfirmation(
+      runtimeLayout,
+      createConfirmation("1.20.1")
+    );
+
+    const result = await resolveVanillaSource({
+      runtimeLayout,
+      currentRuntime: createCurrentRuntime("1.20.1"),
+      request: {
+        symbol: "net.minecraft.world.item.ItemStack"
+      },
+      recipes: {
+        "minecraft-1.20.1-source-pack-named": buildVanillaSourcePackCopyRecipe({
+          minecraftVersion: "1.20.1",
+          sourceRoot
+        })
+      },
+      executeRecipe: async () => {
+        throw new Error("queued runner should not execute synchronously");
+      },
+      jobRunner: buildFileQueuedSourceAcquisitionJobRunner({
+        jobId: "vanilla-source-job"
+      })
+    });
+
+    expect(result).toMatchObject({
+      status: "backend_missing",
+      packageId: "minecraft-1.20.1-source-pack-named",
+      acquisition: {
+        status: "installing",
+        sourceJob: {
+          status: "installing",
+          execution: {
+            status: "queued",
+            jobId: "vanilla-source-job",
+            runner: "file-queued-source-acquisition-job-runner"
+          }
+        },
+        sourceJobExecution: {
+          status: "queued",
+          jobId: "vanilla-source-job"
+        }
+      }
+    });
+  });
+
   it("returns ready when a confirmed install produces the exact vanilla file", async () => {
     const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-vanilla-source-"));
     const runtimeLayout = createRuntimeLayout(runtimeRoot);
@@ -135,9 +187,10 @@ describe("resolveVanillaSource", () => {
           relativePath: "net/minecraft/world/item/ItemStack.java",
           reason: "indexed vanilla source match",
           startLine: 1,
-          endLine: 3,
-          totalLines: 3,
-          matchReasons: ["path_exact"]
+          endLine: 2,
+          totalLines: 2,
+          matchReasons: ["path_exact"],
+          nextReads: ["source.read net/minecraft/world/item/ItemStack.java:1-2"]
         }
       ]
     });

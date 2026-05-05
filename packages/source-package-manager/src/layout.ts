@@ -6,8 +6,11 @@ export interface SourcePackagePaths {
   downloadsDir: string;
   installDir: string;
   locksDir: string;
+  installLockDir: string;
   confirmationPath: string;
   installStatePath: string;
+  sourceJobStatePath: string;
+  sourceJobRequestPath: string;
 }
 
 export function resolveSourcePackagePaths(
@@ -27,6 +30,7 @@ export function resolveSourcePackagePaths(
     downloadsDir: join(runtimeLayout.downloads, ...packageSegments),
     installDir: join(runtimeLayout.installs, ...packageSegments),
     locksDir,
+    installLockDir: join(locksDir, `${sourcePackage.packageId}.install.lock`),
     confirmationPath: join(
       locksDir,
       `${sourcePackage.packageId}.confirmation.json`
@@ -34,6 +38,14 @@ export function resolveSourcePackagePaths(
     installStatePath: join(
       locksDir,
       `${sourcePackage.packageId}.install-state.json`
+    ),
+    sourceJobStatePath: join(
+      locksDir,
+      `${sourcePackage.packageId}.source-job-state.json`
+    ),
+    sourceJobRequestPath: join(
+      locksDir,
+      `${sourcePackage.packageId}.job.json`
     )
   };
 }

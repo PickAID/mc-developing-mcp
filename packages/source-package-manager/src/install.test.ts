@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -13,6 +13,9 @@ import type {
 import { writeSourcePackageConfirmation } from "./confirmation.js";
 import { buildLocalSourcePackageRecipeExecutor } from "./executor.js";
 import { ensureSourcePackageInstalled } from "./install.js";
+import { buildSourcePackageManifest, writeSourcePackageManifest } from "./manifest.js";
+import { resolveSourcePackagePaths } from "./layout.js";
+import { readSourceAcquisitionJobState } from "./source-job-state.js";
 import { readSourcePackageInstallState } from "./state.js";
 import { buildVanillaSourcePackCopyRecipe } from "./vanilla.js";
 
@@ -51,6 +54,14 @@ describe("ensureSourcePackageInstalled", () => {
     });
 
     expect(executeRecipe).not.toHaveBeenCalled();
+
+    await expect(
+      readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+    ).resolves.toMatchObject({
+      status: "needs_confirmation",
+      hasJar: false,
+      hasSourceIndex: false
+    });
   });
 
   it("installs a confirmed package through the recipe executor", async () => {
@@ -91,6 +102,176 @@ describe("ensureSourcePackageInstalled", () => {
       readSourcePackageInstallState(runtimeLayout, sourcePackage)
     ).resolves.toMatchObject({
       status: "ready"
+    });
+
+    await expect(
+      readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+    ).resolves.toMatchObject({
+      status: "ready",
+      hasJar: true,
+      hasMappings: true,
+      hasRemappedJar: true,
+      hasDecompiledSource: true,
+      hasSourceIndex: true
+    });
+  });
+
+  it("persists installing source job state before executing a confirmed recipe", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-packages-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const installPath = await mkdtemp(join(tmpdir(), "mcpskill-install-"));
+
+    await writeSourcePackageConfirmation(runtimeLayout, confirmation);
+    await writeSourcePackageManifest(
+      installPath,
+      buildSourcePackageManifest(sourcePackage, {
+        provenance: "test",
+        stepKinds: ["write_package_manifest"],
+        fileCount: 0
+      })
+    );
+
+    await expect(
+      ensureSourcePackageInstalled({
+        runtimeLayout,
+        sourcePackage,
+        recipes: {
+          [sourcePackage.packageId]: {
+            ...sourcePackage,
+            provenance: "test",
+            steps: []
+          }
+        },
+        executeRecipe: async () => {
+          await expect(
+            readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+          ).resolves.toMatchObject({
+            status: "installing",
+            hasJar: false
+          });
+
+          return {
+            installPath,
+            summary: "executor returned a valid install"
+          };
+        }
+      })
+    ).resolves.toMatchObject({
+      status: "ready"
+    });
+  });
+
+  it("uses an atomic install lock so concurrent ensure calls do not run the recipe twice", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-packages-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const installPath = await mkdtemp(join(tmpdir(), "mcpskill-install-"));
+    const releaseRecipe = createDeferred<void>();
+
+    await writeSourcePackageConfirmation(runtimeLayout, confirmation);
+    await writeSourcePackageManifest(
+      installPath,
+      buildSourcePackageManifest(sourcePackage, {
+        provenance: "test",
+        stepKinds: ["write_package_manifest"],
+        fileCount: 0
+      })
+    );
+
+    const executeRecipe = vi.fn(async () => {
+      await releaseRecipe.promise;
+
+      return {
+        installPath,
+        summary: "executor returned a valid install"
+      };
+    });
+    const recipe = {
+      ...sourcePackage,
+      provenance: "test",
+      steps: []
+    };
+    const firstInstall = ensureSourcePackageInstalled({
+      runtimeLayout,
+      sourcePackage,
+      recipes: {
+        [sourcePackage.packageId]: recipe
+      },
+      executeRecipe
+    });
+
+    await vi.waitFor(() => expect(executeRecipe).toHaveBeenCalledTimes(1));
+
+    const lockedInstall = await ensureSourcePackageInstalled({
+      runtimeLayout,
+      sourcePackage,
+      recipes: {
+        [sourcePackage.packageId]: recipe
+      },
+      executeRecipe
+    });
+
+    expect(lockedInstall).toMatchObject({
+      status: "installing",
+      summary: expect.stringContaining("atomic package install lock")
+    });
+    await expect(
+      readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+    ).resolves.toMatchObject({
+      status: "installing",
+      activeLockPath: resolveSourcePackagePaths(runtimeLayout, sourcePackage)
+        .installLockDir,
+      statusReason: expect.stringContaining("Another process")
+    });
+
+    releaseRecipe.resolve();
+    await expect(firstInstall).resolves.toMatchObject({
+      status: "ready"
+    });
+    expect(executeRecipe).toHaveBeenCalledTimes(1);
+    await expect(
+      pathExists(
+        resolveSourcePackagePaths(runtimeLayout, sourcePackage).installLockDir
+      )
+    ).resolves.toBe(false);
+  });
+
+  it("reports stale lock evidence without removing the active lock", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-packages-"));
+    const runtimeLayout = createRuntimeLayout(runtimeRoot);
+    const paths = resolveSourcePackagePaths(runtimeLayout, sourcePackage);
+    const executeRecipe = vi.fn();
+
+    await writeSourcePackageConfirmation(runtimeLayout, confirmation);
+    await mkdir(paths.installLockDir, { recursive: true });
+    await writeFile(
+      join(paths.installLockDir, "owner.json"),
+      `${JSON.stringify({
+        packageId: sourcePackage.packageId,
+        pid: 12345,
+        acquiredAt: "2026-05-05T00:00:00.000Z"
+      })}\n`
+    );
+
+    await expect(
+      ensureSourcePackageInstalled({
+        runtimeLayout,
+        sourcePackage,
+        recipes: {},
+        executeRecipe
+      })
+    ).resolves.toMatchObject({
+      status: "installing",
+      summary: expect.stringContaining("appears stale")
+    });
+
+    expect(executeRecipe).not.toHaveBeenCalled();
+    await expect(pathExists(paths.installLockDir)).resolves.toBe(true);
+    await expect(
+      readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+    ).resolves.toMatchObject({
+      status: "installing",
+      lockStale: true,
+      statusReason: expect.stringContaining("appears stale")
     });
   });
 
@@ -200,6 +381,12 @@ describe("ensureSourcePackageInstalled", () => {
       status: "install_failed",
       error: expect.stringContaining("ENOENT")
     });
+
+    await expect(
+      readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+    ).resolves.toMatchObject({
+      status: "failed"
+    });
   });
 
   it("records install_validation_failed when the executor does not materialize a manifest", async () => {
@@ -237,6 +424,12 @@ describe("ensureSourcePackageInstalled", () => {
       status: "install_validation_failed",
       error: expect.stringContaining("missing source-package.manifest.json")
     });
+
+    await expect(
+      readSourceAcquisitionJobState(runtimeLayout, sourcePackage)
+    ).resolves.toMatchObject({
+      status: "failed"
+    });
   });
 });
 
@@ -247,4 +440,33 @@ function createRuntimeLayout(runtimeRoot: string): ManagedRuntimeLayout {
     installs: join(runtimeRoot, "installs"),
     locks: join(runtimeRoot, "locks")
   };
+}
+
+function createDeferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T | PromiseLike<T>) => void;
+} {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+
+  return { promise, resolve };
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await stat(path);
+    return true;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as NodeJS.ErrnoException).code === "ENOENT"
+    ) {
+      return false;
+    }
+
+    throw error;
+  }
 }

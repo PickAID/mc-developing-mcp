@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b ../shared-types ../jar-source-adapter ../source-index . && vitest run --root ../.. packages/source-package-manager/src/acquisition-evidence.test.ts packages/source-package-manager/src/confirmation.test.ts packages/source-package-manager/src/executor.test.ts packages/source-package-manager/src/install.test.ts packages/source-package-manager/src/manifest.test.ts packages/source-package-manager/src/mdm-release-coordinate.test.ts packages/source-package-manager/src/source-job-state.test.ts packages/source-package-manager/src/vanilla-provider.test.ts"
+    "test": "tsc -b ../shared-types ../jar-source-adapter ../source-index . && vitest run --root ../.. packages/source-package-manager/src/acquisition-evidence.test.ts packages/source-package-manager/src/confirmation.test.ts packages/source-package-manager/src/executor.test.ts packages/source-package-manager/src/install-lock.test.ts packages/source-package-manager/src/install.test.ts packages/source-package-manager/src/manifest.test.ts packages/source-package-manager/src/mdm-release-coordinate.test.ts packages/source-package-manager/src/source-job-runner.test.ts packages/source-package-manager/src/source-job-runner-queue.test.ts packages/source-package-manager/src/source-job-state.test.ts packages/source-package-manager/src/vanilla-provider.test.ts"
   },
   "dependencies": {
     "@mcpskill/jar-source-adapter": "workspace:*",

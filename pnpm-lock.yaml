@@ -77,6 +77,9 @@ importers:
       '@mcpskill/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
+      '@mcpskill/source-index':
+        specifier: workspace:*
+        version: link:../../packages/source-index
       '@mcpskill/source-package-manager':
         specifier: workspace:*
         version: link:../../packages/source-package-manager
