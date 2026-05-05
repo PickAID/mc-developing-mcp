@@ -10,6 +10,7 @@ export interface DocsSearchHit {
   summary: string;
   score: number;
   matchedTerms: string[];
+  matchReasons: string[];
 }
 
 export interface SearchSelectedDocsPackagesInput {
@@ -72,6 +73,7 @@ function buildHit(
   normalizedQuery: string
 ): DocsSearchHit | undefined {
   const matchedTerms = new Set<string>();
+  const matchReasons = new Set<string>();
   let score = 0;
 
   for (const signal of buildSignals(record)) {
@@ -80,6 +82,7 @@ function buildHit(
     }
 
     matchedTerms.add(signal.term.toLowerCase());
+    matchReasons.add(`${signal.source}:${signal.term.toLowerCase()}`);
     score += signal.weight;
   }
 
@@ -95,19 +98,44 @@ function buildHit(
     path: record.path,
     summary: record.summary,
     score,
-    matchedTerms: [...matchedTerms]
+    matchedTerms: [...matchedTerms],
+    matchReasons: [...matchReasons]
   };
 }
 
 function buildSignals(record: DocsPackageRecord) {
   return [
-    ...record.searchTerms.map((term) => ({ term, weight: 8 })),
-    ...record.scriptScopes.map((term) => ({ term, weight: 7 })),
-    ...record.addonNames.map((term) => ({ term, weight: 7 })),
-    ...record.eventNames.map((term) => ({ term, weight: 6 })),
-    ...record.codeSymbols.map((term) => ({ term, weight: 5 })),
-    ...record.headings.map((term) => ({ term, weight: 4 })),
-    { term: record.title, weight: 4 }
+    ...record.searchTerms.map((term) => ({
+      term,
+      weight: 8,
+      source: "search_term"
+    })),
+    ...record.scriptScopes.map((term) => ({
+      term,
+      weight: 7,
+      source: "script_scope"
+    })),
+    ...record.addonNames.map((term) => ({
+      term,
+      weight: 7,
+      source: "addon"
+    })),
+    ...record.eventNames.map((term) => ({
+      term,
+      weight: 6,
+      source: "event"
+    })),
+    ...record.codeSymbols.map((term) => ({
+      term,
+      weight: 5,
+      source: "symbol"
+    })),
+    ...record.headings.map((term) => ({
+      term,
+      weight: 4,
+      source: "heading"
+    })),
+    { term: record.title, weight: 4, source: "title" }
   ];
 }
 

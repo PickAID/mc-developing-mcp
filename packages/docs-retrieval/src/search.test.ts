@@ -16,12 +16,18 @@ describe("searchSelectedDocsPackages", () => {
         expect.objectContaining({
           entryId: "crychicdoc-kubejs-1.20.1-file-structure",
           packageId: "crychicdoc-kubejs-1.20.1-course-zh-cn",
-          matchedTerms: expect.arrayContaining(["startup_scripts"])
+          matchedTerms: expect.arrayContaining(["startup_scripts"]),
+          matchReasons: expect.arrayContaining([
+            expect.stringMatching(/^search_term:/)
+          ])
         }),
         expect.objectContaining({
           entryId: "crychicdoc-kubejs-1.20.1-probejs-workflow",
           packageId: "crychicdoc-kubejs-1.20.1-course-zh-cn",
-          matchedTerms: expect.arrayContaining(["probejs"])
+          matchedTerms: expect.arrayContaining(["probejs"]),
+          matchReasons: expect.arrayContaining([
+            expect.stringMatching(/^search_term:/)
+          ])
         })
       ])
     );

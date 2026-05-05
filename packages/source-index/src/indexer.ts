@@ -2,7 +2,13 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { dirname, join, normalize, resolve } from "node:path";
 
+import { chunkSourceText } from "./chunks.js";
 import { extractJavaSourceSymbols } from "./java-symbols.js";
+import {
+  buildLikePattern,
+  buildMatchReasons,
+  normalizeSearchTerms
+} from "./query-ranking.js";
 import { initializeSourceIndexSchema } from "./schema.js";
 import { scanSourceIndexFiles } from "./scanner.js";
 import { openSourceIndexDatabase } from "./sqlite.js";
@@ -52,6 +58,15 @@ export async function buildSourceIndex(
     const insertText = database.prepare(
       "INSERT INTO fts_files(path, content) VALUES (?, ?)"
     );
+    const insertChunk = database.prepare(
+      [
+        "INSERT INTO source_chunks(path, chunk_id, chunk_type, start_line, end_line, token_count, content)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?)"
+      ].join(" ")
+    );
+    const insertChunkText = database.prepare(
+      "INSERT INTO fts_chunks(path, chunk_id, content) VALUES (?, ?, ?)"
+    );
     const insertSymbol = database.prepare(
       "INSERT INTO java_symbols(path, package_name, simple_name, qualified_name) VALUES (?, ?, ?, ?)"
     );
@@ -73,6 +88,18 @@ export async function buildSourceIndex(
 
       const text = buffer.toString("utf8");
       insertText.run(file.relativePath, text);
+      for (const chunk of chunkSourceText(text)) {
+        insertChunk.run(
+          file.relativePath,
+          chunk.chunkId,
+          chunk.chunkType,
+          chunk.startLine,
+          chunk.endLine,
+          chunk.tokenCount,
+          chunk.content
+        );
+        insertChunkText.run(file.relativePath, chunk.chunkId, chunk.content);
+      }
       indexedTextFileCount += 1;
 
       if (file.kind === "java") {
@@ -172,23 +199,23 @@ function selectMatches(
           ].join(" ")
         )
         .all(input.symbol, input.symbol, limit)
-    );
+    ).map((match) => ({
+      ...match,
+      matchReasons: buildMatchReasons({
+        mode: "symbol",
+        query: input.symbol ?? "",
+        path: match.path
+      })
+    }));
   }
 
   if (input.text) {
-    return mapRows(
-      database
-        .prepare(
-          [
-            "SELECT files.path, files.kind, files.size_bytes AS sizeBytes, files.sha256,",
-            "files.package_id AS packageId",
-            "FROM fts_files JOIN files ON files.path = fts_files.path",
-            "WHERE fts_files MATCH ?",
-            "ORDER BY bm25(fts_files) LIMIT ?"
-          ].join(" ")
-        )
-        .all(quoteFtsQuery(input.text), limit)
-    );
+    const ftsMatches = selectTextMatches(database, input.text, limit);
+    if (ftsMatches.length > 0) {
+      return ftsMatches;
+    }
+
+    return selectLikeFallbackMatches(database, input.text, limit);
   }
 
   return mapRows(
@@ -203,6 +230,69 @@ function selectMatches(
   );
 }
 
+function selectTextMatches(
+  database: ReturnType<typeof openSourceIndexDatabase>,
+  query: string,
+  limit: number
+): SourceIndexMatch[] {
+  try {
+    return mapRows(
+      database
+        .prepare(
+          [
+            "SELECT files.path, files.kind, files.size_bytes AS sizeBytes, files.sha256,",
+            "files.package_id AS packageId, source_chunks.start_line AS startLine,",
+            "source_chunks.end_line AS endLine, source_chunks.chunk_id AS chunkId",
+            "FROM fts_chunks",
+            "JOIN source_chunks ON source_chunks.path = fts_chunks.path",
+            "  AND source_chunks.chunk_id = fts_chunks.chunk_id",
+            "JOIN files ON files.path = fts_chunks.path",
+            "WHERE fts_chunks MATCH ?",
+            "ORDER BY bm25(fts_chunks) LIMIT ?"
+          ].join(" ")
+        )
+        .all(buildFtsQuery(query), limit)
+    ).map((match) => ({
+      ...match,
+      matchReasons: buildMatchReasons({
+        mode: "fts_chunk",
+        query,
+        path: match.path
+      })
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function selectLikeFallbackMatches(
+  database: ReturnType<typeof openSourceIndexDatabase>,
+  query: string,
+  limit: number
+): SourceIndexMatch[] {
+  return mapRows(
+    database
+      .prepare(
+        [
+          "SELECT files.path, files.kind, files.size_bytes AS sizeBytes, files.sha256,",
+          "files.package_id AS packageId, source_chunks.start_line AS startLine,",
+          "source_chunks.end_line AS endLine, source_chunks.chunk_id AS chunkId",
+          "FROM source_chunks JOIN files ON files.path = source_chunks.path",
+          "WHERE source_chunks.content LIKE ? ESCAPE '\\'",
+          "ORDER BY files.path, source_chunks.start_line LIMIT ?"
+        ].join(" ")
+      )
+      .all(buildLikePattern(query), limit)
+  ).map((match) => ({
+    ...match,
+    matchReasons: buildMatchReasons({
+      mode: "like_fallback",
+      query,
+      path: match.path
+    })
+  }));
+}
+
 function mapRows(rows: Record<string, unknown>[]): SourceIndexMatch[] {
   return rows.map((row) => ({
     path: String(row.path),
@@ -212,7 +302,10 @@ function mapRows(rows: Record<string, unknown>[]): SourceIndexMatch[] {
     packageId: optionalString(row.packageId),
     packageName: optionalString(row.packageName),
     simpleName: optionalString(row.simpleName),
-    qualifiedName: optionalString(row.qualifiedName)
+    qualifiedName: optionalString(row.qualifiedName),
+    startLine: optionalNumber(row.startLine),
+    endLine: optionalNumber(row.endLine),
+    chunkId: optionalString(row.chunkId)
   }));
 }
 
@@ -220,8 +313,17 @@ function optionalString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function quoteFtsQuery(query: string): string {
-  return `"${query.replaceAll('"', '""')}"`;
+function optionalNumber(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
+}
+
+function buildFtsQuery(query: string): string {
+  const terms = normalizeSearchTerms(query);
+  if (terms.length === 0) {
+    return `"${query.replaceAll('"', '""')}"`;
+  }
+
+  return terms.map((term) => `"${term.replaceAll('"', '""')}"`).join(" ");
 }
 
 function resolveInsideRoot(root: string, path: string): string {

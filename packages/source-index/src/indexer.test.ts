@@ -123,4 +123,69 @@ describe("buildSourceIndex", () => {
       }).matches
     ).toHaveLength(2);
   });
+
+  it("indexes bounded chunks with line ranges and match reasons", async () => {
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-index-chunks-"));
+    const javaPath = join(sourceRoot, "demo", "ScreenRenderer.java");
+    const databasePath = join(sourceRoot, "source-index.sqlite");
+
+    await mkdir(join(javaPath, ".."), { recursive: true });
+    await writeFile(
+      javaPath,
+      [
+        "package demo;",
+        "public class ScreenRenderer {",
+        "  void render() {",
+        "    RenderSystem.enableBlend();",
+        "    GuiGraphics graphics;",
+        "  }",
+        "}"
+      ].join("\n")
+    );
+
+    await buildSourceIndex({
+      sourceRoot,
+      databasePath,
+      packageId: "demo-source-pack"
+    });
+
+    expect(
+      querySourceIndex({
+        databasePath,
+        text: "RenderSystem enableBlend",
+        limit: 5
+      }).matches
+    ).toEqual([
+      expect.objectContaining({
+        path: "demo/ScreenRenderer.java",
+        startLine: expect.any(Number),
+        endLine: expect.any(Number),
+        matchReasons: expect.arrayContaining(["fts_chunk", "term:RenderSystem"])
+      })
+    ]);
+  });
+
+  it("falls back to bounded LIKE search for punctuation-heavy queries", async () => {
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-index-fallback-"));
+    const javaPath = join(sourceRoot, "demo", "Renderer.java");
+    const databasePath = join(sourceRoot, "source-index.sqlite");
+
+    await mkdir(join(javaPath, ".."), { recursive: true });
+    await writeFile(
+      javaPath,
+      "class Renderer { void draw() { RenderSystem.enableBlend(); } }\n"
+    );
+    await buildSourceIndex({ sourceRoot, databasePath, packageId: "demo" });
+
+    expect(
+      querySourceIndex({
+        databasePath,
+        text: "RenderSystem.enableBlend()?? missingTerm",
+        limit: 5
+      }).matches[0]
+    ).toMatchObject({
+      path: "demo/Renderer.java",
+      matchReasons: expect.arrayContaining(["like_fallback"])
+    });
+  });
 });

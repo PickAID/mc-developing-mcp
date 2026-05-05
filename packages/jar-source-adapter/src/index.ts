@@ -10,6 +10,7 @@ export * from "./mod-archive-data-kind.js";
 export * from "./mod-archive-entry-index.js";
 export * from "./mod-archive-inventory.js";
 export * from "./mod-archive-inventory-persistent-cache.js";
+export * from "./mod-archive-analysis.js";
 export * from "./mod-archive-resource-references.js";
 export * from "./mod-archives.js";
 export * from "./nested-archive.js";

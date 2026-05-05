@@ -43,6 +43,10 @@ export interface SourceIndexMatch {
   packageName?: string;
   simpleName?: string;
   qualifiedName?: string;
+  startLine?: number;
+  endLine?: number;
+  chunkId?: string;
+  matchReasons?: string[];
 }
 
 export interface SourceIndexQueryResult {

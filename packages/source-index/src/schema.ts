@@ -31,5 +31,20 @@ export function initializeSourceIndexSchema(database: SqliteDatabase): void {
 
     CREATE VIRTUAL TABLE IF NOT EXISTS fts_files
       USING fts5(path UNINDEXED, content);
+
+    CREATE TABLE IF NOT EXISTS source_chunks (
+      path TEXT NOT NULL,
+      chunk_id TEXT NOT NULL,
+      chunk_type TEXT NOT NULL,
+      start_line INTEGER NOT NULL,
+      end_line INTEGER NOT NULL,
+      token_count INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      PRIMARY KEY(path, chunk_id),
+      FOREIGN KEY(path) REFERENCES files(path) ON DELETE CASCADE
+    );
+
+    CREATE VIRTUAL TABLE IF NOT EXISTS fts_chunks
+      USING fts5(path UNINDEXED, chunk_id UNINDEXED, content);
   `);
 }

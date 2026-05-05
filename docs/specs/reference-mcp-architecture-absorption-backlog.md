@@ -175,6 +175,55 @@ Acceptance criteria:
 - Source evidence links to bounded file/line snippets, not full files.
 - Asset evidence remains counts-first and does not dump binary content.
 
+## Reference MCP Absorption Status
+
+Scope: track this absorption round's implemented and remaining architecture
+work without expanding the public MCP tool surface.
+
+Public surface constraint:
+
+- Do not add new public tools for reference MCP features.
+- Keep `mc_develop` as the single progressive public entry point.
+- Route new evidence through internal capabilities such as `source.bundle`,
+  `context.query`, workspace analysis, package/cache state, and structured
+  evidence payloads.
+- Future work should prefer an internal evidence route over public
+  `decompile_*`, `index_*`, `search_*`, or dataset-specific tools.
+
+Completed or verified in this absorption round:
+
+- Source-index chunks: source indexing now has chunk-aware search, including
+  bounded snippets, path/line metadata, chunk id, and
+  `matchReasons`.
+- Source-index fallback: the search pipeline uses FTS-first lookup with bounded
+  fallback behavior when FTS syntax fails or returns no useful result.
+- Docs `matchReasons`: documentation retrieval results expose compact reasons
+  that explain why a result was selected, including search term, script scope,
+  addon, event, code symbol, heading, and title reasons.
+- Mod archive pre-decompile analysis: mod archives should be inspected before
+  full decompilation for mixin configs, access wideners, service providers,
+  class files, assets, and datapack content.
+- Source acquisition job state: source package acquisition should report
+  explicit job/cache state such as jar, mappings, remapped jar, decompiled
+  source, source index, and job status.
+- Mixin target verifier skeleton: an internal pure helper verifies requested
+  mixin targets against class evidence and reports nearby candidates.
+
+Pending verification or follow-up:
+
+- Mixin target verifier skeleton is implemented and verified as an internal
+  pure helper. It is not wired into public MCP tools or package public exports.
+- Verified chunk search fallback behavior with source-index tests; raw FTS
+  syntax failures fall back to bounded LIKE results.
+- Verified docs retrieval `matchReasons` as structured search hit data.
+- Verified mod archive pre-decompile analysis as a central-directory-only
+  summary before any decompile step.
+- Verified source acquisition job state as a pure state contract. Real
+  persistence, lock sharing, and mc_develop evidence routing remain follow-up
+  implementation work.
+- Verification results are recorded in
+  `docs/reviews/2026-05-05-reference-mcp-absorption-verification.md`.
+
 ## Non-Goals
 
 - No public tool expansion.
