@@ -355,6 +355,7 @@ function isArchiveMetadataPath(relativePath: string): boolean {
   return (
     /^(?:fabric|quilt)\.mod\.json$/i.test(relativePath) ||
     /^[^/]+\.mixins?\.json$/i.test(relativePath) ||
+    /\.(?:accesswidener|classtweaker)$/i.test(relativePath) ||
     relativePath === "pack.mcmeta" ||
     /^META-INF\/(?:mods|neoforge\.mods)\.toml$/i.test(relativePath)
   );

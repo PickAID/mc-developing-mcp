@@ -74,7 +74,7 @@ Common symbols are not enough to prove a loader family by themselves. Shared or 
 
 For major rendering or GUI rewrites, concrete class names are secondary. The stable reasoning unit is the role: draw context, widget/layout owner, pose/buffer owner, render type/material owner, shader/post-chain owner, render target owner, reload owner, and state sync owner. If a familiar class is absent, the agent should search by role and method shape instead of failing or inventing old-version code.
 
-External shader references are optional and credential-gated. When activated, the agent should request the configured shader-reference API key and treat the result as formula inspiration only. Local Minecraft shader assets, render pipeline evidence, uniforms/samplers, reload lifecycle, and fallback behavior remain mandatory before implementation advice.
+External shader references are optional. When activated, the agent should prefer the configured shader-reference API key. If no key is available, the agent may use a local browser fallback through Chrome DevTools or Playwright, but it must return only compact formula summaries and never depend on copied external shader source. Local Minecraft shader assets, render pipeline evidence, uniforms/samplers, reload lifecycle, and fallback behavior remain mandatory before implementation advice.
 
 ## Dynamic Texture Lifecycle Checklist
 
@@ -101,7 +101,7 @@ Stretchable UI should name:
 
 ## Required Output Behavior
 
-When evidence is present, the MCP should return bounded structured evidence with file, line, kind, and compact snippets or symbols. When evidence is missing, the agent should say which link is missing: registry, client init, renderer binding, screen/menu binding, asset reference, sync path, reload/cache lifecycle, or version-specific API proof.
+When evidence is present, the MCP should return bounded structured evidence with file, line, kind, and compact snippets or symbols. When evidence is not proven by the current bounded scan, the agent should say which link remains unproven: registry, client init, renderer binding, screen/menu binding, asset reference, sync path, reload/cache lifecycle, or version-specific API proof.
 
 The agent should prefer a concrete implementation plan over broad advice:
 

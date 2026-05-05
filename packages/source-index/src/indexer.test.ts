@@ -50,6 +50,7 @@ describe("buildSourceIndex", () => {
       databasePath,
       fileCount: 2,
       javaSymbolCount: 1,
+      javaMemberCount: 1,
       indexedTextFileCount: 2
     });
     await expect(readFile(databasePath)).resolves.toBeInstanceOf(Buffer);
@@ -94,6 +95,29 @@ describe("buildSourceIndex", () => {
       startLine: 2,
       endLine: 2,
       content: "public class ItemStack {"
+    });
+  });
+
+  it("does not count a terminating newline as an extra indexed source line", async () => {
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-index-lines-"));
+    const javaPath = join(sourceRoot, "demo", "TrailingNewline.java");
+    const databasePath = join(sourceRoot, "source-index.sqlite");
+
+    await mkdir(join(javaPath, ".."), { recursive: true });
+    await writeFile(javaPath, "class TrailingNewline {}\n");
+    await buildSourceIndex({ sourceRoot, databasePath, packageId: "demo" });
+
+    await expect(
+      readIndexedSourceFile({
+        sourceRoot,
+        databasePath,
+        path: "demo/TrailingNewline.java"
+      })
+    ).resolves.toMatchObject({
+      startLine: 1,
+      endLine: 1,
+      totalLines: 1,
+      content: "class TrailingNewline {}"
     });
   });
 
@@ -163,6 +187,113 @@ describe("buildSourceIndex", () => {
         matchReasons: expect.arrayContaining(["fts_chunk", "term:RenderSystem"])
       })
     ]);
+  });
+
+  it("indexes Java members and filters member matches by owner", async () => {
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-index-members-"));
+    const itemPath = join(sourceRoot, "demo", "ItemStack.java");
+    const blockPath = join(sourceRoot, "demo", "BlockStack.java");
+    const databasePath = join(sourceRoot, "source-index.sqlite");
+
+    await mkdir(join(itemPath, ".."), { recursive: true });
+    await writeFile(
+      itemPath,
+      [
+        "package demo;",
+        "public class ItemStack {",
+        "  private int count;",
+        "  public ItemStack(int count) { this.count = count; }",
+        "  public int getCount() { return count; }",
+        "}"
+      ].join("\n")
+    );
+    await writeFile(
+      blockPath,
+      [
+        "package demo;",
+        "public class BlockStack {",
+        "  public int getCount() { return 64; }",
+        "}"
+      ].join("\n")
+    );
+
+    const result = await buildSourceIndex({
+      sourceRoot,
+      databasePath,
+      packageId: "demo"
+    });
+
+    expect(result.javaMemberCount).toBe(4);
+
+    expect(
+      querySourceIndex({
+        databasePath,
+        member: "getCount",
+        limit: 5
+      }).matches
+    ).toMatchObject([
+      {
+        path: "demo/BlockStack.java",
+        ownerQualifiedName: "demo.BlockStack",
+        memberName: "getCount",
+        memberKind: "method",
+        returnType: "int"
+      },
+      {
+        path: "demo/ItemStack.java",
+        ownerQualifiedName: "demo.ItemStack",
+        memberName: "getCount",
+        memberKind: "method",
+        returnType: "int"
+      }
+    ]);
+
+    expect(
+      querySourceIndex({
+        databasePath,
+        member: "getCount",
+        memberKind: "method",
+        owner: "demo.ItemStack",
+        limit: 5
+      }).matches
+    ).toMatchObject([
+      {
+        path: "demo/ItemStack.java",
+        ownerSimpleName: "ItemStack",
+        ownerQualifiedName: "demo.ItemStack",
+        memberName: "getCount",
+        memberKind: "method",
+        signature: "getCount()"
+      }
+    ]);
+
+    expect(
+      querySourceIndex({
+        databasePath,
+        member: "count",
+        memberKind: "field",
+        owner: "ItemStack",
+        limit: 5
+      }).matches
+    ).toMatchObject([
+      {
+        path: "demo/ItemStack.java",
+        ownerQualifiedName: "demo.ItemStack",
+        memberName: "count",
+        memberKind: "field",
+        returnType: "int"
+      }
+    ]);
+
+    expect(
+      querySourceIndex({
+        databasePath,
+        member: "count",
+        memberKind: "method",
+        owner: "ItemStack",
+        limit: 5
+      }).matches
+    ).toEqual([]);
   });
 
   it("falls back to bounded LIKE search for punctuation-heavy queries", async () => {

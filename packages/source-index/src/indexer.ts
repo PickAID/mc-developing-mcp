@@ -3,7 +3,10 @@ import { mkdir, readFile, rm } from "node:fs/promises";
 import { dirname, join, normalize, resolve } from "node:path";
 
 import { chunkSourceText } from "./chunks.js";
-import { extractJavaSourceSymbols } from "./java-symbols.js";
+import {
+  extractJavaSourceMembers,
+  extractJavaSourceSymbols
+} from "./java-symbols.js";
 import {
   buildLikePattern,
   buildMatchReasons,
@@ -43,6 +46,7 @@ export async function buildSourceIndex(
   const database = openSourceIndexDatabase(input.databasePath);
   let indexedTextFileCount = 0;
   let javaSymbolCount = 0;
+  let javaMemberCount = 0;
 
   try {
     initializeSourceIndexSchema(database);
@@ -69,6 +73,13 @@ export async function buildSourceIndex(
     );
     const insertSymbol = database.prepare(
       "INSERT INTO java_symbols(path, package_name, simple_name, qualified_name) VALUES (?, ?, ?, ?)"
+    );
+    const insertMember = database.prepare(
+      [
+        "INSERT INTO java_members(path, package_name, owner_simple_name, owner_qualified_name,",
+        "member_name, member_kind, signature, return_type, start_line, end_line)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      ].join(" ")
     );
 
     for (const file of scan.files) {
@@ -112,6 +123,21 @@ export async function buildSourceIndex(
           );
           javaSymbolCount += 1;
         }
+        for (const member of extractJavaSourceMembers(text)) {
+          insertMember.run(
+            file.relativePath,
+            member.packageName ?? null,
+            member.ownerSimpleName,
+            member.ownerQualifiedName,
+            member.memberName,
+            member.memberKind,
+            member.signature ?? null,
+            member.returnType ?? null,
+            member.startLine,
+            member.endLine
+          );
+          javaMemberCount += 1;
+        }
       }
     }
 
@@ -130,7 +156,8 @@ export async function buildSourceIndex(
     fileCount: scan.files.length,
     skippedFileCount: scan.skippedFileCount,
     indexedTextFileCount,
-    javaSymbolCount
+    javaSymbolCount,
+    javaMemberCount
   };
 }
 
@@ -164,7 +191,7 @@ export async function readIndexedSourceFile(
   }
 
   const filePath = resolveInsideRoot(input.sourceRoot, input.path);
-  const lines = (await readFile(filePath, "utf8")).split(/\r?\n/);
+  const lines = splitContentLines(await readFile(filePath, "utf8"));
   const startLine = Math.max(1, input.startLine ?? 1);
   const maxLines = Math.max(1, input.maxLines ?? DEFAULT_READ_MAX_LINES);
   const startIndex = startLine - 1;
@@ -178,6 +205,23 @@ export async function readIndexedSourceFile(
     totalLines: lines.length,
     content: selected.join("\n")
   };
+}
+
+function splitContentLines(content: string): string[] {
+  if (content.length === 0) {
+    return [];
+  }
+
+  const contentWithoutTerminatingNewline = content.replace(
+    /(?:\r\n|\n|\r)$/u,
+    ""
+  );
+
+  if (contentWithoutTerminatingNewline.length === 0) {
+    return [""];
+  }
+
+  return contentWithoutTerminatingNewline.split(/\r\n|\n|\r/u);
 }
 
 function selectMatches(
@@ -204,6 +248,47 @@ function selectMatches(
       matchReasons: buildMatchReasons({
         mode: "symbol",
         query: input.symbol ?? "",
+        path: match.path
+      })
+    }));
+  }
+
+  if (input.member) {
+    const ownerClause = input.owner
+      ? "AND (java_members.owner_simple_name = ? OR java_members.owner_qualified_name = ?)"
+      : "";
+    const kindClause = input.memberKind
+      ? "AND java_members.member_kind = ?"
+      : "";
+    const params = [
+      input.member,
+      ...(input.owner ? [input.owner, input.owner] : []),
+      ...(input.memberKind ? [input.memberKind] : []),
+      limit
+    ];
+
+    return mapRows(
+      database
+        .prepare(
+          [
+            "SELECT files.path, files.kind, files.size_bytes AS sizeBytes, files.sha256,",
+            "files.package_id AS packageId, java_members.package_name AS packageName,",
+            "java_members.owner_simple_name AS ownerSimpleName,",
+            "java_members.owner_qualified_name AS ownerQualifiedName,",
+            "java_members.member_name AS memberName, java_members.member_kind AS memberKind,",
+            "java_members.signature AS signature, java_members.return_type AS returnType,",
+            "java_members.start_line AS startLine, java_members.end_line AS endLine",
+            "FROM java_members JOIN files ON files.path = java_members.path",
+            `WHERE java_members.member_name = ? ${ownerClause} ${kindClause}`,
+            "ORDER BY files.path, java_members.start_line LIMIT ?"
+          ].join(" ")
+        )
+        .all(...params)
+    ).map((match) => ({
+      ...match,
+      matchReasons: buildMatchReasons({
+        mode: "symbol",
+        query: input.member ?? "",
         path: match.path
       })
     }));
@@ -303,6 +388,12 @@ function mapRows(rows: Record<string, unknown>[]): SourceIndexMatch[] {
     packageName: optionalString(row.packageName),
     simpleName: optionalString(row.simpleName),
     qualifiedName: optionalString(row.qualifiedName),
+    ownerSimpleName: optionalString(row.ownerSimpleName),
+    ownerQualifiedName: optionalString(row.ownerQualifiedName),
+    memberName: optionalString(row.memberName),
+    memberKind: optionalMemberKind(row.memberKind),
+    signature: optionalString(row.signature),
+    returnType: optionalString(row.returnType),
     startLine: optionalNumber(row.startLine),
     endLine: optionalNumber(row.endLine),
     chunkId: optionalString(row.chunkId)
@@ -315,6 +406,14 @@ function optionalString(value: unknown): string | undefined {
 
 function optionalNumber(value: unknown): number | undefined {
   return typeof value === "number" ? value : undefined;
+}
+
+function optionalMemberKind(
+  value: unknown
+): SourceIndexMatch["memberKind"] {
+  return value === "field" || value === "constructor" || value === "method"
+    ? value
+    : undefined;
 }
 
 function buildFtsQuery(query: string): string {

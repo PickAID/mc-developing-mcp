@@ -75,8 +75,8 @@ Shader work should be grounded in Minecraft resource and renderer evidence first
 
 External shader-reference services may be used only as optional inspiration or formula lookup when local evidence is insufficient and the task explicitly needs shader design help. They must not become a public-tool explosion. The MCP should expose them through an internal provider behind an existing progressive evidence route, with these constraints:
 
-- Require an explicit user-provided API key when the provider is activated.
-- Report `credentials_required` with the env var name, setup URL, and the fact that local/offline evidence can continue without the provider.
+- Prefer an explicit user-provided API key when the provider is activated.
+- Without an API key, either run an injected local browser fallback provider or report `browser_fallback_required` with the env var name, setup URL, and a bounded Chrome DevTools/Playwright extraction plan.
 - Cache only compact, non-private derived summaries needed for the current task.
 - Convert formulas and techniques into Minecraft evidence terms: uniforms, sampler inputs, time/state source, resolution/source texture, render target ownership, and reload/fallback path.
 - Never paste large shader bodies or treat web examples as project code.
@@ -223,7 +223,7 @@ Add anonymized fixtures for screens, menus, block entity renderers, entity rende
 Add compact source evidence for UI layout/widgets, render pipeline state, and shader/post-processing chains. Tests should verify that the source scanner, API proof, and implementation skeleton distinguish UI layout from renderer state and shader ownership.
 
 ### Slice 8: External Shader Reference Provider
-Design an optional internal provider for external shader formula/reference lookup. Tests should verify `credentials_required` behavior, env-var guidance, no public-tool expansion, and conversion from external shader concepts into Minecraft uniforms, samplers, render target, and reload evidence.
+Design an optional internal provider for external shader formula/reference lookup. Tests should verify API-key lookup, no-key browser fallback guidance through Chrome DevTools or Playwright, no public-tool expansion, and conversion from external shader concepts into Minecraft uniforms, samplers, render target, and reload evidence.
 
 ### Slice 9: Version-Resilient Visual API Mapping
 Add harness and docs behavior that treats version-specific class names as evidence, not assumptions. Tests should simulate a missing familiar GUI/rendering API and require role-equivalent replacement guidance instead of hard-coded class advice.
@@ -234,6 +234,6 @@ Add harness and docs behavior that treats version-specific class names as eviden
 - The MCP guidance prioritizes evidence over generic advice.
 - Resource-pack evidence covers blockstates, models, textures, atlases, language files, particles, and sounds where relevant.
 - UI evidence covers GUI textures, sprites, stretch/scaling metadata, widget layout, fonts, and language keys.
-- Shader evidence covers local shader/post-chain assets, render pipeline owners, uniforms/samplers, reload lifecycle, and optional credential-gated external references.
+- Shader evidence covers local shader/post-chain assets, render pipeline owners, uniforms/samplers, reload lifecycle, optional API-key external references, and no-key Chrome DevTools/Playwright browser fallback summaries.
 - Renderer basics cover registration, binding, assets, data sync, and client-only boundaries.
 - Future slices include testable outcomes.

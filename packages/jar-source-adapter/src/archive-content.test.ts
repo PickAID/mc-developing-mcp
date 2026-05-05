@@ -278,6 +278,80 @@ describe("extractArchiveContent", () => {
     });
   });
 
+  it("classifies access widener files as readable metadata content", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-archive-aw-"));
+    const archivePath = join(runtimeRoot, "access-widener-mod.jar");
+
+    await writeFile(
+      archivePath,
+      createZip([
+        {
+          name: "demo.accesswidener",
+          content: [
+            "accessWidener v2 named",
+            "accessible class net/minecraft/client/MinecraftClient"
+          ].join("\n"),
+          compressionMethod: 0
+        },
+        {
+          name: "META-INF/demo.classtweaker",
+          content: "accessWidener v2 named\naccessible class net/minecraft/world/World",
+          compressionMethod: 0
+        }
+      ])
+    );
+
+    await expect(
+      listArchiveContent({
+        sourceArchive: archivePath,
+        domains: ["metadata"]
+      })
+    ).resolves.toMatchObject({
+      entries: [
+        {
+          domain: "metadata",
+          relativePath: "demo.accesswidener"
+        },
+        {
+          domain: "metadata",
+          relativePath: "META-INF/demo.classtweaker"
+        }
+      ],
+      truncated: false
+    });
+    await expect(
+      readArchiveContentFile({
+        sourceArchive: archivePath,
+        relativePath: "demo.accesswidener"
+      })
+    ).resolves.toMatchObject({
+      content: expect.stringContaining("accessWidener v2 named"),
+      entry: {
+        domain: "metadata",
+        relativePath: "demo.accesswidener"
+      }
+    });
+    await expect(
+      searchArchiveContent({
+        sourceArchive: archivePath,
+        domains: ["metadata"],
+        query: "MinecraftClient"
+      })
+    ).resolves.toMatchObject({
+      matches: [
+        {
+          entry: {
+            domain: "metadata",
+            relativePath: "demo.accesswidener"
+          },
+          preview: "accessible class net/minecraft/client/MinecraftClient"
+        }
+      ],
+      skipped: [],
+      truncated: false
+    });
+  });
+
   it("caches central directory metadata and selected text entry reads", async () => {
     const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-archive-cache-"));
     const archivePath = join(runtimeRoot, "content-mod.jar");

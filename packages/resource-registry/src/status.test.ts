@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -11,6 +12,8 @@ import {
 } from "./cache.js";
 import type { MdmResourceRegistry } from "./manifest.js";
 import { summarizeMdmResourceStatus } from "./status.js";
+
+const require = createRequire(import.meta.url);
 
 describe("summarizeMdmResourceStatus", () => {
   it("reports missing required and optional packages separately", async () => {
@@ -144,6 +147,119 @@ describe("summarizeMdmResourceStatus", () => {
       }
     });
   });
+
+  it("reports ready for a sqlite bundle with required tables and user_version", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-status-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const artifactPath = join(cacheLayout.artifactsDir, "docs-sqlite", "artifact.sqlite");
+
+    await mkdir(join(cacheLayout.artifactsDir, "docs-sqlite"), {
+      recursive: true
+    });
+    createSqliteArtifact(artifactPath, 3, ["docs_entries"]);
+    const sha256 = await sha256File(artifactPath);
+    await writeCachedResourceState(cacheLayout, {
+      packageId: "docs-sqlite",
+      artifactName: "docs-sqlite-0.1.0.sqlite",
+      artifactPath,
+      sha256,
+      updatedAt: "2026-04-29T00:00:00.000Z"
+    });
+
+    await expect(
+      summarizeMdmResourceStatus({
+        registry: registryWith([sqlitePackageEntry("docs-sqlite", true, sha256)]),
+        cacheLayout
+      })
+    ).resolves.toMatchObject({
+      packages: [
+        {
+          packageId: "docs-sqlite",
+          status: "ready"
+        }
+      ],
+      counts: {
+        ready: 1,
+        invalid_artifact: 0
+      }
+    });
+  });
+
+  it("reports invalid_artifact when a sqlite bundle is missing required tables", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-status-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const artifactPath = join(cacheLayout.artifactsDir, "docs-sqlite", "artifact.sqlite");
+
+    await mkdir(join(cacheLayout.artifactsDir, "docs-sqlite"), {
+      recursive: true
+    });
+    createSqliteArtifact(artifactPath, 3, ["other_table"]);
+    const sha256 = await sha256File(artifactPath);
+    await writeCachedResourceState(cacheLayout, {
+      packageId: "docs-sqlite",
+      artifactName: "docs-sqlite-0.1.0.sqlite",
+      artifactPath,
+      sha256,
+      updatedAt: "2026-04-29T00:00:00.000Z"
+    });
+
+    await expect(
+      summarizeMdmResourceStatus({
+        registry: registryWith([sqlitePackageEntry("docs-sqlite", true, sha256)]),
+        cacheLayout
+      })
+    ).resolves.toMatchObject({
+      packages: [
+        {
+          packageId: "docs-sqlite",
+          status: "invalid_artifact",
+          message: expect.stringContaining("docs_entries")
+        }
+      ],
+      counts: {
+        ready: 0,
+        invalid_artifact: 1
+      }
+    });
+  });
+
+  it("reports invalid_artifact when sqlite user_version is below metadata minimum", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-status-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const artifactPath = join(cacheLayout.artifactsDir, "docs-sqlite", "artifact.sqlite");
+
+    await mkdir(join(cacheLayout.artifactsDir, "docs-sqlite"), {
+      recursive: true
+    });
+    createSqliteArtifact(artifactPath, 2, ["docs_entries"]);
+    const sha256 = await sha256File(artifactPath);
+    await writeCachedResourceState(cacheLayout, {
+      packageId: "docs-sqlite",
+      artifactName: "docs-sqlite-0.1.0.sqlite",
+      artifactPath,
+      sha256,
+      updatedAt: "2026-04-29T00:00:00.000Z"
+    });
+
+    await expect(
+      summarizeMdmResourceStatus({
+        registry: registryWith([sqlitePackageEntry("docs-sqlite", true, sha256)]),
+        cacheLayout
+      })
+    ).resolves.toMatchObject({
+      packages: [
+        {
+          packageId: "docs-sqlite",
+          status: "invalid_artifact",
+          message: expect.stringContaining("user_version")
+        }
+      ],
+      counts: {
+        ready: 0,
+        invalid_artifact: 1
+      }
+    });
+  });
 });
 
 function registryWith(
@@ -182,4 +298,51 @@ function packageEntry(
       }
     }
   };
+}
+
+function sqlitePackageEntry(
+  id: string,
+  required: boolean,
+  sha256: string
+): MdmResourceRegistry["packages"][number] {
+  return {
+    ...packageEntry(id, required, sha256),
+    format: "sqlite",
+    detail: {
+      ...packageEntry(id, required, sha256).detail,
+      metadata: {
+        storageKind: "sqlite_bundle",
+        installTier: required ? "required_docs" : "optional_dataset",
+        commitPolicy: "repository_manifest",
+        sqlite: {
+          minUserVersion: 3,
+          requiredTables: ["docs_entries"]
+        }
+      }
+    }
+  };
+}
+
+function createSqliteArtifact(
+  artifactPath: string,
+  userVersion: number,
+  tables: string[]
+): void {
+  const sqlite = require("node:sqlite") as {
+    DatabaseSync: new (path: string) => { exec(sql: string): void; close(): void };
+  };
+  const database = new sqlite.DatabaseSync(artifactPath);
+
+  try {
+    database.exec(`PRAGMA user_version = ${userVersion};`);
+    for (const table of tables) {
+      database.exec(`CREATE TABLE ${table} (id TEXT PRIMARY KEY);`);
+    }
+  } finally {
+    database.close();
+  }
+}
+
+async function sha256File(path: string): Promise<string> {
+  return createHash("sha256").update(await readFile(path)).digest("hex");
 }

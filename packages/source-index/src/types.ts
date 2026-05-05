@@ -8,6 +8,8 @@ export type SourceIndexedFileKind =
   | "lang"
   | "other";
 
+export type SourceIndexJavaMemberKind = "field" | "constructor" | "method";
+
 export interface SourceIndexBuildInput {
   sourceRoot: string;
   databasePath: string;
@@ -24,11 +26,15 @@ export interface SourceIndexBuildResult {
   skippedFileCount: number;
   indexedTextFileCount: number;
   javaSymbolCount: number;
+  javaMemberCount: number;
 }
 
 export interface SourceIndexQueryInput {
   databasePath: string;
   symbol?: string;
+  member?: string;
+  owner?: string;
+  memberKind?: SourceIndexJavaMemberKind;
   text?: string;
   pathLike?: string;
   limit?: number;
@@ -43,6 +49,12 @@ export interface SourceIndexMatch {
   packageName?: string;
   simpleName?: string;
   qualifiedName?: string;
+  ownerSimpleName?: string;
+  ownerQualifiedName?: string;
+  memberName?: string;
+  memberKind?: SourceIndexJavaMemberKind;
+  signature?: string;
+  returnType?: string;
   startLine?: number;
   endLine?: number;
   chunkId?: string;

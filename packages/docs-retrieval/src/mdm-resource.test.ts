@@ -1,11 +1,17 @@
 import { mkdtemp, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { readMdmDocsResourceRecords } from "./mdm-resource.js";
+import {
+  readMdmDocsResourceRecords,
+  searchMdmDocsSqliteRecords
+} from "./mdm-resource.js";
 import { searchSelectedDocsPackages } from "./search.js";
+
+const require = createRequire(import.meta.url);
 
 describe("MDM docs resource records", () => {
   it("reads structured docs records from a cached MDM resource artifact", async () => {
@@ -30,6 +36,93 @@ describe("MDM docs resource records", () => {
         ])
       })
     ]);
+  });
+
+  it("reads structured docs records from a sqlite MDM docs artifact", async () => {
+    const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-sqlite-"));
+    const artifactPath = join(root, "core-docs-required-0.1.0.sqlite");
+
+    createDocsSqliteArtifact(artifactPath, {
+      entryId: "kubejs-server-recipes",
+      packageId: "core-docs-required",
+      kind: "event-catalog",
+      title: "KubeJS Server Recipes",
+      path: "docs/kubejs/server-events.md#recipes",
+      headings: ["ServerEvents", "Recipes"],
+      summary: "Use ServerEvents.recipes in server_scripts for recipe edits.",
+      searchTerms: ["recipes", "server_scripts", "ServerEvents.recipes"],
+      scriptScopes: ["server_scripts"],
+      addonNames: ["kubejs"],
+      eventNames: ["ServerEvents.recipes"],
+      codeSymbols: ["ServerEvents.recipes"]
+    });
+
+    await expect(
+      readMdmDocsResourceRecords(artifactPath, {
+        storageKind: "sqlite_bundle"
+      })
+    ).resolves.toEqual([
+      {
+        entryId: "kubejs-server-recipes",
+        packageId: "core-docs-required",
+        kind: "event-catalog",
+        title: "KubeJS Server Recipes",
+        path: "docs/kubejs/server-events.md#recipes",
+        headings: ["ServerEvents", "Recipes"],
+        summary: "Use ServerEvents.recipes in server_scripts for recipe edits.",
+        searchTerms: ["recipes", "server_scripts", "ServerEvents.recipes"],
+        scriptScopes: ["server_scripts"],
+        addonNames: ["kubejs"],
+        eventNames: ["ServerEvents.recipes"],
+        codeSymbols: ["ServerEvents.recipes"]
+      }
+    ]);
+  });
+
+  it("searches sqlite docs entries with FTS without materializing all records", async () => {
+    const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-fts-"));
+    const artifactPath = join(root, "docs.sqlite");
+
+    createDocsSqliteArtifact(artifactPath, sqliteEntry(), { fts: true });
+
+    expect(searchMdmDocsSqliteRecords(artifactPath, "recipes", 5)).toEqual([
+      expect.objectContaining({
+        entryId: "kubejs-server-recipes",
+        score: expect.any(Number),
+        matchedTerms: expect.arrayContaining(["recipes"]),
+        matchReasons: expect.arrayContaining([
+          expect.stringMatching(/^search_term:/),
+          expect.stringMatching(/^sqlite_fts:/)
+        ])
+      })
+    ]);
+  });
+
+  it("falls back to docs_entries LIKE search when no FTS table exists", async () => {
+    const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-like-"));
+    const artifactPath = join(root, "docs.sqlite");
+
+    createDocsSqliteArtifact(artifactPath, sqliteEntry());
+
+    expect(searchMdmDocsSqliteRecords(artifactPath, "server_scripts", 5)).toEqual([
+      expect.objectContaining({
+        entryId: "kubejs-server-recipes",
+        matchedTerms: expect.arrayContaining(["server_scripts"]),
+        matchReasons: expect.arrayContaining([
+          expect.stringMatching(/^search_term:/),
+          expect.stringMatching(/^sqlite_like:/)
+        ])
+      })
+    ]);
+  });
+
+  it("returns no sqlite docs hits when FTS has no match", async () => {
+    const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-empty-"));
+    const artifactPath = join(root, "docs.sqlite");
+
+    createDocsSqliteArtifact(artifactPath, sqliteEntry(), { fts: true });
+
+    expect(searchMdmDocsSqliteRecords(artifactPath, "dimension", 5)).toEqual([]);
   });
 
   it("searches resource records even when no builtin docs package was selected", async () => {
@@ -105,5 +198,128 @@ function fixtureArtifact() {
         })
       }
     }
+  };
+}
+
+function createDocsSqliteArtifact(
+  artifactPath: string,
+  entry: {
+    entryId: string;
+    packageId: string;
+    kind: string;
+    title: string;
+    path: string;
+    headings: string[];
+    summary: string;
+    searchTerms: string[];
+    scriptScopes: string[];
+    addonNames: string[];
+    eventNames: string[];
+    codeSymbols: string[];
+  },
+  options: { fts?: boolean } = {}
+): void {
+  const sqlite = require("node:sqlite") as {
+    DatabaseSync: new (path: string) => {
+      exec(sql: string): void;
+      prepare(sql: string): {
+        run(...values: unknown[]): void;
+      };
+      close(): void;
+    };
+  };
+  const database = new sqlite.DatabaseSync(artifactPath);
+
+  try {
+    database.exec(`
+      PRAGMA user_version = 3;
+      CREATE TABLE docs_entries (
+        entry_id TEXT PRIMARY KEY,
+        package_id TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        title TEXT NOT NULL,
+        path TEXT NOT NULL,
+        headings TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        search_terms TEXT NOT NULL,
+        script_scopes TEXT NOT NULL,
+        addon_names TEXT NOT NULL,
+        event_names TEXT NOT NULL,
+        code_symbols TEXT NOT NULL
+      );
+    `);
+    database
+      .prepare(
+        `INSERT INTO docs_entries (
+          entry_id, package_id, kind, title, path, headings, summary,
+          search_terms, script_scopes, addon_names, event_names, code_symbols
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        entry.entryId,
+        entry.packageId,
+        entry.kind,
+        entry.title,
+        entry.path,
+        JSON.stringify(entry.headings),
+        entry.summary,
+        JSON.stringify(entry.searchTerms),
+        JSON.stringify(entry.scriptScopes),
+        JSON.stringify(entry.addonNames),
+        JSON.stringify(entry.eventNames),
+        JSON.stringify(entry.codeSymbols)
+      );
+    if (options.fts === true) {
+      database.exec(`
+        CREATE VIRTUAL TABLE docs_entries_fts USING fts5(
+          entry_id UNINDEXED,
+          title,
+          path,
+          summary,
+          search_terms,
+          script_scopes,
+          addon_names,
+          event_names,
+          code_symbols
+        );
+      `);
+      database
+        .prepare(
+          `INSERT INTO docs_entries_fts (
+            entry_id, title, path, summary, search_terms, script_scopes,
+            addon_names, event_names, code_symbols
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .run(
+          entry.entryId,
+          entry.title,
+          entry.path,
+          entry.summary,
+          JSON.stringify(entry.searchTerms),
+          JSON.stringify(entry.scriptScopes),
+          JSON.stringify(entry.addonNames),
+          JSON.stringify(entry.eventNames),
+          JSON.stringify(entry.codeSymbols)
+        );
+    }
+  } finally {
+    database.close();
+  }
+}
+
+function sqliteEntry() {
+  return {
+    entryId: "kubejs-server-recipes",
+    packageId: "core-docs-required",
+    kind: "event-catalog",
+    title: "KubeJS Server Recipes",
+    path: "docs/kubejs/server-events.md#recipes",
+    headings: ["ServerEvents", "Recipes"],
+    summary: "Use ServerEvents.recipes in server_scripts for recipe edits.",
+    searchTerms: ["recipes", "server_scripts", "ServerEvents.recipes"],
+    scriptScopes: ["server_scripts"],
+    addonNames: ["kubejs"],
+    eventNames: ["ServerEvents.recipes"],
+    codeSymbols: ["ServerEvents.recipes"]
   };
 }

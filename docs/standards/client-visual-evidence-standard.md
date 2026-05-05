@@ -26,7 +26,7 @@ request intent
 -> docs only for version-specific gaps
 ```
 
-An answer is incomplete if it only says "register a renderer" or "check the JSON". It must say which evidence was found, which evidence is missing, and what risk follows from the missing evidence.
+An answer is incomplete if it only says "register a renderer" or "check the JSON". It must say which evidence was proven, which evidence was not proven by the current bounded scan, and what risk follows from that unproven link.
 
 ## Intent Scope
 
@@ -353,4 +353,3 @@ Current route-level support is not enough. To satisfy this standard, later slice
 8. Counts-first MCP structured content for the whole evidence packet.
 
 These should remain internal evidence capabilities behind the progressive public MCP surface unless a future review proves a new tool is necessary.
-

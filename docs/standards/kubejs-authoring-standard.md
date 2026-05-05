@@ -50,7 +50,7 @@ The mandatory priority for KubeJS tasks is:
 5. Datapack/resource-pack evidence generated or consumed by KubeJS.
 6. Mod JAR archive evidence for external registries/items/recipes when local scripts reference mod content.
 7. Versioned KubeJS/addon docs.
-8. General scripting advice only after evidence is missing.
+8. General scripting advice only after relevant evidence remains unproven by the current bounded scan.
 
 The MCP should prefer `probejs_types` before docs for KubeJS authoring, and should include `mod_archive_content` when a modpack has JAR evidence and the request references external items, registries, recipes, or crash causes.
 
@@ -368,7 +368,7 @@ A non-compliant answer:
 
 Current KubeJS support is stronger than the current client visual route, but it is still not enough as a standard-driven system. Required next slices:
 
-1. Structured KubeJS standards injection instead of one short policy sentence.
+1. Structured KubeJS standards injection instead of one short policy sentence. Implemented in the agent harness as scoped prompt fragments for lifecycle scope, ProbeJS evidence, event/runtime verification, global state, debug cleanup, datapack/resource-pack linkage, and migration checks.
 2. Queryable ProbeJS item/fluid/tag/registry/recipe cache with counts-first output.
 3. KubeJS script lint/evidence pass for lifecycle scope, generic-JS assumptions, and persistent debug output.
 4. KubeJS recipe evidence executor that links snippets, existing scripts, and local IDs.
