@@ -8,6 +8,55 @@ This backlog absorbs useful architecture patterns from external Minecraft MCP pr
 
 ## Lessons To Absorb
 
+### Reference Project Split
+
+Two external MCP projects were used as architecture references, but this project
+should absorb their system lessons rather than copy their public surfaces.
+
+Reference A is strongest as a documentation, mappings, examples, and database
+management pattern:
+
+- Documentation is chunked and indexed, not returned as whole markdown files.
+- Mapping/Javadoc lookup is treated as a first-class source of API proof.
+- Example databases are optional accelerators and should be labeled as such.
+- Database packages need install/update/restore status, hashes, and versions.
+- Search quality depends on FTS, semantic ranking, code-block context, and
+  visible match reasons.
+
+Reference B is strongest as a source acquisition and validation pipeline:
+
+- Minecraft source can be generated on demand from version, mapping, remap, and
+  decompile jobs instead of being distributed in the repository.
+- Decompiled source and mod source should be persistently cached and searchable.
+- Line-range source reads are essential to keep token usage bounded.
+- Mod JAR analysis should be possible before full decompilation: metadata,
+  dependencies, mixins, entrypoints, class statistics, and resource inventory.
+- Mixin/access-widener validation demonstrates the right class of “agentic
+  verifier”: use source/mapping evidence to tell the agent exactly why a target
+  is wrong and what nearby candidates exist.
+- Version comparison should eventually move past file-level diffs toward method,
+  field, registry, and package-scoped breaking-change evidence.
+
+Absorbed into current implementation:
+
+- Single progressive public tool policy is retained; reference-style many-tool
+  surfaces are folded behind `mc_develop` internal routes.
+- Package management now distinguishes required offline docs, optional
+  accelerators, local-derived packages, and user-private caches.
+- Vanilla source/resource acquisition is on-demand and confirmation-gated.
+- Source bundle and context query already support Gradle archives, mod archives,
+  nested jars, resource traces, and compact line/path evidence.
+- Client visual evidence now combines source scan, API proof, assets, resource
+  references, shader reference gating, and resource-pack profiles.
+
+Not adopted:
+
+- No startup auto-download of large databases.
+- No public `decompile_*`, `index_*`, or one-tool-per-dataset API.
+- No examples database that leaks external project identities into harness text.
+- No semantic/vector retrieval as a hard dependency before FTS and chunk search
+  are mature.
+
 ### Offline Documentation And Search Packages
 
 Useful patterns:
