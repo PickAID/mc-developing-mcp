@@ -29,6 +29,11 @@
 - `query.capabilities` must be a subset of package `capabilities`.
 - `embedding_bundle` is optional and must never be the default retrieval path.
 - Generated local packages must point back to an authoritative source package, workspace path, jar path, or recipe step.
+- `source_tree` and `source_index` packages must declare `target.mappings`.
+- `mapping_bundle` packages must expose `mapping_lookup`, and preferably `mapping_explain`.
+- `embedding_bundle` packages must declare provider/model/source hash/chunk/vector/regeneration metadata and non-embedding authoritative fallbacks.
+- `public_release` packages must declare release channel metadata.
+- Release metadata must allow package family/channel split: required, docs, sources, mappings, datapack, resourcepack, accelerators.
 
 ## Task 1: Add v2 Types
 
@@ -37,8 +42,9 @@
 - Modify: `packages/package-registry/src/index.ts`
 
 - [ ] Write `PackageIdentityV2`, `PackageTargetV2`, `ArtifactContractV2`, `PackagePolicyV2`, `QueryContractV2`, and `PackageManifestV2`.
-- [ ] Include artifact kinds: `docs_bundle`, `source_tree`, `source_index`, `datapack_bundle`, `resourcepack_bundle`, `probejs_snapshot`, `mod_archive_index`, `embedding_bundle`.
-- [ ] Include query adapters: `json_docs`, `sqlite_docs`, `source_index_sqlite`, `source_tree`, `archive_content`, `embedding_index`.
+- [ ] Include artifact kinds: `docs_bundle`, `source_tree`, `source_index`, `mapping_bundle`, `datapack_bundle`, `resourcepack_bundle`, `probejs_snapshot`, `mod_archive_index`, `embedding_bundle`.
+- [ ] Include query adapters: `json_docs`, `sqlite_docs`, `source_index_sqlite`, `source_tree`, `mapping_index`, `archive_content`, `embedding_index`.
+- [ ] Include mapping namespaces: `official`, `intermediary`, `named`, `parchment`, `yarn`, `mojmap`.
 - [ ] Export the new types from `packages/package-registry/src/index.ts`.
 - [ ] Run `pnpm --filter @mcpskill/package-registry build`.
 - [ ] Commit `feat(package-registry): add v2 package contract types`.
@@ -54,6 +60,11 @@
 - [ ] Write tests rejecting `user_private` packages that are uploadable or committable.
 - [ ] Write tests rejecting `query.capabilities` values not declared in root `capabilities`.
 - [ ] Write tests rejecting `defaultLimit > maxLimit`.
+- [ ] Write tests requiring `source_tree` packages to declare `target.mappings`.
+- [ ] Write tests accepting `mapping_bundle` packages with `mapping_lookup` and `mapping_explain`.
+- [ ] Write tests requiring provenance for private/generated packages.
+- [ ] Write tests requiring release channel metadata for public packages.
+- [ ] Write tests requiring embedding metadata and non-embedding fallback for embedding packages.
 - [ ] Implement `parsePackageManifestV2(input: unknown): PackageManifestV2`.
 - [ ] Implement explicit error messages suitable for agent-facing diagnostics.
 - [ ] Run `pnpm exec vitest run --root . packages/package-registry/src/v2-validation.test.ts`.
@@ -85,6 +96,8 @@
 
 - [ ] Map source tree outputs to `source_tree` plus `source_tree` query adapter.
 - [ ] Map SQLite source indexes to `source_index` plus `source_index_sqlite`.
+- [ ] Preserve mapping namespace in `target.mappings` for every source package.
+- [ ] Map downloaded/generated mapping data to `mapping_bundle` plus `mapping_index`.
 - [ ] Map extracted jar/datapack/resourcepack content to `mod_archive_index`, `datapack_bundle`, or `resourcepack_bundle`.
 - [ ] Map ProbeJS outputs to `probejs_snapshot`, `user_private` unless explicitly curated public docs.
 - [ ] Preserve recipe provenance so generated caches are traceable.
@@ -104,5 +117,7 @@
 
 - MCP can explain package selection using declared v2 capabilities.
 - Public packages and private generated caches are impossible to confuse in code.
+- Source packages are split by Minecraft version, loader, and mapping namespace.
+- Mapping packages can be installed/queryable without installing every source package.
 - Existing v1 registries keep working during migration.
 - No new public MCP tool explosion is introduced.

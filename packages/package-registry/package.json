@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b . && vitest run --root ../.. packages/package-registry/src/registry.test.ts"
+    "test": "tsc -b . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
   },
   "author": "m1hono",
   "license": "UNLICENSED",

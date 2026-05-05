@@ -65,6 +65,8 @@ The sibling `mdm-sources` repo is not yet deliverable:
 - At least one real docs package and one real datapack or resourcepack package ship useful payloads, not placeholder JSON.
 - MCP can install a local release manifest and explain selected packages by declared capability.
 - Local generated packages remain MCP-owned caches and are never committed to `mdm-sources`.
+- Releases are split by family/channel instead of shipping every artifact in one monolithic release.
+- Mapping packages can explain official, intermediary, named, yarn, parchment, and mojmap symbol relationships.
 
 ## Design Goals
 
@@ -106,11 +108,13 @@ interface PackageIdentityV2 {
 interface PackageTargetV2 {
   minecraftVersions?: string[];
   loaders?: Array<"vanilla" | "forge" | "neoforge" | "fabric" | "quilt" | "kubejs">;
-  mappings?: Array<"official" | "named" | "parchment" | "yarn" | "mojmap">;
+  mappings?: Array<"official" | "intermediary" | "named" | "parchment" | "yarn" | "mojmap">;
   modIds?: string[];
   kubeJsScopes?: Array<"startup" | "server" | "client" | "probejs">;
 }
 ```
+
+Source packages and source indexes must declare `target.mappings`. A package containing mapped Java source is not equivalent to the same source in another namespace. MCP must prefer the source package matching the workspace loader and mapping namespace, then use mapping bundles to explain or translate pre-mapped names when necessary.
 
 ### Artifact
 
@@ -119,6 +123,7 @@ type ArtifactKindV2 =
   | "docs_bundle"
   | "source_tree"
   | "source_index"
+  | "mapping_bundle"
   | "datapack_bundle"
   | "resourcepack_bundle"
   | "probejs_snapshot"
@@ -144,6 +149,8 @@ interface ArtifactContractV2 {
 }
 ```
 
+Generated and private artifacts must include provenance pointing back to a workspace path, external archive, generated recipe, or public release package. Without provenance, a cache is not trustworthy evidence.
+
 ### Capabilities
 
 Capabilities define how MCP can use the artifact.
@@ -156,6 +163,8 @@ type PackageCapabilityV2 =
   | "source_chunk_search"
   | "java_symbol_lookup"
   | "kubejs_symbol_lookup"
+  | "mapping_lookup"
+  | "mapping_explain"
   | "resource_location_lookup"
   | "datapack_trace"
   | "resourcepack_trace"
@@ -195,6 +204,7 @@ type QueryAdapterV2 =
   | "sqlite_docs"
   | "source_index_sqlite"
   | "source_tree"
+  | "mapping_index"
   | "archive_content"
   | "embedding_index";
 
@@ -225,6 +235,30 @@ interface PackageManifestV2 {
 }
 ```
 
+### Release Channel
+
+Packages must declare or be grouped into release channels:
+
+- `required`: minimal startup guidance and compatibility metadata.
+- `docs`: curated documentation and FTS indexes.
+- `sources`: mapped Java/KubeJS/source indexes split by Minecraft version, loader, and mapping namespace.
+- `mappings`: mapping bundles that explain official/intermediary/named/yarn/parchment/mojmap names.
+- `datapack`: datapack schemas, version profiles, registries, and traces.
+- `resourcepack`: asset schemas, model, atlas, UI, shader, and resource-pack profiles.
+- `accelerators`: optional embeddings or precomputed indexes.
+
+The release builder must not pack every family into a single artifact by default. Agents should install only the channels needed for the current workspace and request user consent for large or generated channels.
+
+## Mapping Awareness
+
+MCP needs first-class mapping support because source evidence is only trustworthy when the namespace is known. The mapping layer must support:
+
+- Explaining a symbol before and after mapping, such as official or intermediary names becoming Yarn, Parchment, or Mojmap names.
+- Selecting source packages by Minecraft version, loader, and mapping namespace.
+- Keeping mapping bundles separate from source packages so a workspace can translate names without downloading every source artifact.
+- Treating Parchment and Yarn as data sources for mapping packages when their licenses and distribution rules allow it.
+- Returning evidence with both the observed name and the mapped/explained name when an agent investigates crashes, stack traces, Gradle output, or jar contents.
+
 ## Retrieval Order
 
 The default retrieval order should be:
@@ -247,6 +281,7 @@ Embeddings must never replace authoritative evidence. They only help when exact 
 - Vector dimension.
 - Privacy level.
 - Regeneration policy.
+- Authoritative non-embedding fallback adapters.
 
 Embedding bundles derived from private modpacks must be `user_private` and must not be committed or uploaded.
 
@@ -258,6 +293,7 @@ Embedding bundles derived from private modpacks must be `user_private` and must 
 - v2 package manifests with artifact/capability/policy/query facets.
 - Validation that checks artifact presence, schema IDs, capability compatibility, and public/private policy.
 - Release manifest that can publish package summaries without leaking private/generated payloads.
+- Split release manifests or release channels so users can download docs, mappings, sources, datapack, resourcepack, and accelerators independently.
 - At least one real curated package per required capability before claiming deliverability.
 
 ## Migration Strategy
@@ -279,5 +315,6 @@ Phase 6: Only after v2 is stable, deprecate ambiguous v1 fields.
 - MCP can explain why a package is selected using declared capabilities.
 - Public packages and user-private generated caches are impossible to confuse in schema.
 - `mdm-sources` can validate at least one real docs package and one real resource/datapack package.
+- Mapping bundles can explain at least one symbol relationship across official/intermediary and Yarn or Parchment/Mojmap naming.
 - Generated local caches can be evicted without deleting authoritative material.
 - Embedding support can be added as an optional capability without changing core retrieval semantics.
