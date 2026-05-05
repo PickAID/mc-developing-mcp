@@ -88,6 +88,31 @@ describe("summarizeKubeJsTypeResources query filtering", () => {
       })
     ]);
   });
+
+  it("keeps total matching counts separate from bounded returned entries", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-kjs-filter-counts");
+
+    await writeText(
+      join(workspaceRoot, ".vscode", "item-attributes.json"),
+      JSON.stringify([
+        { id: "minecraft:stone", localized: "Stone" },
+        { id: "minecraft:granite", localized: "Granite" },
+        { id: "minecraft:andesite", localized: "Andesite" }
+      ])
+    );
+
+    const result = await summarizeKubeJsTypeResources({
+      workspaceRoot,
+      includeUnknownResources: false,
+      maxEntriesPerKind: 1,
+      resourceQueries: ["minecraft"]
+    });
+
+    expect(result.entries.item).toHaveLength(1);
+    expect(result.summary.counts.item).toBe(1);
+    expect(result.summary.totalCounts.item).toBe(3);
+    expect(result.summary.truncated).toBe(true);
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

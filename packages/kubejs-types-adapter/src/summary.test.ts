@@ -89,6 +89,11 @@ describe("summarizeKubeJsTypeResources", () => {
         item: 2,
         registry: 1
       },
+      totalCounts: {
+        snippet: 2,
+        item: 3,
+        registry: 1
+      },
       truncated: true
     });
   });

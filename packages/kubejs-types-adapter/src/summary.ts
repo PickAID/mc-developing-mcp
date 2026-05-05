@@ -27,6 +27,7 @@ export async function summarizeKubeJsTypeResources(
     maxFiles: options.maxFiles
   });
   const entries = createEmptySemanticEntries();
+  const totalEntryNames = createEmptySemanticEntryNameSets();
   const unknownResources: KubeJsUnknownResource[] = [];
   const resourceQueries = normalizeSemanticResourceQueries(options.resourceQueries);
   const includeUnknownResources =
@@ -46,6 +47,7 @@ export async function summarizeKubeJsTypeResources(
       truncated = truncated || read.truncated;
       truncated = pushEntries(
         entries,
+        totalEntryNames,
         extractKubeJsSemanticResourceEntries(file, read.text),
         maxEntriesPerKind,
         resourceQueries
@@ -71,6 +73,7 @@ export async function summarizeKubeJsTypeResources(
     unknownResources,
     summary: {
       counts: countEntries(entries),
+      totalCounts: countTotalEntries(totalEntryNames),
       discoveredFiles: discovery.files.length,
       searchedFiles,
       unknownCount: unknownResources.length,
@@ -81,6 +84,7 @@ export async function summarizeKubeJsTypeResources(
 
 function pushEntries(
   entries: Record<KubeJsSemanticResourceKind, KubeJsSemanticResourceEntry[]>,
+  totalEntryNames: Record<KubeJsSemanticResourceKind, Set<string>>,
   newEntries: KubeJsSemanticResourceEntry[],
   maxEntriesPerKind: number,
   resourceQueries: string[]
@@ -91,6 +95,7 @@ function pushEntries(
     if (!semanticEntryMatchesQueries(entry, resourceQueries)) {
       continue;
     }
+    totalEntryNames[entry.sourceKind].add(entry.name);
     const existingIndex = entries[entry.sourceKind].findIndex(
       (existing) => existing.name === entry.name
     );
@@ -108,6 +113,15 @@ function pushEntries(
   }
 
   return truncated;
+}
+
+function createEmptySemanticEntryNameSets(): Record<
+  KubeJsSemanticResourceKind,
+  Set<string>
+> {
+  return Object.fromEntries(
+    Object.keys(createEmptySemanticEntries()).map((kind) => [kind, new Set()])
+  ) as Record<KubeJsSemanticResourceKind, Set<string>>;
 }
 
 async function collectUnknownResource(
@@ -143,6 +157,14 @@ function countEntries(
 ): Record<KubeJsSemanticResourceKind, number> {
   return Object.fromEntries(
     Object.entries(entries).map(([kind, values]) => [kind, values.length])
+  ) as Record<KubeJsSemanticResourceKind, number>;
+}
+
+function countTotalEntries(
+  entries: Record<KubeJsSemanticResourceKind, Set<string>>
+): Record<KubeJsSemanticResourceKind, number> {
+  return Object.fromEntries(
+    Object.entries(entries).map(([kind, values]) => [kind, values.size])
   ) as Record<KubeJsSemanticResourceKind, number>;
 }
 

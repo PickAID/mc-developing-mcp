@@ -148,6 +148,7 @@ export interface KubeJsTypeSemanticSummary {
   unknownResources: KubeJsUnknownResource[];
   summary: {
     counts: Record<KubeJsSemanticResourceKind, number>;
+    totalCounts: Record<KubeJsSemanticResourceKind, number>;
     discoveredFiles: number;
     searchedFiles: number;
     unknownCount: number;
