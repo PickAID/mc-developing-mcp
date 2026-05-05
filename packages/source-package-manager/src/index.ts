@@ -4,6 +4,7 @@ export * from "./confirmation.js";
 export * from "./state.js";
 export * from "./recipes.js";
 export * from "./manifest.js";
+export * from "./mdm-release-coordinate.js";
 export * from "./validation.js";
 export * from "./executor.js";
 export * from "./vanilla.js";

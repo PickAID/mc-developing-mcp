@@ -257,10 +257,7 @@ function collectReferences(
       fromKind,
       fromPath,
       relation: "atlas_texture",
-      values: [
-        ...collectNamedStrings(value, "resource"),
-        ...collectNamedStrings(value, "source")
-      ]
+      values: collectNamedStrings(value, "resource")
     });
   }
   if (fromKind === "font") {
@@ -451,7 +448,7 @@ function parseJson(
 }
 
 function isTraceableAssetPath(path: string): boolean {
-  return /^assets\/[^/]+\/(?:atlases|blockstates|font|items|models|particles)\//.test(path);
+  return /^assets\/[^/]+\/(?:atlases|blockstates|font|items|models|particles)\/.+\.json$/.test(path);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

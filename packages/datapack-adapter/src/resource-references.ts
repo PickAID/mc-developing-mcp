@@ -120,10 +120,7 @@ function collectReferences(
       entry,
       entriesByPath,
       relation: "atlas_texture",
-      values: [
-        ...collectNamedStrings(value, "resource"),
-        ...collectNamedStrings(value, "source")
-      ]
+      values: collectNamedStrings(value, "resource")
     });
   }
   if (entry.kind === "font") {
