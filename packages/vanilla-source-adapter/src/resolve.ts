@@ -7,8 +7,10 @@ import {
   type SourceIndexMatch
 } from "@mcpskill/source-index";
 import {
+  buildSourcePackageAcquisitionEvidence,
   buildVanillaSourcePackCoordinate,
   ensureSourcePackageInstalled,
+  type SourcePackageAcquisitionEvidence,
   type SourcePackageRecipeExecutor,
   type SourcePackageRecipeProvider,
   type SourcePackageRecipeRegistry
@@ -54,6 +56,7 @@ export interface ResolveVanillaSourceResult {
   packageId?: string;
   summary: string;
   references?: VanillaSourceReference[];
+  acquisition?: SourcePackageAcquisitionEvidence;
   error?: string;
 }
 
@@ -85,7 +88,8 @@ export async function resolveVanillaSource(
       status: "needs_confirmation",
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
-      summary: ensureResult.summary
+      summary: ensureResult.summary,
+      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult)
     };
   }
 
@@ -95,6 +99,7 @@ export async function resolveVanillaSource(
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
       summary: ensureResult.summary,
+      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
       error: ensureResult.error
     };
   }
@@ -105,6 +110,7 @@ export async function resolveVanillaSource(
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
       summary: ensureResult.summary,
+      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
       error: ensureResult.error
     };
   }
@@ -114,7 +120,8 @@ export async function resolveVanillaSource(
       status: "backend_missing",
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
-      summary: ensureResult.summary
+      summary: ensureResult.summary,
+      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult)
     };
   }
 
@@ -129,6 +136,7 @@ export async function resolveVanillaSource(
       status: "installed_but_no_match",
       minecraftVersion: sourcePackage.minecraftVersion,
       packageId: sourcePackage.packageId,
+      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
       summary: `Vanilla source package ${sourcePackage.packageId} is installed but no matching source file was found.`
     };
   }
@@ -138,6 +146,7 @@ export async function resolveVanillaSource(
     minecraftVersion: sourcePackage.minecraftVersion,
     packageId: sourcePackage.packageId,
     references,
+    acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
     summary: `Resolved ${references.length} vanilla source file(s) from ${sourcePackage.packageId}.`
   };
 }

@@ -71,7 +71,16 @@ describe("resolveVanillaSource", () => {
       })
     ).resolves.toMatchObject({
       status: "needs_confirmation",
-      packageId: "minecraft-1.20.1-source-pack-named"
+      packageId: "minecraft-1.20.1-source-pack-named",
+      acquisition: {
+        status: "needs_confirmation",
+        confirmationScope: "package-version",
+        sourceJob: {
+          status: "needs_confirmation",
+          hasJar: false,
+          hasSourceIndex: false
+        }
+      }
     });
   });
 
@@ -110,6 +119,17 @@ describe("resolveVanillaSource", () => {
     expect(result).toMatchObject({
       status: "ready",
       packageId: "minecraft-1.20.1-source-pack-named",
+      acquisition: {
+        status: "ready",
+        sourceJob: {
+          status: "ready",
+          hasJar: true,
+          hasMappings: true,
+          hasRemappedJar: true,
+          hasDecompiledSource: true,
+          hasSourceIndex: true
+        }
+      },
       references: [
         {
           relativePath: "net/minecraft/world/item/ItemStack.java",

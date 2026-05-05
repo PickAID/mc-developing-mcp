@@ -13,6 +13,7 @@ import {
   type DatapackSkippedFile
 } from "@mcpskill/datapack-adapter";
 import {
+  buildSourcePackageAcquisitionEvidence,
   ensureSourcePackageInstalled,
   type SourcePackageRecipeExecutor,
   type SourcePackageRecipeProvider,
@@ -65,6 +66,7 @@ export async function executeMcpServerGeneratedVanillaResourcePackage(input: {
       minecraftVersion: input.minecraftVersion,
       packageId: input.sourcePackage.packageId,
       summary: ensureResult.summary,
+      acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
       error: "error" in ensureResult ? ensureResult.error : undefined
     });
   }
@@ -84,6 +86,7 @@ export async function executeMcpServerGeneratedVanillaResourcePackage(input: {
     installPath,
     minecraftVersion: input.minecraftVersion,
     packageId: input.sourcePackage.packageId,
+    acquisition: buildSourcePackageAcquisitionEvidence(ensureResult),
     evidenceLabel: input.evidenceLabel,
     requestText: input.requestText,
     queries: input.queries,
@@ -109,6 +112,7 @@ async function resolveInstalledGeneratedVanillaResourcePackage(input: {
   installPath: string;
   minecraftVersion: string;
   packageId: string;
+  acquisition: ReturnType<typeof buildSourcePackageAcquisitionEvidence>;
   evidenceLabel: string;
   requestText: string;
   queries: string[];
@@ -139,6 +143,7 @@ async function resolveInstalledGeneratedVanillaResourcePackage(input: {
       status: listed.entries.length > 0 ? "ready" : "installed_but_no_match",
       minecraftVersion: input.minecraftVersion,
       packageId: input.packageId,
+      acquisition: input.acquisition,
       discovery,
       resourceSummary,
       files: listed.entries,
@@ -153,6 +158,7 @@ async function resolveInstalledGeneratedVanillaResourcePackage(input: {
     status: matchCount > 0 ? "ready" : "installed_but_no_match",
     minecraftVersion: input.minecraftVersion,
     packageId: input.packageId,
+    acquisition: input.acquisition,
     discovery,
     resourceSummary,
     reads: reads.files,
@@ -317,6 +323,7 @@ function toPackageStatusResult(input: {
   minecraftVersion?: string;
   packageId?: string;
   summary: string;
+  acquisition?: ReturnType<typeof buildSourcePackageAcquisitionEvidence>;
   error?: string;
 }): McpServerEvidenceExecutorResult {
   return {
@@ -328,6 +335,7 @@ function toPackageStatusResult(input: {
         status: input.status,
         minecraftVersion: input.minecraftVersion,
         packageId: input.packageId,
+        acquisition: input.acquisition,
         summary: input.summary,
         error: input.error
       }

@@ -82,6 +82,10 @@ Date: 2026-05-05
   `needs_confirmation`、`installing`、`ready`、`failed`。
 - 当前切片只实现 pure state contract 和 lock key，不声称已经完成真实并发
   lock 或持久 job runner。
+- Follow-up 接入验证：`SourcePackageEnsureResult` 现在会映射成 package-level
+  `acquisition` evidence。Java source-pack 会附带 `sourceJob` snapshot；
+  datapack/resource-pack/assets 只返回 package-level acquisition，不附带 remap/
+  decompile job phases。
 
 验证：
 
@@ -89,6 +93,8 @@ Date: 2026-05-05
 - `pnpm test` 中 `packages/source-package-manager/src/source-job-state.test.ts`
   3 个测试通过。
 - 覆盖 confirmation gate、ready transition、failure transition、lock key。
+- `packages/source-package-manager/src/acquisition-evidence.test.ts` 覆盖
+  source-pack confirmation/ready snapshot，以及 datapack 不附带 source job。
 
 ### Mixin Target Verifier Skeleton
 
@@ -120,14 +126,17 @@ Date: 2026-05-05
 
 - `pnpm --filter @mcpskill/source-index test`: passed.
 - `pnpm --filter @mcpskill/docs-retrieval test`: passed.
-- `pnpm --filter @mcpskill/source-package-manager test`: passed.
+- `pnpm --filter @mcpskill/source-package-manager test`: passed after
+  acquisition evidence adapter; 8 test files and 27 tests.
 - `pnpm --filter @mcpskill/jar-source-adapter test`: passed.
 - `pnpm --filter @mcpskill/mcp-server test -- mixin-target-verifier.test.ts`:
   passed; package script ran 71 test files and 202 tests.
 - `pnpm --filter @mcpskill/vanilla-source-adapter test`: passed; 7 tests.
+- `pnpm --filter @mcpskill/mcp-server test -- generated-vanilla-resource-acquisition.test.ts source-bundle-datapack-executor.test.ts source-bundle-vanilla-assets-executor.test.ts`:
+  passed; package script ran 73 test files and 205 tests.
 - `pnpm --filter @mcpskill/mcp-server test -- source-bundle-executor.test.ts mod-archive-pre-decompile-analysis.test.ts`:
   passed; package script ran 72 test files and 203 tests.
-- `pnpm test`: passed; 161 test files and 520 tests.
+- `pnpm test`: passed; 163 test files and 525 tests.
 - `find apps packages tests -name '*.ts' -o -name '*.tsx' | xargs wc -l | awk '$1 > 500 && $2 != "total" { print }'`: no output.
 - `git diff --check`: no output.
 
@@ -135,5 +144,6 @@ Date: 2026-05-05
 
 本轮 absorption slice 已完成可验证底层切片：chunked source retrieval、
 docs match reasons、mod archive pre-decompile analysis、source acquisition job
-state、mixin target verifier skeleton。当前仍是内部能力；后续接入必须继续通过
-`mc_develop` progressive evidence route，而不是扩张 public MCP tool surface。
+state/evidence、mixin target verifier skeleton。当前仍是内部能力；后续接入必须
+继续通过 `mc_develop` progressive evidence route，而不是扩张 public MCP tool
+surface。

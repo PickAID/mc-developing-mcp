@@ -212,6 +212,10 @@ Completed or verified in this absorption round:
 - Source acquisition job state: source package acquisition should report
   explicit job/cache state such as jar, mappings, remapped jar, decompiled
   source, source index, and job status.
+- Source acquisition evidence: source package ensure results now map to
+  stable payload evidence. Source-pack artifacts include source job snapshots;
+  datapack/resource-pack/assets artifacts stay package-level and do not claim
+  remap/decompile phases.
 - Mixin target verifier skeleton: an internal pure helper verifies requested
   mixin targets against class evidence and reports nearby candidates.
 
@@ -227,6 +231,9 @@ Pending verification or follow-up:
 - Verified source acquisition job state as a pure state contract. Real
   persistence, lock sharing, and mc_develop evidence routing remain follow-up
   implementation work.
+- Verified package-level acquisition evidence in vanilla source and generated
+  vanilla resource payloads. Real background job runner and cross-process lock
+  sharing remain follow-up work.
 - Verification results are recorded in
   `docs/reviews/2026-05-05-reference-mcp-absorption-verification.md`.
 
