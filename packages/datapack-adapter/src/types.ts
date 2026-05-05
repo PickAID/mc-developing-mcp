@@ -134,10 +134,13 @@ export interface DatapackReadResult {
 }
 
 export type DatapackResourceReferenceRelation =
+  | "atlas_texture"
   | "blockstate_model"
+  | "font_texture"
   | "item_model"
   | "model_parent"
-  | "model_texture";
+  | "model_texture"
+  | "particle_texture";
 
 export type DatapackResourceReferenceStatus = "resolved" | "missing";
 

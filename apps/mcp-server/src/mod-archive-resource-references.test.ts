@@ -119,6 +119,47 @@ describe("mod archive resource reference tracing", () => {
       }
     });
   });
+
+  it("returns compact traces for visual resource references inside mod archives", async () => {
+    const workspaceRoot = await createVisualResourceWorkspace();
+    const input = await createExecutorInput(
+      workspaceRoot,
+      [
+        "Trace references for assets/demo/particles/spark.json,",
+        "assets/demo/atlases/blocks.json, and assets/demo/font/panel.json",
+        "in mods/content-mod.jar."
+      ].join(" ")
+    );
+
+    await expect(executeMcpServerModArchiveContent(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "mod_archive_content",
+        mode: "resource_reference_trace",
+        resourceReferenceTrace: {
+          tokenPolicy: "explicit_trace",
+          references: expect.arrayContaining([
+            expect.objectContaining({
+              relation: "particle_texture",
+              toPath: "assets/demo/textures/particle/spark.png",
+              status: "resolved"
+            }),
+            expect.objectContaining({
+              relation: "atlas_texture",
+              toPath: "assets/demo/textures/block/machine.png",
+              status: "resolved"
+            }),
+            expect.objectContaining({
+              relation: "font_texture",
+              toPath: "assets/demo/textures/font/panel.png",
+              status: "resolved"
+            })
+          ]),
+          truncated: false
+        }
+      }
+    });
+  });
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {
@@ -240,6 +281,53 @@ async function createItemWorkspace(): Promise<string> {
       },
       {
         name: "assets/demo/textures/item/gear.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      }
+    ])
+  );
+  return workspaceRoot;
+}
+
+async function createVisualResourceWorkspace(): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-visual-trace-mcp-"));
+  tempRoots.push(workspaceRoot);
+  await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+  await writeFile(
+    join(workspaceRoot, "mods", "content-mod.jar"),
+    createZip([
+      {
+        name: "fabric.mod.json",
+        content: JSON.stringify({ id: "content_mod", version: "1.0.0" }),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/particles/spark.json",
+        content: "{\"textures\":[\"demo:particle/spark\"]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/atlases/blocks.json",
+        content: "{\"sources\":[{\"type\":\"single\",\"resource\":\"demo:block/machine\"}]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/font/panel.json",
+        content: "{\"providers\":[{\"type\":\"bitmap\",\"file\":\"demo:font/panel.png\"}]}\n",
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/particle/spark.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/block/machine.png",
+        content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        compressionMethod: 0
+      },
+      {
+        name: "assets/demo/textures/font/panel.png",
         content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
         compressionMethod: 0
       }

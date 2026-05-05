@@ -8,17 +8,23 @@ import { listNestedArchiveContent } from "./nested-archive-list.js";
 import { readNestedArchiveContentFile } from "./nested-archive-read.js";
 
 export type ModArchiveResourceReferenceKind =
+  | "atlases"
   | "blockstates"
+  | "font"
   | "items"
   | "models"
+  | "particles"
   | "textures"
   | "other";
 
 export type ModArchiveResourceReferenceRelation =
+  | "atlas_texture"
   | "blockstate_model"
+  | "font_texture"
   | "item_model"
   | "model_parent"
-  | "model_texture";
+  | "model_texture"
+  | "particle_texture";
 
 export type ModArchiveResourceReferenceStatus = "resolved" | "missing";
 
@@ -236,6 +242,36 @@ function collectReferences(
       })
     );
   }
+  if (fromKind === "particles") {
+    return collectTextureReferences({
+      entriesByPath,
+      fromKind,
+      fromPath,
+      relation: "particle_texture",
+      values: collectNamedStrings(value, "textures")
+    });
+  }
+  if (fromKind === "atlases") {
+    return collectTextureReferences({
+      entriesByPath,
+      fromKind,
+      fromPath,
+      relation: "atlas_texture",
+      values: [
+        ...collectNamedStrings(value, "resource"),
+        ...collectNamedStrings(value, "source")
+      ]
+    });
+  }
+  if (fromKind === "font") {
+    return collectTextureReferences({
+      entriesByPath,
+      fromKind,
+      fromPath,
+      relation: "font_texture",
+      values: collectNamedStrings(value, "file")
+    });
+  }
   if (fromKind !== "models" || !isRecord(value)) {
     return [];
   }
@@ -275,6 +311,28 @@ function collectReferences(
   return references;
 }
 
+function collectTextureReferences(input: {
+  entriesByPath: Set<string>;
+  fromPath: string;
+  fromKind: ModArchiveResourceReferenceKind;
+  relation: ModArchiveResourceReferenceRelation;
+  values: string[];
+}): ModArchiveResourceReference[] {
+  return unique(input.values)
+    .filter((value) => !value.startsWith("#"))
+    .map((value) =>
+      createReference({
+        entriesByPath: input.entriesByPath,
+        fromKind: input.fromKind,
+        fromPath: input.fromPath,
+        relation: input.relation,
+        toKind: "textures",
+        toPath: toTexturePath(value, namespaceFromPath(input.fromPath)),
+        value
+      })
+    );
+}
+
 function createReference(input: {
   entriesByPath: Set<string>;
   fromPath: string;
@@ -302,7 +360,10 @@ function toModelPath(value: string, defaultNamespace: string): string {
 
 function toTexturePath(value: string, defaultNamespace: string): string {
   const location = parseResourceLocation(value, defaultNamespace);
-  return `assets/${location.namespace}/textures/${location.path}.png`;
+  const path = location.path.endsWith(".png")
+    ? location.path.slice(0, -".png".length)
+    : location.path;
+  return `assets/${location.namespace}/textures/${path}.png`;
 }
 
 function parseResourceLocation(
@@ -327,9 +388,12 @@ function namespaceFromPath(relativePath: string): string {
 function classifyTraceAssetKind(path: string): ModArchiveResourceReferenceKind {
   const segment = path.split("/")[2];
   if (
+    segment === "atlases" ||
     segment === "blockstates" ||
+    segment === "font" ||
     segment === "items" ||
     segment === "models" ||
+    segment === "particles" ||
     segment === "textures"
   ) {
     return segment;
@@ -345,12 +409,21 @@ function collectNamedStrings(value: unknown, key: string): string[] {
     return [];
   }
 
-  const matches =
-    typeof value[key] === "string" ? [value[key] as string] : [];
+  const matches = collectDirectStringValues(value[key]);
   const nested = Object.values(value).flatMap((item) =>
     collectNamedStrings(item, key)
   );
   return unique([...matches, ...nested]);
+}
+
+function collectDirectStringValues(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  return [];
 }
 
 function collectStringValues(value: unknown): string[] {
@@ -378,7 +451,7 @@ function parseJson(
 }
 
 function isTraceableAssetPath(path: string): boolean {
-  return /^assets\/[^/]+\/(?:blockstates|items|models)\//.test(path);
+  return /^assets\/[^/]+\/(?:atlases|blockstates|font|items|models|particles)\//.test(path);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

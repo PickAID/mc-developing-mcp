@@ -107,6 +107,33 @@ function collectReferences(
   if (entry.kind === "models") {
     return collectModelReferences(entry, value, entriesByPath);
   }
+  if (entry.kind === "particles") {
+    return collectTextureReferences({
+      entry,
+      entriesByPath,
+      relation: "particle_texture",
+      values: collectNamedStrings(value, "textures")
+    });
+  }
+  if (entry.kind === "atlases") {
+    return collectTextureReferences({
+      entry,
+      entriesByPath,
+      relation: "atlas_texture",
+      values: [
+        ...collectNamedStrings(value, "resource"),
+        ...collectNamedStrings(value, "source")
+      ]
+    });
+  }
+  if (entry.kind === "font") {
+    return collectTextureReferences({
+      entry,
+      entriesByPath,
+      relation: "font_texture",
+      values: collectNamedStrings(value, "file")
+    });
+  }
   return [];
 }
 
@@ -189,6 +216,26 @@ function collectModelReferences(
   return references;
 }
 
+function collectTextureReferences(input: {
+  entry: DatapackFileEntry;
+  entriesByPath: Map<string, DatapackFileEntry>;
+  relation: DatapackResourceReferenceRelation;
+  values: string[];
+}): DatapackResourceReference[] {
+  return unique(input.values)
+    .filter((value) => !value.startsWith("#"))
+    .map((value) =>
+      createReference({
+        entry: input.entry,
+        entriesByPath: input.entriesByPath,
+        relation: input.relation,
+        toKind: "textures",
+        toPath: toTexturePath(value, input.entry.namespace),
+        value
+      })
+    );
+}
+
 function createReference(input: {
   entry: DatapackFileEntry;
   entriesByPath: Map<string, DatapackFileEntry>;
@@ -215,7 +262,10 @@ function toModelPath(value: string, defaultNamespace: string): string {
 
 function toTexturePath(value: string, defaultNamespace: string): string {
   const location = parseResourceLocation(value, defaultNamespace);
-  return `assets/${location.namespace}/textures/${location.path}.png`;
+  const path = location.path.endsWith(".png")
+    ? location.path.slice(0, -".png".length)
+    : location.path;
+  return `assets/${location.namespace}/textures/${path}.png`;
 }
 
 function parseResourceLocation(
@@ -244,12 +294,21 @@ function collectNamedStrings(value: unknown, key: string): string[] {
     return [];
   }
 
-  const matches =
-    typeof value[key] === "string" ? [value[key] as string] : [];
+  const matches = collectDirectStringValues(value[key]);
   const nested = Object.values(value).flatMap((item) =>
     collectNamedStrings(item, key)
   );
   return unique([...matches, ...nested]);
+}
+
+function collectDirectStringValues(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  return [];
 }
 
 function collectStringValues(value: unknown): string[] {
@@ -283,7 +342,14 @@ function parseJson(
 }
 
 function isTraceableAssetKind(kind: DatapackKind): boolean {
-  return kind === "blockstates" || kind === "items" || kind === "models";
+  return (
+    kind === "atlases" ||
+    kind === "blockstates" ||
+    kind === "font" ||
+    kind === "items" ||
+    kind === "models" ||
+    kind === "particles"
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -18,7 +18,7 @@ export function mentionsResourceReferenceTrace(requestText: string): boolean {
 }
 
 export function isTraceableAssetPath(path: string): boolean {
-  return /^assets\/[^/]+\/(?:blockstates|items|models)\//.test(path);
+  return /^assets\/[^/]+\/(?:atlases|blockstates|font|items|models|particles)\//.test(path);
 }
 
 function trimTrailingPunctuation(value: string): string {

@@ -251,6 +251,79 @@ describe("traceModArchiveResourceReferences", () => {
       truncated: false
     });
   });
+
+  it("traces particle, atlas, and font texture references inside a mod archive", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-jar-visual-trace-"));
+    const archivePath = join(runtimeRoot, "content-mod.jar");
+
+    await writeFile(
+      archivePath,
+      createZip([
+        {
+          name: "assets/demo/particles/spark.json",
+          content: "{\"textures\":[\"demo:particle/spark\"]}\n",
+          compressionMethod: 0
+        },
+        {
+          name: "assets/demo/atlases/blocks.json",
+          content: "{\"sources\":[{\"type\":\"single\",\"resource\":\"demo:block/machine\"}]}\n",
+          compressionMethod: 0
+        },
+        {
+          name: "assets/demo/font/panel.json",
+          content: "{\"providers\":[{\"type\":\"bitmap\",\"file\":\"demo:font/panel.png\"}]}\n",
+          compressionMethod: 0
+        },
+        {
+          name: "assets/demo/textures/particle/spark.png",
+          content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+          compressionMethod: 0
+        },
+        {
+          name: "assets/demo/textures/block/machine.png",
+          content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+          compressionMethod: 0
+        },
+        {
+          name: "assets/demo/textures/font/panel.png",
+          content: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+          compressionMethod: 0
+        }
+      ])
+    );
+
+    await expect(
+      traceModArchiveResourceReferences({
+        sourceArchive: archivePath,
+        startPaths: [
+          "assets/demo/particles/spark.json",
+          "assets/demo/atlases/blocks.json",
+          "assets/demo/font/panel.json"
+        ]
+      })
+    ).resolves.toMatchObject({
+      references: expect.arrayContaining([
+        expect.objectContaining({
+          relation: "particle_texture",
+          toPath: "assets/demo/textures/particle/spark.png",
+          status: "resolved"
+        }),
+        expect.objectContaining({
+          relation: "atlas_texture",
+          toPath: "assets/demo/textures/block/machine.png",
+          status: "resolved"
+        }),
+        expect.objectContaining({
+          relation: "font_texture",
+          toPath: "assets/demo/textures/font/panel.png",
+          status: "resolved"
+        })
+      ]),
+      unresolved: [],
+      skipped: [],
+      truncated: false
+    });
+  });
 });
 
 interface ZipFixtureEntry {
