@@ -21,4 +21,4 @@ The package exposes the `mc-developing-mcp` binary and keeps the public MCP tool
 
 External services that require credentials, such as CurseForge or ShaderToy API lookup, should be configured by the user at runtime. The package does not embed private API keys or generated private cache data.
 
-This package requires Node.js `>=18`. It is published as part of the `@mcpskill/*` package graph, so all internal runtime packages must be available from npm for `npx` installation to work.
+This package requires Node.js `>=22.5.0` because runtime indexing and offline documentation paths use `node:sqlite`. It is published as part of the `@mcpskill/*` package graph, so all internal runtime packages must be available from npm for `npx` installation to work.

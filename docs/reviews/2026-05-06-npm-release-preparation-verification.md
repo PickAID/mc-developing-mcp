@@ -24,7 +24,7 @@ pnpm test
 pnpm run publish:check
 pnpm run publish:dry-run
 pnpm run publish:install-smoke
-MCPSKILL_RELEASE=1 pnpm run publish:check
+pnpm run publish:release-check
 find apps packages tests \( -name '*.ts' -o -name '*.tsx' \) -print | xargs wc -l | awk '$1 > 500 && $2 != "total" { print }'
 find apps/mcp-server/dist -type f \( -name '*.test.js' -o -name '*.test.d.ts' -o -name '*.test-support.js' -o -name '*.test-support.d.ts' \) | wc -l
 find apps/mcp-server/dist -maxdepth 1 -type f ! -name 'index.*' ! -name 'stdio.*' | wc -l
@@ -37,7 +37,7 @@ git diff --check
 - `pnpm run publish:check`: passed for `19` publishable packages.
 - `pnpm run publish:dry-run`: passed for all `19` publishable packages.
 - `pnpm run publish:install-smoke`: passed after installing all `19` local tarballs into a temporary npm project.
-- `MCPSKILL_RELEASE=1 pnpm run publish:check`: intentionally fails while package versions remain `0.0.0`; this protects real release attempts.
+- `pnpm run publish:release-check`: intentionally fails while package versions remain `0.0.0`; this protects real release attempts.
 - Packed tarball dependency check: all packed internal dependency ranges were rewritten from `workspace:*` to concrete versions.
 - TS/TSX line guard: no files over `500` lines.
 - MCP server dist forbidden test output count: `0`.

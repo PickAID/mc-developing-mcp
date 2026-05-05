@@ -9,6 +9,7 @@
     "test:watch": "vitest",
     "clean": "rm -rf node_modules apps/*/dist packages/*/dist coverage apps/*/tsconfig.tsbuildinfo packages/*/tsconfig.tsbuildinfo",
     "publish:check": "node scripts/npm-publish-guard.mjs",
+    "publish:release-check": "MCPSKILL_RELEASE=1 node scripts/npm-publish-guard.mjs",
     "publish:dry-run": "node scripts/npm-pack-dry-run.mjs",
     "publish:install-smoke": "node scripts/npm-install-smoke.mjs"
   },

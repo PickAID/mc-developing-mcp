@@ -25,7 +25,7 @@ pnpm test
 pnpm run publish:check
 pnpm run publish:dry-run
 pnpm run publish:install-smoke
-MCPSKILL_RELEASE=1 pnpm run publish:check
+pnpm run publish:release-check
 git diff --check
 ```
 
@@ -47,7 +47,11 @@ Recommended stable tag after real external validation:
 0.1.0
 ```
 
-Do not publish `0.0.0`. npm versions cannot be overwritten. `MCPSKILL_RELEASE=1 pnpm run publish:check` enforces this rule for real release preparation while normal development checks can still pass before a version is chosen.
+Do not publish `0.0.0`. npm versions cannot be overwritten. `pnpm run publish:release-check` enforces this rule for real release preparation while normal development checks can still pass before a version is chosen.
+
+## Runtime Version
+
+The published packages require Node.js `>=22.5.0`. Several runtime paths use `node:sqlite` for source indexes, mod archive indexes, and offline documentation bundles, so Node 18/20 must not be advertised as supported until those paths have a fallback.
 
 ## Publish Order
 
