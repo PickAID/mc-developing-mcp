@@ -31,5 +31,21 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "description": "Offline source package acquisition, locking, and installation helpers.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }

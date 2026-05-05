@@ -52,5 +52,21 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "description": "MCP stdio server for Minecraft Java, KubeJS, datapack, resource pack, Gradle, and mod archive development evidence.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }

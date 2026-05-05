@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -22,7 +23,7 @@ function isDirectRun(moduleUrl: string): boolean {
   const entrypoint = process.argv[1];
 
   return entrypoint
-    ? pathToFileURL(resolve(entrypoint)).href === moduleUrl
+    ? pathToFileURL(realpathSync(resolve(entrypoint))).href === moduleUrl
     : false;
 }
 

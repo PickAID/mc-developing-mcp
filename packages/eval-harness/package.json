@@ -23,5 +23,21 @@
     "type": "git",
     "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
     "directory": "packages/eval-harness"
+  },
+  "description": "Private evaluation harness for mc-developing-mcp scenarios.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }

@@ -13,7 +13,9 @@ The release shape is a publishable package closure, not a single bundled MCP ser
 - Added `scripts/npm-publish-packages.mjs` as the ordered package list for future publication.
 - Added `pnpm run publish:check` to verify package metadata, built entrypoints, dependency closure, and forbidden dist outputs.
 - Added `pnpm run publish:dry-run` to create temporary `pnpm pack` tarballs, inspect packed `package.json`, verify no `workspace:` dependency ranges remain, then delete the tarballs.
+- Added `pnpm run publish:install-smoke` to install all local tarballs into a temporary project and verify the installed `mc-developing-mcp` binary initializes and exposes `mc_develop`.
 - Added root and MCP package READMEs explaining the small public MCP surface and npm release workflow.
+- Added `docs/release/npm-publish-runbook.md` for real upload preflight, versioning, publish order, and post-publish verification.
 
 ## Verification Commands
 
@@ -21,6 +23,7 @@ The release shape is a publishable package closure, not a single bundled MCP ser
 pnpm test
 pnpm run publish:check
 pnpm run publish:dry-run
+pnpm run publish:install-smoke
 find apps packages tests \( -name '*.ts' -o -name '*.tsx' \) -print | xargs wc -l | awk '$1 > 500 && $2 != "total" { print }'
 find apps/mcp-server/dist -type f \( -name '*.test.js' -o -name '*.test.d.ts' -o -name '*.test-support.js' -o -name '*.test-support.d.ts' \) | wc -l
 find apps/mcp-server/dist -maxdepth 1 -type f ! -name 'index.*' ! -name 'stdio.*' | wc -l
@@ -32,6 +35,7 @@ git diff --check
 - `pnpm test`: passed, `178` test files and `622` tests.
 - `pnpm run publish:check`: passed for `19` publishable packages.
 - `pnpm run publish:dry-run`: passed for all `19` publishable packages.
+- `pnpm run publish:install-smoke`: passed after installing all `19` local tarballs into a temporary npm project.
 - Packed tarball dependency check: all packed internal dependency ranges were rewritten from `workspace:*` to concrete versions.
 - TS/TSX line guard: no files over `500` lines.
 - MCP server dist forbidden test output count: `0`.

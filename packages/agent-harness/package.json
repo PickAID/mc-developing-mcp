@@ -33,5 +33,21 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "description": "Task routing and prompt guidance harness for Minecraft development evidence selection.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }

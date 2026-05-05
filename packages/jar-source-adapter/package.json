@@ -26,5 +26,21 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "description": "Local jar, nested jar, source archive, and mod archive inspection utilities.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }

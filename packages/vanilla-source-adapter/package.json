@@ -31,5 +31,21 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "description": "Vanilla Minecraft source request and resolution adapter with user-confirmed acquisition.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }

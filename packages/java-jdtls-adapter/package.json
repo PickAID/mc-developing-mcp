@@ -26,5 +26,21 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "description": "JDT LS process, profile, diagnostics, and JSON-RPC helpers for Java Minecraft projects.",
+  "keywords": [
+    "minecraft",
+    "mcp",
+    "kubejs",
+    "datapack",
+    "resourcepack",
+    "modding"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/PickAID/mc-developing-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/PickAID/mc-developing-mcp/issues"
   }
 }
