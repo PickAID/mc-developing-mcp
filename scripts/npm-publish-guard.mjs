@@ -6,6 +6,7 @@ const repoRoot = process.cwd();
 const publishableSet = new Set(publishablePackages);
 const packageNames = new Map();
 const failures = [];
+const releaseMode = process.env.MCPSKILL_RELEASE === "1";
 
 for (const packageDir of publishablePackages) {
   const packageJsonPath = join(repoRoot, packageDir, "package.json");
@@ -25,7 +26,10 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`npm publish guard passed for ${publishablePackages.length} package(s).`);
+console.log(
+  `npm publish guard passed for ${publishablePackages.length} package(s)` +
+    (releaseMode ? " in release mode." : ".")
+);
 
 function checkPackage(packageDir) {
   const packageJsonPath = join(repoRoot, packageDir, "package.json");
@@ -35,6 +39,10 @@ function checkPackage(packageDir) {
 
   expect(packageJson.private !== true, `${label} must not be private`);
   expect(packageJson.version?.match(/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/), `${label} must have a semver version`);
+  expect(
+    !releaseMode || packageJson.version !== "0.0.0",
+    `${label} must not publish release version 0.0.0`
+  );
   expect(packageJson.type === "module", `${label} must be ESM`);
   expect(packageJson.files?.length === 1 && packageJson.files[0] === "dist", `${label} must publish only dist through files`);
   expect(packageJson.publishConfig?.access === "public", `${label} must publish with public access`);

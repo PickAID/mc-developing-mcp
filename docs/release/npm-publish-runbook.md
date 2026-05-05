@@ -25,6 +25,7 @@ pnpm test
 pnpm run publish:check
 pnpm run publish:dry-run
 pnpm run publish:install-smoke
+MCPSKILL_RELEASE=1 pnpm run publish:check
 git diff --check
 ```
 
@@ -46,7 +47,7 @@ Recommended stable tag after real external validation:
 0.1.0
 ```
 
-Do not publish `0.0.0`. npm versions cannot be overwritten.
+Do not publish `0.0.0`. npm versions cannot be overwritten. `MCPSKILL_RELEASE=1 pnpm run publish:check` enforces this rule for real release preparation while normal development checks can still pass before a version is chosen.
 
 ## Publish Order
 
