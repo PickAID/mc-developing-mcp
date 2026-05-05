@@ -9,8 +9,15 @@ import type {
 
 import { buildHarnessSnapshot } from "./snapshot.js";
 import {
+  KUBEJS_DEBUG_POLICY_TEXT,
+  KUBEJS_EVIDENCE_POLICY_TEXT,
+  KUBEJS_EVENT_POLICY_TEXT,
   KUBEJS_GLOBAL_STATE_POLICY,
-  KUBEJS_NATIVE_EVENT_POLICY
+  KUBEJS_MIGRATION_POLICY_TEXT,
+  KUBEJS_NATIVE_EVENT_POLICY,
+  KUBEJS_RESOURCE_POLICY_TEXT,
+  KUBEJS_SCOPE_POLICY_TEXT,
+  KUBEJS_STATE_POLICY_TEXT
 } from "./kubejs-policy-text.js";
 
 const AVAILABLE_HARNESS_TOOLS: AgentRuntimeToolName[] = [
@@ -123,7 +130,7 @@ function buildRoutePolicy(snapshot: AgentRuntimeHarnessSnapshot): string {
 
 function buildToolPolicy(preferredTools: AgentRuntimeToolName[]): string {
   const route = preferredTools.join(" -> ");
-  return `Preferred tools: ${route}. Use migration.analyze only for explicit version migration requests.`;
+  return `Preferred internal routes: ${route}. Use migration.analyze only for explicit version migration requests.`;
 }
 
 function buildAuthoringPolicyFragment(
@@ -154,6 +161,20 @@ function buildAuthoringPolicyFragment(
         : "",
       KUBEJS_NATIVE_EVENT_POLICY,
       KUBEJS_GLOBAL_STATE_POLICY,
+      " ",
+      KUBEJS_SCOPE_POLICY_TEXT,
+      " ",
+      KUBEJS_EVIDENCE_POLICY_TEXT,
+      " ",
+      KUBEJS_EVENT_POLICY_TEXT,
+      " ",
+      KUBEJS_STATE_POLICY_TEXT,
+      " ",
+      KUBEJS_DEBUG_POLICY_TEXT,
+      " ",
+      KUBEJS_RESOURCE_POLICY_TEXT,
+      " ",
+      KUBEJS_MIGRATION_POLICY_TEXT,
       authoringPolicy.preferDocBackedAnswers
         ? " and rely on ProbeJS, workspace facts, and modding docs before generic JavaScript guesses."
         : ""

@@ -56,7 +56,7 @@ describe("buildHarnessBrief", () => {
         },
         {
           id: "tool_policy",
-          text: "Preferred tools: workspace.analyze -> context.query. Use migration.analyze only for explicit version migration requests."
+          text: "Preferred internal routes: workspace.analyze -> context.query. Use migration.analyze only for explicit version migration requests."
         }
       ]
     });
@@ -103,7 +103,7 @@ describe("buildHarnessBrief", () => {
         },
         {
           id: "tool_policy",
-          text: "Preferred tools: source.bundle -> context.query -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
+          text: "Preferred internal routes: source.bundle -> context.query -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
         }
       ]
     });
@@ -146,7 +146,7 @@ describe("buildHarnessBrief", () => {
         },
         {
           id: "tool_policy",
-          text: "Preferred tools: context.query -> source.bundle -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
+          text: "Preferred internal routes: context.query -> source.bundle -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
         },
         {
           id: "kubejs_authoring_policy",
@@ -184,6 +184,18 @@ describe("buildHarnessBrief", () => {
     );
     expect(kubejsPolicy?.text).toContain(
       "global/Global usage as shared KubeJS state"
+    );
+    expect(kubejsPolicy?.text).toContain(
+      "keep startup_scripts, server_scripts, client_scripts, and config responsibilities separate"
+    );
+    expect(kubejsPolicy?.text).toContain(
+      "prefer ProbeJS/d.ts quick info, snippets, item/fluid/tag/registry/recipe summaries"
+    );
+    expect(kubejsPolicy?.text).toContain(
+      "connect scripts to datapack and resource-pack evidence"
+    );
+    expect(kubejsPolicy?.text).toContain(
+      "compare runtime, ProbeJS surface, docs, datapack/resource-pack profiles, and existing scripts"
     );
   });
 });

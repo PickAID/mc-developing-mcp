@@ -77,7 +77,7 @@ function buildTaskToolPolicy(
 ): AgentRuntimePromptFragment {
   return {
     id: "task_tool_policy",
-    text: `Task tools: ${taskBriefRoute.preferredTools.join(" -> ")}.`
+    text: `Task internal routes: ${taskBriefRoute.preferredTools.join(" -> ")}.`
   };
 }
 

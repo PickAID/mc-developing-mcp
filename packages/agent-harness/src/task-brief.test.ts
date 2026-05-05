@@ -73,7 +73,7 @@ describe("buildHarnessTaskBrief", () => {
         },
         {
           id: "task_tool_policy",
-          text: "Task tools: workspace.analyze -> context.query -> source.bundle."
+          text: "Task internal routes: workspace.analyze -> context.query -> source.bundle."
         },
         {
           id: "task_evidence_policy",
@@ -136,7 +136,7 @@ describe("buildHarnessTaskBrief", () => {
         },
         {
           id: "task_tool_policy",
-          text: "Task tools: context.query -> source.bundle -> workspace.analyze."
+          text: "Task internal routes: context.query -> source.bundle -> workspace.analyze."
         },
         {
           id: "task_evidence_policy",
@@ -145,10 +145,25 @@ describe("buildHarnessTaskBrief", () => {
         },
         {
           id: "task_kubejs_scripting_policy",
-          text:
-            "KubeJS policy: treat scripts as Minecraft lifecycle scripting, not a generic JS project; use ProbeJS/d.ts evidence; verify ForgeEvents, NativeEvents, and global/Global usage against runtime/addons and existing scripts; avoid persistent console.* debug output."
+          text: expect.stringContaining(
+            "keep startup_scripts, server_scripts, client_scripts, and config responsibilities separate"
+          )
         }
       ])
+    );
+
+    const kubejsTaskPolicy = brief.promptFragments.find(
+      (fragment) => fragment.id === "task_kubejs_scripting_policy"
+    );
+
+    expect(kubejsTaskPolicy?.text).toContain(
+      "prefer ProbeJS/d.ts quick info, snippets, item/fluid/tag/registry/recipe summaries"
+    );
+    expect(kubejsTaskPolicy?.text).toContain(
+      "connect scripts to datapack and resource-pack evidence"
+    );
+    expect(kubejsTaskPolicy?.text).toContain(
+      "avoid persistent console.* output in committed scripts"
     );
   });
 

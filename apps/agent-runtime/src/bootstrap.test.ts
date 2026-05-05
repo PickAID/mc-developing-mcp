@@ -97,7 +97,7 @@ describe("buildAgentRuntimeBootstrap", () => {
         },
         {
           id: "tool_policy",
-          text: "Preferred tools: source.bundle -> context.query -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
+          text: "Preferred internal routes: source.bundle -> context.query -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
         }
       ]
     });
@@ -153,7 +153,7 @@ describe("buildAgentRuntimeBootstrap", () => {
         },
         {
           id: "tool_policy",
-          text: "Preferred tools: context.query -> source.bundle -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
+          text: "Preferred internal routes: context.query -> source.bundle -> workspace.analyze. Use migration.analyze only for explicit version migration requests."
         },
         {
           id: "kubejs_authoring_policy",
