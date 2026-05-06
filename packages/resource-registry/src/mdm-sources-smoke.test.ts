@@ -49,8 +49,10 @@ describe("mdm-sources local release smoke", () => {
     const registry = toMdmResourceRegistryFromReleaseManifest(manifest);
     const packages = toPackageManifestsV2(registry.packages);
 
-    expect(manifest.packages).toHaveLength(3);
+    expect(manifest.packages).toHaveLength(5);
     expect(manifest.packages.map((entry) => entry.releaseChannel).sort()).toEqual([
+      "datapack",
+      "datapack",
       "datapack",
       "required",
       "required"
@@ -59,7 +61,25 @@ describe("mdm-sources local release smoke", () => {
       expect.arrayContaining([
         expect.objectContaining({
           identity: expect.objectContaining({
+            packageId: "minecraft-1.18.2-vanilla-datapack-profile",
+            packageVersion: "0.1.0"
+          }),
+          artifact: expect.objectContaining({ kind: "datapack_bundle" }),
+          query: expect.objectContaining({ adapter: "archive_content" }),
+          release: expect.objectContaining({ channel: "datapack" })
+        }),
+        expect.objectContaining({
+          identity: expect.objectContaining({
             packageId: "minecraft-1.20.1-vanilla-datapack-profile",
+            packageVersion: "0.1.0"
+          }),
+          artifact: expect.objectContaining({ kind: "datapack_bundle" }),
+          query: expect.objectContaining({ adapter: "archive_content" }),
+          release: expect.objectContaining({ channel: "datapack" })
+        }),
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            packageId: "minecraft-1.21.1-vanilla-datapack-profile",
             packageVersion: "0.1.0"
           }),
           artifact: expect.objectContaining({ kind: "datapack_bundle" }),

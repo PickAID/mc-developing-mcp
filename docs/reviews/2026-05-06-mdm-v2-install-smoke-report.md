@@ -20,11 +20,13 @@ installer path, then opens the cached artifact payload.
 ```json
 {
   "schemaVersion": 1,
-  "packageCount": 3,
+  "packageCount": 5,
   "packages": [
     "core-docs-required",
     "core-docs-required-v2",
-    "minecraft-1.20.1-vanilla-datapack-profile"
+    "minecraft-1.18.2-vanilla-datapack-profile",
+    "minecraft-1.20.1-vanilla-datapack-profile",
+    "minecraft-1.21.1-vanilla-datapack-profile"
   ]
 }
 ```
@@ -34,7 +36,19 @@ installer path, then opens the cached artifact payload.
 ```json
 [
   {
+    "packageId": "minecraft-1.18.2-vanilla-datapack-profile",
+    "artifactKind": "datapack_bundle",
+    "queryAdapter": "archive_content",
+    "releaseChannel": "datapack"
+  },
+  {
     "packageId": "minecraft-1.20.1-vanilla-datapack-profile",
+    "artifactKind": "datapack_bundle",
+    "queryAdapter": "archive_content",
+    "releaseChannel": "datapack"
+  },
+  {
+    "packageId": "minecraft-1.21.1-vanilla-datapack-profile",
     "artifactKind": "datapack_bundle",
     "queryAdapter": "archive_content",
     "releaseChannel": "datapack"
@@ -87,7 +101,7 @@ cd ../mdm-sources && node tools/validate.mjs
 @mcpskill/package-registry: 14 tests passed
 @mcpskill/source-package-manager: 52 tests passed
 mdm-sources node tests: 9 tests passed
-mdm-sources validate: packageCount 5, errorCount 0
+mdm-sources validate: packageCount 12, errorCount 0
 ```
 
 ## Findings
