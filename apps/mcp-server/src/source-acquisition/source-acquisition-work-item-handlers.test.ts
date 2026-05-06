@@ -1,3 +1,7 @@
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -8,6 +12,82 @@ import {
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "./source-acquisition-work-item-handlers.js";
 
 describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
+  it("indexes user jar work items through a runtime SQLite archive cache", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-jar-"));
+    const runtimeRoot = join(tempRoot, "runtime");
+    const sourceArchive = join(tempRoot, "mods", "content.jar");
+    await mkdir(join(tempRoot, "mods"), { recursive: true });
+    await writeFile(
+      sourceArchive,
+      createZip([
+        "data/demo/recipe/gear.json",
+        "assets/demo/models/item/gear.json",
+        "com/example/Gear.class"
+      ])
+    );
+
+    try {
+      const handlers = createMcpServerSourceAcquisitionWorkItemHandlers({
+        requestText: "Index this jar source.",
+        runtimeRoot
+      });
+      const first = await runSourceAcquisitionWorkItems({
+        workItems: [
+          {
+            kind: "jar_index",
+            sourceArchive,
+            cacheScope: "private_runtime"
+          }
+        ],
+        handlers
+      });
+      const second = await runSourceAcquisitionWorkItems({
+        workItems: [
+          {
+            kind: "jar_index",
+            sourceArchive,
+            cacheScope: "private_runtime"
+          }
+        ],
+        handlers
+      });
+
+      expect(first).toMatchObject({
+        status: "completed",
+        executions: [
+          {
+            status: "completed",
+            payload: {
+              source: "source_acquisition_jar_index",
+              archiveCount: 1,
+              entryCount: 3,
+              cache: {
+                archiveHits: 0,
+                archiveMisses: 1
+              },
+              domainCounts: {
+                assets: 1,
+                class: 1,
+                data: 1
+              }
+            }
+          }
+        ]
+      });
+      expect(second.executions[0]).toMatchObject({
+        status: "completed",
+        payload: {
+          cache: {
+            archiveHits: 1,
+            archiveMisses: 0
+          }
+        }
+      });
+    } finally {
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it("resolves Modrinth remote metadata work items through the resolver", async () => {
     const fetchUrls: string[] = [];
     const handlers = createMcpServerSourceAcquisitionWorkItemHandlers({
@@ -157,4 +237,46 @@ function jsonResponse(payload: unknown): Response {
       "content-type": "application/json"
     }
   });
+}
+
+function createZip(entryNames: string[]): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let localOffset = 0;
+
+  for (const entryName of entryNames) {
+    const name = Buffer.from(entryName);
+    const content = Buffer.from("{}\n");
+    const localHeader = Buffer.alloc(30);
+    const centralHeader = Buffer.alloc(46);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt32LE(content.length, 18);
+    localHeader.writeUInt32LE(content.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt32LE(content.length, 20);
+    centralHeader.writeUInt32LE(content.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(localOffset, 42);
+
+    localParts.push(localHeader, name, content);
+    centralParts.push(centralHeader, name);
+    localOffset += localHeader.length + name.length + content.length;
+  }
+
+  const centralDirectory = Buffer.concat(centralParts);
+  const localFiles = Buffer.concat(localParts);
+  const eocd = Buffer.alloc(22);
+
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(entryNames.length, 8);
+  eocd.writeUInt16LE(entryNames.length, 10);
+  eocd.writeUInt32LE(centralDirectory.length, 12);
+  eocd.writeUInt32LE(localFiles.length, 16);
+
+  return Buffer.concat([localFiles, centralDirectory, eocd]);
 }

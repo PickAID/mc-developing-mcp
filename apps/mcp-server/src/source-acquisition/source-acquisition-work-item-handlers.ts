@@ -1,9 +1,14 @@
+import { createHash } from "node:crypto";
+import { copyFile, link, mkdir } from "node:fs/promises";
+import { basename, join, normalize, resolve } from "node:path";
+
 import {
   resolveCurseForgeMod,
   resolveModrinthMod,
   type ResolveCurseForgeModInput,
   type ResolveModrinthModInput
 } from "@mcpskill/external-mod-resolver";
+import { queryCachedModArchiveEntries } from "@mcpskill/jar-source-adapter";
 import type {
   SourceAcquisitionWorkItemHandlerResult,
   SourceAcquisitionWorkItemRunnerHandlers
@@ -17,6 +22,7 @@ import {
 
 export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
   requestText: string;
+  runtimeRoot?: string;
   modrinthFetch?: ResolveModrinthModInput["fetch"];
   modrinthApiBaseUrl?: string;
   curseForgeApiKey?: string;
@@ -29,6 +35,22 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
   options: McpServerSourceAcquisitionWorkItemHandlerOptions
 ): SourceAcquisitionWorkItemRunnerHandlers {
   return {
+    jarIndex: async (item) => {
+      if (!options.runtimeRoot) {
+        return {
+          summary: "Jar indexing needs a runtime root for private cache storage.",
+          payload: {
+            source: "source_acquisition_jar_index",
+            status: "runtime_root_required"
+          }
+        };
+      }
+
+      return await indexJarWorkItem({
+        runtimeRoot: options.runtimeRoot,
+        sourceArchive: item.sourceArchive
+      });
+    },
     remoteMetadata: async (item) => {
       if (item.source === "github") {
         return githubMetadataResult();
@@ -87,6 +109,89 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
   };
 }
 
+async function indexJarWorkItem(input: {
+  runtimeRoot: string;
+  sourceArchive: string;
+}): Promise<SourceAcquisitionWorkItemHandlerResult> {
+  const workspaceRoot = await ensureRuntimeJarWorkspace(input);
+  const result = await queryCachedModArchiveEntries({
+    workspaceRoot,
+    databasePath: join(
+      input.runtimeRoot,
+      "source-acquisition",
+      "jar-entry-index.sqlite"
+    ),
+    limit: 8
+  });
+
+  return {
+    summary: `Indexed ${result.entryCount} jar entr${result.entryCount === 1 ? "y" : "ies"}.`,
+    payload: {
+      source: "source_acquisition_jar_index",
+      archiveCount: result.archiveCount,
+      entryCount: result.entryCount,
+      truncated: result.truncated,
+      cache: result.cache,
+      domainCounts: countEntryDomains(result.entries),
+      sampleEntries: result.entries.map((entry) => ({
+        domain: entry.domain,
+        relativePath: entry.relativePath,
+        assetKind: entry.assetKind,
+        dataKind: entry.dataKind
+      }))
+    }
+  };
+}
+
+async function ensureRuntimeJarWorkspace(input: {
+  runtimeRoot: string;
+  sourceArchive: string;
+}): Promise<string> {
+  const sourceArchive = normalize(resolve(input.sourceArchive));
+  const archiveKey = createHash("sha256").update(sourceArchive).digest("hex");
+  const workspaceRoot = join(
+    input.runtimeRoot,
+    "source-acquisition",
+    "jar-workspaces",
+    archiveKey
+  );
+  const modsDir = join(workspaceRoot, "mods");
+  const linkPath = join(modsDir, basename(sourceArchive));
+
+  await mkdir(modsDir, { recursive: true });
+  await createArchiveLinkIfMissing(sourceArchive, linkPath);
+
+  return workspaceRoot;
+}
+
+async function createArchiveLinkIfMissing(
+  targetPath: string,
+  linkPath: string
+): Promise<void> {
+  try {
+    await link(targetPath, linkPath);
+  } catch (error) {
+    if (isFileExists(error)) {
+      return;
+    }
+    if (isCrossDeviceLink(error)) {
+      await copyFile(targetPath, linkPath);
+      return;
+    }
+
+    throw error;
+  }
+}
+
+function countEntryDomains(
+  entries: Array<{ domain: string }>
+): Record<string, number> {
+  return entries.reduce<Record<string, number>>((counts, entry) => {
+    counts[entry.domain] = (counts[entry.domain] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
 function missingConstraintsResult(
   source: "modrinth" | "curseforge",
   missing: string[]
@@ -128,4 +233,20 @@ function githubMetadataResult(): SourceAcquisitionWorkItemHandlerResult {
       }
     }
   };
+}
+
+function isFileExists(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error as NodeJS.ErrnoException).code === "EEXIST"
+  );
+}
+
+function isCrossDeviceLink(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error as NodeJS.ErrnoException).code === "EXDEV"
+  );
 }
