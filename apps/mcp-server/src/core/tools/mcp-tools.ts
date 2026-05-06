@@ -36,6 +36,10 @@ import {
   type MdmDocsResourceSummary
 } from "../../docs/mdm-docs/mdm-docs-records.js";
 import { loadMdmVanillaReleaseCatalog } from "../../docs/mdm-resource/vanilla-release-catalog.js";
+import {
+  buildMdmPackageRecommendations,
+  type MdmPackageRecommendations
+} from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
@@ -185,6 +189,10 @@ async function executeMcpDevelopTool(
     }
 
     const mdmDocs = await loadMdmDocsResourcesFromStatus(mdmResources);
+    const mdmPackageRecommendations = buildMdmPackageRecommendations({
+      requestText: input.requestText,
+      mdmResources
+    });
     const vanillaReleaseCatalog =
       await loadMdmVanillaReleaseCatalog(mdmResources);
     const requestContext =
@@ -231,7 +239,8 @@ async function executeMcpDevelopTool(
       structuredContent: toStructuredContent(result, {
         mdmResources,
         mdmReleaseInstall,
-        mdmDocs: mdmDocs.summary
+        mdmDocs: mdmDocs.summary,
+        mdmPackageRecommendations
       })
     };
   } catch (error) {
@@ -347,6 +356,7 @@ function toStructuredContent(
     mdmResources?: MdmResourceStatusContext;
     mdmReleaseInstall?: McpMdmReleaseInstallResult;
     mdmDocs?: MdmDocsResourceSummary;
+    mdmPackageRecommendations?: MdmPackageRecommendations;
   }
 ): Record<string, unknown> {
   return buildMcpDevelopStructuredContent(result, options);

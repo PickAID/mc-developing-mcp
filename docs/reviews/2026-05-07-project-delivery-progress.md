@@ -31,6 +31,9 @@ real release distribution, broader package corpus coverage, and final UX polish.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
+- `mc_develop` now emits conservative MDM package recommendations by task
+  signal, including confirmation-safe `mdmReleaseInstall` hints that default to
+  `downloadPolicy: "disabled"`.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -75,6 +78,7 @@ Recent verification records:
 - `docs/reviews/2026-05-06-mdm-v2-install-smoke-report.md`
 - `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
 - `docs/reviews/2026-05-07-real-mdm-release-consumption-verification.md`
+- `docs/reviews/2026-05-07-mdm-package-recommendations-verification.md`
 - `docs/reviews/2026-05-07-unified-source-acquisition-cache-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
@@ -88,16 +92,20 @@ mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
+MCP MDM package recommendations: KubeJS/datapack task produced safe install hints without auto-download
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 93-95%.
-- MDM resource/package delivery: 70-74%.
-- Overall project deliverability: 76-80%.
+- MCP core capability: 94-95%.
+- MDM resource/package delivery: 72-75%.
+- Overall project deliverability: 77-81%.
 
-The next large slice should focus on remote release acceptance and corpus growth:
+The next large slice should focus on source-channel package coverage and corpus
+growth:
 
 - Run live GitHub Release acceptance once a release exists.
+- Add public `sources` channel profiles that describe legal local source
+  acquisition/generation recipes without distributing Minecraft source.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus.

@@ -109,6 +109,7 @@ A package cannot be considered release-ready unless:
 - The artifact can be built by `tools/build-local-release.mjs`.
 - MCP can read the release manifest and convert packages into v2 manifests.
 - MCP can cache at least one selected artifact and read its payload.
+- MCP can recommend relevant packages from task intent without downloading them.
 
 ## Current Evidence
 
@@ -117,6 +118,7 @@ Current smoke evidence is recorded in:
 - `docs/reviews/2026-05-06-mdm-v2-install-smoke-report.md`
 - `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
 - `docs/reviews/2026-05-07-real-mdm-release-consumption-verification.md`
+- `docs/reviews/2026-05-07-mdm-package-recommendations-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
 The verified path is:
@@ -134,6 +136,8 @@ The verified path is:
    `manifestUrl` using injected fetchers.
 10. Verify sibling artifact URL resolution, checksum-verified cache install, and
     SQLite docs lookup.
+11. Recommend KubeJS and datapack packages from task intent with
+    confirmation-safe install hints.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -148,8 +152,11 @@ The system is not complete until these exist:
   `global`, ProbeJS, and scope-specific rules.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
+- Public `sources` channel profiles that describe legal local source acquisition
+  and generation recipes without distributing Minecraft source.
 - Version coverage beyond 1.20.1, at least from 1.18.2 through current target
   versions.
-- MCP selection logic that chooses packages by workspace context and task intent.
+- Deeper MCP selection logic that uses package profiles, workspace version, and
+  loader evidence beyond the current conservative text-signal selector.
 - Live GitHub Release acceptance run.
 - GitHub Release provenance/signing and retention policy.

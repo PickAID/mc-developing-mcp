@@ -2,12 +2,16 @@ import type { McpServerRequestExecutorResult } from "../../request/execution/req
 import type { MdmResourceStatusContext } from "../../docs/mdm-resource/mdm-resource-status.js";
 import type { McpMdmReleaseInstallResult } from "../../docs/mdm-resource/mdm-release-install.js";
 import type { MdmDocsResourceSummary } from "../../docs/mdm-docs/mdm-docs-records.js";
+import type { MdmPackageRecommendations } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import type { AgentRuntimePromptFragmentId } from "@mcpskill/shared-types";
 
 type RequiredBudgetOptions = Required<
   Omit<
     McpDevelopStructuredContentOptions,
-    "mdmResources" | "mdmReleaseInstall" | "mdmDocs"
+    | "mdmResources"
+    | "mdmReleaseInstall"
+    | "mdmDocs"
+    | "mdmPackageRecommendations"
   >
 >;
 
@@ -32,6 +36,7 @@ export interface McpDevelopStructuredContentOptions {
   mdmResources?: MdmResourceStatusContext;
   mdmReleaseInstall?: McpMdmReleaseInstallResult;
   mdmDocs?: MdmDocsResourceSummary;
+  mdmPackageRecommendations?: MdmPackageRecommendations;
 }
 
 export function buildMcpDevelopStructuredContent(
@@ -76,6 +81,9 @@ export function buildMcpDevelopStructuredContent(
       : undefined,
     mdmDocs: options.mdmDocs
       ? compactPayload(options.mdmDocs, budget).value
+      : undefined,
+    mdmPackageRecommendations: options.mdmPackageRecommendations
+      ? compactPayload(options.mdmPackageRecommendations, budget).value
       : undefined
   };
 
