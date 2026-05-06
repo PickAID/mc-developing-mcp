@@ -266,6 +266,46 @@ describe("registerMcpServerTools", () => {
       ])
     });
   });
+
+  it("runs conservative source acquisition handlers through the high-level tool", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-source-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Find source for a NeoForge mod from Modrinth without a workspace.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      executions: [
+        {
+          routeStep: "source_acquisition_plan",
+          status: "context",
+          payload: {
+            source: "source_acquisition_plan",
+            workItemExecutionStatus: "partial",
+            workItemExecutions: [
+              {
+                kind: "remote_metadata",
+                status: "skipped",
+                reason: "handler_unavailable"
+              }
+            ]
+          }
+        },
+        {
+          routeStep: "external_mod_resolution",
+          status: "selected"
+        }
+      ]
+    });
+  });
 });
 
 function createCapturingRegistry(): CapturingRegistry {

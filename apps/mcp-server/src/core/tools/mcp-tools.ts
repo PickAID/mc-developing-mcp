@@ -36,6 +36,7 @@ import {
   type MdmDocsResourceSummary
 } from "../../docs/mdm-docs/mdm-docs-records.js";
 import { loadMdmVanillaReleaseCatalog } from "../../docs/mdm-resource/vanilla-release-catalog.js";
+import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -210,7 +211,13 @@ async function executeMcpDevelopTool(
       },
       contextQuery: {
         docsRecords: mdmDocs.records,
-        docsSqliteArtifacts: mdmDocs.sqliteArtifacts
+        docsSqliteArtifacts: mdmDocs.sqliteArtifacts,
+        sourceAcquisitionWorkItemHandlers:
+          createMcpServerSourceAcquisitionWorkItemHandlers({
+            requestText: input.requestText,
+            runtimeRoot,
+            remoteMetadataPolicy: "disabled"
+          })
       }
     });
 

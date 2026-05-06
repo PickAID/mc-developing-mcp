@@ -30,6 +30,7 @@ export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
   vanillaRecipes?: SourcePackageRecipeRegistry;
   vanillaRecipeProvider?: SourcePackageRecipeProvider;
   vanillaExecuteRecipe?: SourcePackageRecipeExecutor;
+  remoteMetadataPolicy?: "enabled" | "disabled";
   modrinthFetch?: ResolveModrinthModInput["fetch"];
   modrinthApiBaseUrl?: string;
   curseForgeApiKey?: string;
@@ -41,7 +42,7 @@ export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
 export function createMcpServerSourceAcquisitionWorkItemHandlers(
   options: McpServerSourceAcquisitionWorkItemHandlerOptions
 ): SourceAcquisitionWorkItemRunnerHandlers {
-  return {
+  const handlers: SourceAcquisitionWorkItemRunnerHandlers = {
     jarIndex: async (item) => {
       if (!options.runtimeRoot) {
         return {
@@ -79,7 +80,15 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
           executeRecipe: options.vanillaExecuteRecipe
         }
       });
-    },
+    }
+  };
+
+  if (options.remoteMetadataPolicy === "disabled") {
+    return handlers;
+  }
+
+  return {
+    ...handlers,
     remoteMetadata: async (item) => {
       if (item.source === "github") {
         return githubMetadataResult();
