@@ -178,6 +178,9 @@ importers:
       '@mcpskill/jar-source-adapter':
         specifier: workspace:*
         version: link:../jar-source-adapter
+      '@mcpskill/package-registry':
+        specifier: workspace:*
+        version: link:../package-registry
       '@mcpskill/shared-types':
         specifier: workspace:*
         version: link:../shared-types

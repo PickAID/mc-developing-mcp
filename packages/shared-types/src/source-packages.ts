@@ -6,6 +6,7 @@ export type SourcePackageNamespace =
   | "forge"
   | "fabric"
   | "quilt"
+  | "kubejs"
   | `mod/${string}`;
 
 export type SourcePackageArtifactType =
@@ -14,6 +15,9 @@ export type SourcePackageArtifactType =
   | "datapack"
   | "resource-pack"
   | "assets"
+  | "mapping-bundle"
+  | "mod-archive-index"
+  | "probejs-snapshot"
   | "docs/core"
   | "docs/search"
   | "docs/ui"

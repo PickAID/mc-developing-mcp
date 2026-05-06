@@ -12,3 +12,4 @@ export * from "./validation.js";
 export * from "./executor.js";
 export * from "./vanilla.js";
 export * from "./install.js";
+export * from "./v2-adapter.js";
