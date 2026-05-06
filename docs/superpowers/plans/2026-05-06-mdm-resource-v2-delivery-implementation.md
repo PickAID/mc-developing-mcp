@@ -76,7 +76,7 @@ version coverage to be considered complete.
 - [x] Create `mappings/vanilla` with a small legal mapping explanation payload.
 - [x] Create `datapack/vanilla` with versioned schema/profile records for supported Minecraft ranges.
 - [x] Create `resourcepack/vanilla` with versioned asset/profile records.
-- [ ] Create `kubejs/guidance` with public generic KubeJS rules, not private ProbeJS dumps.
+- [x] Create `kubejs/guidance` with public generic KubeJS rules, not private ProbeJS dumps.
 - [ ] Create `client-visual` with UI, rendering, shader, model, texture, atlas, and resource-pack concepts.
 - [x] Run release builder and validate produced manifest.
 - [ ] Commit in `mdm-sources`: `feat(packages): add initial curated mdm resources`.
