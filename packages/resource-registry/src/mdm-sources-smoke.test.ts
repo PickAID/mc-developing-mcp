@@ -113,8 +113,21 @@ describe("mdm-sources local release smoke", () => {
     });
 
     expect(cached.status).toBe("downloaded");
+    const catalogCached = await ensureMdmReleasePackageCached({
+      manifest,
+      packageId: "minecraft-release-catalog",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async (artifactPath) => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => readFile(artifactPath)
+      })
+    });
+
+    expect(catalogCached.status).toBe("downloaded");
     const status = await summarizeMdmResourceStatus({ registry, cacheLayout });
-    expect(status.counts.ready).toBe(1);
+    expect(status.counts.ready).toBe(2);
 
     const artifact = JSON.parse(
       await readFile(cached.state?.artifactPath ?? "", "utf-8")
@@ -122,6 +135,16 @@ describe("mdm-sources local release smoke", () => {
     expect(artifact.payload["payload/datapack-profile.json"]).toMatchObject({
       repoPath: expect.stringContaining("payload/datapack-profile.json")
     });
+
+    const catalogArtifact = JSON.parse(
+      await readFile(catalogCached.state?.artifactPath ?? "", "utf-8")
+    );
+    const catalog = JSON.parse(
+      catalogArtifact.payload["payload/release-catalog.json"].content
+    );
+    expect(catalog.releaseCount).toBeGreaterThanOrEqual(101);
+    expect(catalog.latest.release).toBe(catalog.releases[0].id);
+    expect(catalog.releases.at(-1).id).toBe("1.0");
   });
 });
 
