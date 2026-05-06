@@ -17,7 +17,7 @@ This verifies the chain from a release manifest SQLite docs artifact to MCP docs
 ## Command
 
 ```bash
-pnpm --filter @mcpskill/mcp-server test -- core/tools/mcp-tools-mdm-resources.test.ts
+pnpm --filter @mcpskill/mcp-server test -- core/tools/mcp-tools-mdm-sqlite-resources.test.ts
 ```
 
 ## Result

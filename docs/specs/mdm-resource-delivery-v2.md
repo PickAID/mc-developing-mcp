@@ -2,7 +2,8 @@
 
 ## Status
 
-Current status: install-smoke capable, not full product deliverable.
+Current status: install-smoke and SQLite docs E2E capable, not full product
+deliverable.
 
 The public `mdm-sources` repository now has schema validation and initial
 curated package families. It is still an early package source, not a complete
@@ -24,7 +25,7 @@ every useful artifact.
 
 - `required`: minimal package policy, offline behavior, and resource status
   guidance.
-- `docs`: curated documentation bundles and future JSONL/SQLite search indexes.
+- `docs`: curated documentation bundles plus JSONL/SQLite search indexes.
 - `datapack`: versioned datapack profiles, registry families, function/tag/loot
   table/recipe/advancement structure, and pack-format guidance.
 - `resourcepack`: versioned asset profiles, models, blockstates, item models,
@@ -114,6 +115,8 @@ A package cannot be considered release-ready unless:
 Current smoke evidence is recorded in:
 
 - `docs/reviews/2026-05-06-mdm-v2-install-smoke-report.md`
+- `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
+- `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
 The verified path is:
 
@@ -123,16 +126,24 @@ The verified path is:
 4. Convert release summaries to v2 package manifests.
 5. Cache `minecraft-1.20.1-vanilla-datapack-profile`.
 6. Read `payload/datapack-profile.json` from the cached artifact.
+7. Install a SQLite docs release artifact through `mc_develop`.
+8. Verify `mdmResources.summary.counts.ready` and `docs_lookup` hits with
+   `source: "sqlite"`.
+
+The sibling `mdm-sources` release builder now also supports real `.sqlite`
+artifacts, SQLite package metadata, output directory cleanup, and
+`--no-registry-update` CI builds that do not mutate tracked registry metadata.
 
 ## Non-Deliverable Areas
 
 The system is not complete until these exist:
 
-- Real docs search package, preferably JSONL first and SQLite later.
-- KubeJS guidance package with ForgeEvents, NativeEvents, `global`, ProbeJS, and
-  scope-specific rules.
-- Client visual package covering UI, rendering, shader, model, atlas, animation,
-  and resource-pack patterns in a useful depth.
+- Larger docs search corpus beyond the initial JSONL/SQLite package.
+- Deeper KubeJS guidance package coverage for ForgeEvents, NativeEvents,
+  `global`, ProbeJS, and scope-specific rules.
+- Deeper client visual package coverage for UI, rendering, shader, model, atlas,
+  animation, and resource-pack patterns.
 - Version coverage beyond 1.20.1, at least from 1.18.2 through current target
   versions.
 - MCP selection logic that chooses packages by workspace context and task intent.
+- GitHub Release provenance/signing and a real remote release URL acceptance run.
