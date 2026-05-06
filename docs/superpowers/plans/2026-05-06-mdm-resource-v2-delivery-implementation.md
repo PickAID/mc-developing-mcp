@@ -72,7 +72,7 @@ version coverage to be considered complete.
 - Modify release builder and registry index files as needed.
 
 - [x] Create `docs/core` with compact MCP guidance payload.
-- [ ] Create `docs/search` with a small SQLite/FTS or JSONL search payload.
+- [x] Create `docs/search` with a small SQLite/FTS or JSONL search payload.
 - [x] Create `mappings/vanilla` with a small legal mapping explanation payload.
 - [x] Create `datapack/vanilla` with versioned schema/profile records for supported Minecraft ranges.
 - [x] Create `resourcepack/vanilla` with versioned asset/profile records.
