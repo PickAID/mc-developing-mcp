@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import type { MinecraftReleaseCatalog } from "@mcpskill/source-package-manager";
 
@@ -9,10 +10,23 @@ export interface MdmVanillaReleaseCatalogContext {
   packageId: "minecraft-release-catalog";
   artifactPath?: string;
   catalog?: MinecraftReleaseCatalog;
+  installSuggestion: MdmVanillaReleaseCatalogInstallSuggestion;
   message: string;
 }
 
 const CATALOG_PACKAGE_ID = "minecraft-release-catalog" as const;
+
+export interface MdmVanillaReleaseCatalogInstallSuggestion {
+  packageId: typeof CATALOG_PACKAGE_ID;
+  downloadPolicy: "disabled";
+  manifestPath?: string;
+  mdmReleaseInstall: {
+    packageId: typeof CATALOG_PACKAGE_ID;
+    downloadPolicy: "disabled";
+    manifestPath?: string;
+  };
+  summary: string;
+}
 
 export async function loadMdmVanillaReleaseCatalog(
   context: MdmResourceStatusContext
@@ -28,6 +42,7 @@ export async function loadMdmVanillaReleaseCatalog(
     return {
       status: "unavailable",
       packageId: CATALOG_PACKAGE_ID,
+      installSuggestion: buildCatalogInstallSuggestion(context),
       message:
         "minecraft-release-catalog is not cached; vanilla generation target planning is unavailable."
     };
@@ -39,6 +54,7 @@ export async function loadMdmVanillaReleaseCatalog(
       packageId: CATALOG_PACKAGE_ID,
       artifactPath: entry.artifactPath,
       catalog: await readReleaseCatalogArtifact(entry.artifactPath),
+      installSuggestion: buildCatalogInstallSuggestion(context),
       message: "minecraft-release-catalog is ready."
     };
   } catch (error) {
@@ -46,9 +62,31 @@ export async function loadMdmVanillaReleaseCatalog(
       status: "unavailable",
       packageId: CATALOG_PACKAGE_ID,
       artifactPath: entry.artifactPath,
+      installSuggestion: buildCatalogInstallSuggestion(context),
       message: `minecraft-release-catalog could not be read: ${toErrorMessage(error)}`
     };
   }
+}
+
+function buildCatalogInstallSuggestion(
+  context: MdmResourceStatusContext
+): MdmVanillaReleaseCatalogInstallSuggestion {
+  const manifestPath = context.registryRoot
+    ? join(context.registryRoot, "release-out", "mdm-release-manifest.json")
+    : undefined;
+
+  return {
+    packageId: CATALOG_PACKAGE_ID,
+    downloadPolicy: "disabled",
+    manifestPath,
+    mdmReleaseInstall: {
+      packageId: CATALOG_PACKAGE_ID,
+      downloadPolicy: "disabled",
+      manifestPath
+    },
+    summary:
+      "Call mc_develop again with mdmReleaseInstall for minecraft-release-catalog. Keep downloadPolicy disabled for confirmation, then use allowed only after explicit user approval."
+  };
 }
 
 async function readReleaseCatalogArtifact(

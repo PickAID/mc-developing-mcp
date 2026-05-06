@@ -15,6 +15,7 @@ The MCP still exposes only the progressive `mc_develop` tool. The new path does 
 - Added harness routing for explicit vanilla local-generation target requests.
 - Threaded the ready MDM release catalog into `source.bundle` from `mc_develop`.
 - Added a public tool contract test proving no new tool surface and no remote fetch.
+- Added missing-catalog install guidance that returns `downloadPolicy: disabled` and does not fetch, install, or write cache state.
 
 ## Concrete Public Tool Output
 
@@ -59,8 +60,8 @@ pnpm --filter @mcpskill/mcp-server test -- core/tools/mcp-tools-vanilla-generati
 Result:
 
 ```text
-Test Files  85 passed (85)
-Tests       268 passed (268)
+Test Files  86 passed (86)
+Tests       270 passed (270)
 ```
 
 Note: the MCP server package test script runs the full `apps/mcp-server/src` suite even when an extra path argument is supplied.
@@ -100,8 +101,8 @@ pnpm test
 Result:
 
 ```text
-Test Files  184 passed (184)
-Tests       654 passed (654)
+Test Files  185 passed (185)
+Tests       656 passed (656)
 ```
 
 ## File Size Check
@@ -110,13 +111,12 @@ Tests       654 passed (654)
 402 packages/agent-harness/src/intent.ts
 365 apps/mcp-server/src/core/tools/mcp-tools.ts
 371 apps/mcp-server/src/source-bundle/core/source-bundle-executor.ts
-163 apps/mcp-server/src/source-bundle/vanilla/source-bundle-vanilla-generation-targets.ts
-73  apps/mcp-server/src/docs/mdm-resource/vanilla-release-catalog.ts
-221 apps/mcp-server/src/core/tools/mcp-tools-vanilla-generation-targets.test.ts
+166 apps/mcp-server/src/source-bundle/vanilla/source-bundle-vanilla-generation-targets.ts
+111 apps/mcp-server/src/docs/mdm-resource/vanilla-release-catalog.ts
+300 apps/mcp-server/src/core/tools/mcp-tools-vanilla-generation-targets.test.ts
 ```
 
 ## Remaining Work
 
-- Add a follow-up route that can suggest installing/caching `minecraft-release-catalog` when the request asks for generation targets but the catalog is missing.
 - Add an explicit source-pack acquisition path for Mojang source generation once the decompile/remap backend is ready.
 - Keep datapack/resourcepack reads separate from target planning so normal vanilla asset/datapack lookups do not get hijacked by generation planning.

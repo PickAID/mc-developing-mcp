@@ -27,7 +27,8 @@ export function executeMcpServerVanillaGenerationTargets(
         source: "vanilla_generation_targets",
         result: {
           status: "catalog_unavailable",
-          catalog: compactCatalogContext(catalogContext)
+          catalog: compactCatalogContext(catalogContext),
+          nextAction: catalogContext?.installSuggestion
         }
       }
     };
@@ -43,7 +44,8 @@ export function executeMcpServerVanillaGenerationTargets(
         source: "vanilla_generation_targets",
         result: {
           status: "version_unresolved",
-          catalog: compactCatalogContext(catalogContext)
+          catalog: compactCatalogContext(catalogContext),
+          nextAction: catalogContext.installSuggestion
         }
       }
     };
@@ -153,6 +155,7 @@ function compactCatalogContext(
         status: catalogContext.status,
         packageId: catalogContext.packageId,
         artifactPath: catalogContext.artifactPath,
+        installSuggestion: catalogContext.installSuggestion,
         message: catalogContext.message
       }
     : undefined;

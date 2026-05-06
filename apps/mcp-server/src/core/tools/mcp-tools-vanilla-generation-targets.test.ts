@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
+  readCachedResourceState,
   resolveMdmResourceCacheLayout,
   writeCachedResourceState
 } from "@mcpskill/resource-registry";
@@ -92,6 +93,84 @@ describe("mc_develop vanilla generation targets", () => {
                   distributionPolicy: "local-generation-only"
                 })
               ])
+            }
+          }
+        }
+      }
+    });
+    expect(result.structuredContent).not.toHaveProperty("mdmReleaseInstall");
+  });
+
+  it("returns install guidance when the release catalog is not cached", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-vanilla-runtime-"));
+    const workspaceRoot = await createWorkspaceRoot();
+    const mdmSourcesRoot = await createMdmSourcesRoot();
+    const fetchUrls: string[] = [];
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      },
+      mdmReleaseManifestFetch: async (url) => {
+        fetchUrls.push(url);
+        throw new Error("remote manifest fetch should not run");
+      },
+      mdmArtifactFetch: async (url) => {
+        fetchUrls.push(url);
+        throw new Error("artifact fetch should not run");
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "List official vanilla local-generation targets for Minecraft 26.1.2. Do not download.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(fetchUrls).toEqual([]);
+    await expect(
+      readCachedResourceState(
+        resolveMdmResourceCacheLayout(runtimeRoot),
+        "minecraft-release-catalog"
+      )
+    ).resolves.toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: {
+        payload: {
+          source: "vanilla_generation_targets",
+          result: {
+            status: "catalog_unavailable",
+            nextAction: {
+              packageId: "minecraft-release-catalog",
+              downloadPolicy: "disabled",
+              manifestPath: join(
+                mdmSourcesRoot,
+                "release-out",
+                "mdm-release-manifest.json"
+              ),
+              mdmReleaseInstall: {
+                packageId: "minecraft-release-catalog",
+                downloadPolicy: "disabled",
+                manifestPath: join(
+                  mdmSourcesRoot,
+                  "release-out",
+                  "mdm-release-manifest.json"
+                )
+              }
+            },
+            catalog: {
+              installSuggestion: {
+                packageId: "minecraft-release-catalog",
+                downloadPolicy: "disabled",
+                mdmReleaseInstall: {
+                  packageId: "minecraft-release-catalog",
+                  downloadPolicy: "disabled"
+                }
+              }
             }
           }
         }

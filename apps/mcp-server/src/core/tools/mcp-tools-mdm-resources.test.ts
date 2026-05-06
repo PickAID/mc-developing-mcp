@@ -270,6 +270,7 @@ describe("mc_develop mdm resource status", () => {
       }
     });
   });
+
 });
 
 function createCapturingRegistry(): CapturingRegistry {
