@@ -44,6 +44,8 @@ every useful artifact.
 Allowed in `mdm-sources`:
 
 - Public JSON, JSONL, SQLite, or zipped curated profiles.
+- Public source acquisition profiles that describe local generation and cache
+  policy without bundling source code.
 - Legal mapping explanations and acquisition instructions.
 - Small reproducible package manifests and schema records.
 - Generic MCP guidance that does not reveal private modpack content.
@@ -121,6 +123,10 @@ Current smoke evidence is recorded in:
 - `docs/reviews/2026-05-07-mdm-package-recommendations-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
+Additional producer-side evidence:
+
+- `mdm-sources/reports/2026-05-07-sources-profile-verification.md`
+
 The verified path is:
 
 1. Copy `mdm-sources` to a temporary repository.
@@ -138,6 +144,9 @@ The verified path is:
     SQLite docs lookup.
 11. Recommend KubeJS and datapack packages from task intent with
     confirmation-safe install hints.
+12. Build a public `sources` channel profile for Minecraft 1.20.1 that points
+    to local generation and runtime-private cache ownership without bundling
+    Minecraft source.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -152,8 +161,8 @@ The system is not complete until these exist:
   `global`, ProbeJS, and scope-specific rules.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
-- Public `sources` channel profiles that describe legal local source acquisition
-  and generation recipes without distributing Minecraft source.
+- Public `sources` channel profile coverage beyond the first Minecraft 1.20.1
+  vanilla source acquisition profile.
 - Version coverage beyond 1.20.1, at least from 1.18.2 through current target
   versions.
 - Deeper MCP selection logic that uses package profiles, workspace version, and

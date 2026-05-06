@@ -61,6 +61,9 @@ Implemented:
   rewrite tracked registry metadata.
 - Release workflow uploads only artifacts listed in `mdm-release-manifest.json`,
   not arbitrary stale `release-out/*` files.
+- First public `sources` channel profile exists in `mdm-sources` for Minecraft
+  1.20.1 vanilla source acquisition. It is a profile/guidance artifact only and
+  does not bundle Minecraft source.
 
 Not done:
 
@@ -68,8 +71,8 @@ Not done:
 - Signing/provenance/retention policy.
 - Large public docs corpus.
 - Full version coverage from 1.18.2 through the current target line.
-- Source/mapping package corpus beyond initial profiles and runtime generation
-  paths.
+- Source/mapping package corpus beyond the first 1.20.1 source profile, initial
+  mapping profile, and runtime generation paths.
 
 ## Evidence
 
@@ -89,6 +92,7 @@ mdm-sources node --test tests/*.test.mjs: 19 passed
 mdm-sources node tools/validate.mjs: packageCount 14, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
+mdm-sources sources profile: packageCount 15, sources test 2 passed, full tests 21 passed
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
@@ -98,14 +102,14 @@ MCP MDM package recommendations: KubeJS/datapack task produced safe install hint
 ## Completion Estimate
 
 - MCP core capability: 94-95%.
-- MDM resource/package delivery: 72-75%.
-- Overall project deliverability: 77-81%.
+- MDM resource/package delivery: 74-77%.
+- Overall project deliverability: 78-82%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Add public `sources` channel profiles that describe legal local source
-  acquisition/generation recipes without distributing Minecraft source.
+- Extend public `sources` channel profiles beyond 1.20.1 and teach MCP to
+  recommend them for source/mapping tasks by workspace version.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus.
