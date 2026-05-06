@@ -11,7 +11,10 @@ import {
 import { queryCachedModArchiveEntries } from "@mcpskill/jar-source-adapter";
 import type {
   SourceAcquisitionWorkItemHandlerResult,
-  SourceAcquisitionWorkItemRunnerHandlers
+  SourceAcquisitionWorkItemRunnerHandlers,
+  SourcePackageRecipeExecutor,
+  SourcePackageRecipeProvider,
+  SourcePackageRecipeRegistry
 } from "@mcpskill/source-package-manager";
 
 import {
@@ -19,10 +22,14 @@ import {
   hasRequiredConstraints,
   parseExternalModRequest
 } from "../external-mod/resolution/external-mod-resolution-request.js";
+import { executeMcpServerVanillaGenerationWorkItem } from "./source-acquisition-vanilla-generation.js";
 
 export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
   requestText: string;
   runtimeRoot?: string;
+  vanillaRecipes?: SourcePackageRecipeRegistry;
+  vanillaRecipeProvider?: SourcePackageRecipeProvider;
+  vanillaExecuteRecipe?: SourcePackageRecipeExecutor;
   modrinthFetch?: ResolveModrinthModInput["fetch"];
   modrinthApiBaseUrl?: string;
   curseForgeApiKey?: string;
@@ -49,6 +56,28 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
       return await indexJarWorkItem({
         runtimeRoot: options.runtimeRoot,
         sourceArchive: item.sourceArchive
+      });
+    },
+    vanillaGeneration: async (item) => {
+      if (!options.runtimeRoot) {
+        return {
+          summary:
+            "Vanilla generation needs a runtime root for private cache storage.",
+          payload: {
+            source: "source_acquisition_vanilla_generation",
+            status: "runtime_root_required"
+          }
+        };
+      }
+
+      return await executeMcpServerVanillaGenerationWorkItem({
+        minecraftVersion: item.minecraftVersion,
+        options: {
+          runtimeRoot: options.runtimeRoot,
+          recipes: options.vanillaRecipes,
+          recipeProvider: options.vanillaRecipeProvider,
+          executeRecipe: options.vanillaExecuteRecipe
+        }
       });
     },
     remoteMetadata: async (item) => {

@@ -5,13 +5,126 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  buildVanillaSourcePackCopyRecipe,
   runSourceAcquisitionWorkItems,
+  writeSourcePackageConfirmation,
   type SourceAcquisitionWorkItem
 } from "@mcpskill/source-package-manager";
 
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "./source-acquisition-work-item-handlers.js";
 
 describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
+  it("returns vanilla source package confirmation evidence before generation", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-vanilla-gen-"));
+
+    try {
+      const handlers = createMcpServerSourceAcquisitionWorkItemHandlers({
+        requestText: "Generate vanilla source for Minecraft 1.20.1.",
+        runtimeRoot: join(tempRoot, "runtime")
+      });
+      const result = await runSourceAcquisitionWorkItems({
+        workItems: [
+          {
+            kind: "vanilla_generation",
+            minecraftVersion: "1.20.1",
+            cacheScope: "private_runtime"
+          }
+        ],
+        handlers
+      });
+
+      expect(result).toMatchObject({
+        status: "completed",
+        executions: [
+          {
+            kind: "vanilla_generation",
+            status: "completed",
+            payload: {
+              source: "source_acquisition_vanilla_generation",
+              result: {
+                status: "needs_confirmation",
+                packageId: "minecraft-1.20.1-source-pack-named",
+                confirmationScope: "package-version"
+              }
+            }
+          }
+        ]
+      });
+    } finally {
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("installs confirmed vanilla source package recipes through runtime cache", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-vanilla-ready-"));
+    const runtimeRoot = join(tempRoot, "runtime");
+    const sourceRoot = join(tempRoot, "source");
+    await mkdir(join(sourceRoot, "net", "minecraft", "world", "item"), {
+      recursive: true
+    });
+    await writeFile(
+      join(sourceRoot, "net", "minecraft", "world", "item", "ItemStack.java"),
+      "package net.minecraft.world.item;\npublic class ItemStack {}\n"
+    );
+    await writeSourcePackageConfirmation(createRuntimeLayout(runtimeRoot), {
+      packageId: "minecraft-1.20.1-source-pack-named",
+      namespace: "minecraft",
+      minecraftVersion: "1.20.1",
+      artifactType: "source-pack",
+      variant: "named",
+      scope: "package-version",
+      approvedAt: "2026-05-07T00:00:00Z",
+      source: "explicit-user-confirmation"
+    });
+
+    try {
+      const handlers = createMcpServerSourceAcquisitionWorkItemHandlers({
+        requestText: "Generate vanilla source for Minecraft 1.20.1.",
+        runtimeRoot,
+        vanillaRecipes: {
+          "minecraft-1.20.1-source-pack-named":
+            buildVanillaSourcePackCopyRecipe({
+              minecraftVersion: "1.20.1",
+              sourceRoot
+            })
+        }
+      });
+      const result = await runSourceAcquisitionWorkItems({
+        workItems: [
+          {
+            kind: "vanilla_generation",
+            minecraftVersion: "1.20.1",
+            cacheScope: "private_runtime"
+          }
+        ],
+        handlers
+      });
+
+      expect(result).toMatchObject({
+        status: "completed",
+        executions: [
+          {
+            status: "completed",
+            payload: {
+              source: "source_acquisition_vanilla_generation",
+              result: {
+                status: "ready",
+                packageId: "minecraft-1.20.1-source-pack-named",
+                artifactType: "source-pack",
+                sourceIndex: {
+                  fileCount: 1,
+                  javaSymbolCount: 1
+                }
+              }
+            }
+          }
+        ]
+      });
+    } finally {
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it("indexes user jar work items through a runtime SQLite archive cache", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-jar-"));
     const runtimeRoot = join(tempRoot, "runtime");
@@ -227,6 +340,15 @@ function remoteItem(
     kind: "remote_metadata",
     source,
     cacheScope: "metadata"
+  };
+}
+
+function createRuntimeLayout(root: string) {
+  return {
+    root,
+    downloads: join(root, "downloads"),
+    installs: join(root, "installs"),
+    locks: join(root, "locks")
   };
 }
 
