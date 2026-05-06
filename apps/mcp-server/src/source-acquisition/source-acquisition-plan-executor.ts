@@ -28,10 +28,13 @@ export async function executeMcpServerSourceAcquisitionPlan(
 
   const descriptor = input.requestPlan.requestContext.workspaceContext?.descriptor;
   const requestText = input.requestPlan.requestText ?? "";
+  const minecraftVersion =
+    descriptor?.currentRuntime.minecraftVersion ??
+    inferMinecraftVersion(requestText);
   const plan = planSourceAcquisition({
     request: {
       purpose: "source_lookup",
-      minecraftVersion: descriptor?.currentRuntime.minecraftVersion,
+      minecraftVersion,
       loader: descriptor?.currentRuntime.loader,
       localJarPaths: descriptor?.modArchivePaths,
       remoteSources: inferRemoteSources(requestText)
@@ -50,7 +53,7 @@ export async function executeMcpServerSourceAcquisitionPlan(
     buildSourceAcquisitionWorkItems({
       route,
       paths: routePaths(route, descriptor?.modArchivePaths),
-      minecraftVersion: descriptor?.currentRuntime.minecraftVersion
+      minecraftVersion
     })
   );
   const workItemResult = options.workItemHandlers
@@ -106,4 +109,8 @@ function inferRemoteSources(
   }
 
   return sources.length > 0 ? sources : ["official", "modrinth", "curseforge"];
+}
+
+function inferMinecraftVersion(requestText: string): string | undefined {
+  return requestText.match(/\b1\.\d{1,2}(?:\.\d+)?\b/)?.[0];
 }
