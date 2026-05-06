@@ -40,7 +40,11 @@ describe("mdm-sources local release smoke", () => {
       "--channel",
       "required",
       "--channel",
-      "datapack"
+      "datapack",
+      "--channel",
+      "resourcepack",
+      "--channel",
+      "mappings"
     ], { cwd: copiedRoot });
 
     const manifest = await readMdmReleaseManifestFile(
@@ -49,14 +53,18 @@ describe("mdm-sources local release smoke", () => {
     const registry = toMdmResourceRegistryFromReleaseManifest(manifest);
     const packages = toPackageManifestsV2(registry.packages);
 
-    expect(manifest.packages).toHaveLength(6);
+    expect(manifest.packages).toHaveLength(10);
     expect(manifest.packages.map((entry) => entry.releaseChannel).sort()).toEqual([
       "datapack",
       "datapack",
       "datapack",
+      "mappings",
       "required",
       "required",
-      "required"
+      "required",
+      "resourcepack",
+      "resourcepack",
+      "resourcepack"
     ]);
     expect(packages).toEqual(
       expect.arrayContaining([
@@ -95,6 +103,30 @@ describe("mdm-sources local release smoke", () => {
           artifact: expect.objectContaining({ kind: "datapack_bundle" }),
           query: expect.objectContaining({ adapter: "archive_content" }),
           release: expect.objectContaining({ channel: "datapack" })
+        }),
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            packageId: "minecraft-1.20.1-vanilla-resourcepack-profile",
+            packageVersion: "0.1.0"
+          }),
+          artifact: expect.objectContaining({ kind: "resourcepack_bundle" }),
+          query: expect.objectContaining({ adapter: "archive_content" }),
+          release: expect.objectContaining({
+            channel: "resourcepack",
+            family: "vanilla-resourcepack"
+          })
+        }),
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            packageId: "minecraft-1.20.1-yarn-mapping-profile",
+            packageVersion: "0.1.0"
+          }),
+          artifact: expect.objectContaining({ kind: "mapping_bundle" }),
+          query: expect.objectContaining({ adapter: "mapping_index" }),
+          release: expect.objectContaining({
+            channel: "mappings",
+            family: "vanilla-mappings"
+          })
         })
       ])
     );
@@ -126,8 +158,33 @@ describe("mdm-sources local release smoke", () => {
     });
 
     expect(catalogCached.status).toBe("downloaded");
+    const resourcepackCached = await ensureMdmReleasePackageCached({
+      manifest,
+      packageId: "minecraft-1.20.1-vanilla-resourcepack-profile",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async (artifactPath) => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => readFile(artifactPath)
+      })
+    });
+    const mappingCached = await ensureMdmReleasePackageCached({
+      manifest,
+      packageId: "minecraft-1.20.1-yarn-mapping-profile",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async (artifactPath) => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => readFile(artifactPath)
+      })
+    });
+
+    expect(resourcepackCached.status).toBe("downloaded");
+    expect(mappingCached.status).toBe("downloaded");
     const status = await summarizeMdmResourceStatus({ registry, cacheLayout });
-    expect(status.counts.ready).toBe(2);
+    expect(status.counts.ready).toBe(4);
 
     const artifact = JSON.parse(
       await readFile(cached.state?.artifactPath ?? "", "utf-8")
@@ -145,6 +202,20 @@ describe("mdm-sources local release smoke", () => {
     expect(catalog.releaseCount).toBeGreaterThanOrEqual(101);
     expect(catalog.latest.release).toBe(catalog.releases[0].id);
     expect(catalog.releases.at(-1).id).toBe("1.0");
+
+    const resourcepackArtifact = JSON.parse(
+      await readFile(resourcepackCached.state?.artifactPath ?? "", "utf-8")
+    );
+    expect(resourcepackArtifact.payload["payload/resourcepack-profile.json"]).toMatchObject({
+      repoPath: expect.stringContaining("payload/resourcepack-profile.json")
+    });
+
+    const mappingArtifact = JSON.parse(
+      await readFile(mappingCached.state?.artifactPath ?? "", "utf-8")
+    );
+    expect(mappingArtifact.payload["payload/mapping-profile.json"]).toMatchObject({
+      repoPath: expect.stringContaining("payload/mapping-profile.json")
+    });
   });
 });
 

@@ -11,5 +11,6 @@ export * from "./acquisition-evidence.js";
 export * from "./validation.js";
 export * from "./executor.js";
 export * from "./vanilla.js";
+export * from "./vanilla-release-catalog.js";
 export * from "./install.js";
 export * from "./v2-adapter.js";
