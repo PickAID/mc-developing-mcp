@@ -12,7 +12,10 @@
 
 ## Current Status
 
-`mdm-sources` is not deliverable today. It has schema and release scaffolding, but does not yet contain real package families, semantic validation, or enough payload to support MCP workflows beyond smoke tests.
+`mdm-sources` is not fully deliverable today. It now has v2 schema validation,
+initial public package families, channel-selective local release builds, and a
+real MCP install smoke path. It still lacks enough curated payload depth and
+version coverage to be considered complete.
 
 ## File Structure
 
@@ -38,11 +41,11 @@
 **Files:**
 - Create: `docs/specs/mdm-resource-delivery-v2.md`
 
-- [ ] Define required package families: core docs, docs search, datapack, resourcepack, KubeJS/ProbeJS guidance, mappings, client visual.
-- [ ] Define legal distribution constraints for vanilla source, generated caches, and private modpack data.
-- [ ] Define source package split rules by version, loader, and mapping namespace.
-- [ ] Define mapping bundle purpose: explain pre-mapped and mapped names without requiring full source downloads.
-- [ ] Define release acceptance criteria: v2 schema validation, artifact existence validation, capability/query compatibility, and MCP install smoke.
+- [x] Define required package families: core docs, docs search, datapack, resourcepack, KubeJS/ProbeJS guidance, mappings, client visual.
+- [x] Define legal distribution constraints for vanilla source, generated caches, and private modpack data.
+- [x] Define source package split rules by version, loader, and mapping namespace.
+- [x] Define mapping bundle purpose: explain pre-mapped and mapped names without requiring full source downloads.
+- [x] Define release acceptance criteria: v2 schema validation, artifact existence validation, capability/query compatibility, and MCP install smoke.
 - [ ] Commit in `SKillUpdate`: `docs: define mdm-resource v2 delivery bar`.
 
 ## Task 2: Add v2 Schema to mdm-sources
@@ -53,13 +56,13 @@
 - Modify: `../mdm-sources/tools/validate.mjs`
 - Test: `../mdm-sources/tests/validate-v2.test.mjs`
 
-- [ ] Add JSON Schema fields matching package contract v2: `identity`, `target`, `artifact`, `capabilities`, `policy`, `query`.
-- [ ] Add schema coverage for `mapping_bundle`, `mapping_index`, release `channel`, and mapping namespaces.
-- [ ] Reject non-public policies in public package manifests.
-- [ ] Validate `query.capabilities` is a subset of root `capabilities`.
-- [ ] Validate artifact entrypoint exists relative to the package root when payload is local.
-- [ ] Add a real v2 package example for compact core docs.
-- [ ] Run `cd ../mdm-sources && node --test tests/*.test.mjs && node tools/validate.mjs`.
+- [x] Add JSON Schema fields matching package contract v2: `identity`, `target`, `artifact`, `capabilities`, `policy`, `query`.
+- [x] Add schema coverage for `mapping_bundle`, `mapping_index`, release `channel`, and mapping namespaces.
+- [x] Reject non-public policies in public package manifests.
+- [x] Validate `query.capabilities` is a subset of root `capabilities`.
+- [x] Validate artifact entrypoint exists relative to the package root when payload is local.
+- [x] Add a real v2 package example for compact core docs.
+- [x] Run `cd ../mdm-sources && node --test tests/*.test.mjs && node tools/validate.mjs`.
 - [ ] Commit in `mdm-sources`: `feat(schema): add mdm package v2 contract`.
 
 ## Task 3: Build Real Package Families
@@ -68,14 +71,14 @@
 - Create package directories under `../mdm-sources/packages/`.
 - Modify release builder and registry index files as needed.
 
-- [ ] Create `docs/core` with compact MCP guidance payload.
+- [x] Create `docs/core` with compact MCP guidance payload.
 - [ ] Create `docs/search` with a small SQLite/FTS or JSONL search payload.
-- [ ] Create `mappings/vanilla` with a small legal mapping explanation payload.
-- [ ] Create `datapack/vanilla` with versioned schema/profile records for supported Minecraft ranges.
-- [ ] Create `resourcepack/vanilla` with versioned asset/profile records.
+- [x] Create `mappings/vanilla` with a small legal mapping explanation payload.
+- [x] Create `datapack/vanilla` with versioned schema/profile records for supported Minecraft ranges.
+- [x] Create `resourcepack/vanilla` with versioned asset/profile records.
 - [ ] Create `kubejs/guidance` with public generic KubeJS rules, not private ProbeJS dumps.
 - [ ] Create `client-visual` with UI, rendering, shader, model, texture, atlas, and resource-pack concepts.
-- [ ] Run release builder and validate produced manifest.
+- [x] Run release builder and validate produced manifest.
 - [ ] Commit in `mdm-sources`: `feat(packages): add initial curated mdm resources`.
 
 ## Task 4: MCP Install Smoke
@@ -83,12 +86,12 @@
 **Files:**
 - Modify `SKillUpdate` tests only if current installer cannot consume v2 summaries.
 
-- [ ] Build a local `mdm-sources` release artifact.
-- [ ] Build or select only the required channel plus one optional channel instead of one monolithic all-in release.
-- [ ] Install it through existing MCP/resource-registry installation flow.
-- [ ] Verify MCP reports package status and declared capabilities.
-- [ ] Query at least one docs payload and one datapack/resourcepack payload.
-- [ ] Export real command output to a markdown test report.
+- [x] Build a local `mdm-sources` release artifact.
+- [x] Build or select only the required channel plus one optional channel instead of one monolithic all-in release.
+- [x] Install it through existing MCP/resource-registry installation flow.
+- [x] Verify MCP reports package status and declared capabilities.
+- [x] Query at least one docs payload and one datapack/resourcepack payload.
+- [x] Export real command output to a markdown test report.
 - [ ] Commit in `SKillUpdate` if MCP changes were needed.
 
 ## Acceptance Criteria

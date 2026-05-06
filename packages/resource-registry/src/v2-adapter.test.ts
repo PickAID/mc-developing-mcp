@@ -80,6 +80,64 @@ describe("resource registry v2 adapter", () => {
     expect(manifest.release?.channel).toBe("accelerators");
   });
 
+  it("preserves v2 datapack release metadata from release manifests", () => {
+    const manifest = toPackageManifestV2(
+      summaryFixture({
+        id: "minecraft-1.20.1-vanilla-datapack-profile",
+        required: false,
+        releaseChannel: "datapack",
+        releaseFamily: "vanilla-datapack",
+        capabilities: ["resource_location_lookup", "datapack_trace"]
+      })
+    );
+
+    expect(manifest).toMatchObject({
+      identity: {
+        packageVersion: "0.1.0"
+      },
+      artifact: {
+        kind: "datapack_bundle",
+        schemaId: "mdm.datapack.json"
+      },
+      capabilities: ["resource_location_lookup", "datapack_trace"],
+      query: {
+        adapter: "archive_content",
+        capabilities: ["resource_location_lookup", "datapack_trace"]
+      },
+      release: {
+        channel: "datapack",
+        family: "vanilla-datapack"
+      }
+    });
+  });
+
+  it("maps v2 mapping release packages to mapping bundle contracts", () => {
+    const manifest = toPackageManifestV2(
+      summaryFixture({
+        id: "minecraft-1.20.1-yarn-mapping-profile",
+        required: false,
+        releaseChannel: "mappings",
+        releaseFamily: "vanilla-mappings",
+        capabilities: ["mapping_lookup", "mapping_explain"]
+      })
+    );
+
+    expect(manifest).toMatchObject({
+      artifact: {
+        kind: "mapping_bundle",
+        schemaId: "mdm.mapping.json"
+      },
+      query: {
+        adapter: "mapping_index",
+        capabilities: ["mapping_lookup", "mapping_explain"]
+      },
+      release: {
+        channel: "mappings",
+        family: "vanilla-mappings"
+      }
+    });
+  });
+
   it("converts generated local caches into private evictable packages", () => {
     const manifest = toPackageManifestV2(
       summaryFixture({

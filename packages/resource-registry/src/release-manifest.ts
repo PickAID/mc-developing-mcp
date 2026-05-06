@@ -1,4 +1,10 @@
 import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+
+import type {
+  PackageCapabilityV2,
+  PackageReleaseV2
+} from "@mcpskill/package-registry";
 
 import type {
   MdmResourcePackageMetadata,
@@ -18,6 +24,9 @@ export interface MdmReleaseManifestPackage {
   sha256: string;
   sizeBytes: number;
   metadata?: MdmResourcePackageMetadata;
+  releaseChannel?: PackageReleaseV2["channel"];
+  releaseFamily?: string;
+  capabilities?: PackageCapabilityV2[];
 }
 
 export interface MdmReleaseManifest {
@@ -87,7 +96,11 @@ export function resolveMdmReleaseArtifactUrl(
   manifestUrl: string,
   resourcePackage: Pick<MdmReleaseManifestPackage, "artifactName">
 ): string {
-  return new URL(resourcePackage.artifactName, manifestUrl).toString();
+  try {
+    return new URL(resourcePackage.artifactName, manifestUrl).toString();
+  } catch {
+    return join(dirname(manifestUrl), resourcePackage.artifactName);
+  }
 }
 
 export function toMdmResourceRegistryFromReleaseManifest(
@@ -101,10 +114,14 @@ export function toMdmResourceRegistryFromReleaseManifest(
 
       return {
         id: resourcePackage.packageId,
+        packageVersion: resourcePackage.version,
         manifestPath: manifest.source,
         required: resourcePackage.required,
         format: resourcePackage.format,
         metadata,
+        releaseChannel: resourcePackage.releaseChannel,
+        releaseFamily: resourcePackage.releaseFamily,
+        capabilities: resourcePackage.capabilities,
         currentRelease: {
           artifactName: resourcePackage.artifactName,
           sha256: resourcePackage.sha256,
@@ -114,8 +131,12 @@ export function toMdmResourceRegistryFromReleaseManifest(
         detail: {
           schemaVersion: manifest.schemaVersion,
           id: resourcePackage.packageId,
+          packageVersion: resourcePackage.version,
           sourcePath: `release:${resourcePackage.artifactName}`,
           metadata,
+          releaseChannel: resourcePackage.releaseChannel,
+          releaseFamily: resourcePackage.releaseFamily,
+          capabilities: resourcePackage.capabilities,
           currentRelease: {
             artifactName: resourcePackage.artifactName,
             sha256: resourcePackage.sha256,
@@ -133,24 +154,33 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
     throw new Error("mdm release package must be an object.");
   }
 
+  const packageId = stringField(value, "packageId");
+  const required = booleanField(value, "required");
+  const format = stringField(value, "format");
+  const artifactType = stringField(value, "artifactType");
+  const variant = stringField(value, "variant");
+
   return {
-    packageId: stringField(value, "packageId"),
+    packageId,
     version: stringField(value, "version"),
     namespace: stringField(value, "namespace"),
-    artifactType: stringField(value, "artifactType"),
-    variant: stringField(value, "variant"),
-    required: booleanField(value, "required"),
-    format: stringField(value, "format"),
+    artifactType,
+    variant,
+    required,
+    format,
     artifactName: stringField(value, "artifactName"),
     sha256: stringField(value, "sha256"),
     sizeBytes: numberField(value, "sizeBytes"),
     metadata: resolveMdmResourcePackageMetadata(value.metadata, {
-      packageId: stringField(value, "packageId"),
-      required: booleanField(value, "required"),
-      format: stringField(value, "format"),
-      artifactType: stringField(value, "artifactType"),
-      variant: stringField(value, "variant")
-    })
+      packageId,
+      required,
+      format,
+      artifactType,
+      variant
+    }),
+    releaseChannel: optionalReleaseChannel(value.releaseChannel),
+    releaseFamily: optionalString(value.releaseFamily, "releaseFamily"),
+    capabilities: optionalCapabilities(value.capabilities)
   };
 }
 
@@ -195,6 +225,64 @@ function booleanField(record: Record<string, unknown>, field: string): boolean {
   const value = record[field];
   if (typeof value !== "boolean") {
     throw new Error(`mdm release package field ${field} must be a boolean.`);
+  }
+
+  return value;
+}
+
+function optionalString(value: unknown, field: string): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return stringValue(value, field);
+}
+
+function optionalReleaseChannel(
+  value: unknown
+): PackageReleaseV2["channel"] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const allowed: PackageReleaseV2["channel"][] = [
+    "required",
+    "docs",
+    "sources",
+    "mappings",
+    "datapack",
+    "resourcepack",
+    "accelerators"
+  ];
+  if (
+    typeof value !== "string" ||
+    !allowed.includes(value as PackageReleaseV2["channel"])
+  ) {
+    throw new Error(`mdm release package field releaseChannel is invalid.`);
+  }
+
+  return value as PackageReleaseV2["channel"];
+}
+
+function optionalCapabilities(
+  value: unknown
+): PackageCapabilityV2[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    throw new Error("mdm release package field capabilities must be an array.");
+  }
+
+  return value.map((entry) => {
+    return stringValue(entry, "capabilities") as PackageCapabilityV2;
+  });
+}
+
+function stringValue(value: unknown, field: string): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(
+      `mdm release package field ${field} must be a non-empty string.`
+    );
   }
 
   return value;

@@ -1,3 +1,8 @@
+import type {
+  PackageCapabilityV2,
+  PackageReleaseV2
+} from "@mcpskill/package-registry";
+
 export interface MdmResourceRelease {
   artifactName: string;
   sha256: string;
@@ -37,18 +42,26 @@ export interface MdmResourcePackageMetadata {
 export interface MdmResourcePackageDetail {
   schemaVersion: number;
   id: string;
+  packageVersion?: string;
   sourcePath: string;
   currentRelease: MdmResourceRelease | null;
   metadata?: MdmResourcePackageMetadata;
+  releaseChannel?: PackageReleaseV2["channel"];
+  releaseFamily?: string;
+  capabilities?: PackageCapabilityV2[];
 }
 
 export interface MdmResourcePackageSummary {
   id: string;
+  packageVersion?: string;
   manifestPath: string;
   required: boolean;
   format: string;
   currentRelease?: MdmResourceRelease | null;
   metadata?: MdmResourcePackageMetadata;
+  releaseChannel?: PackageReleaseV2["channel"];
+  releaseFamily?: string;
+  capabilities?: PackageCapabilityV2[];
   detail: MdmResourcePackageDetail;
 }
 

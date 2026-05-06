@@ -1,6 +1,7 @@
 import {
   parsePackageManifestV2,
   type ArtifactFormatV2,
+  type ArtifactKindV2,
   type PackageCapabilityV2,
   type PackageLifecycleV2,
   type PackageManifestV2,
@@ -18,9 +19,10 @@ export function toPackageManifestV2(
 ): PackageManifestV2 {
   const metadata = resolveMetadata(summary);
   const isPrivate = metadata.storageKind === "generated_local_cache";
-  const capabilities = resolveCapabilities(metadata);
-  const queryAdapter = resolveQueryAdapter(metadata, summary.format);
+  const capabilities = resolveCapabilities(summary);
+  const queryAdapter = resolveQueryAdapter(summary, metadata);
   const packageVersion = resolvePackageVersion(summary, isPrivate);
+  const artifactKind = resolveArtifactKind(summary);
   const manifest = {
     identity: {
       schemaVersion: 2,
@@ -32,9 +34,9 @@ export function toPackageManifestV2(
     },
     target: {},
     artifact: {
-      kind: "docs_bundle" as const,
+      kind: artifactKind,
       format: resolveArtifactFormat(summary.format),
-      schemaId: resolveSchemaId(queryAdapter),
+      schemaId: resolveSchemaId(queryAdapter, artifactKind),
       schemaVersion: 1,
       entrypoint: resolveEntrypoint(summary),
       sha256: summary.currentRelease?.sha256,
@@ -65,7 +67,7 @@ export function toPackageManifestV2(
       ? undefined
       : {
           channel: resolveReleaseChannel(summary, metadata),
-          family: resolveNamespace(summary.id)
+          family: summary.releaseFamily ?? resolveNamespace(summary.id)
         }
   };
 
@@ -88,21 +90,55 @@ function resolveMetadata(
   };
 }
 
-function resolveCapabilities(
-  _metadata: MdmResourcePackageMetadata
-): PackageCapabilityV2[] {
+function resolveCapabilities(summary: MdmResourcePackageSummary): PackageCapabilityV2[] {
+  if (summary.capabilities?.length) {
+    return summary.capabilities;
+  }
+  if (summary.releaseChannel === "mappings") {
+    return ["mapping_lookup", "mapping_explain"];
+  }
+  if (summary.releaseChannel === "datapack") {
+    return ["resource_location_lookup", "datapack_trace"];
+  }
+  if (summary.releaseChannel === "resourcepack") {
+    return ["resource_location_lookup", "resourcepack_trace"];
+  }
+
   return ["docs_search", "docs_direct_read"];
 }
 
 function resolveQueryAdapter(
-  metadata: MdmResourcePackageMetadata,
-  format: string
+  summary: MdmResourcePackageSummary,
+  metadata: MdmResourcePackageMetadata
 ): QueryAdapterV2 {
-  if (metadata.storageKind === "sqlite_bundle" || format === "sqlite") {
+  if (summary.releaseChannel === "mappings") {
+    return "mapping_index";
+  }
+  if (
+    summary.releaseChannel === "datapack" ||
+    summary.releaseChannel === "resourcepack"
+  ) {
+    return "archive_content";
+  }
+  if (metadata.storageKind === "sqlite_bundle" || summary.format === "sqlite") {
     return "sqlite_docs";
   }
 
   return "json_docs";
+}
+
+function resolveArtifactKind(summary: MdmResourcePackageSummary): ArtifactKindV2 {
+  if (summary.releaseChannel === "mappings") {
+    return "mapping_bundle";
+  }
+  if (summary.releaseChannel === "datapack") {
+    return "datapack_bundle";
+  }
+  if (summary.releaseChannel === "resourcepack") {
+    return "resourcepack_bundle";
+  }
+
+  return "docs_bundle";
 }
 
 function resolveArtifactFormat(format: string): ArtifactFormatV2 {
@@ -113,7 +149,20 @@ function resolveArtifactFormat(format: string): ArtifactFormatV2 {
   throw new Error(`Unsupported mdm v1 resource format: ${format}`);
 }
 
-function resolveSchemaId(queryAdapter: QueryAdapterV2): string {
+function resolveSchemaId(
+  queryAdapter: QueryAdapterV2,
+  artifactKind: ArtifactKindV2
+): string {
+  if (artifactKind === "mapping_bundle") {
+    return "mdm.mapping.json";
+  }
+  if (artifactKind === "datapack_bundle") {
+    return "mdm.datapack.json";
+  }
+  if (artifactKind === "resourcepack_bundle") {
+    return "mdm.resourcepack.json";
+  }
+
   return queryAdapter === "sqlite_docs" ? "mdm.docs.sqlite" : "mdm.docs.json";
 }
 
@@ -145,6 +194,9 @@ function resolveReleaseChannel(
   if (metadata.storageKind === "optional_accelerator") {
     return "accelerators";
   }
+  if (summary.releaseChannel) {
+    return summary.releaseChannel;
+  }
   if (summary.required || metadata.installTier === "required_docs") {
     return "required";
   }
@@ -156,10 +208,17 @@ function resolvePackageVersion(
   summary: MdmResourcePackageSummary,
   isPrivate: boolean
 ): string {
+  if (summary.packageVersion) {
+    return summary.packageVersion;
+  }
+  if (summary.detail.packageVersion) {
+    return summary.detail.packageVersion;
+  }
+
   const artifactName = summary.currentRelease?.artifactName;
-  const match = artifactName?.match(/-(\d+\.\d+\.\d+)(?:\.|$)/u);
-  if (match?.[1]) {
-    return match[1];
+  const prefix = `${summary.id}-`;
+  if (artifactName?.startsWith(prefix)) {
+    return artifactName.slice(prefix.length).replace(/\.mdm-resource\.json$/u, "");
   }
   if (isPrivate) {
     return "0.0.0";

@@ -34,7 +34,10 @@ describe("mdm release manifest", () => {
             commitPolicy: "repository_manifest"
           },
           sha256:
-            "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477"
+            "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
+          releaseChannel: "required",
+          releaseFamily: "core-docs",
+          capabilities: ["docs_search", "docs_direct_read"]
         }
       ]
     });
@@ -76,7 +79,7 @@ describe("mdm release manifest", () => {
     );
 
     await expect(readMdmReleaseManifestFile(manifestPath)).rejects.toThrow(
-      "mdm release package field version must be a non-empty string"
+      "mdm release package field required must be a boolean"
     );
   });
 
@@ -91,6 +94,7 @@ describe("mdm release manifest", () => {
       packages: [
         {
           id: "core-docs-required",
+          packageVersion: "0.1.0",
           required: true,
           format: "json",
           metadata: {
@@ -98,17 +102,24 @@ describe("mdm release manifest", () => {
             installTier: "required_docs",
             commitPolicy: "repository_manifest"
           },
+          releaseChannel: "required",
+          releaseFamily: "core-docs",
+          capabilities: ["docs_search", "docs_direct_read"],
           currentRelease: {
             artifactName: "core-docs-required-0.1.0.mdm-resource.json"
           },
           detail: {
+            packageVersion: "0.1.0",
             sourcePath:
               "release:core-docs-required-0.1.0.mdm-resource.json",
             metadata: {
               storageKind: "remote_manifest",
               installTier: "required_docs",
               commitPolicy: "repository_manifest"
-            }
+            },
+            releaseChannel: "required",
+            releaseFamily: "core-docs",
+            capabilities: ["docs_search", "docs_direct_read"]
           }
         }
       ]
@@ -140,7 +151,10 @@ function fixtureManifest() {
         artifactName: "core-docs-required-0.1.0.mdm-resource.json",
         sha256:
           "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
-        sizeBytes: 1201
+        sizeBytes: 1201,
+        releaseChannel: "required",
+        releaseFamily: "core-docs",
+        capabilities: ["docs_search", "docs_direct_read"]
       }
     ]
   };
