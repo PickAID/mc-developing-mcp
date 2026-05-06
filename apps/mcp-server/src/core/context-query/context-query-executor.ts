@@ -7,6 +7,7 @@ import {
   type ResolveModrinthModInput,
   type ResolveCurseForgeModInput
 } from "@mcpskill/external-mod-resolver";
+import type { SourceAcquisitionWorkItemRunnerHandlers } from "@mcpskill/source-package-manager";
 import { readGradleMavenRepositories } from "@mcpskill/gradle-adapter";
 
 import { executeMcpServerDocsLookup } from "../../docs/lookup/docs-lookup-executor.js";
@@ -36,6 +37,7 @@ export interface McpServerContextQueryExecutorOptions {
   externalModCurseForgeCredentialProvider?: () => string | undefined;
   externalModCurseForgeFetch?: ResolveCurseForgeModInput["fetch"];
   externalModCurseForgeApiBaseUrl?: string;
+  sourceAcquisitionWorkItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
@@ -78,7 +80,9 @@ export function buildMcpServerContextQueryExecutor(
       case "mod_archive_content":
         return modArchiveContentExecutor(input);
       case "source_acquisition_plan":
-        return executeMcpServerSourceAcquisitionPlan(input);
+        return executeMcpServerSourceAcquisitionPlan(input, {
+          workItemHandlers: options.sourceAcquisitionWorkItemHandlers
+        });
       default:
         return (
           options.fallbackExecutor?.(input) ?? {

@@ -1,6 +1,8 @@
 import {
   buildSourceAcquisitionWorkItems,
   planSourceAcquisition,
+  runSourceAcquisitionWorkItems,
+  type SourceAcquisitionWorkItemRunnerHandlers,
   type SourceAcquisitionRoute
 } from "@mcpskill/source-package-manager";
 
@@ -9,9 +11,14 @@ import type {
   McpServerEvidenceExecutorResult
 } from "../request/execution/request-handler.js";
 
-export function executeMcpServerSourceAcquisitionPlan(
-  input: McpServerEvidenceExecutorInput
-): McpServerEvidenceExecutorResult {
+export interface McpServerSourceAcquisitionPlanExecutorOptions {
+  workItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
+}
+
+export async function executeMcpServerSourceAcquisitionPlan(
+  input: McpServerEvidenceExecutorInput,
+  options: McpServerSourceAcquisitionPlanExecutorOptions = {}
+): Promise<McpServerEvidenceExecutorResult> {
   if (input.candidate.routeStep !== "source_acquisition_plan") {
     return {
       matched: false,
@@ -46,6 +53,12 @@ export function executeMcpServerSourceAcquisitionPlan(
       minecraftVersion: descriptor?.currentRuntime.minecraftVersion
     })
   );
+  const workItemResult = options.workItemHandlers
+    ? await runSourceAcquisitionWorkItems({
+        workItems,
+        handlers: options.workItemHandlers
+      })
+    : undefined;
 
   return {
     matched: true,
@@ -59,7 +72,9 @@ export function executeMcpServerSourceAcquisitionPlan(
         cacheMode: route.cacheMode,
         warnings: route.warnings
       })),
-      workItems
+      workItems,
+      workItemExecutionStatus: workItemResult?.status,
+      workItemExecutions: workItemResult?.executions
     }
   };
 }

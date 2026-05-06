@@ -36,6 +36,40 @@ describe("context.query source acquisition plan", () => {
       }
     });
   });
+
+  it("executes source acquisition work items when handlers are provided", async () => {
+    const executor = buildMcpServerContextQueryExecutor({
+      sourceAcquisitionWorkItemHandlers: {
+        remoteMetadata: async (item) => ({
+          summary: `resolved ${item.source}`,
+          payload: {
+            source: "test_remote_metadata",
+            platform: item.source
+          }
+        })
+      }
+    });
+
+    const result = await executor(inputFixture());
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "source_acquisition_plan",
+        workItemExecutionStatus: "completed",
+        workItemExecutions: [
+          {
+            kind: "remote_metadata",
+            status: "completed",
+            payload: {
+              source: "test_remote_metadata",
+              platform: "modrinth"
+            }
+          }
+        ]
+      }
+    });
+  });
 });
 
 function inputFixture(): McpServerEvidenceExecutorInput {
