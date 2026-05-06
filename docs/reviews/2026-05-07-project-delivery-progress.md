@@ -28,6 +28,9 @@ real release distribution, broader package corpus coverage, and final UX polish.
   `downloadPolicy: "allowed"` is explicitly supplied.
 - SQLite docs artifacts can be installed, marked ready, searched through
   `docs_lookup`, and returned as `source: "sqlite"` evidence.
+- GitHub Release shaped remote `manifestUrl` installs are covered with injected
+  fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
+  docs lookup.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -58,7 +61,7 @@ Implemented:
 
 Not done:
 
-- Real GitHub Release URL acceptance run.
+- Live published GitHub Release acceptance run.
 - Signing/provenance/retention policy.
 - Large public docs corpus.
 - Full version coverage from 1.18.2 through the current target line.
@@ -84,16 +87,17 @@ mdm-sources build --no-registry-update: cleaned stale output and did not mutate 
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
+MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 92-94%.
-- MDM resource/package delivery: 68-72%.
-- Overall project deliverability: 74-78%.
+- MCP core capability: 93-95%.
+- MDM resource/package delivery: 70-74%.
+- Overall project deliverability: 76-80%.
 
 The next large slice should focus on remote release acceptance and corpus growth:
 
-- Add GitHub Release URL acceptance once a release exists.
+- Run live GitHub Release acceptance once a release exists.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus.

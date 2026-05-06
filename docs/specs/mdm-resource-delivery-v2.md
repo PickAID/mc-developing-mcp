@@ -116,6 +116,7 @@ Current smoke evidence is recorded in:
 
 - `docs/reviews/2026-05-06-mdm-v2-install-smoke-report.md`
 - `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
+- `docs/reviews/2026-05-07-real-mdm-release-consumption-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
 The verified path is:
@@ -129,6 +130,10 @@ The verified path is:
 7. Install a SQLite docs release artifact through `mc_develop`.
 8. Verify `mdmResources.summary.counts.ready` and `docs_lookup` hits with
    `source: "sqlite"`.
+9. Consume the same real SQLite artifact through a GitHub Release shaped remote
+   `manifestUrl` using injected fetchers.
+10. Verify sibling artifact URL resolution, checksum-verified cache install, and
+    SQLite docs lookup.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -146,4 +151,5 @@ The system is not complete until these exist:
 - Version coverage beyond 1.20.1, at least from 1.18.2 through current target
   versions.
 - MCP selection logic that chooses packages by workspace context and task intent.
-- GitHub Release provenance/signing and a real remote release URL acceptance run.
+- Live GitHub Release acceptance run.
+- GitHub Release provenance/signing and retention policy.
