@@ -1,7 +1,10 @@
+import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { cp, stat } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { deflateRawSync } from "node:zlib";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -11,6 +14,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { MC_DEVELOP_TOOL_NAME } from "../tools/mcp-tools.js";
 
 const tempRoots: string[] = [];
+const execFileAsync = promisify(execFile);
 
 afterEach(async () => {
   await Promise.all(
@@ -72,6 +76,93 @@ describe("stdio MCP subprocess", () => {
             source: "mod_archive_content",
             mode: "class_owner",
             requestedClasses: ["com.example.problem.CrashHandler"]
+          }
+        }
+      });
+    } finally {
+      await client.close();
+    }
+  });
+
+  it("installs and searches a real mdm-sources release over stdio", async () => {
+    const mdmSourcesRoot = await findMdmSourcesRoot();
+    if (!mdmSourcesRoot) {
+      return;
+    }
+
+    const tempRoot = await createTempRoot("mcpskill-stdio-mdm-release-");
+    const copiedMdmSourcesRoot = join(tempRoot, "mdm-sources");
+    const releaseOut = join(tempRoot, "release-out");
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createKubeJsWorkspace(tempRoot);
+    const packageRoot = fileURLToPath(new URL("../../..", import.meta.url));
+    const stdioEntrypoint = fileURLToPath(
+      new URL("../../../dist/stdio.js", import.meta.url)
+    );
+    const client = new Client({
+      name: "mcpskill-stdio-mdm-release-test",
+      version: "0.0.0"
+    });
+
+    await cp(mdmSourcesRoot, copiedMdmSourcesRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${mdmSourcesRoot}/.git`)
+    });
+    await execFileAsync(process.execPath, [
+      "tools/build-local-release.mjs",
+      "--out",
+      releaseOut,
+      "--channel",
+      "docs"
+    ], { cwd: copiedMdmSourcesRoot });
+
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [stdioEntrypoint],
+      cwd: packageRoot,
+      env: {
+        MCPSKILL_RUNTIME_ROOT: runtimeRoot,
+        MCPSKILL_WORKSPACE_ROOT: workspaceRoot,
+        MDM_SOURCES_ROOT: copiedMdmSourcesRoot
+      },
+      stderr: "pipe"
+    });
+    const stderr = collectStderr(transport);
+
+    await connectWithStderr(client, transport, stderr);
+
+    try {
+      const result = await withCapturedStderr(
+        client.callTool({
+          name: MC_DEVELOP_TOOL_NAME,
+          arguments: {
+            requestText:
+              "Find sqlite index role docs for offline MDM package queries.",
+            mdmReleaseInstall: {
+              manifestPath: join(releaseOut, "mdm-release-manifest.json"),
+              packageId: "core-docs-search-sqlite",
+              downloadPolicy: "allowed"
+            }
+          }
+        }),
+        stderr
+      );
+
+      expect(result.structuredContent).toMatchObject({
+        mdmReleaseInstall: {
+          status: "downloaded",
+          packageId: "core-docs-search-sqlite"
+        },
+        selectedEvidence: {
+          routeStep: "docs_lookup",
+          payload: {
+            hits: expect.arrayContaining([
+              expect.objectContaining({
+                entryId: "mdm.sqlite-index-role",
+                packageId: "core-docs-search-sqlite",
+                source: "sqlite"
+              })
+            ])
           }
         }
       });
@@ -157,6 +248,14 @@ async function createCrashModpackWorkspace(): Promise<string> {
   return workspaceRoot;
 }
 
+async function createKubeJsWorkspace(tempRoot: string): Promise<string> {
+  const workspaceRoot = join(tempRoot, "kubejs-workspace");
+
+  await writeText(join(workspaceRoot, "kubejs", "server_scripts", "main.js"), "\n");
+
+  return workspaceRoot;
+}
+
 async function createTempRoot(prefix: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), prefix));
 
@@ -221,6 +320,29 @@ function createZip(entries: ZipFixtureEntry[]): Buffer {
   eocd.writeUInt32LE(localFiles.length, 16);
 
   return Buffer.concat([localFiles, centralDirectory, eocd]);
+}
+
+async function findMdmSourcesRoot(): Promise<string | undefined> {
+  const candidates = [
+    resolve(process.cwd(), "..", "mdm-sources"),
+    resolve(process.cwd(), "..", "..", "..", "mdm-sources"),
+    resolve("/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources")
+  ];
+
+  for (const candidate of candidates) {
+    if (await pathExists(join(candidate, "tools", "build-local-release.mjs"))) {
+      return candidate;
+    }
+  }
+
+  return undefined;
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  return stat(path).then(
+    () => true,
+    () => false
+  );
 }
 
 interface ZipFixtureEntry {

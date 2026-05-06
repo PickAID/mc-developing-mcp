@@ -97,3 +97,31 @@ mc_develop real mdm-sources release consumption > installs and searches a real m
 This still uses a local filesystem release manifest, not a published GitHub
 Release URL. It proves the producer-to-consumer contract: real `mdm-sources`
 builder output can be installed and queried by `mc_develop`.
+
+## Stdio Acceptance
+
+The same producer-to-consumer contract is now verified through the real stdio
+MCP subprocess, not only the in-process handler.
+
+The stdio test:
+
+1. Builds `dist/stdio.js` through the package test command.
+2. Starts the MCP server with `StdioClientTransport`.
+3. Provides `MDM_SOURCES_ROOT`, `MCPSKILL_RUNTIME_ROOT`, and
+   `MCPSKILL_WORKSPACE_ROOT` through process environment.
+4. Calls `mc_develop` through JSON-RPC with the real generated release manifest.
+5. Verifies SQLite docs lookup returns `mdm.sqlite-index-role`.
+
+Command:
+
+```bash
+pnpm --filter @mcpskill/mcp-server test -- core/server/stdio-subprocess.test.ts core/tools/mcp-tools-mdm-real-release.test.ts
+```
+
+Result:
+
+```text
+Test Files 92 passed (92)
+Tests 285 passed (285)
+stdio real release case: passed in about 0.8s
+```

@@ -83,6 +83,7 @@ mdm-sources node tools/validate.mjs: packageCount 14, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
+MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 ```
 
 ## Completion Estimate
@@ -91,10 +92,8 @@ MCP real mdm-sources release consumption: installed and searched core-docs-searc
 - MDM resource/package delivery: 68-72%.
 - Overall project deliverability: 74-78%.
 
-The next large slice should focus on remote release and stdio acceptance:
+The next large slice should focus on remote release acceptance and corpus growth:
 
-- Add an MCP stdio-level acceptance using real `MDM_SOURCES_ROOT` and a generated
-  `mdm-sources` release manifest.
 - Add GitHub Release URL acceptance once a release exists.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus.
