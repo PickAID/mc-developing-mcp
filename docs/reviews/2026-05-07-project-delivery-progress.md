@@ -71,6 +71,7 @@ Recent verification records:
 
 - `docs/reviews/2026-05-06-mdm-v2-install-smoke-report.md`
 - `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
+- `docs/reviews/2026-05-07-real-mdm-release-consumption-verification.md`
 - `docs/reviews/2026-05-07-unified-source-acquisition-cache-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
@@ -81,6 +82,7 @@ mdm-sources node --test tests/*.test.mjs: 19 passed
 mdm-sources node tools/validate.mjs: packageCount 14, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
+MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 ```
 
 ## Completion Estimate
@@ -89,10 +91,10 @@ mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 - MDM resource/package delivery: 68-72%.
 - Overall project deliverability: 74-78%.
 
-The next large slice should focus on real release consumption:
+The next large slice should focus on remote release and stdio acceptance:
 
-- Build a local full `mdm-sources` release.
-- Install actual generated artifacts through `mc_develop` using the real
-  `release-out/mdm-release-manifest.json`.
-- Add an MCP stdio-level acceptance using real `MDM_SOURCES_ROOT`.
+- Add an MCP stdio-level acceptance using real `MDM_SOURCES_ROOT` and a generated
+  `mdm-sources` release manifest.
 - Add GitHub Release URL acceptance once a release exists.
+- Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
+  corpus.
