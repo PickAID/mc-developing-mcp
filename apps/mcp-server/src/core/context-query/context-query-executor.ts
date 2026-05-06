@@ -14,6 +14,7 @@ import type { MdmDocsSqliteArtifact } from "../../docs/mdm-docs/mdm-docs-records
 import { executeMcpServerExternalModResolution } from "../../external-mod/resolution/external-mod-resolution-executor.js";
 import { createMcpServerModArchiveContentExecutor } from "../../mod-archive/content/mod-archive-content-executor.js";
 import { executeMcpServerProbeJsTypes } from "../../probejs/types/probejs-types-executor.js";
+import { executeMcpServerSourceAcquisitionPlan } from "../../source-acquisition/source-acquisition-plan-executor.js";
 import type {
   McpServerEvidenceExecutor,
   McpServerEvidenceExecutorInput,
@@ -76,6 +77,8 @@ export function buildMcpServerContextQueryExecutor(
         );
       case "mod_archive_content":
         return modArchiveContentExecutor(input);
+      case "source_acquisition_plan":
+        return executeMcpServerSourceAcquisitionPlan(input);
       default:
         return (
           options.fallbackExecutor?.(input) ?? {

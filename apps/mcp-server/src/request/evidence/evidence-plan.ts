@@ -8,6 +8,7 @@ export type McpServerEvidenceProvenance =
   | "logs"
   | "java_diagnostics"
   | "workspace_source"
+  | "source_acquisition"
   | "vanilla_source"
   | "mod_archive_content"
   | "external_mod_resolution"
@@ -46,7 +47,8 @@ const MAX_MOD_ARCHIVE_PATH_HINTS = 16;
 export function buildMcpServerEvidencePlan(
   requestPlan: McpServerRequestPlan
 ): McpServerEvidencePlan {
-  const candidates = requestPlan.toolGuidance.routeSteps.map((step, index) =>
+  const routeSteps = expandRouteSteps(requestPlan);
+  const candidates = routeSteps.map((step, index) =>
     buildCandidate(requestPlan, step, index)
   );
 
@@ -55,7 +57,7 @@ export function buildMcpServerEvidencePlan(
     requestPlan,
     candidates,
     trace: {
-      routeSteps: [...requestPlan.toolGuidance.routeSteps],
+      routeSteps,
       candidateIds: candidates.map((candidate) => candidate.id),
       fallbackCandidateIds: candidates
         .filter((candidate) => candidate.tier === "fallback")
@@ -88,6 +90,21 @@ function buildCandidate(
     requestPlan.trace.taskIntent.id === "client_visual_resources";
 
   switch (routeStep) {
+    case "source_acquisition_plan":
+      return {
+        id: buildCandidateId(priority, routeStep),
+        priority,
+        tier: "primary",
+        routeStep,
+        provenance: "source_acquisition",
+        preferredTool: "context.query",
+        estimatedCost: "low",
+        reliability: "high",
+        reason:
+          "Plan workspace, cache, jar, official, and remote source acquisition before resolving external mod artifacts.",
+        pathHints: [],
+        queryHint: requestPlan.requestText
+      };
     case "java_diagnostics":
       return {
         id: buildCandidateId(priority, routeStep),
@@ -230,6 +247,25 @@ function buildCandidate(
   }
 }
 
+function expandRouteSteps(
+  requestPlan: McpServerRequestPlan
+): AgentRuntimeTaskRouteStep[] {
+  const steps = requestPlan.toolGuidance.routeSteps;
+  if (
+    !steps.includes("external_mod_resolution") ||
+    steps.includes("source_acquisition_plan") ||
+    !mentionsSourceAcquisitionRequest(requestPlan.requestText)
+  ) {
+    return [...steps];
+  }
+
+  return steps.flatMap((step) =>
+    step === "external_mod_resolution"
+      ? ["source_acquisition_plan", step]
+      : [step]
+  );
+}
+
 function buildCandidateId(
   priority: number,
   routeStep: AgentRuntimeTaskRouteStep
@@ -316,6 +352,17 @@ function mentionsVanillaAssetsRequest(requestText?: string): boolean {
   return (
     /\b(?:vanilla|official)\b|原版|官方/.test(normalized) &&
     /assets\/minecraft\//.test(normalized)
+  );
+}
+
+function mentionsSourceAcquisitionRequest(requestText?: string): boolean {
+  if (!requestText) {
+    return false;
+  }
+
+  const normalized = requestText.toLowerCase();
+  return /(?:source|sources|源码|jar|cache|cached|offline|workspace|工作区|缓存|离线|本地)/.test(
+    normalized
   );
 }
 

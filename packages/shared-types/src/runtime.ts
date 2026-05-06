@@ -46,6 +46,7 @@ export type AgentRuntimeRouteStep =
 
 export type AgentRuntimeTaskRouteStep =
   | AgentRuntimeRouteStep
+  | "source_acquisition_plan"
   | "log_files"
   | "java_diagnostics";
 

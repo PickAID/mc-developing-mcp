@@ -72,6 +72,10 @@ export function shouldUseAsContext(
     return extractJavaDiagnosticSummaries(result.payload).length > 0;
   }
 
+  if (candidate.routeStep === "source_acquisition_plan") {
+    return true;
+  }
+
   return false;
 }
 
