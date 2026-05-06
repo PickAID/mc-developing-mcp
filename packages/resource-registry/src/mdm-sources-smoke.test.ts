@@ -49,16 +49,26 @@ describe("mdm-sources local release smoke", () => {
     const registry = toMdmResourceRegistryFromReleaseManifest(manifest);
     const packages = toPackageManifestsV2(registry.packages);
 
-    expect(manifest.packages).toHaveLength(5);
+    expect(manifest.packages).toHaveLength(6);
     expect(manifest.packages.map((entry) => entry.releaseChannel).sort()).toEqual([
       "datapack",
       "datapack",
       "datapack",
       "required",
+      "required",
       "required"
     ]);
     expect(packages).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            packageId: "minecraft-release-catalog",
+            packageVersion: "0.1.0"
+          }),
+          artifact: expect.objectContaining({ kind: "docs_bundle" }),
+          query: expect.objectContaining({ adapter: "json_docs" }),
+          release: expect.objectContaining({ channel: "required" })
+        }),
         expect.objectContaining({
           identity: expect.objectContaining({
             packageId: "minecraft-1.18.2-vanilla-datapack-profile",
