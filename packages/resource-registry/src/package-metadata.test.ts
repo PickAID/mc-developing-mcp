@@ -48,6 +48,26 @@ describe("resolveMdmResourcePackageMetadata", () => {
     });
   });
 
+  it("preserves explicit generated cache metadata as private runtime-only data", () => {
+    const metadata = resolveMdmResourcePackageMetadata(
+      {
+        storageKind: "generated_local_cache"
+      },
+      {
+        packageId: "mod/create/source-index",
+        required: false,
+        format: "sqlite",
+        sourcePath: "generated:modpack-cache"
+      }
+    );
+
+    expect(metadata).toMatchObject({
+      storageKind: "generated_local_cache",
+      installTier: "private_local_cache",
+      commitPolicy: "private_generated_cache"
+    });
+  });
+
   it("classifies optional accelerators separately from required docs", () => {
     const metadata = resolveMdmResourcePackageMetadata(undefined, {
       packageId: "minecraft-source-accelerator",

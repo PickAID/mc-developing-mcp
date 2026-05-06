@@ -13,5 +13,6 @@ export * from "./executor.js";
 export * from "./vanilla.js";
 export * from "./vanilla-release-catalog.js";
 export * from "./source-acquisition-plan.js";
+export * from "./source-acquisition-hand-off.js";
 export * from "./install.js";
 export * from "./v2-adapter.js";

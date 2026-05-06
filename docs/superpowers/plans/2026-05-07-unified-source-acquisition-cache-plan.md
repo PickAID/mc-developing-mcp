@@ -88,7 +88,7 @@ Tests       58 passed (58)
 - Modify: `apps/mcp-server/src/request/execution/request-executor.ts`
 - Test: `apps/mcp-server/src/request/evidence/evidence-plan-source-acquisition.test.ts`
 
-- [ ] **Step 1: Write MCP evidence test**
+- [x] **Step 1: Write MCP evidence test**
 
 ```ts
 it("adds source acquisition planning before remote mod lookup", () => {
@@ -105,7 +105,7 @@ it("adds source acquisition planning before remote mod lookup", () => {
 });
 ```
 
-- [ ] **Step 2: Run targeted test**
+- [x] **Step 2: Run targeted test**
 
 Run:
 
@@ -115,7 +115,7 @@ pnpm --filter @mcpskill/mcp-server test -- request/evidence/evidence-plan-source
 
 Expected: fail because `source_acquisition_plan` is not yet wired.
 
-- [ ] **Step 3: Add internal evidence route**
+- [x] **Step 3: Add internal evidence route**
 
 Add an internal route step named `source_acquisition_plan`. It should return compact structured content:
 
@@ -132,7 +132,7 @@ Add an internal route step named `source_acquisition_plan`. It should return com
 }
 ```
 
-- [ ] **Step 4: Run test and full MCP server target**
+- [x] **Step 4: Run test and full MCP server target**
 
 Run:
 
@@ -149,7 +149,7 @@ Expected: pass.
 - Create: `packages/source-package-manager/src/source-acquisition-hand-off.ts`
 - Create: `packages/source-package-manager/src/source-acquisition-hand-off.test.ts`
 
-- [ ] **Step 1: Write hand-off test**
+- [x] **Step 1: Write hand-off test**
 
 ```ts
 it("turns a local jar route into a jar index work item", () => {
@@ -172,7 +172,7 @@ it("turns a local jar route into a jar index work item", () => {
 });
 ```
 
-- [ ] **Step 2: Implement work item builder**
+- [x] **Step 2: Implement work item builder**
 
 Support initial work item kinds:
 
@@ -183,7 +183,7 @@ type SourceAcquisitionWorkItem =
   | { kind: "remote_metadata"; source: "modrinth" | "curseforge" | "github"; cacheScope: "metadata" };
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run:
 
@@ -200,7 +200,7 @@ Expected: pass.
 - Modify: `packages/resource-registry/src/package-metadata.ts`
 - Test: `packages/resource-registry/src/package-metadata.test.ts`
 
-- [ ] **Step 1: Write metadata test**
+- [x] **Step 1: Write metadata test**
 
 ```ts
 expect(resolveMdmResourcePackageMetadata({
@@ -217,11 +217,11 @@ expect(resolveMdmResourcePackageMetadata({
 });
 ```
 
-- [ ] **Step 2: Ensure generated indexes remain private**
+- [x] **Step 2: Ensure generated indexes remain private**
 
 If any metadata branch infers repository commit policy for generated local cache, change it to `private_generated_cache`.
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run:
 
@@ -236,7 +236,7 @@ Expected: pass.
 **Files:**
 - Create: `docs/reviews/2026-05-07-unified-source-acquisition-cache-verification.md`
 
-- [ ] **Step 1: Record route outputs**
+- [x] **Step 1: Record route outputs**
 
 Include actual `planSourceAcquisition` results for:
 
@@ -245,7 +245,7 @@ Include actual `planSourceAcquisition` results for:
 - remote downloads denied;
 - missing CurseForge credentials.
 
-- [ ] **Step 2: Run full tests**
+- [x] **Step 2: Run full tests**
 
 Run:
 
@@ -255,7 +255,7 @@ pnpm test
 
 Expected: all tests pass.
 
-- [ ] **Step 3: Line guard**
+- [x] **Step 3: Line guard**
 
 Run:
 

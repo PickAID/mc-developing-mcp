@@ -12,19 +12,47 @@ This verifies the first bottom-layer slice for a unified source acquisition plan
 - Added route types for workspace Gradle, workspace ProbeJS, runtime cache, local jar, user jar, official, Modrinth, CurseForge, and GitHub.
 - Added deterministic priority independent of user-provided remote source order.
 - Added consent/cache/privacy fields per route.
+- Added MCP evidence route `source_acquisition_plan` as context-only planning evidence.
+- Added hand-off work items for jar indexing, vanilla generation, and remote metadata lookup.
+- Added generated local cache metadata contract for private runtime-only source indexes.
 - Exported the planner from the package public API.
 
 ## Targeted Test
 
 ```bash
 pnpm --filter @mcpskill/source-package-manager test -- source-acquisition-plan.test.ts
+pnpm --filter @mcpskill/source-package-manager test -- source-acquisition-hand-off.test.ts
+pnpm --filter @mcpskill/resource-registry test -- package-metadata.test.ts
 ```
 
 Result:
 
 ```text
-Test Files  14 passed (14)
-Tests       58 passed (58)
+source-package-manager: Test Files 15 passed (15), Tests 62 passed (62)
+resource-registry: Test Files 8 passed (8), Tests 31 passed (31)
+```
+
+Full workspace verification:
+
+```bash
+pnpm test
+```
+
+Result:
+
+```text
+Test Files  190 passed (190)
+Tests       666 passed (666)
+```
+
+Line guard:
+
+```text
+258 packages/source-package-manager/src/source-acquisition-plan.ts
+ 82 packages/source-package-manager/src/source-acquisition-plan.test.ts
+ 89 packages/source-package-manager/src/source-acquisition-hand-off.ts
+103 packages/source-package-manager/src/source-acquisition-hand-off.test.ts
+ 87 packages/resource-registry/src/package-metadata.test.ts
 ```
 
 ## Actual Planner Output
@@ -35,16 +63,43 @@ No workspace, user jar, official, Modrinth, CurseForge, GitHub:
 {
   "requiresWorkspace": false,
   "routes": [
-    "runtime_cache",
-    "user_jar",
-    "official",
-    "modrinth",
-    "curseforge",
-    "github"
-  ],
-  "warnings": {
-    "curseforge": ["curseforge_credentials_required"]
-  }
+    {
+      "origin": "runtime_cache",
+      "artifactStrategy": "query_cached_packages_and_indexes",
+      "cacheMode": "runtime_source_index_cache",
+      "warnings": []
+    },
+    {
+      "origin": "user_jar",
+      "artifactStrategy": "index_binary_jar",
+      "cacheMode": "runtime_artifact_cache",
+      "warnings": []
+    },
+    {
+      "origin": "official",
+      "artifactStrategy": "generate_vanilla_source_or_assets",
+      "cacheMode": "runtime_artifact_cache",
+      "warnings": []
+    },
+    {
+      "origin": "modrinth",
+      "artifactStrategy": "resolve_remote_jar_metadata",
+      "cacheMode": "runtime_metadata_cache",
+      "warnings": []
+    },
+    {
+      "origin": "curseforge",
+      "artifactStrategy": "resolve_remote_jar_metadata",
+      "cacheMode": "runtime_metadata_cache",
+      "warnings": ["curseforge_credentials_required"]
+    },
+    {
+      "origin": "github",
+      "artifactStrategy": "resolve_remote_source_repository",
+      "cacheMode": "runtime_metadata_cache",
+      "warnings": []
+    }
+  ]
 }
 ```
 
@@ -54,15 +109,71 @@ Workspace with Gradle, ProbeJS, local jar, and Modrinth:
 {
   "requiresWorkspace": false,
   "routes": [
-    "workspace_gradle",
-    "workspace_probejs",
-    "runtime_cache",
-    "local_jar",
-    "modrinth"
-  ],
-  "warnings": {
-    "modrinth": ["remote_download_denied"]
+    {
+      "origin": "workspace_gradle",
+      "artifactStrategy": "read_declared_dependencies",
+      "cacheMode": "workspace_overlay",
+      "warnings": []
+    },
+    {
+      "origin": "workspace_probejs",
+      "artifactStrategy": "read_probejs_types_and_registries",
+      "cacheMode": "workspace_overlay",
+      "warnings": []
+    },
+    {
+      "origin": "runtime_cache",
+      "artifactStrategy": "query_cached_packages_and_indexes",
+      "cacheMode": "runtime_source_index_cache",
+      "warnings": []
+    },
+    {
+      "origin": "local_jar",
+      "artifactStrategy": "index_binary_jar",
+      "cacheMode": "runtime_artifact_cache",
+      "warnings": []
+    },
+    {
+      "origin": "modrinth",
+      "artifactStrategy": "resolve_remote_jar_metadata",
+      "cacheMode": "runtime_metadata_cache",
+      "warnings": ["remote_download_denied"]
+    }
+  ]
+}
+```
+
+## Actual Hand-Off Output
+
+The route-to-work-item bridge returned:
+
+```json
+[
+  {
+    "kind": "jar_index",
+    "sourceArchive": "/packs/libs/example.jar",
+    "cacheScope": "private_runtime"
+  },
+  {
+    "kind": "vanilla_generation",
+    "minecraftVersion": "1.21.1",
+    "cacheScope": "private_runtime"
+  },
+  {
+    "kind": "remote_metadata",
+    "source": "modrinth",
+    "cacheScope": "metadata"
   }
+]
+```
+
+Generated cache metadata returned:
+
+```json
+{
+  "storageKind": "generated_local_cache",
+  "installTier": "private_local_cache",
+  "commitPolicy": "private_generated_cache"
 }
 ```
 
@@ -72,6 +183,6 @@ The planner treats Gradle and ProbeJS as fast workspace overlay evidence. They d
 
 ## Remaining Work
 
-- Wire the route plan into MCP evidence as `source_acquisition_plan`.
-- Convert routes into executable work items for jar indexing, vanilla generation, and remote metadata resolution.
-- Use existing private runtime cache policy for generated source indexes and jar-derived indexes.
+- Connect `SourceAcquisitionWorkItem` execution to the existing jar-source-adapter, vanilla generator, and external mod resolver.
+- Add broader integration tests that start from one `mc_develop` request and verify the complete planner to executor path.
+- Continue keeping generated Minecraft, ProbeJS, and modpack-derived content out of the repository and in private runtime cache.
