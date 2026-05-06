@@ -241,6 +241,19 @@ export function detectHarnessTaskIntent(
     datapackRequest && mentionsVanillaGeneratedDatapackRequest(normalized);
   const vanillaGeneratedResourcePackRequest =
     resourcePackRequest && mentionsVanillaGeneratedResourcePackRequest(normalized);
+  const vanillaGenerationTargetRequest =
+    mentionsVanillaGenerationTargetRequest(normalized);
+
+  if (vanillaGenerationTargetRequest) {
+    return {
+      id: "datapack_lookup",
+      confidence: "high",
+      reasons: [
+        "request text asks for official vanilla local generation targets",
+        "vanilla generation targets are exposed through source.bundle without downloading artifacts"
+      ]
+    };
+  }
 
   if (
     clientVisualResourceRequest &&
@@ -376,5 +389,14 @@ function mentionsVanillaGeneratedResourcePackRequest(
   return (
     /\b(?:vanilla|official)\b|原版|官方/.test(requestText) &&
     /assets\/minecraft\//.test(requestText)
+  );
+}
+
+function mentionsVanillaGenerationTargetRequest(requestText: string): boolean {
+  return (
+    /\b(?:vanilla|official)\b|原版|官方/.test(requestText) &&
+    /\b(?:local-generation|local generation|generate locally|generation target|generation targets|source-pack|source pack)\b|本地生成|生成目标/.test(
+      requestText
+    )
   );
 }

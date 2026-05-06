@@ -35,6 +35,7 @@ import {
   loadMdmDocsResourcesFromStatus,
   type MdmDocsResourceSummary
 } from "../../docs/mdm-docs/mdm-docs-records.js";
+import { loadMdmVanillaReleaseCatalog } from "../../docs/mdm-resource/vanilla-release-catalog.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -183,6 +184,8 @@ async function executeMcpDevelopTool(
     }
 
     const mdmDocs = await loadMdmDocsResourcesFromStatus(mdmResources);
+    const vanillaReleaseCatalog =
+      await loadMdmVanillaReleaseCatalog(mdmResources);
     const requestContext =
       await buildMcpServerRequestContextWithServiceProfile(bootstrap, {
         requestText: input.requestText,
@@ -202,6 +205,9 @@ async function executeMcpDevelopTool(
       requestContext,
       lspDiagnostics,
       javaDiagnosticsPreparation,
+      sourceBundle: {
+        vanillaReleaseCatalog
+      },
       contextQuery: {
         docsRecords: mdmDocs.records,
         docsSqliteArtifacts: mdmDocs.sqliteArtifacts

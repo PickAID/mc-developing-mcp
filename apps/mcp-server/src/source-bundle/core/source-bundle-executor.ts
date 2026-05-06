@@ -32,6 +32,8 @@ import { resolveGradleDependencyArchiveLookup } from "../../gradle/archive/gradl
 import { executeMcpServerDatapackFiles } from "../datapack/source-bundle-datapack.js";
 import { resolveMcpServerWorkspaceSource } from "../workspace/source-bundle-workspace.js";
 import type { ClientVisualExternalShaderReferenceOptions } from "../../client-visual/shader/client-visual-shader-reference.js";
+import type { MdmVanillaReleaseCatalogContext } from "../../docs/mdm-resource/vanilla-release-catalog.js";
+import { executeMcpServerVanillaGenerationTargets } from "../vanilla/source-bundle-vanilla-generation-targets.js";
 
 export interface McpServerSourceBundleExecutorOptions {
   runtimeRoot: string;
@@ -40,6 +42,7 @@ export interface McpServerSourceBundleExecutorOptions {
   jobRunner?: SourceAcquisitionJobRunner;
   gradleSourceDiscovery?: McpServerGradleSourceDiscoveryOptions;
   externalShaderReference?: ClientVisualExternalShaderReferenceOptions;
+  vanillaReleaseCatalog?: MdmVanillaReleaseCatalogContext;
   executeRecipe: SourcePackageRecipeExecutor;
   fallbackExecutor?: McpServerEvidenceExecutor;
 }
@@ -56,6 +59,15 @@ export function buildMcpServerSourceBundleExecutor(
     input: McpServerEvidenceExecutorInput
   ): Promise<McpServerEvidenceExecutorResult> => {
     if (input.candidate.routeStep === "datapack_files") {
+      const generationTargets = executeMcpServerVanillaGenerationTargets(
+        input,
+        options.vanillaReleaseCatalog
+      );
+
+      if (generationTargets) {
+        return generationTargets;
+      }
+
       return executeMcpServerDatapackFiles(input, {
         vanillaDatapackPackage: {
           runtimeLayout,
