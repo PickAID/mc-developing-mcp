@@ -25,6 +25,13 @@ describe("context.query source acquisition plan", () => {
             origin: "modrinth",
             artifactStrategy: "resolve_remote_jar_metadata"
           }
+        ],
+        workItems: [
+          {
+            kind: "remote_metadata",
+            source: "modrinth",
+            cacheScope: "metadata"
+          }
         ]
       }
     });

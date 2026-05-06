@@ -1,4 +1,8 @@
-import { planSourceAcquisition } from "@mcpskill/source-package-manager";
+import {
+  buildSourceAcquisitionWorkItems,
+  planSourceAcquisition,
+  type SourceAcquisitionRoute
+} from "@mcpskill/source-package-manager";
 
 import type {
   McpServerEvidenceExecutorInput,
@@ -16,13 +20,14 @@ export function executeMcpServerSourceAcquisitionPlan(
   }
 
   const descriptor = input.requestPlan.requestContext.workspaceContext?.descriptor;
+  const requestText = input.requestPlan.requestText ?? "";
   const plan = planSourceAcquisition({
     request: {
       purpose: "source_lookup",
       minecraftVersion: descriptor?.currentRuntime.minecraftVersion,
       loader: descriptor?.currentRuntime.loader,
       localJarPaths: descriptor?.modArchivePaths,
-      remoteSources: inferRemoteSources(input.requestPlan.requestText ?? "")
+      remoteSources: inferRemoteSources(requestText)
     },
     workspace: {
       available: descriptor !== undefined,
@@ -34,6 +39,13 @@ export function executeMcpServerSourceAcquisitionPlan(
       curseforgeCredentials: false
     }
   });
+  const workItems = plan.routes.flatMap((route) =>
+    buildSourceAcquisitionWorkItems({
+      route,
+      paths: routePaths(route, descriptor?.modArchivePaths),
+      minecraftVersion: descriptor?.currentRuntime.minecraftVersion
+    })
+  );
 
   return {
     matched: true,
@@ -46,9 +58,17 @@ export function executeMcpServerSourceAcquisitionPlan(
         artifactStrategy: route.artifactStrategy,
         cacheMode: route.cacheMode,
         warnings: route.warnings
-      }))
+      })),
+      workItems
     }
   };
+}
+
+function routePaths(
+  route: SourceAcquisitionRoute,
+  localJarPaths?: string[]
+): string[] | undefined {
+  return route.origin === "local_jar" ? localJarPaths : undefined;
 }
 
 function inferRemoteSources(
