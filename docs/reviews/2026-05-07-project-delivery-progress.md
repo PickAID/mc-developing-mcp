@@ -12,6 +12,9 @@ docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
 broader package corpus coverage, loader-specific variants, and final UX polish.
+The release producer is now hardened enough to verify local release
+installability before upload; the remaining live-release gap is the actual
+public GitHub Release acceptance run.
 
 ## Current Capabilities
 
@@ -106,6 +109,16 @@ Implemented:
   rewrite tracked registry metadata.
 - Release workflow uploads only artifacts listed in `mdm-release-manifest.json`,
   not arbitrary stale `release-out/*` files.
+- Release builder now emits `mdm-release-summary.json` with provenance, manifest
+  hash, package counts, artifact distributions, total size, and per-artifact
+  hashes.
+- Release tooling now defines the manifest install contract: package artifacts
+  resolve as siblings of `mdm-release-manifest.json`, equivalent to
+  `new URL(entry.artifactName, manifestUrl)` for remote MCP clients.
+- Release workflow now runs `tools/verify-release-install.mjs` before upload.
+  The verifier reads a local path or HTTP manifest URL, resolves every artifact,
+  checks sha256 and size, and opens SQLite docs bundles to confirm required
+  tables exist.
 - Public `sources` channel coverage is now generated from the release catalog's
   official release list. Current catalog coverage is 101 vanilla source profile
   packages, including older releases such as 1.14.4 and 1.12.2 plus current
@@ -163,9 +176,12 @@ Recent verification records:
 Current fresh checks from this slice:
 
 ```text
-mdm-sources node --test tests/*.test.mjs: 24 passed
+mdm-sources node --test tests/*.test.mjs: 29 passed
 mdm-sources node tools/validate.mjs: packageCount 411, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
+mdm-sources release summary: manifest packageCount 411, artifactCount 411, totalSizeBytes 2375815, formats json 409/jsonl 1/sqlite 1
+mdm-sources release install verifier: verifiedCount 411/411, first core-docs-required, sqlite core-docs-search-sqlite sizeBytes 32768, last minecraft-26.1-vanilla-source-profile
+mdm-sources release upload list: 413 files, including mdm-release-manifest.json, mdm-release-summary.json, and 411 manifest-declared artifacts
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
@@ -193,8 +209,8 @@ MCP v2 guidance docs synthesis: docs-retrieval package 15 tests passed; installe
 ## Completion Estimate
 
 - MCP core capability: 98%.
-- MDM resource/package delivery: 90-92%.
-- Overall project deliverability: 92-94%.
+- MDM resource/package delivery: 93-94%.
+- Overall project deliverability: 94-95%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
