@@ -74,11 +74,24 @@ export interface ReadIndexedSourceFileInput {
   maxLines?: number;
 }
 
+export interface ReadIndexedSourceChunkInput {
+  databasePath: string;
+  match: SourceIndexMatch;
+}
+
 export interface IndexedSourceFile {
   path: string;
   kind: SourceIndexedFileKind;
   startLine: number;
   endLine: number;
   totalLines: number;
+  content: string;
+}
+
+export interface IndexedSourceChunk {
+  path: string;
+  chunkId: string;
+  startLine: number;
+  endLine: number;
   content: string;
 }

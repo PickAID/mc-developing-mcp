@@ -50,6 +50,13 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - Service-profile and `source_acquisition_plan` now surface installed MDM
   source-index SQLite artifacts as ready/cached source index evidence, not only
   as an abstract plan to query cached packages later.
+- Source-index chunk reading is now a public `@mcpskill/source-index` API
+  instead of private vanilla-adapter code. Vanilla source lookup reuses the
+  shared chunk reader, so future source acquisition and mod-archive paths can
+  share the same SQLite chunk evidence contract.
+- MDM package recommendations now recognize `source_index_sqlite`,
+  `source_index`, `source_lookup`, and `source_chunk_search` as source signals,
+  and version-match `minecraft-<version>-source-index` packages.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -265,13 +272,14 @@ MCP installed source-index release consumption: initial red test showed download
 MCP source.bundle MDM source-index chunks: initial red test returned installed_but_no_match when only an external source_index_sqlite artifact had ItemStack chunks; fix passed MDM sourceIndexArtifacts into source.bundle and added sqlite chunk fallback when source files are absent; mcp-server 102 files / 333 tests passed
 MCP service-profile/source-acquisition source-index awareness: red tests first showed explicit MDM source-index paths were ignored by service-profile and absent from source_acquisition_plan payload; service-profile profile.test.ts passed 3 tests, context-query-source-acquisition.test.ts passed 4 tests, mcp-server and service-profile TypeScript builds passed
 MCP resource status source-index metadata guard: resource-registry status.test.ts now confirms ready source_index_sqlite packages preserve artifactType/artifactKind/queryAdapter/artifactPath/capabilities; resource-registry package tests passed 8 files / 34 tests, focused cross-package source-index tests passed 6 files / 19 tests
+MCP shared source-index chunk reader and recommendations: red test first showed readIndexedSourceChunk was not exported by @mcpskill/source-index; source-index indexer.test.ts passed 7 tests, vanilla-source-adapter resolve.test.ts passed 8 tests, source.bundle MDM source-index test passed, source-index recommendation focused tests passed 5 files / 25 tests, and source-index/vanilla-adapter/mcp-server TypeScript builds passed
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 98.7%.
+- MCP core capability: 98.8%.
 - MDM resource/package delivery: 95.5%.
-- Overall project deliverability: 95.7%.
+- Overall project deliverability: 95.8%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

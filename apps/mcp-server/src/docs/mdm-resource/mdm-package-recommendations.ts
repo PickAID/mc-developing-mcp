@@ -171,6 +171,9 @@ function matchPackageSignals(
 ): RequestSignal[] {
   const searchable = [
     resourcePackage.packageId,
+    resourcePackage.artifactType,
+    resourcePackage.artifactKind,
+    resourcePackage.queryAdapter,
     resourcePackage.releaseChannel,
     resourcePackage.releaseFamily,
     ...(resourcePackage.capabilities ?? []),
@@ -184,6 +187,11 @@ function matchPackageSignals(
   return [...signals].filter((signal) => {
     if (signal === "docs") {
       return /docs|guidance|sqlite|jsonl/u.test(searchable);
+    }
+    if (signal === "sources") {
+      return /sources?|source[-_ ]?(?:index|lookup|chunk|pack|tree)|source_index_sqlite/u.test(
+        searchable
+      );
     }
 
     return searchable.includes(signal);
@@ -226,9 +234,11 @@ function isVersionedMinecraftProfile(resourcePackage: MdmResourceStatusEntry): b
 function getVersionedMinecraftProfileVersion(
   resourcePackage: MdmResourceStatusEntry
 ): string | undefined {
-  return resourcePackage.packageId.match(
-    /^minecraft-(?<version>.+)-(?:vanilla-(?:source|datapack|resourcepack)|[a-z0-9-]+-mapping)-profile$/u
-  )?.groups?.version;
+  const match = resourcePackage.packageId.match(
+    /^minecraft-(?<version>.+)-(?:vanilla-(?:source|datapack|resourcepack)|[a-z0-9-]+-mapping)-profile$|^minecraft-(?<indexVersion>.+)-source-index$/u
+  );
+
+  return match?.groups?.version ?? match?.groups?.indexVersion;
 }
 
 function resolvePriority(input: {

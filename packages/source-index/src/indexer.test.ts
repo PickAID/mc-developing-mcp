@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSourceIndex,
   querySourceIndex,
+  readIndexedSourceChunk,
   readIndexedSourceFile
 } from "./indexer.js";
 
@@ -187,6 +188,42 @@ describe("buildSourceIndex", () => {
         matchReasons: expect.arrayContaining(["fts_chunk", "term:RenderSystem"])
       })
     ]);
+  });
+
+  it("reads indexed chunk content without requiring source files on disk", async () => {
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-index-read-chunk-"));
+    const javaPath = join(sourceRoot, "demo", "ScreenRenderer.java");
+    const databasePath = join(sourceRoot, "source-index.sqlite");
+
+    await mkdir(join(javaPath, ".."), { recursive: true });
+    await writeFile(
+      javaPath,
+      [
+        "package demo;",
+        "public class ScreenRenderer {",
+        "  void render() {",
+        "    RenderSystem.enableBlend();",
+        "  }",
+        "}"
+      ].join("\n")
+    );
+    await buildSourceIndex({ sourceRoot, databasePath, packageId: "demo" });
+
+    const match = querySourceIndex({
+      databasePath,
+      text: "RenderSystem enableBlend",
+      limit: 1
+    }).matches[0];
+
+    await writeFile(javaPath, "");
+
+    expect(readIndexedSourceChunk({ databasePath, match })).toMatchObject({
+      path: "demo/ScreenRenderer.java",
+      chunkId: "lines-1-6",
+      startLine: 1,
+      endLine: 6,
+      content: expect.stringContaining("RenderSystem.enableBlend")
+    });
   });
 
   it("indexes Java members and filters member matches by owner", async () => {

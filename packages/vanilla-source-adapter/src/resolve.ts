@@ -3,6 +3,7 @@ import { join, relative } from "node:path";
 
 import {
   querySourceIndex,
+  readIndexedSourceChunk,
   readIndexedSourceFile,
   type SourceIndexMatch
 } from "@mcpskill/source-index";
@@ -28,7 +29,6 @@ import {
   deriveVanillaRelativePath,
   type VanillaSourceRequest
 } from "./request.js";
-import { readIndexedSourceChunk } from "./source-index-chunks.js";
 import { resolveVanillaMinecraftVersion } from "./version.js";
 
 export interface VanillaSourceReference {
@@ -318,7 +318,7 @@ function readIndexedChunkReference(
   databasePath: string,
   match: SourceIndexMatch
 ): VanillaSourceReference | undefined {
-  const chunk = readIndexedSourceChunk(databasePath, match);
+  const chunk = readIndexedSourceChunk({ databasePath, match });
   if (!chunk) {
     return undefined;
   }

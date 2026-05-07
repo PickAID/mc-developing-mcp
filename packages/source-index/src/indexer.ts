@@ -16,7 +16,9 @@ import { initializeSourceIndexSchema } from "./schema.js";
 import { scanSourceIndexFiles } from "./scanner.js";
 import { openSourceIndexDatabase } from "./sqlite.js";
 import type {
+  IndexedSourceChunk,
   IndexedSourceFile,
+  ReadIndexedSourceChunkInput,
   ReadIndexedSourceFileInput,
   SourceIndexBuildInput,
   SourceIndexBuildResult,
@@ -205,6 +207,34 @@ export async function readIndexedSourceFile(
     totalLines: lines.length,
     content: selected.join("\n")
   };
+}
+
+export function readIndexedSourceChunk(
+  input: ReadIndexedSourceChunkInput
+): IndexedSourceChunk | undefined {
+  const database = openSourceIndexDatabase(input.databasePath);
+  const { match } = input;
+
+  try {
+    const query = match.chunkId
+      ? [
+          "SELECT path, chunk_id AS chunkId, start_line AS startLine,",
+          "end_line AS endLine, content FROM source_chunks",
+          "WHERE path = ? AND chunk_id = ? LIMIT 1"
+        ].join(" ")
+      : [
+          "SELECT path, chunk_id AS chunkId, start_line AS startLine,",
+          "end_line AS endLine, content FROM source_chunks",
+          "WHERE path = ? ORDER BY start_line LIMIT 1"
+        ].join(" ");
+    const row = match.chunkId
+      ? database.prepare(query).get(match.path, match.chunkId)
+      : database.prepare(query).get(match.path);
+
+    return row ? mapIndexedChunk(row) : undefined;
+  } finally {
+    database.close();
+  }
 }
 
 function splitContentLines(content: string): string[] {
@@ -398,6 +428,16 @@ function mapRows(rows: Record<string, unknown>[]): SourceIndexMatch[] {
     endLine: optionalNumber(row.endLine),
     chunkId: optionalString(row.chunkId)
   }));
+}
+
+function mapIndexedChunk(row: Record<string, unknown>): IndexedSourceChunk {
+  return {
+    path: String(row.path),
+    chunkId: String(row.chunkId),
+    startLine: Number(row.startLine),
+    endLine: Number(row.endLine),
+    content: String(row.content)
+  };
 }
 
 function optionalString(value: unknown): string | undefined {
