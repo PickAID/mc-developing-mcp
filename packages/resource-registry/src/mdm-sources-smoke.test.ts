@@ -44,7 +44,9 @@ describe("mdm-sources local release smoke", () => {
       "--channel",
       "resourcepack",
       "--channel",
-      "mappings"
+      "mappings",
+      "--channel",
+      "sources"
     ], { cwd: copiedRoot });
 
     const manifest = await readMdmReleaseManifestFile(
@@ -58,7 +60,8 @@ describe("mdm-sources local release smoke", () => {
       datapack: expect.any(Number),
       mappings: expect.any(Number),
       required: expect.any(Number),
-      resourcepack: expect.any(Number)
+      resourcepack: expect.any(Number),
+      sources: expect.any(Number)
     });
     expect(packages).toEqual(
       expect.arrayContaining([
@@ -121,6 +124,19 @@ describe("mdm-sources local release smoke", () => {
             channel: "mappings",
             family: "vanilla-mappings"
           })
+        }),
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            packageId: "minecraft-1.20.1-vanilla-source-profile",
+            packageVersion: "0.1.0"
+          }),
+          artifact: expect.objectContaining({ kind: "docs_bundle" }),
+          capabilities: ["source_lookup", "source_chunk_search"],
+          query: expect.objectContaining({ adapter: "json_docs" }),
+          release: expect.objectContaining({
+            channel: "sources",
+            family: "vanilla-sources"
+          })
         })
       ])
     );
@@ -174,11 +190,23 @@ describe("mdm-sources local release smoke", () => {
         arrayBuffer: async () => readFile(artifactPath)
       })
     });
+    const sourceProfileCached = await ensureMdmReleasePackageCached({
+      manifest,
+      packageId: "minecraft-1.20.1-vanilla-source-profile",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async (artifactPath) => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => readFile(artifactPath)
+      })
+    });
 
     expect(resourcepackCached.status).toBe("downloaded");
     expect(mappingCached.status).toBe("downloaded");
+    expect(sourceProfileCached.status).toBe("downloaded");
     const status = await summarizeMdmResourceStatus({ registry, cacheLayout });
-    expect(status.counts.ready).toBe(4);
+    expect(status.counts.ready).toBe(5);
 
     const artifact = JSON.parse(
       await readFile(cached.state?.artifactPath ?? "", "utf-8")
@@ -209,6 +237,13 @@ describe("mdm-sources local release smoke", () => {
     );
     expect(mappingArtifact.payload["payload/mapping-profile.json"]).toMatchObject({
       repoPath: expect.stringContaining("payload/mapping-profile.json")
+    });
+
+    const sourceProfileArtifact = JSON.parse(
+      await readFile(sourceProfileCached.state?.artifactPath ?? "", "utf-8")
+    );
+    expect(sourceProfileArtifact.payload["payload/source-profile.json"]).toMatchObject({
+      repoPath: expect.stringContaining("payload/source-profile.json")
     });
   });
 });
