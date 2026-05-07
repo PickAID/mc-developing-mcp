@@ -84,4 +84,24 @@ describe("resolveMdmResourcePackageMetadata", () => {
       sqlite: undefined
     });
   });
+
+  it.each([3.5, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects invalid SQLite user version %s",
+    (minUserVersion) => {
+      expect(() =>
+        resolveMdmResourcePackageMetadata(
+          {
+            sqlite: {
+              minUserVersion
+            }
+          },
+          {
+            packageId: "docs-sqlite-bundle",
+            required: false,
+            format: "sqlite"
+          }
+        )
+      ).toThrow(/minUserVersion must be a non-negative integer/);
+    }
+  );
 });

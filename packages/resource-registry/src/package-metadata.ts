@@ -116,7 +116,10 @@ function optionalSqliteValidation(
 
   return {
     databaseName: optionalString(record.databaseName, "databaseName"),
-    minUserVersion: optionalNumber(record.minUserVersion, "minUserVersion"),
+    minUserVersion: optionalNonNegativeInteger(
+      record.minUserVersion,
+      "minUserVersion"
+    ),
     requiredTables:
       requiredTables === undefined
         ? undefined
@@ -155,6 +158,23 @@ function optionalNumber(value: unknown, field: string): number | undefined {
   }
 
   return value;
+}
+
+function optionalNonNegativeInteger(
+  value: unknown,
+  field: string
+): number | undefined {
+  const numberValue = optionalNumber(value, field);
+  if (numberValue === undefined) {
+    return undefined;
+  }
+  if (!Number.isInteger(numberValue) || numberValue < 0) {
+    throw new Error(
+      `mdm package metadata field ${field} must be a non-negative integer.`
+    );
+  }
+
+  return numberValue;
 }
 
 function requireStringArray(value: unknown, field: string): string[] {

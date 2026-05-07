@@ -57,6 +57,9 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - MDM package recommendations now recognize `source_index_sqlite`,
   `source_index`, `source_lookup`, and `source_chunk_search` as source signals,
   and version-match `minecraft-<version>-source-index` packages.
+- MCP resource-registry now rejects invalid SQLite `minUserVersion` metadata at
+  manifest parse time unless it is a finite non-negative integer, matching the
+  stricter `mdm-sources` release manifest schema.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -316,13 +319,14 @@ mdm-sources source-index install smoke: red test first showed an empty source_in
 mdm-sources SQLite minUserVersion install gate: red test first showed a SQLite artifact with PRAGMA user_version 1 passed despite metadata.sqlite.minUserVersion 3; verify-release-install now rejects SQLite artifacts below the declared minimum. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
 mdm-sources release manifest SQLite metadata schema: red test first showed malformed metadata.sqlite.minUserVersion and metadata.sqlite.requiredTables entries passed release schema verification; release-manifest.schema.json now validates SQLite metadata field types. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched schema/test files stayed under 500 lines
 mdm-sources SQLite metadata completeness schema: batch hardening now requires sqlite.databaseName, integer non-negative sqlite.minUserVersion, and non-empty sqlite.requiredTables in release metadata. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched schema/test files stayed under 500 lines
+MCP resource-registry SQLite metadata parity: red test first showed fractional minUserVersion passed resource-registry package metadata parsing; parser now rejects fractional, negative, NaN, and Infinity values as non-finite/non-integer metadata. resource-registry tests passed 8 files / 38 tests and resource-registry TypeScript build passed; touched files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.2%.
+- MCP core capability: 99.3%.
 - MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.0%.
+- Overall project deliverability: 97.1%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
