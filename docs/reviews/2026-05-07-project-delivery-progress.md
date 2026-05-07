@@ -194,6 +194,10 @@ Implemented:
   `metadata.sqlite.minUserVersion` when release metadata declares a minimum
   schema version. This keeps release acceptance aligned with MCP runtime
   resource-registry status checks.
+- Release manifest schema now validates SQLite metadata structure instead of
+  accepting an opaque object. `metadata.sqlite.minUserVersion` must be numeric
+  and `metadata.sqlite.requiredTables` must be a string array before release
+  schema verification can pass.
 - Public `sources` channel coverage is now generated from the release catalog's
   official release list. Current catalog coverage is 101 vanilla source profile
   packages, including older releases such as 1.14.4 and 1.12.2 plus current
@@ -307,13 +311,14 @@ MCP loader source profile recommendations: minecraft-<version>-forge/neoforge/fa
 mdm-sources source-index payload schema: added schema/source-index-payload.schema.json, schema subset anyOf support, source_index schemaId enforcement, and README contract notes; node --test tests/*.test.mjs passed 39 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test/schema files stayed under 500 lines
 mdm-sources source-index install smoke: red test first showed an empty source_index_sqlite artifact with all required tables passed install verification; verify-release-install now rejects source-index SQLite artifacts with zero files/source_chunks/fts_chunks rows. node --test tests/*.test.mjs passed 40 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
 mdm-sources SQLite minUserVersion install gate: red test first showed a SQLite artifact with PRAGMA user_version 1 passed despite metadata.sqlite.minUserVersion 3; verify-release-install now rejects SQLite artifacts below the declared minimum. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
+mdm-sources release manifest SQLite metadata schema: red test first showed malformed metadata.sqlite.minUserVersion and metadata.sqlite.requiredTables entries passed release schema verification; release-manifest.schema.json now validates SQLite metadata field types. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched schema/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.2%.
-- MDM resource/package delivery: 96.8%.
-- Overall project deliverability: 96.8%.
+- MDM resource/package delivery: 97.0%.
+- Overall project deliverability: 96.9%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
