@@ -14,6 +14,7 @@ const DEFAULT_MAX_MEMBER_MATCHES = 8;
 
 export async function collectSourceIndexMemberEvidence(input: {
   runtimeRoot?: string;
+  databasePaths?: string[];
   requestedMembers: MixinMemberReference[];
   maxDatabases?: number;
 }): Promise<{
@@ -21,14 +22,19 @@ export async function collectSourceIndexMemberEvidence(input: {
   searchedDatabases: number;
   truncated: boolean;
 }> {
-  if (!input.runtimeRoot || input.requestedMembers.length === 0) {
+  if (input.requestedMembers.length === 0) {
+    return { members: [], searchedDatabases: 0, truncated: false };
+  }
+  if (!input.runtimeRoot && !input.databasePaths?.length) {
     return { members: [], searchedDatabases: 0, truncated: false };
   }
 
-  const databases = await findSourceIndexDatabases(
-    input.runtimeRoot,
-    input.maxDatabases ?? DEFAULT_MAX_SOURCE_INDEX_DATABASES
-  );
+  const maxDatabases = input.maxDatabases ?? DEFAULT_MAX_SOURCE_INDEX_DATABASES;
+  const databases = await resolveSourceIndexDatabases({
+    runtimeRoot: input.runtimeRoot,
+    databasePaths: input.databasePaths,
+    maxDatabases
+  });
   const members: MixinTargetMemberEvidence[] = [];
 
   for (const databasePath of databases) {
@@ -48,8 +54,25 @@ export async function collectSourceIndexMemberEvidence(input: {
   return {
     members: dedupeMembers(members),
     searchedDatabases: databases.length,
-    truncated: databases.length >= (input.maxDatabases ?? DEFAULT_MAX_SOURCE_INDEX_DATABASES)
+    truncated: databases.length >= maxDatabases
   };
+}
+
+async function resolveSourceIndexDatabases(input: {
+  runtimeRoot?: string;
+  databasePaths?: string[];
+  maxDatabases: number;
+}): Promise<string[]> {
+  const explicit = uniquePaths(input.databasePaths ?? []);
+  const remaining = input.maxDatabases - explicit.length;
+  if (!input.runtimeRoot || remaining <= 0) {
+    return explicit.slice(0, input.maxDatabases);
+  }
+
+  return uniquePaths([
+    ...explicit,
+    ...(await findSourceIndexDatabases(input.runtimeRoot, remaining))
+  ]).slice(0, input.maxDatabases);
 }
 
 async function findSourceIndexDatabases(
@@ -123,6 +146,10 @@ function dedupeMembers(
 
 function shouldSkipDirectory(name: string): boolean {
   return name === "node_modules" || name === ".git";
+}
+
+function uniquePaths(paths: string[]): string[] {
+  return [...new Set(paths.filter((path) => path.length > 0))].sort();
 }
 
 function indexedMemberName(reference: MixinMemberReference): string {

@@ -162,6 +162,48 @@ describe("Mixin target evidence routing", () => {
     });
   });
 
+  it("uses explicit MDM source-index artifact paths for Mixin member proof", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createMixinTargetWorkspace({
+      classes: ["com/example/compat/TargetApi.class"],
+      target: "com.example.compat.TargetApi"
+    });
+    const databasePath = await createRuntimeSourceIndex(
+      runtimeRoot,
+      "artifacts/minecraft-1.20.1-source-index-0.1.0.sqlite"
+    );
+
+    const result = await lookupMixinTargetVerification({
+      workspaceRoot,
+      archivePaths: [join(workspaceRoot, "mods", "compat-mod.jar")],
+      requestText: "target=Lcom/example/compat/TargetApi;call()V",
+      sourceIndexDatabasePaths: [databasePath]
+    });
+
+    expect(result?.payload).toMatchObject({
+      mode: "mixin_target_verification",
+      searchedSourceIndexes: 1,
+      verifications: [
+        {
+          status: "valid",
+          requestedTarget: "com.example.compat.TargetApi",
+          memberProofs: [
+            {
+              status: "valid",
+              requestedMember: "call",
+              matches: [
+                {
+                  path: "com/example/compat/TargetApi.java",
+                  signature: "call()"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+  });
+
   it("includes bounded access widener target evidence in Mixin verification", async () => {
     const runtimeRoot = await createTempRoot("mcpskill-runtime-");
     const workspaceRoot = await createMixinTargetWorkspace({
@@ -288,7 +330,10 @@ async function createTempRoot(prefix: string): Promise<string> {
   return root;
 }
 
-async function createRuntimeSourceIndex(runtimeRoot: string): Promise<void> {
+async function createRuntimeSourceIndex(
+  runtimeRoot: string,
+  databaseName = "source-index.sqlite"
+): Promise<string> {
   const sourceRoot = join(runtimeRoot, "installs", "demo-source-pack");
   const javaPath = join(sourceRoot, "com", "example", "compat", "TargetApi.java");
 
@@ -301,11 +346,13 @@ async function createRuntimeSourceIndex(runtimeRoot: string): Promise<void> {
       "}"
     ].join("\n")
   );
+  const databasePath = join(sourceRoot, databaseName);
   await buildSourceIndex({
     sourceRoot,
-    databasePath: join(sourceRoot, "source-index.sqlite"),
+    databasePath,
     packageId: "demo-source-pack"
   });
+  return databasePath;
 }
 
 async function writeText(path: string, content: string): Promise<void> {

@@ -226,6 +226,9 @@ async function executeMcpDevelopTool(
       contextQuery: {
         docsRecords: mdmDocs.records,
         docsSqliteArtifacts: mdmDocs.sqliteArtifacts,
+        sourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
+          (artifact) => artifact.artifactPath
+        ),
         sourceAcquisitionWorkItemHandlers:
           createMcpServerSourceAcquisitionWorkItemHandlers({
             requestText: input.requestText,

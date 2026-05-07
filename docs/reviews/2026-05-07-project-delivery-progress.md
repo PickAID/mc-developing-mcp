@@ -11,7 +11,7 @@ evidence, datapack/resourcepack evidence, MDM resource install/status, SQLite
 docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
-broader package corpus coverage, source-index schema alignment,
+broader package corpus coverage, source-index corpus generation,
 loader-specific variants, and final UX polish. The release producer is now
 hardened enough to verify local release installability before upload; the
 remaining live-release gap is the actual public GitHub Release acceptance run.
@@ -35,6 +35,10 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   `queryAdapter` through registry, status, and v2 manifest conversion. Installed
   `source_index_sqlite` artifacts are routed into a dedicated source-index lane
   and excluded from docs SQLite lookup.
+- MDM source-index artifacts can now be passed as explicit database paths into
+  Mixin member evidence collection. This avoids relying on recursive discovery
+  of a hard-coded `source-index.sqlite` filename and lets installed release
+  artifacts participate in compact member proof.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -111,14 +115,12 @@ Implemented:
 - Real SQLite source-index artifact generation from normalized JSON input is now
   supported on the `mdm-sources` producer side. `source_index` packages use
   `artifactType: "source_index"`, `artifactKind: "source_index"`, and
-  `queryAdapter: "source_index_sqlite"` in release manifests, and the install
-  verifier checks `source_files` plus `source_files_fts`.
-- Important current limitation: the producer source-index SQLite schema uses
-  `source_files` and `source_files_fts`, while the MCP runtime
-  `@mcpskill/source-index` query engine currently expects `files`,
-  `java_symbols`, `java_members`, `source_chunks`, and `fts_chunks`. This means
-  the current MCP slice can classify and route those artifacts safely, but real
-  source querying requires the next schema-alignment slice.
+  `queryAdapter: "source_index_sqlite"` in release manifests.
+- Source-index SQLite producer output is now aligned with the MCP runtime
+  `@mcpskill/source-index` schema: `files`, `java_symbols`, `java_members`,
+  `fts_files`, `source_chunks`, and `fts_chunks`. Public source-index artifacts
+  remain metadata/index artifacts and still do not bundle Minecraft source
+  trees.
 - Release builder cleans stale output before writing `release-out`.
 - Release workflow builds with `--no-registry-update` so CI publishing does not
   rewrite tracked registry metadata.
@@ -180,10 +182,9 @@ Not done:
 - Loader-specific and mapping-specific source profile variants beyond vanilla
   source profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
-- Producer/consumer source-index SQLite schema alignment. MCP now has the
-  dedicated source-index artifact lane, but the producer artifact schema still
-  needs to match the runtime `@mcpskill/source-index` schema before real symbol
-  and source chunk queries are enabled.
+- Larger real source-index corpus generation and live release acceptance. The
+  schema path is aligned, but broad source-index datasets still need controlled
+  generation from allowed local/user-confirmed inputs.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
 
@@ -210,7 +211,8 @@ mdm-sources release summary: manifest packageCount 411, artifactCount 411, total
 mdm-sources release install verifier: verifiedCount 411/411, first core-docs-required, sqlite core-docs-search-sqlite sizeBytes 32768, last minecraft-26.1-vanilla-source-profile
 mdm-sources release upload list: 413 files, including mdm-release-manifest.json, mdm-release-summary.json, and 411 manifest-declared artifacts
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
-mdm-sources source-index SQLite artifact fixture: artifactName minecraft-1.20.1-source-index-0.1.0.sqlite, artifactType source_index, artifactKind source_index, queryAdapter source_index_sqlite, requiredTables source_files/source_files_fts
+mdm-sources source-index SQLite artifact fixture: artifactName minecraft-1.20.1-source-index-0.1.0.sqlite, artifactType source_index, artifactKind source_index, queryAdapter source_index_sqlite, requiredTables files/java_symbols/java_members/fts_files/source_chunks/fts_chunks
+mdm-sources source-index schema alignment: node --test tests/build-local-release-source-index.test.mjs passed; node --test tests/validate-v2.test.mjs tests/verify-release-install.test.mjs tests/build-local-release-source-index.test.mjs passed 13 tests; node --test tests/*.test.mjs passed 35 tests; node tools/validate.mjs packageCount 411 errorCount 0; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411/411
 mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
@@ -233,20 +235,21 @@ MCP Mojmap manifest resolver: parsed ProGuard mappings, followed configured Moja
 MCP Parchment Maven resolver: selected release metadata, fetched parchment zip, parsed parchment.json as mojmap-to-parchment enrichment entries with javadocs/parameters, and confirmed no default Parchment fetch without env; mcp-server 100 files / 328 tests passed for focused acceptance run
 MCP v2 guidance docs synthesis: docs-retrieval package 15 tests passed; installed client-visual guidance artifact was cached and hit through mc_develop docs_lookup; real artifact search matched dynamic texture reload cleanup, nine slice metadata, and shader sampler render target; mcp-server 100 files / 329 tests passed for focused acceptance run
 MCP source-index artifact routing: resource-registry 8 files / 33 tests passed; mcp-server 100 files / 330 tests passed; source_index_sqlite artifacts preserve artifactType/artifactKind/queryAdapter, convert to v2 source_index/source_index_sqlite, and are excluded from docs SQLite lookup
+MCP explicit source-index database paths: mcp-server 100 files / 331 tests passed; non-source-index.sqlite MDM artifact path produced valid Mixin method proof for com.example.compat.TargetApi.call()
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 98%.
-- MDM resource/package delivery: 94%.
+- MDM resource/package delivery: 95%.
 - Overall project deliverability: 95%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
 
-- Align producer source-index SQLite output with `@mcpskill/source-index`, or
-  add a compatibility reader with explicit degraded behavior for metadata-only
-  indexes.
+- Generate and validate broader source-index corpora from allowed local or
+  user-confirmed inputs, without committing Minecraft source or private
+  workspace indexes.
 - Run live GitHub Release acceptance once a release exists.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially loader-specific and API-specific guidance packages.

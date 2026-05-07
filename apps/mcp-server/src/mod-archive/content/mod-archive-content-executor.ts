@@ -60,6 +60,7 @@ export interface McpServerModArchiveContentExecutorOptions {
   cache?: ArchiveContentCache;
   inventoryDatabasePath?: string;
   runtimeRoot?: string;
+  sourceIndexDatabasePaths?: string[];
 }
 
 export function createMcpServerModArchiveContentExecutor(
@@ -246,10 +247,11 @@ export async function executeMcpServerModArchiveContent(
     archivePaths: archives.archives.map((archive) => archive.archivePath),
     requestText,
     cache: options.cache,
-    databasePath: options.inventoryDatabasePath,
-    runtimeRoot: options.runtimeRoot,
-    refresh: shouldRefreshModArchiveInventory(requestText)
-  });
+      databasePath: options.inventoryDatabasePath,
+      runtimeRoot: options.runtimeRoot,
+      sourceIndexDatabasePaths: options.sourceIndexDatabasePaths,
+      refresh: shouldRefreshModArchiveInventory(requestText)
+    });
   if (mixinTargetVerificationResult) {
     return mixinTargetVerificationResult;
   }

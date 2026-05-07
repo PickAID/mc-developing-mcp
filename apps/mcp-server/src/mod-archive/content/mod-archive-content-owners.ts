@@ -87,6 +87,7 @@ export async function lookupMixinTargetVerification(input: {
   cache?: ArchiveContentCache;
   databasePath?: string;
   runtimeRoot?: string;
+  sourceIndexDatabasePaths?: string[];
   refresh?: boolean;
 }): Promise<McpServerEvidenceExecutorResult | undefined> {
   const requestedMembers = extractMixinMemberReferences(input.requestText).filter(
@@ -103,6 +104,7 @@ export async function lookupMixinTargetVerification(input: {
   const available = await collectAvailableClassesForMixinTargets(input);
   const memberEvidence = await collectSourceIndexMemberEvidence({
     runtimeRoot: input.runtimeRoot,
+    databasePaths: input.sourceIndexDatabasePaths,
     requestedMembers
   });
   const awTargetEvidence = await collectAccessWidenerTargetEvidence({

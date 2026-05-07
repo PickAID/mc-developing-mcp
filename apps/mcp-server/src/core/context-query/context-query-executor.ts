@@ -43,6 +43,7 @@ export interface McpServerContextQueryExecutorOptions {
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
   docsRecords?: DocsPackageRecord[];
   docsSqliteArtifacts?: MdmDocsSqliteArtifact[];
+  sourceIndexDatabasePaths?: string[];
   fallbackExecutor?: McpServerEvidenceExecutor;
   runtimeRoot?: string;
 }
@@ -55,7 +56,8 @@ export function buildMcpServerContextQueryExecutor(
     createMcpServerModArchiveContentExecutor({
       cache: options.modArchiveContentCache,
       inventoryDatabasePath: options.modArchiveInventoryDatabasePath,
-      runtimeRoot: options.runtimeRoot
+      runtimeRoot: options.runtimeRoot,
+      sourceIndexDatabasePaths: options.sourceIndexDatabasePaths
     });
 
   return (
