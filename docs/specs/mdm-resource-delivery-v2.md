@@ -258,6 +258,7 @@ mdm-sources KubeJS guidance 0.2.0 payload: scopeRules 4, eventBridgeRules 4, int
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
 MCP mapping index work item runner: source-package-manager 16 files, 65 tests passed
 MCP runtime mapping index adapter, Tiny v2 provider, Yarn Maven resolver, Mojmap manifest resolver, and Parchment Maven resolver: mcp-server 100 files, 328 tests passed in focused acceptance run
+MCP v2 guidance docs synthesis: installed structured guidance payloads without entries[] are converted to searchable docs records; docs-retrieval 14 tests passed; mcp-server 100 files, 329 tests passed in focused acceptance run
 ```
 
 ## Non-Deliverable Areas
@@ -265,9 +266,10 @@ MCP runtime mapping index adapter, Tiny v2 provider, Yarn Maven resolver, Mojmap
 The system is not complete until these exist:
 
 - Larger docs search corpus beyond the initial JSONL/SQLite package.
-- Broader KubeJS guidance corpus and dynamic MCP consumption beyond the initial
-  1.20.1 guidance package. ForgeEvents, NativeEvents, `global`, ProbeJS, and
-  scope-specific public guidance now have first-layer coverage.
+- Broader KubeJS guidance corpus beyond the initial 1.20.1 guidance package.
+  ForgeEvents, NativeEvents, `global`, ProbeJS, and scope-specific public
+  guidance now have first-layer coverage, and installed structured guidance
+  bundles can now be consumed through `docs_lookup`.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
 - Loader and mapping-specific source/data/resource profile variants beyond the

@@ -6,6 +6,8 @@ import {
   buildDocsSearchHit,
   type DocsSearchHit
 } from "./search.js";
+import { synthesizeGuidanceRecords } from "./guidance-synthesis.js";
+import { readMdmDocsArtifactMetadata } from "./mdm-artifact-metadata.js";
 
 const require = createRequire(import.meta.url);
 
@@ -69,6 +71,18 @@ export function toMdmDocsResourceRecords(value: unknown): DocsPackageRecord[] {
 
   for (const payload of Object.values(artifact.payload)) {
     const content = readJsonPayload(payload.content, payload.repoPath);
+    if (!content.entries) {
+      records.push(
+        ...synthesizeGuidanceRecords({
+          packageId: artifact.packageId,
+          displayName: artifact.displayName,
+          repoPath: payload.repoPath,
+          content: content.raw,
+          packageSearchTerms: artifact.searchTerms
+        })
+      );
+      continue;
+    }
 
     for (const entry of content.entries) {
       records.push({
@@ -192,17 +206,21 @@ function readSqliteDocsSearchHit(
 function readArtifact(value: unknown): MdmDocsArtifact {
   const record = objectField(value, "mdm docs artifact");
   const packageRecord = objectField(record.package, "mdm docs package");
-  const artifactType = stringField(packageRecord, "artifactType");
+  const metadata = readMdmDocsArtifactMetadata(packageRecord);
 
-  if (artifactType !== "docs") {
+  if (metadata.artifactType !== "docs") {
     return {
-      packageId: stringField(packageRecord, "id"),
+      packageId: metadata.packageId,
+      displayName: metadata.displayName,
+      searchTerms: [],
       payload: {}
     };
   }
 
   return {
-    packageId: stringField(packageRecord, "id"),
+    packageId: metadata.packageId,
+    displayName: metadata.displayName,
+    searchTerms: metadata.searchTerms,
     payload: Object.fromEntries(
       Object.entries(objectField(record.payload, "mdm docs payload")).map(
         ([key, payload]) => [key, readPayload(payload)]
@@ -222,9 +240,11 @@ function readPayload(value: unknown): MdmDocsPayload {
 
 function readJsonPayload(content: string, repoPath: string): MdmDocsContent {
   const record = objectField(JSON.parse(content), `mdm docs content ${repoPath}`);
-  const entries = arrayField(record, "entries").map(readEntry);
+  const entries = Array.isArray(record.entries)
+    ? record.entries.map(readEntry)
+    : undefined;
 
-  return { entries };
+  return { entries, raw: record };
 }
 
 function readEntry(value: unknown): MdmDocsEntry {
@@ -390,6 +410,8 @@ function normalize(value: string): string {
 
 interface MdmDocsArtifact {
   packageId: string;
+  displayName: string;
+  searchTerms: string[];
   payload: Record<string, MdmDocsPayload>;
 }
 
@@ -399,7 +421,8 @@ interface MdmDocsPayload {
 }
 
 interface MdmDocsContent {
-  entries: MdmDocsEntry[];
+  entries?: MdmDocsEntry[];
+  raw: Record<string, unknown>;
 }
 
 interface MdmDocsEntry {

@@ -38,6 +38,38 @@ describe("MDM docs resource records", () => {
     ]);
   });
 
+  it("reads v2 guidance docs bundles without requiring entries arrays", async () => {
+    const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-guidance-"));
+    const artifactPath = join(root, "client-visual-1.20.1-guidance-0.2.0.mdm-resource.json");
+
+    await writeFile(
+      artifactPath,
+      JSON.stringify(fixtureV2GuidanceArtifact(), null, 2)
+    );
+
+    await expect(readMdmDocsResourceRecords(artifactPath)).resolves.toEqual([
+      expect.objectContaining({
+        entryId: "client-visual-1.20.1-guidance-purpose",
+        packageId: "client-visual-1.20.1-guidance",
+        title: "Client Visual 1.20.1 Guidance Purpose",
+        summary:
+          "Translate low-knowledge visual requests into concrete Minecraft implementation evidence chains.",
+        searchTerms: expect.arrayContaining([
+          "client-visual-1.20.1-guidance",
+          "resourcepack_trace",
+          "block-entity-visual",
+          "renderer implementation"
+        ])
+      }),
+      expect.objectContaining({
+        entryId: "client-visual-1.20.1-guidance-hard-rules",
+        packageId: "client-visual-1.20.1-guidance",
+        summary:
+          "Do not invent renderer code without checking registry id, client binding, asset path, sync evidence, and loader/version API proof."
+      })
+    ]);
+  });
+
   it("reads structured docs records from a sqlite MDM docs artifact", async () => {
     const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-sqlite-"));
     const artifactPath = join(root, "core-docs-required-0.1.0.sqlite");
@@ -194,6 +226,49 @@ function fixtureArtifact() {
               summary:
                 "Missing optional packages are degraded capability, not fatal failure."
             }
+          ]
+        })
+      }
+    }
+  };
+}
+
+function fixtureV2GuidanceArtifact() {
+  return {
+    schemaVersion: 1,
+    package: {
+      identity: {
+        packageId: "client-visual-1.20.1-guidance",
+        displayName: "Client Visual 1.20.1 Guidance",
+        namespace: "client-visual"
+      },
+      artifact: {
+        kind: "docs_bundle",
+        format: "json"
+      },
+      capabilities: ["docs_search", "docs_direct_read", "resourcepack_trace"]
+    },
+    payload: {
+      "payload/client-visual-guidance.json": {
+        repoPath: "packages/docs/client-visual/1.20.1/payload/client-visual-guidance.json",
+        content: JSON.stringify({
+          schemaVersion: 1,
+          minecraftVersion: "1.20.1",
+          purpose:
+            "Translate low-knowledge visual requests into concrete Minecraft implementation evidence chains.",
+          implementationChains: [
+            {
+              id: "block-entity-visual",
+              chain: [
+                "registry id",
+                "block entity type",
+                "client renderer binding",
+                "renderer implementation"
+              ]
+            }
+          ],
+          hardRules: [
+            "Do not invent renderer code without checking registry id, client binding, asset path, sync evidence, and loader/version API proof."
           ]
         })
       }

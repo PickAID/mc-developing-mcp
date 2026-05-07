@@ -74,6 +74,11 @@ broader package corpus coverage, loader-specific variants, and final UX polish.
 - Resourcepack/client-visual support covers assets, models, blockstates,
   textures, atlases, language, sounds, UI assets, shader-related paths, and
   resource reference tracing at compact evidence level.
+- Installed v2 `json_docs` guidance bundles can now be synthesized into compact
+  searchable docs records even when the payload is structured guidance rather
+  than an explicit `entries[]` document index. This lets cached client-visual or
+  KubeJS guidance packages participate in MCP `docs_lookup` without adding a
+  public tool or copying large prompt blocks.
 - Runtime-private generated indexes remain outside public release repositories.
 
 ## `mdm-sources` Status
@@ -175,13 +180,14 @@ MCP configurable Yarn Tiny v2 provider: URL template is opt-in through MCPSKILL_
 MCP Yarn Maven metadata resolver: selected highest matching Yarn build, fetched v2 jar, confirmed no mapping fetch when no provider/env is configured, and does not cache metadata misses as ready empty indexes; mcp-server 96 files / 316 tests passed for focused acceptance run
 MCP Mojmap manifest resolver: parsed ProGuard mappings, followed configured Mojang version manifest to client/server mapping artifacts, confirmed Mojmap requests do not use Yarn provider env, and confirmed no default Mojang fetch without env; mcp-server 98 files / 322 tests passed for focused acceptance run
 MCP Parchment Maven resolver: selected release metadata, fetched parchment zip, parsed parchment.json as mojmap-to-parchment enrichment entries with javadocs/parameters, and confirmed no default Parchment fetch without env; mcp-server 100 files / 328 tests passed for focused acceptance run
+MCP v2 guidance docs synthesis: docs-retrieval package 14 tests passed; installed client-visual guidance artifact was cached and hit through mc_develop docs_lookup; mcp-server 100 files / 329 tests passed for focused acceptance run
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 97%.
-- MDM resource/package delivery: 88-90%.
-- Overall project deliverability: 90-92%.
+- MCP core capability: 98%.
+- MDM resource/package delivery: 89-91%.
+- Overall project deliverability: 91-93%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b ../shared-types ../package-registry . && vitest run --root ../.. packages/docs-retrieval/src/selector.test.ts packages/docs-retrieval/src/search.test.ts"
+    "test": "tsc -b ../shared-types ../package-registry . && vitest run --root ../.. packages/docs-retrieval/src/selector.test.ts packages/docs-retrieval/src/search.test.ts packages/docs-retrieval/src/mdm-resource.test.ts"
   },
   "dependencies": {
     "@mcpskill/package-registry": "workspace:*",

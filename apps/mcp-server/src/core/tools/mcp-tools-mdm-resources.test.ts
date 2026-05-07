@@ -1,5 +1,4 @@
-import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,7 +8,18 @@ import {
   resolveMdmResourceCacheLayout
 } from "@mcpskill/resource-registry";
 
-import { registerMcpServerTools, type McpToolHandler } from "./mcp-tools.js";
+import { registerMcpServerTools } from "./mcp-tools.js";
+import {
+  createCapturingRegistry,
+  createMdmReleaseOut,
+  createMdmReleaseOutForPackage,
+  createMdmSourcesRoot,
+  createSinglePackageMdmSourcesRoot,
+  createWorkspaceRoot,
+  hashText,
+  mdmDocsArtifactBody,
+  mdmGuidanceArtifactBody
+} from "../../../test-fixtures/mcp-tools-mdm-resource-fixtures.js";
 
 describe("mc_develop mdm resource status", () => {
   it("returns local mdm resource status in structured content without adding tools", async () => {
@@ -271,154 +281,58 @@ describe("mc_develop mdm resource status", () => {
     });
   });
 
+  it("uses cached v2 guidance docs bundles during docs lookup", async () => {
+    const registry = createCapturingRegistry();
+    const body = mdmGuidanceArtifactBody();
+    const release = await createMdmReleaseOutForPackage({
+      body,
+      artifactName: "client-visual-1.20.1-guidance-0.2.0.mdm-resource.json",
+      packageId: "client-visual-1.20.1-guidance",
+      namespace: "client-visual",
+      version: "0.2.0",
+      releaseFamily: "client-visual"
+    });
+    const mdmSourcesRoot = await createSinglePackageMdmSourcesRoot({
+      packageId: "client-visual-1.20.1-guidance",
+      manifestName: "client-visual-1.20.1-guidance.json",
+      release
+    });
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-runtime-"));
+    const workspaceRoot = await createWorkspaceRoot();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Find client visual renderer implementation evidence chain guidance.",
+      runtimeRoot,
+      workspaceRoot,
+      mdmReleaseInstall: {
+        manifestPath: release.manifestPath,
+        packageId: "client-visual-1.20.1-guidance",
+        downloadPolicy: "allowed"
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: {
+        routeStep: "docs_lookup",
+        payload: {
+          hits: expect.arrayContaining([
+            expect.objectContaining({
+              entryId: "client-visual-1.20.1-guidance-purpose",
+              packageId: "client-visual-1.20.1-guidance"
+            })
+          ])
+        }
+      }
+    });
+  });
+
 });
-
-function createCapturingRegistry(): CapturingRegistry {
-  const calls: RegisteredToolCall[] = [];
-
-  return {
-    calls,
-    registerTool(name, _config, handler) {
-      calls.push({ name, handler });
-    }
-  };
-}
-
-async function createWorkspaceRoot(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-workspace-"));
-
-  await mkdir(join(root, "kubejs", "server_scripts"), { recursive: true });
-  await writeFile(join(root, "kubejs", "server_scripts", "main.js"), "\n");
-
-  return root;
-}
-
-async function createMdmSourcesRoot(
-  release: MdmTestRelease = {
-    artifactName: "core-docs-required-0.1.0.mdm-resource.json",
-    sha256: "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
-    sizeBytes: 1201
-  }
-): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-sources-"));
-
-  await mkdir(join(root, "registry", "packages"), { recursive: true });
-  await writeJson(join(root, "registry", "index.json"), {
-    schemaVersion: 1,
-    packages: [
-      {
-        id: "core-docs-required",
-        manifestPath: "registry/packages/core-docs-required.json",
-        required: true,
-        format: "json"
-      }
-    ]
-  });
-  await writeJson(join(root, "registry", "packages", "core-docs-required.json"), {
-    schemaVersion: 1,
-    id: "core-docs-required",
-    sourcePath: "packages/core/docs/required/package.json",
-    currentRelease: {
-      artifactName: release.artifactName,
-      sha256: release.sha256,
-      sizeBytes: release.sizeBytes
-    }
-  });
-
-  return root;
-}
-
-async function createMdmReleaseOut(body: string): Promise<MdmTestReleaseOut> {
-  const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-release-out-"));
-  const artifactName = "core-docs-required-0.1.0.mdm-resource.json";
-  const manifestPath = join(root, "mdm-release-manifest.json");
-  const sha256 = hashText(body);
-
-  await writeFile(join(root, artifactName), body);
-  await writeJson(manifestPath, {
-    schemaVersion: 1,
-    generatedAt: "2026-04-29T00:00:00.000Z",
-    packages: [
-      {
-        packageId: "core-docs-required",
-        version: "0.1.0",
-        namespace: "core",
-        artifactType: "docs",
-        variant: "required",
-        required: true,
-        format: "json",
-        artifactName,
-        sha256,
-        sizeBytes: Buffer.byteLength(body)
-      }
-    ]
-  });
-
-  return {
-    manifestPath,
-    artifactName,
-    body,
-    sha256,
-    sizeBytes: Buffer.byteLength(body)
-  };
-}
-
-async function writeJson(path: string, value: unknown): Promise<void> {
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
-}
-
-function hashText(body: string): string {
-  return createHash("sha256").update(body).digest("hex");
-}
-
-function mdmDocsArtifactBody(): string {
-  return JSON.stringify({
-    schemaVersion: 1,
-    package: {
-      id: "core-docs-required",
-      artifactType: "docs"
-    },
-    payload: {
-      "core-docs.json": {
-        repoPath: "packages/core/docs/required/payload/core-docs.json",
-        content: JSON.stringify({
-          schemaVersion: 1,
-          entries: [
-            {
-              id: "offline-resource-status",
-              title: "Offline Resource Status",
-              summary:
-                "Missing optional packages are degraded capability, not fatal failure.",
-              searchTerms: [
-                "offline resource status",
-                "resource package",
-                "degraded capability"
-              ]
-            }
-          ]
-        })
-      }
-    }
-  });
-}
-
-interface MdmTestRelease {
-  artifactName: string;
-  sha256: string;
-  sizeBytes: number;
-}
-
-interface MdmTestReleaseOut extends MdmTestRelease {
-  manifestPath: string;
-  body: string;
-}
-
-interface CapturingRegistry {
-  calls: RegisteredToolCall[];
-  registerTool(name: string, config: unknown, handler: McpToolHandler): unknown;
-}
-
-interface RegisteredToolCall {
-  name: string;
-  handler: McpToolHandler;
-}
