@@ -186,6 +186,12 @@ Implemented:
   packages, including older releases such as 1.14.4 and 1.12.2 plus current
   26.1.x releases. These are profile/guidance artifacts only and do not bundle
   Minecraft source.
+- Public loader-specific source profiles now cover the first loader matrix for
+  Forge, NeoForge, Fabric, and Quilt across key versions: 1.7.10, 1.12.2,
+  1.14.4, 1.16.5, 1.18.2, 1.20.1, 1.21.1, 26.1, and 26.1.2. These 18 packages
+  are metadata-only `loader-sources` profiles that describe runtime-private
+  Minecraft and loader API source acquisition; they do not bundle source,
+  remapped trees, generated indexes, or private workspace data.
 - Public `datapack` and `resourcepack` channel coverage is generated from the
   same official release catalog. Current catalog coverage is 101 datapack
   profile packages and 101 resourcepack profile packages, covering 1.0 through
@@ -217,9 +223,8 @@ Not done:
 - Live published GitHub Release acceptance run.
 - Signing/provenance/retention policy.
 - Large public docs corpus.
-- Loader-specific and mapping-specific source profile variants beyond vanilla
-  source profiles.
-- Loader-specific source/data/resource profile variants beyond vanilla.
+- Loader-specific source profile coverage beyond the first curated matrix, and
+  loader-specific data/resource profile variants beyond vanilla.
 - Larger real source-index corpus generation and live release acceptance. The
   schema path is aligned, but broad source-index datasets still need controlled
   generation from allowed local/user-confirmed inputs.
@@ -284,13 +289,15 @@ MCP resource status source-index metadata guard: resource-registry status.test.t
 MCP shared source-index chunk reader and recommendations: red test first showed readIndexedSourceChunk was not exported by @mcpskill/source-index; source-index indexer.test.ts passed 7 tests, vanilla-source-adapter resolve.test.ts passed 8 tests, source.bundle MDM source-index test passed, source-index recommendation focused tests passed 5 files / 25 tests, and source-index/vanilla-adapter/mcp-server TypeScript builds passed
 MCP source acquisition source-index preview: red tests first showed source_acquisition_plan only reported cached database paths and later showed preview could include wrong-version source-index matches; now it previews lightweight source-index matches for stable FQCN/path requests, skips unreadable SQLite indexes with warnings, skips packageId matches for other Minecraft versions, and continues to matching-version indexes later in the candidate list. context-query-source-acquisition.test.ts passed 7 tests, focused source-index/source-bundle/context-query suite passed 3 files / 10 tests, and mcp-server TypeScript build passed
 MCP source-index-only vanilla source.bundle backend: red test first returned needs_confirmation when an explicit source_index_sqlite had ItemStack chunks but no source-pack confirmation existed; reviewers then caught that confirmed-but-uninstalled source packs could still trigger recipe execution before using SQLite evidence and that unfiltered explicit indexes could cross Minecraft versions. The resolver now preflights explicit source indexes before install when no ready source-pack install exists, filters index matches by target Minecraft version, and does not fabricate installing acquisition evidence when installation is intentionally skipped. vanilla-source-adapter source-index/resolve tests passed 2 files / 12 tests, source.bundle MDM source-index test passed 2 tests, mcp-tools-mdm-source-index-resources.test.ts passed 1 test, mcp-server TypeScript build passed, and touched source/test files stayed under 500 lines
+mdm-sources loader source profiles: generated 18 loader-specific metadata-only source profile packages for Forge/NeoForge/Fabric/Quilt; vanilla source profile output shape is locked to exclude loader-only fields; node --test tests/*.test.mjs passed 38 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
+MCP loader source profile recommendations: minecraft-<version>-forge/neoforge/fabric/quilt-source-profile package ids are now recognized as versioned source profiles; focused recommendation tests passed 2 files / 10 tests and mcp-server TypeScript build passed
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.1%.
-- MDM resource/package delivery: 95.5%.
-- Overall project deliverability: 96.1%.
+- MCP core capability: 99.2%.
+- MDM resource/package delivery: 96.2%.
+- Overall project deliverability: 96.5%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

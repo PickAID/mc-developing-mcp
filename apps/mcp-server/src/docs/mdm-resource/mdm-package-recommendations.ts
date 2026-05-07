@@ -235,7 +235,7 @@ function getVersionedMinecraftProfileVersion(
   resourcePackage: MdmResourceStatusEntry
 ): string | undefined {
   const match = resourcePackage.packageId.match(
-    /^minecraft-(?<version>.+)-(?:vanilla-(?:source|datapack|resourcepack)|[a-z0-9-]+-mapping)-profile$|^minecraft-(?<indexVersion>.+)-source-index$/u
+    /^minecraft-(?<version>.+)-(?:(?:vanilla|forge|neoforge|fabric|quilt)-source|vanilla-(?:datapack|resourcepack)|[a-z0-9-]+-mapping)-profile$|^minecraft-(?<indexVersion>.+)-source-index$/u
   );
 
   return match?.groups?.version ?? match?.groups?.indexVersion;
