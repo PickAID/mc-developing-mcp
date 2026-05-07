@@ -202,6 +202,44 @@ describe("context.query source acquisition plan", () => {
     });
   });
 
+  it("skips wrong-version source index previews and keeps matching-version hits", async () => {
+    const wrongSourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-plan-wrong-"));
+    const rightSourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-plan-right-"));
+    const wrongDatabasePath = join(wrongSourceRoot, "source-index.sqlite");
+    const rightDatabasePath = join(rightSourceRoot, "source-index.sqlite");
+
+    await writeItemStackSourceIndex(wrongSourceRoot, wrongDatabasePath, "1.21.1");
+    await writeItemStackSourceIndex(rightSourceRoot, rightDatabasePath, "1.20.1");
+
+    const executor = buildMcpServerContextQueryExecutor({
+      sourceIndexDatabasePaths: [wrongDatabasePath, rightDatabasePath]
+    });
+
+    const result = await executor(
+      inputFixture({
+        requestText: "Need Minecraft 1.20.1 source for net.minecraft.world.item.ItemStack."
+      })
+    );
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "source_acquisition_plan",
+        sourceIndexPreview: {
+          query: "net.minecraft.world.item.ItemStack",
+          searchedDatabaseCount: 2,
+          matches: [
+            {
+              databasePath: rightDatabasePath,
+              packageId: "minecraft-1.20.1-source-index",
+              path: "net/minecraft/world/item/ItemStack.java"
+            }
+          ]
+        }
+      }
+    });
+  });
+
   it("keeps source acquisition planning available when a source index is unreadable", async () => {
     const executor = buildMcpServerContextQueryExecutor({
       sourceIndexDatabasePaths: ["/missing/source-index.sqlite"]
@@ -260,6 +298,25 @@ function inputFixture(input: { requestText?: string } = {}): McpServerEvidenceEx
     },
     requestPlan: requestPlanFixture({ requestText })
   };
+}
+
+async function writeItemStackSourceIndex(
+  sourceRoot: string,
+  databasePath: string,
+  minecraftVersion: string
+): Promise<void> {
+  await mkdir(join(sourceRoot, "net", "minecraft", "world", "item"), {
+    recursive: true
+  });
+  await writeFile(
+    join(sourceRoot, "net", "minecraft", "world", "item", "ItemStack.java"),
+    "package net.minecraft.world.item;\npublic class ItemStack {}\n"
+  );
+  await buildSourceIndex({
+    sourceRoot,
+    databasePath,
+    packageId: `minecraft-${minecraftVersion}-source-index`
+  });
 }
 
 function requestPlanFixture(input: {

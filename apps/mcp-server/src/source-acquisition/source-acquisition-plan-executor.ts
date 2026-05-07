@@ -70,7 +70,8 @@ export async function executeMcpServerSourceAcquisitionPlan(
     : undefined;
   const sourceIndexPreview = buildSourceIndexPreview({
     requestText,
-    databasePaths: options.sourceIndexDatabasePaths ?? []
+    databasePaths: options.sourceIndexDatabasePaths ?? [],
+    minecraftVersion
   });
 
   return {
@@ -107,6 +108,7 @@ function routePaths(
 function buildSourceIndexPreview(input: {
   requestText: string;
   databasePaths: string[];
+  minecraftVersion?: string;
 }): SourceIndexPreview | undefined {
   const query = inferSourceIndexQuery(input.requestText);
   if (!query || input.databasePaths.length === 0) {
@@ -124,6 +126,9 @@ function buildSourceIndexPreview(input: {
       continue;
     }
     for (const match of result.matches) {
+      if (!sourceIndexMatchTargetsVersion(match, input.minecraftVersion)) {
+        continue;
+      }
       matches.push(toPreviewMatch(databasePath, match));
       if (matches.length >= 5) {
         return {
@@ -142,6 +147,10 @@ function buildSourceIndexPreview(input: {
     matches,
     warnings: optionalWarnings(warnings)
   };
+}
+
+function sourceIndexMatchTargetsVersion(match: SourceIndexMatch, minecraftVersion?: string): boolean {
+  return !minecraftVersion || !match.packageId || match.packageId.startsWith(`minecraft-${minecraftVersion}-`);
 }
 
 function safeQuerySourceIndex(
