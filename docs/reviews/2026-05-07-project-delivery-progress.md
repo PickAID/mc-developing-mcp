@@ -121,6 +121,10 @@ Implemented:
   `fts_files`, `source_chunks`, and `fts_chunks`. Public source-index artifacts
   remain metadata/index artifacts and still do not bundle Minecraft source
   trees.
+- Source-index payloads now support compact `files` metadata plus explicit
+  `javaSymbols`, `javaMembers`, and `sourceChunks` arrays. This lets future
+  corpus generators or AI-maintained local packages emit normalized index data
+  without pretending every record is only a file summary.
 - Release builder cleans stale output before writing `release-out`.
 - Release workflow builds with `--no-registry-update` so CI publishing does not
   rewrite tracked registry metadata.
@@ -213,6 +217,7 @@ mdm-sources release upload list: 413 files, including mdm-release-manifest.json,
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 mdm-sources source-index SQLite artifact fixture: artifactName minecraft-1.20.1-source-index-0.1.0.sqlite, artifactType source_index, artifactKind source_index, queryAdapter source_index_sqlite, requiredTables files/java_symbols/java_members/fts_files/source_chunks/fts_chunks
 mdm-sources source-index schema alignment: node --test tests/build-local-release-source-index.test.mjs passed; node --test tests/validate-v2.test.mjs tests/verify-release-install.test.mjs tests/build-local-release-source-index.test.mjs passed 13 tests; node --test tests/*.test.mjs passed 35 tests; node tools/validate.mjs packageCount 411 errorCount 0; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411/411
+mdm-sources normalized source-index payloads: source-index release test passed with files plus javaSymbols/javaMembers/sourceChunks; node tools/validate.mjs packageCount 411 errorCount 0; node --test tests/*.test.mjs passed 35 tests; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411 artifacts
 mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
