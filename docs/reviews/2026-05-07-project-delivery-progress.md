@@ -152,6 +152,11 @@ Implemented:
   `javaSymbols`, `javaMembers`, and `sourceChunks` arrays. This lets future
   corpus generators or AI-maintained local packages emit normalized index data
   without pretending every record is only a file summary.
+- Source-index payloads now have an explicit public JSON schema contract in
+  `schema/source-index-payload.schema.json`. Repository validation checks this
+  contract before semantic source-index validation, and source-index packages
+  must declare `artifact.schemaId: "mdm.source.index.sqlite"` before release
+  materialization.
 - Source-index payloads are now validated before release build. Invalid
   top-level `javaMembers` without a path, invalid member kinds, and malformed
   `sourceChunks` without content or chunk ids are rejected by
@@ -291,13 +296,14 @@ MCP source acquisition source-index preview: red tests first showed source_acqui
 MCP source-index-only vanilla source.bundle backend: red test first returned needs_confirmation when an explicit source_index_sqlite had ItemStack chunks but no source-pack confirmation existed; reviewers then caught that confirmed-but-uninstalled source packs could still trigger recipe execution before using SQLite evidence and that unfiltered explicit indexes could cross Minecraft versions. The resolver now preflights explicit source indexes before install when no ready source-pack install exists, filters index matches by target Minecraft version, and does not fabricate installing acquisition evidence when installation is intentionally skipped. vanilla-source-adapter source-index/resolve tests passed 2 files / 12 tests, source.bundle MDM source-index test passed 2 tests, mcp-tools-mdm-source-index-resources.test.ts passed 1 test, mcp-server TypeScript build passed, and touched source/test files stayed under 500 lines
 mdm-sources loader source profiles: generated 18 loader-specific metadata-only source profile packages for Forge/NeoForge/Fabric/Quilt; vanilla source profile output shape is locked to exclude loader-only fields; node --test tests/*.test.mjs passed 38 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
 MCP loader source profile recommendations: minecraft-<version>-forge/neoforge/fabric/quilt-source-profile package ids are now recognized as versioned source profiles; focused recommendation tests passed 2 files / 10 tests and mcp-server TypeScript build passed
+mdm-sources source-index payload schema: added schema/source-index-payload.schema.json, schema subset anyOf support, source_index schemaId enforcement, and README contract notes; node --test tests/*.test.mjs passed 39 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test/schema files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.2%.
-- MDM resource/package delivery: 96.2%.
-- Overall project deliverability: 96.5%.
+- MDM resource/package delivery: 96.4%.
+- Overall project deliverability: 96.6%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
