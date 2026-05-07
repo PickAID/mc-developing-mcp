@@ -70,6 +70,41 @@ describe("MDM docs resource records", () => {
     ]);
   });
 
+  it("searches synthesized guidance docs by compact topic terms", async () => {
+    const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-guidance-search-"));
+    const artifactPath = join(root, "client-visual-1.20.1-guidance-0.2.0.mdm-resource.json");
+
+    await writeFile(
+      artifactPath,
+      JSON.stringify(fixtureV2GuidanceArtifact(), null, 2)
+    );
+    const records = await readMdmDocsResourceRecords(artifactPath);
+    const result = searchSelectedDocsPackages({
+      queryText: "dynamic texture reload cleanup and nine slice metadata",
+      docsSelection: {
+        selections: [],
+        trace: {
+          registryPackageIds: [],
+          taskIntentId: "client_visual_resources",
+          routeStep: "docs_lookup",
+          rejectedPackages: []
+        }
+      },
+      resourceRecords: records
+    });
+
+    expect(result.hits).toEqual([
+      expect.objectContaining({
+        entryId: "client-visual-1.20.1-guidance-purpose",
+        matchedTerms: expect.arrayContaining([
+          "dynamic texture",
+          "reload cleanup",
+          "nine slice"
+        ])
+      })
+    ]);
+  });
+
   it("reads structured docs records from a sqlite MDM docs artifact", async () => {
     const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-sqlite-"));
     const artifactPath = join(root, "core-docs-required-0.1.0.sqlite");
@@ -269,6 +304,21 @@ function fixtureV2GuidanceArtifact() {
           ],
           hardRules: [
             "Do not invent renderer code without checking registry id, client binding, asset path, sync evidence, and loader/version API proof."
+          ],
+          relationshipDiscoveryRules: [
+            {
+              id: "dynamic-texture-discovery",
+              follow: [
+                "dynamic texture owner",
+                "upload cadence",
+                "reload cleanup",
+                "bounded cache"
+              ]
+            },
+            {
+              id: "ui-texture-metadata-discovery",
+              classifyCandidatesAs: ["nine_slice_candidate"]
+            }
           ]
         })
       }

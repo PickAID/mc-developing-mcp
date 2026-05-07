@@ -79,6 +79,11 @@ broader package corpus coverage, loader-specific variants, and final UX polish.
   than an explicit `entries[]` document index. This lets cached client-visual or
   KubeJS guidance packages participate in MCP `docs_lookup` without adding a
   public tool or copying large prompt blocks.
+- The public client-visual 1.20.1 guidance package has been expanded to version
+  0.2.0. It now carries structured visual targets, evidence-chain contracts,
+  relationship discovery rules, role-equivalent API search terms, distribution
+  boundaries, and output schema guidance for UI, renderer, shader, dynamic
+  texture, and resourcepack work.
 - Runtime-private generated indexes remain outside public release repositories.
 
 ## `mdm-sources` Status
@@ -168,6 +173,8 @@ mdm-sources resourcepack profiles: generated packages 101, release artifacts 101
 mdm-sources mapping profiles: generated packages 101, release artifacts 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 mdm-sources KubeJS guidance 0.2.0: docs release artifact kubejs-1.20.1-guidance-0.2.0.mdm-resource.json, sha256 38c698ea30bf3c437c96514f18c351278cdcf4062de1f56f4da8075241fde0f3, sizeBytes 16454
 mdm-sources KubeJS guidance artifact content: scopeRules 4, eventBridgeRules 4, integrationBoundaries 5, lookupHints 10
+mdm-sources client-visual guidance 0.2.0: docs release artifact client-visual-1.20.1-guidance-0.2.0.mdm-resource.json, sha256 4f92c04637bc7b3a7a6251bdda0f72704b77d3df8a1aad5aa5044e377ad77795, sizeBytes 15728
+mdm-sources client-visual guidance artifact content: visualTargets 4, relationshipDiscoveryRules 4, roleEquivalentSearch 8
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
@@ -180,19 +187,18 @@ MCP configurable Yarn Tiny v2 provider: URL template is opt-in through MCPSKILL_
 MCP Yarn Maven metadata resolver: selected highest matching Yarn build, fetched v2 jar, confirmed no mapping fetch when no provider/env is configured, and does not cache metadata misses as ready empty indexes; mcp-server 96 files / 316 tests passed for focused acceptance run
 MCP Mojmap manifest resolver: parsed ProGuard mappings, followed configured Mojang version manifest to client/server mapping artifacts, confirmed Mojmap requests do not use Yarn provider env, and confirmed no default Mojang fetch without env; mcp-server 98 files / 322 tests passed for focused acceptance run
 MCP Parchment Maven resolver: selected release metadata, fetched parchment zip, parsed parchment.json as mojmap-to-parchment enrichment entries with javadocs/parameters, and confirmed no default Parchment fetch without env; mcp-server 100 files / 328 tests passed for focused acceptance run
-MCP v2 guidance docs synthesis: docs-retrieval package 14 tests passed; installed client-visual guidance artifact was cached and hit through mc_develop docs_lookup; mcp-server 100 files / 329 tests passed for focused acceptance run
+MCP v2 guidance docs synthesis: docs-retrieval package 15 tests passed; installed client-visual guidance artifact was cached and hit through mc_develop docs_lookup; real artifact search matched dynamic texture reload cleanup, nine slice metadata, and shader sampler render target; mcp-server 100 files / 329 tests passed for focused acceptance run
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 98%.
-- MDM resource/package delivery: 89-91%.
-- Overall project deliverability: 91-93%.
+- MDM resource/package delivery: 90-92%.
+- Overall project deliverability: 92-94%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
-  corpus, especially client visual, loader-specific, and API-specific guidance
-  packages.
+  corpus, especially loader-specific and API-specific guidance packages.

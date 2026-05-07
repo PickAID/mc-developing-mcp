@@ -78,7 +78,7 @@ function buildRecord(input: {
 function collectGuidanceTerms(value: unknown): string[] {
   const terms: string[] = [];
   collectTerms(value, terms, 0);
-  return uniqueStrings(terms).slice(0, 80);
+  return uniqueStrings(expandSearchTerms(terms)).slice(0, 768);
 }
 
 function collectTerms(value: unknown, terms: string[], depth: number): void {
@@ -122,3 +122,49 @@ function uniqueStrings(values: string[]): string[] {
     )
   ];
 }
+
+function expandSearchTerms(values: string[]): string[] {
+  const terms: string[] = [];
+
+  for (const value of values) {
+    terms.push(value);
+    terms.push(...tokenTerms(value));
+  }
+
+  return terms;
+}
+
+function tokenTerms(value: string): string[] {
+  const tokens = value
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((token) => token.length >= 3)
+    .filter((token) => !STOP_WORDS.has(token));
+  const terms = tokens.flatMap((token) =>
+    token.endsWith("s") && token.length > 4 ? [token, token.slice(0, -1)] : [token]
+  );
+
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    terms.push(`${tokens[index]} ${tokens[index + 1]}`);
+  }
+
+  return terms;
+}
+
+const STOP_WORDS = new Set([
+  "and",
+  "are",
+  "can",
+  "data",
+  "for",
+  "from",
+  "into",
+  "load",
+  "not",
+  "only",
+  "the",
+  "this",
+  "when",
+  "with",
+  "without"
+]);

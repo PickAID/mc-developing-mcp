@@ -255,10 +255,12 @@ mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanill
 mdm-sources mappings release build: packages 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 mdm-sources KubeJS guidance 0.2.0 release build: kubejs-1.20.1-guidance-0.2.0.mdm-resource.json, sha256 38c698ea30bf3c437c96514f18c351278cdcf4062de1f56f4da8075241fde0f3, sizeBytes 16454
 mdm-sources KubeJS guidance 0.2.0 payload: scopeRules 4, eventBridgeRules 4, integrationBoundaries 5, lookupHints 10
+mdm-sources client-visual guidance 0.2.0 release build: client-visual-1.20.1-guidance-0.2.0.mdm-resource.json, sha256 4f92c04637bc7b3a7a6251bdda0f72704b77d3df8a1aad5aa5044e377ad77795, sizeBytes 15728
+mdm-sources client-visual guidance 0.2.0 payload: visualTargets 4, relationshipDiscoveryRules 4, roleEquivalentSearch 8
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
 MCP mapping index work item runner: source-package-manager 16 files, 65 tests passed
 MCP runtime mapping index adapter, Tiny v2 provider, Yarn Maven resolver, Mojmap manifest resolver, and Parchment Maven resolver: mcp-server 100 files, 328 tests passed in focused acceptance run
-MCP v2 guidance docs synthesis: installed structured guidance payloads without entries[] are converted to searchable docs records; docs-retrieval 14 tests passed; mcp-server 100 files, 329 tests passed in focused acceptance run
+MCP v2 guidance docs synthesis: installed structured guidance payloads without entries[] are converted to searchable docs records; docs-retrieval 15 tests passed; real client-visual 0.2.0 artifact matched dynamic texture, nine-slice metadata, and shader sampler queries; mcp-server 100 files, 329 tests passed in focused acceptance run
 ```
 
 ## Non-Deliverable Areas
@@ -270,8 +272,9 @@ The system is not complete until these exist:
   ForgeEvents, NativeEvents, `global`, ProbeJS, and scope-specific public
   guidance now have first-layer coverage, and installed structured guidance
   bundles can now be consumed through `docs_lookup`.
-- Deeper client visual package coverage for UI, rendering, shader, model, atlas,
-  animation, and resource-pack patterns.
+- Broader client visual corpus beyond the initial 1.20.1 guidance package.
+  UI, rendering, shader, dynamic texture, model, atlas, and resourcepack
+  evidence-chain guidance now have first-layer structured coverage.
 - Loader and mapping-specific source/data/resource profile variants beyond the
   generated vanilla profiles.
 - Deeper MCP selection logic that uses package profile payloads, workspace
