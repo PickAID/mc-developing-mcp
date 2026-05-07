@@ -115,6 +115,7 @@ function detectRequestSignals(requestText: string): Set<RequestSignal> {
   addSignal(signals, normalized, "resourcepack", /resourcepack|resource pack|assets|model|blockstate|texture|atlas|lang|sound|资源包|模型|纹理/u);
   addSignal(signals, normalized, "client-visual", /client visual|\bgui\b|\bui\b|render|renderer|shader|screen|nine|nine-slice|视觉|渲染|界面/u);
   addSignal(signals, normalized, "mappings", /mapping|mapped|remap|yarn|parchment|mojmap|official name|obfuscated|mixin target|映射|混淆/u);
+  addSignal(signals, normalized, "sources", /source|sources|source lookup|source pack|source index|decompile|decompiled|源码|源代码|反编译/u);
   if (signals.size === 0) {
     addSignal(signals, normalized, "docs", /docs|documentation|guide|guidance|explain|参考|文档|说明/u);
   }
@@ -139,6 +140,9 @@ function matchPackageSignals(
 ): RequestSignal[] {
   const searchable = [
     resourcePackage.packageId,
+    resourcePackage.releaseChannel,
+    resourcePackage.releaseFamily,
+    ...(resourcePackage.capabilities ?? []),
     resourcePackage.metadata?.installTier,
     resourcePackage.metadata?.storageKind
   ]
@@ -162,7 +166,11 @@ function resolvePriority(input: {
 }): MdmPackageRecommendationPriority {
   const { score, status, matchedSignals } = input;
 
-  if (matchedSignals.includes("kubejs") || score >= 20) {
+  if (
+    matchedSignals.includes("kubejs") ||
+    matchedSignals.includes("sources") ||
+    score >= 20
+  ) {
     return "high";
   }
   if (score >= 10) {
@@ -210,6 +218,7 @@ type RequestSignal =
   | "resourcepack"
   | "client-visual"
   | "mappings"
+  | "sources"
   | "docs";
 
 type ScoredRecommendation = MdmPackageRecommendation & {

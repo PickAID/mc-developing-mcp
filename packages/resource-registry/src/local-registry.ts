@@ -2,6 +2,11 @@ import { readFile } from "node:fs/promises";
 import { isAbsolute, normalize, relative, resolve } from "node:path";
 
 import type {
+  PackageCapabilityV2,
+  PackageReleaseV2
+} from "@mcpskill/package-registry";
+
+import type {
   MdmResourcePackageDetail,
   MdmResourcePackageSummary,
   MdmResourceRegistry
@@ -59,6 +64,9 @@ async function readPackageSummary(
       format,
       sourcePath: detail.sourcePath
     }),
+    releaseChannel: optionalReleaseChannel(entry.releaseChannel),
+    releaseFamily: optionalString(entry.releaseFamily),
+    capabilities: optionalCapabilities(entry.capabilities),
     detail
   };
 }
@@ -99,7 +107,10 @@ function readDetail(
       required,
       format,
       sourcePath
-    })
+    }),
+    releaseChannel: optionalReleaseChannel(value.releaseChannel ?? summary.releaseChannel),
+    releaseFamily: optionalString(value.releaseFamily ?? summary.releaseFamily),
+    capabilities: optionalCapabilities(value.capabilities ?? summary.capabilities)
   };
 }
 
@@ -145,6 +156,51 @@ function stringField(record: Record<string, unknown>, field: string): string {
   }
 
   return value;
+}
+
+function optionalString(value: unknown): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error("mdm registry optional string field must be a non-empty string.");
+  }
+
+  return value;
+}
+
+function optionalReleaseChannel(
+  value: unknown
+): PackageReleaseV2["channel"] | undefined {
+  const channel = optionalString(value);
+  if (channel === undefined) {
+    return undefined;
+  }
+  const allowed: PackageReleaseV2["channel"][] = [
+    "required",
+    "docs",
+    "sources",
+    "mappings",
+    "datapack",
+    "resourcepack",
+    "accelerators"
+  ];
+  if (!allowed.includes(channel as PackageReleaseV2["channel"])) {
+    throw new Error(`mdm registry releaseChannel ${channel} is invalid.`);
+  }
+
+  return channel as PackageReleaseV2["channel"];
+}
+
+function optionalCapabilities(value: unknown): PackageCapabilityV2[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    throw new Error("mdm registry optional string array field must be an array.");
+  }
+
+  return value.map((entry) => optionalString(entry) as PackageCapabilityV2);
 }
 
 function numberField(record: Record<string, unknown>, field: string): number {

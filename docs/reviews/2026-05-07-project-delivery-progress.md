@@ -34,6 +34,9 @@ real release distribution, broader package corpus coverage, and final UX polish.
 - `mc_develop` now emits conservative MDM package recommendations by task
   signal, including confirmation-safe `mdmReleaseInstall` hints that default to
   `downloadPolicy: "disabled"`.
+- Source lookup and mapping-migration requests now recommend the public
+  `sources` channel profile when available, while actual source generation stays
+  runtime-local and user-confirmed.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -82,6 +85,7 @@ Recent verification records:
 - `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
 - `docs/reviews/2026-05-07-real-mdm-release-consumption-verification.md`
 - `docs/reviews/2026-05-07-mdm-package-recommendations-verification.md`
+- `docs/reviews/2026-05-07-mdm-source-profile-recommendation-verification.md`
 - `docs/reviews/2026-05-07-unified-source-acquisition-cache-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
@@ -97,13 +101,14 @@ MCP real mdm-sources release consumption: installed and searched core-docs-searc
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
 MCP MDM package recommendations: KubeJS/datapack task produced safe install hints without auto-download
+MCP source profile recommendations: source lookup task recommended minecraft-1.20.1-vanilla-source-profile
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 94-95%.
+- MCP core capability: 95%.
 - MDM resource/package delivery: 74-77%.
-- Overall project deliverability: 78-82%.
+- Overall project deliverability: 79-83%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

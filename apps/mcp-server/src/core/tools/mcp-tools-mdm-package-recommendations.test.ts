@@ -53,6 +53,47 @@ describe("mc_develop mdm package recommendations", () => {
       }
     });
   });
+
+  it("recommends source acquisition profiles for source lookup requests", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Need Minecraft source lookup for ItemStack while migrating mappings.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmPackageRecommendations: {
+        suggestions: [
+          expect.objectContaining({
+            packageId: "minecraft-1.20.1-vanilla-source-profile",
+            status: "missing_optional",
+            priority: "high",
+            matchedSignals: expect.arrayContaining(["sources"]),
+            mdmReleaseInstall: {
+              packageId: "minecraft-1.20.1-vanilla-source-profile",
+              downloadPolicy: "disabled",
+              manifestPath: join(mdmSourcesRoot, "release-out", "mdm-release-manifest.json")
+            }
+          })
+        ]
+      }
+    });
+  });
 });
 
 async function createWorkspaceRoot(tempRoot: string): Promise<string> {
@@ -73,7 +114,8 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     packages: [
       packageIndexEntry("kubejs-1.20.1-guidance", "kubejs"),
       packageIndexEntry("minecraft-1.20.1-vanilla-datapack-profile", "datapack"),
-      packageIndexEntry("client-visual-1.20.1-guidance", "client-visual")
+      packageIndexEntry("client-visual-1.20.1-guidance", "client-visual"),
+      packageIndexEntry("minecraft-1.20.1-vanilla-source-profile", "sources")
     ]
   });
   await writePackage(root, {
@@ -97,6 +139,14 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     family: "client-visual",
     artifactName: "client-visual-1.20.1-guidance-0.1.0.mdm-resource.json",
     capabilities: ["docs_search", "resourcepack_trace"]
+  });
+  await writePackage(root, {
+    id: "minecraft-1.20.1-vanilla-source-profile",
+    channel: "sources",
+    family: "vanilla-sources",
+    artifactName:
+      "minecraft-1.20.1-vanilla-source-profile-0.1.0.mdm-resource.json",
+    capabilities: ["source_lookup", "source_chunk_search"]
   });
 
   return root;

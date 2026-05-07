@@ -112,6 +112,9 @@ A package cannot be considered release-ready unless:
 - MCP can read the release manifest and convert packages into v2 manifests.
 - MCP can cache at least one selected artifact and read its payload.
 - MCP can recommend relevant packages from task intent without downloading them.
+- MCP can preserve package release channel, family, and capability metadata
+  through local registry status so recommendations do not depend only on package
+  id strings.
 
 ## Current Evidence
 
@@ -121,6 +124,7 @@ Current smoke evidence is recorded in:
 - `docs/reviews/2026-05-06-mdm-sqlite-docs-end-to-end-verification.md`
 - `docs/reviews/2026-05-07-real-mdm-release-consumption-verification.md`
 - `docs/reviews/2026-05-07-mdm-package-recommendations-verification.md`
+- `docs/reviews/2026-05-07-mdm-source-profile-recommendation-verification.md`
 - `docs/reviews/2026-05-07-source-acquisition-production-acceptance-verification.md`
 
 Additional producer-side evidence:
@@ -147,6 +151,8 @@ The verified path is:
 12. Build a public `sources` channel profile for Minecraft 1.20.1 that points
     to local generation and runtime-private cache ownership without bundling
     Minecraft source.
+13. Recommend that source profile from `mc_develop` for source lookup and
+    mapping-migration requests without auto-installing or generating source.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -165,7 +171,8 @@ The system is not complete until these exist:
   vanilla source acquisition profile.
 - Version coverage beyond 1.20.1, at least from 1.18.2 through current target
   versions.
-- Deeper MCP selection logic that uses package profiles, workspace version, and
-  loader evidence beyond the current conservative text-signal selector.
+- Deeper MCP selection logic that uses package profile payloads, workspace
+  version, and loader evidence beyond the current conservative text-signal
+  selector.
 - Live GitHub Release acceptance run.
 - GitHub Release provenance/signing and retention policy.

@@ -24,6 +24,9 @@ describe("readLocalMdmResourceRegistry", () => {
               "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
             sizeBytes: 1201
           },
+          releaseChannel: "sources",
+          releaseFamily: "vanilla-sources",
+          capabilities: ["source_lookup", "source_chunk_search"],
           metadata: {
             storageKind: "sqlite_bundle",
             sqlite: {
@@ -56,10 +59,13 @@ describe("readLocalMdmResourceRegistry", () => {
           id: "core-docs-required",
           required: true,
           format: "json",
-          detail: {
-            id: "core-docs-required",
-            sourcePath: "packages/core/docs/required/package.json",
-            metadata: {
+        detail: {
+          id: "core-docs-required",
+          sourcePath: "packages/core/docs/required/package.json",
+          releaseChannel: "sources",
+          releaseFamily: "vanilla-sources",
+          capabilities: ["source_lookup", "source_chunk_search"],
+          metadata: {
               storageKind: "sqlite_bundle",
               installTier: "required_docs",
               commitPolicy: "repository_manifest",
@@ -77,7 +83,10 @@ describe("readLocalMdmResourceRegistry", () => {
               databaseName: "minecraft_docs.sqlite",
               requiredTables: ["documents"]
             }
-          }
+          },
+          releaseChannel: "sources",
+          releaseFamily: "vanilla-sources",
+          capabilities: ["source_lookup", "source_chunk_search"]
         }
       ]
     });

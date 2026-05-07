@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 import type {
   MdmResourcePackageMetadata,
+  MdmResourcePackageSummary,
   MdmResourceRelease,
   MdmResourceRegistry
 } from "./manifest.js";
@@ -27,6 +28,9 @@ export interface MdmResourceStatusEntry {
   required: boolean;
   status: MdmResourcePackageStatus;
   metadata?: MdmResourcePackageMetadata;
+  releaseChannel?: MdmResourcePackageSummary["releaseChannel"];
+  releaseFamily?: string;
+  capabilities?: NonNullable<MdmResourcePackageSummary["capabilities"]>;
   artifactName?: string;
   artifactPath?: string;
   expectedSha256?: string;
@@ -60,7 +64,13 @@ export async function summarizeMdmResourceStatus(
         required: resourcePackage.required,
         release,
         state,
-        metadata: resourcePackage.detail.metadata ?? resourcePackage.metadata
+        metadata: resourcePackage.detail.metadata ?? resourcePackage.metadata,
+        releaseChannel:
+          resourcePackage.detail.releaseChannel ?? resourcePackage.releaseChannel,
+        releaseFamily:
+          resourcePackage.detail.releaseFamily ?? resourcePackage.releaseFamily,
+        capabilities:
+          resourcePackage.detail.capabilities ?? resourcePackage.capabilities
       });
     })
   );
@@ -77,13 +87,19 @@ async function summarizePackage(input: {
   release: MdmResourceRelease | null;
   state: MdmResourceCacheState | undefined;
   metadata: MdmResourcePackageMetadata | undefined;
+  releaseChannel: MdmResourcePackageSummary["releaseChannel"];
+  releaseFamily: string | undefined;
+  capabilities: NonNullable<MdmResourcePackageSummary["capabilities"]> | undefined;
 }): Promise<MdmResourceStatusEntry> {
   if (!input.release || !input.state) {
     return missingEntry(
       input.packageId,
       input.required,
       input.release,
-      input.metadata
+      input.metadata,
+      input.releaseChannel,
+      input.releaseFamily,
+      input.capabilities
     );
   }
 
@@ -97,6 +113,9 @@ async function summarizePackage(input: {
       required: input.required,
       status: "invalid_checksum",
       metadata: input.metadata,
+      releaseChannel: input.releaseChannel,
+      releaseFamily: input.releaseFamily,
+      capabilities: input.capabilities,
       artifactName: input.release.artifactName,
       artifactPath: input.state.artifactPath,
       expectedSha256: input.release.sha256,
@@ -112,6 +131,9 @@ async function summarizePackage(input: {
       required: input.required,
       status: "invalid_artifact",
       metadata: input.metadata,
+      releaseChannel: input.releaseChannel,
+      releaseFamily: input.releaseFamily,
+      capabilities: input.capabilities,
       artifactName: input.release.artifactName,
       artifactPath: input.state.artifactPath,
       expectedSha256: input.release.sha256,
@@ -125,6 +147,9 @@ async function summarizePackage(input: {
     required: input.required,
     status: "ready",
     metadata: input.metadata,
+    releaseChannel: input.releaseChannel,
+    releaseFamily: input.releaseFamily,
+    capabilities: input.capabilities,
     artifactName: input.release.artifactName,
     artifactPath: input.state.artifactPath,
     expectedSha256: input.release.sha256,
@@ -137,7 +162,10 @@ function missingEntry(
   packageId: string,
   required: boolean,
   release: MdmResourceRelease | null,
-  metadata: MdmResourcePackageMetadata | undefined
+  metadata: MdmResourcePackageMetadata | undefined,
+  releaseChannel: MdmResourcePackageSummary["releaseChannel"],
+  releaseFamily: string | undefined,
+  capabilities: NonNullable<MdmResourcePackageSummary["capabilities"]> | undefined
 ): MdmResourceStatusEntry {
   const status = required ? "missing_required" : "missing_optional";
 
@@ -146,6 +174,9 @@ function missingEntry(
     required,
     status,
     metadata,
+    releaseChannel,
+    releaseFamily,
+    capabilities,
     artifactName: release?.artifactName,
     expectedSha256: release?.sha256,
     message: required
