@@ -157,10 +157,10 @@ The verified path is:
     manifests while preserving existing release metadata.
 14. Provide a single producer-side sync entrypoint that runs source profile
     generation before registry synchronization.
-15. Recommend the version-specific source profile from `mc_develop` for source
-    lookup and mapping-migration requests without auto-installing or generating
-    source. Request text versions take priority; otherwise MCP uses detected
-    workspace runtime version evidence.
+15. Recommend version-specific MDM profiles from `mc_develop` for source
+    lookup, mapping-migration, datapack, and resourcepack requests without
+    auto-installing or generating private artifacts. Request text versions take
+    priority; otherwise MCP uses detected workspace runtime version evidence.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and

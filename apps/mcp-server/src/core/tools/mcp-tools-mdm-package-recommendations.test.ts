@@ -32,7 +32,7 @@ describe("mc_develop mdm package recommendations", () => {
     expect(result.structuredContent).toMatchObject({
       mdmPackageRecommendations: {
         policy: "recommend_before_download",
-        suggestions: [
+        suggestions: expect.arrayContaining([
           expect.objectContaining({
             packageId: "kubejs-1.20.1-guidance",
             status: "missing_optional",
@@ -49,7 +49,7 @@ describe("mc_develop mdm package recommendations", () => {
             priority: "medium",
             matchedSignals: expect.arrayContaining(["datapack"])
           })
-        ]
+        ])
       }
     });
   });
@@ -78,7 +78,7 @@ describe("mc_develop mdm package recommendations", () => {
     expect(result.isError).toBeUndefined();
     expect(result.structuredContent).toMatchObject({
       mdmPackageRecommendations: {
-        suggestions: [
+        suggestions: expect.arrayContaining([
           expect.objectContaining({
             packageId: "minecraft-1.20.1-vanilla-source-profile",
             status: "missing_optional",
@@ -90,7 +90,7 @@ describe("mc_develop mdm package recommendations", () => {
               manifestPath: join(mdmSourcesRoot, "release-out", "mdm-release-manifest.json")
             }
           })
-        ]
+        ])
       }
     });
   });
@@ -198,6 +198,90 @@ describe("mc_develop mdm package recommendations", () => {
       }
     });
   });
+
+  it("prefers the requested Minecraft version for datapack profiles", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-datapack-version-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Need Minecraft 1.21.1 datapack recipe and tag support.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent?.mdmPackageRecommendations?.suggestions[0])
+      .toMatchObject({
+        packageId: "minecraft-1.21.1-vanilla-datapack-profile",
+        matchedSignals: expect.arrayContaining(["datapack"])
+      });
+  });
+
+  it("prefers the requested Minecraft version for resourcepack profiles", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-resourcepack-version-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Need Minecraft 1.21.1 resourcepack model and texture support.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent?.mdmPackageRecommendations?.suggestions[0])
+      .toMatchObject({
+        packageId: "minecraft-1.21.1-vanilla-resourcepack-profile",
+        matchedSignals: expect.arrayContaining(["resourcepack"])
+      });
+  });
+
+  it("prefers the requested Minecraft version for mapping profiles", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-mapping-version-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Need Minecraft 1.21.1 Yarn mapping names for a mixin target.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent?.mdmPackageRecommendations?.suggestions[0])
+      .toMatchObject({
+        packageId: "minecraft-1.21.1-yarn-mapping-profile",
+        matchedSignals: expect.arrayContaining(["mappings"])
+      });
+  });
 });
 
 async function createWorkspaceRoot(
@@ -227,7 +311,12 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     packages: [
       packageIndexEntry("kubejs-1.20.1-guidance", "kubejs"),
       packageIndexEntry("minecraft-1.20.1-vanilla-datapack-profile", "datapack"),
+      packageIndexEntry("minecraft-1.21.1-vanilla-datapack-profile", "datapack"),
       packageIndexEntry("client-visual-1.20.1-guidance", "client-visual"),
+      packageIndexEntry("minecraft-1.20.1-vanilla-resourcepack-profile", "resourcepack"),
+      packageIndexEntry("minecraft-1.21.1-vanilla-resourcepack-profile", "resourcepack"),
+      packageIndexEntry("minecraft-1.20.1-yarn-mapping-profile", "mappings"),
+      packageIndexEntry("minecraft-1.21.1-yarn-mapping-profile", "mappings"),
       packageIndexEntry("minecraft-1.14.4-vanilla-source-profile", "sources"),
       packageIndexEntry("minecraft-1.20.1-vanilla-source-profile", "sources"),
       packageIndexEntry("minecraft-26.1-vanilla-source-profile", "sources")
@@ -249,11 +338,51 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     capabilities: ["resource_location_lookup", "datapack_trace"]
   });
   await writePackage(root, {
+    id: "minecraft-1.21.1-vanilla-datapack-profile",
+    channel: "datapack",
+    family: "vanilla-datapack",
+    artifactName:
+      "minecraft-1.21.1-vanilla-datapack-profile-0.1.0.mdm-resource.json",
+    capabilities: ["resource_location_lookup", "datapack_trace"]
+  });
+  await writePackage(root, {
     id: "client-visual-1.20.1-guidance",
     channel: "docs",
     family: "client-visual",
     artifactName: "client-visual-1.20.1-guidance-0.1.0.mdm-resource.json",
     capabilities: ["docs_search", "resourcepack_trace"]
+  });
+  await writePackage(root, {
+    id: "minecraft-1.20.1-vanilla-resourcepack-profile",
+    channel: "resourcepack",
+    family: "vanilla-resourcepack",
+    artifactName:
+      "minecraft-1.20.1-vanilla-resourcepack-profile-0.1.0.mdm-resource.json",
+    capabilities: ["resourcepack_trace", "resource_location_lookup"]
+  });
+  await writePackage(root, {
+    id: "minecraft-1.21.1-vanilla-resourcepack-profile",
+    channel: "resourcepack",
+    family: "vanilla-resourcepack",
+    artifactName:
+      "minecraft-1.21.1-vanilla-resourcepack-profile-0.1.0.mdm-resource.json",
+    capabilities: ["resourcepack_trace", "resource_location_lookup"]
+  });
+  await writePackage(root, {
+    id: "minecraft-1.20.1-yarn-mapping-profile",
+    channel: "mappings",
+    family: "vanilla-mappings",
+    artifactName:
+      "minecraft-1.20.1-yarn-mapping-profile-0.1.0.mdm-resource.json",
+    capabilities: ["mapping_lookup", "java_symbol_lookup"]
+  });
+  await writePackage(root, {
+    id: "minecraft-1.21.1-yarn-mapping-profile",
+    channel: "mappings",
+    family: "vanilla-mappings",
+    artifactName:
+      "minecraft-1.21.1-yarn-mapping-profile-0.1.0.mdm-resource.json",
+    capabilities: ["mapping_lookup", "java_symbol_lookup"]
   });
   await writePackage(root, {
     id: "minecraft-1.14.4-vanilla-source-profile",

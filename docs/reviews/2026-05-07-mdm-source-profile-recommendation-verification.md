@@ -5,9 +5,9 @@ Author: m1hono
 
 ## Scope
 
-This verifies that MCP can recommend public `sources` channel profiles from
-`mdm-sources` instead of requiring the agent to guess package ids. Source
-profile selection is version-aware.
+This verifies that MCP can recommend public MDM profiles from `mdm-sources`
+instead of requiring the agent to guess package ids. Versioned profile selection
+is now shared by source, datapack, resourcepack, and mapping packages.
 
 The recommendation remains confirmation-safe: it suggests an
 `mdmReleaseInstall` request with `downloadPolicy: "disabled"` and does not
@@ -60,6 +60,8 @@ Additional verified cases:
   `minecraft-26.1-vanilla-source-profile`.
 - When request text has no explicit version, MCP falls back to the detected
   workspace runtime Minecraft version.
+- `Minecraft 1.21.1 datapack`, `resourcepack`, and `Yarn mapping` requests
+  prefer the matching 1.21.1 profiles over 1.20.1 profiles.
 
 ## Verification
 
@@ -73,7 +75,7 @@ pnpm --filter @mcpskill/resource-registry test -- src/local-registry.test.ts src
 Results:
 
 ```text
-MCP recommendation targeted run: 94 test files passed, 291 tests passed
+MCP recommendation targeted run: 94 test files passed, 294 tests passed
 resource-registry targeted run: 8 test files passed, 31 tests passed
 ```
 

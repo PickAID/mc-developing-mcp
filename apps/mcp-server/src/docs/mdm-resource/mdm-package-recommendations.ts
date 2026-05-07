@@ -90,7 +90,7 @@ function scorePackage(input: {
   if (matchedSignals.length === 0) {
     return undefined;
   }
-  if (!matchesRequestedSourceVersion(input.resourcePackage, input.requestedMinecraftVersions)) {
+  if (!matchesRequestedVersionedProfile(input.resourcePackage, input.requestedMinecraftVersions)) {
     return undefined;
   }
 
@@ -190,15 +190,15 @@ function matchPackageSignals(
   });
 }
 
-function matchesRequestedSourceVersion(
+function matchesRequestedVersionedProfile(
   resourcePackage: MdmResourceStatusEntry,
   requestedMinecraftVersions: string[]
 ): boolean {
-  if (requestedMinecraftVersions.length === 0 || !isVanillaSourceProfile(resourcePackage)) {
+  if (requestedMinecraftVersions.length === 0 || !isVersionedMinecraftProfile(resourcePackage)) {
     return true;
   }
 
-  return requestedMinecraftVersions.includes(getVanillaSourceProfileVersion(resourcePackage) ?? "");
+  return requestedMinecraftVersions.includes(getVersionedMinecraftProfileVersion(resourcePackage) ?? "");
 }
 
 function getRequestedVersionWeight(
@@ -207,27 +207,27 @@ function getRequestedVersionWeight(
 ): number {
   if (
     requestedMinecraftVersions.length === 0 ||
-    !isVanillaSourceProfile(resourcePackage)
+    !isVersionedMinecraftProfile(resourcePackage)
   ) {
     return 0;
   }
 
   return requestedMinecraftVersions.includes(
-    getVanillaSourceProfileVersion(resourcePackage) ?? ""
+    getVersionedMinecraftProfileVersion(resourcePackage) ?? ""
   )
     ? 100
     : 0;
 }
 
-function isVanillaSourceProfile(resourcePackage: MdmResourceStatusEntry): boolean {
-  return /^minecraft-.+-vanilla-source-profile$/u.test(resourcePackage.packageId);
+function isVersionedMinecraftProfile(resourcePackage: MdmResourceStatusEntry): boolean {
+  return getVersionedMinecraftProfileVersion(resourcePackage) !== undefined;
 }
 
-function getVanillaSourceProfileVersion(
+function getVersionedMinecraftProfileVersion(
   resourcePackage: MdmResourceStatusEntry
 ): string | undefined {
   return resourcePackage.packageId.match(
-    /^minecraft-(?<version>.+)-vanilla-source-profile$/u
+    /^minecraft-(?<version>.+)-(?:vanilla-(?:source|datapack|resourcepack)|[a-z0-9-]+-mapping)-profile$/u
   )?.groups?.version;
 }
 
