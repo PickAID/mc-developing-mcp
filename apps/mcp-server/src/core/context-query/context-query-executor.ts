@@ -83,7 +83,8 @@ export function buildMcpServerContextQueryExecutor(
         return modArchiveContentExecutor(input);
       case "source_acquisition_plan":
         return executeMcpServerSourceAcquisitionPlan(input, {
-          workItemHandlers: options.sourceAcquisitionWorkItemHandlers
+          workItemHandlers: options.sourceAcquisitionWorkItemHandlers,
+          sourceIndexDatabasePaths: options.sourceIndexDatabasePaths
         });
       default:
         return (

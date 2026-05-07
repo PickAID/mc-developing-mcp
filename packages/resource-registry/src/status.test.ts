@@ -185,6 +185,48 @@ describe("summarizeMdmResourceStatus", () => {
     });
   });
 
+  it("preserves source index artifact routing metadata for ready sqlite bundles", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-index-status-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const artifactPath = join(
+      cacheLayout.artifactsDir,
+      "minecraft-1.20.1-source-index",
+      "artifact.sqlite"
+    );
+
+    await mkdir(join(artifactPath, ".."), { recursive: true });
+    createSqliteArtifact(artifactPath, 1, ["files", "source_chunks"]);
+    const sha256 = await sha256File(artifactPath);
+    await writeCachedResourceState(cacheLayout, {
+      packageId: "minecraft-1.20.1-source-index",
+      artifactName: "minecraft-1.20.1-source-index-0.1.0.sqlite",
+      artifactPath,
+      sha256,
+      updatedAt: "2026-05-08T00:00:00.000Z"
+    });
+
+    await expect(
+      summarizeMdmResourceStatus({
+        registry: registryWith([
+          sourceIndexPackageEntry("minecraft-1.20.1-source-index", sha256)
+        ]),
+        cacheLayout
+      })
+    ).resolves.toMatchObject({
+      packages: [
+        {
+          packageId: "minecraft-1.20.1-source-index",
+          status: "ready",
+          artifactType: "source_index",
+          artifactKind: "source_index",
+          queryAdapter: "source_index_sqlite",
+          artifactPath,
+          capabilities: ["source_lookup", "source_chunk_search"]
+        }
+      ]
+    });
+  });
+
   it("reports invalid_artifact when a sqlite bundle is missing required tables", async () => {
     const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-status-"));
     const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
@@ -317,6 +359,35 @@ function sqlitePackageEntry(
         sqlite: {
           minUserVersion: 3,
           requiredTables: ["docs_entries"]
+        }
+      }
+    }
+  };
+}
+
+function sourceIndexPackageEntry(
+  id: string,
+  sha256: string
+): MdmResourceRegistry["packages"][number] {
+  const entry = sqlitePackageEntry(id, false, sha256);
+  return {
+    ...entry,
+    artifactType: "source_index",
+    artifactKind: "source_index",
+    queryAdapter: "source_index_sqlite",
+    detail: {
+      ...entry.detail,
+      artifactType: "source_index",
+      artifactKind: "source_index",
+      queryAdapter: "source_index_sqlite",
+      capabilities: ["source_lookup", "source_chunk_search"],
+      metadata: {
+        storageKind: "sqlite_bundle",
+        installTier: "optional_dataset",
+        commitPolicy: "repository_manifest",
+        sqlite: {
+          minUserVersion: 1,
+          requiredTables: ["files", "source_chunks"]
         }
       }
     }

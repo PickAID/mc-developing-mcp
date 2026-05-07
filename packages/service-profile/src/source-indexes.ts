@@ -1,17 +1,26 @@
-import { readdir } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 export async function findSourceIndexDatabases(
   runtimeRoot: string | undefined,
-  maxDatabases: number
+  maxDatabases: number,
+  explicitDatabasePaths: string[] = []
 ): Promise<string[]> {
-  if (!runtimeRoot) {
-    return [];
+  const databases: string[] = [];
+  for (const databasePath of explicitDatabasePaths) {
+    if (databases.length >= maxDatabases) {
+      break;
+    }
+    if (await isFile(databasePath)) {
+      databases.push(databasePath);
+    }
+  }
+
+  if (!runtimeRoot || databases.length >= maxDatabases) {
+    return uniqueSorted(databases);
   }
 
   const queue = [runtimeRoot];
-  const databases: string[] = [];
-
   while (queue.length > 0 && databases.length < maxDatabases) {
     const current = queue.shift();
     if (!current) {
@@ -38,7 +47,7 @@ export async function findSourceIndexDatabases(
     }
   }
 
-  return databases.sort();
+  return uniqueSorted(databases);
 }
 
 async function readDirectoryIfPresent(directory: string) {
@@ -51,4 +60,16 @@ async function readDirectoryIfPresent(directory: string) {
 
 function shouldSkipDirectory(name: string): boolean {
   return name === "node_modules" || name === ".git";
+}
+
+async function isFile(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function uniqueSorted(values: string[]): string[] {
+  return [...new Set(values)].sort();
 }

@@ -22,6 +22,7 @@ export interface BuildMinecraftServiceProfileOptions {
   maxDatapackFiles?: number;
   maxModArchives?: number;
   maxSourceIndexDatabases?: number;
+  sourceIndexDatabasePaths?: string[];
 }
 
 export interface GradleServiceCapability {

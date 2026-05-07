@@ -47,6 +47,9 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   lacks the actual `.java` file, MCP can still return compact
   `source_chunks.content` evidence from the SQLite artifact instead of wasting
   context searching for missing workspace source.
+- Service-profile and `source_acquisition_plan` now surface installed MDM
+  source-index SQLite artifacts as ready/cached source index evidence, not only
+  as an abstract plan to query cached packages later.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -260,13 +263,15 @@ MCP source-index artifact routing: resource-registry 8 files / 33 tests passed; 
 MCP explicit source-index database paths: mcp-server 100 files / 331 tests passed; non-source-index.sqlite MDM artifact path produced valid Mixin method proof for com.example.compat.TargetApi.call()
 MCP installed source-index release consumption: initial red test showed downloaded source_index_sqlite artifact was ready in MDM status but searchedSourceIndexes stayed 0; fix propagated sourceIndexDatabasePaths through createMcpServerModArchiveContentExecutor; mcp-server 101 files / 332 tests passed and same-call mdmReleaseInstall produced valid Mixin proof for com.example.compat.TargetApi.call()
 MCP source.bundle MDM source-index chunks: initial red test returned installed_but_no_match when only an external source_index_sqlite artifact had ItemStack chunks; fix passed MDM sourceIndexArtifacts into source.bundle and added sqlite chunk fallback when source files are absent; mcp-server 102 files / 333 tests passed
+MCP service-profile/source-acquisition source-index awareness: red tests first showed explicit MDM source-index paths were ignored by service-profile and absent from source_acquisition_plan payload; service-profile profile.test.ts passed 3 tests, context-query-source-acquisition.test.ts passed 4 tests, mcp-server and service-profile TypeScript builds passed
+MCP resource status source-index metadata guard: resource-registry status.test.ts now confirms ready source_index_sqlite packages preserve artifactType/artifactKind/queryAdapter/artifactPath/capabilities; resource-registry package tests passed 8 files / 34 tests, focused cross-package source-index tests passed 6 files / 19 tests
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 98.5%.
+- MCP core capability: 98.7%.
 - MDM resource/package delivery: 95.5%.
-- Overall project deliverability: 95.5%.
+- Overall project deliverability: 95.7%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

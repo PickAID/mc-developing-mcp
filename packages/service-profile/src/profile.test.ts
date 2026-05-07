@@ -222,4 +222,35 @@ describe("buildMinecraftServiceProfile", () => {
       "Resource pack: ready, assets=1, kinds=models"
     );
   });
+
+  it("includes explicit source index artifact paths in the source-index capability", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-service-index-artifact-"));
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-service-index-runtime-"));
+    const explicitIndex = join(
+      runtimeRoot,
+      "artifacts",
+      "minecraft-1.20.1-source-index-0.1.0.sqlite"
+    );
+
+    await mkdir(join(explicitIndex, ".."), { recursive: true });
+    await writeFile(explicitIndex, "sqlite placeholder");
+
+    const profile = await buildMinecraftServiceProfile({
+      workspaceRoot,
+      runtimeRoot,
+      sourceIndexDatabasePaths: [explicitIndex],
+      includeDefaultGradleUserHome: false,
+      executableResolver: async () => undefined,
+      env: {}
+    });
+
+    expect(profile.capabilities.sourceIndex).toEqual({
+      status: "ready",
+      databaseCount: 1,
+      databases: [explicitIndex]
+    });
+    expect(formatServiceProfilePrompt(profile)).toContain(
+      "Source indexes: ready, databases=1"
+    );
+  });
 });

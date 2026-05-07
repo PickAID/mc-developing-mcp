@@ -207,7 +207,10 @@ async function executeMcpDevelopTool(
         runtimeRoot,
         includeDefaultGradleUserHome: false,
         env,
-        mdmResources
+        mdmResources,
+        sourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
+          (artifact) => artifact.artifactPath
+        )
       });
     const javaDiagnosticsPreparation = options.lspDiagnostics
       ? undefined

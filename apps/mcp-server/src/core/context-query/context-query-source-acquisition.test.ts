@@ -121,6 +121,29 @@ describe("context.query source acquisition plan", () => {
       ])
     );
   });
+
+  it("reports installed source index databases as immediately queryable evidence", async () => {
+    const executor = buildMcpServerContextQueryExecutor({
+      sourceIndexDatabasePaths: [
+        "/runtime/artifacts/minecraft-1.20.1-source-index-0.1.0.sqlite"
+      ]
+    });
+
+    const result = await executor(inputFixture());
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "source_acquisition_plan",
+        cachedSourceIndexes: {
+          databaseCount: 1,
+          databases: [
+            "/runtime/artifacts/minecraft-1.20.1-source-index-0.1.0.sqlite"
+          ]
+        }
+      }
+    });
+  });
 });
 
 function inputFixture(input: { requestText?: string } = {}): McpServerEvidenceExecutorInput {

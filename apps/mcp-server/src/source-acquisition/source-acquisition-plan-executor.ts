@@ -14,6 +14,7 @@ import type {
 
 export interface McpServerSourceAcquisitionPlanExecutorOptions {
   workItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
+  sourceIndexDatabasePaths?: string[];
 }
 
 export async function executeMcpServerSourceAcquisitionPlan(
@@ -77,6 +78,10 @@ export async function executeMcpServerSourceAcquisitionPlan(
         warnings: route.warnings
       })),
       workItems,
+      cachedSourceIndexes: {
+        databaseCount: options.sourceIndexDatabasePaths?.length ?? 0,
+        databases: options.sourceIndexDatabasePaths ?? []
+      },
       workItemExecutionStatus: workItemResult?.status,
       workItemExecutions: workItemResult?.executions
     }

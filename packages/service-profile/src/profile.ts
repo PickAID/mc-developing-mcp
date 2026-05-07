@@ -62,7 +62,8 @@ export async function buildMinecraftServiceProfile(
     }),
     findSourceIndexDatabases(
       options.runtimeRoot,
-      options.maxSourceIndexDatabases ?? DEFAULT_MAX_SOURCE_INDEX_DATABASES
+      options.maxSourceIndexDatabases ?? DEFAULT_MAX_SOURCE_INDEX_DATABASES,
+      options.sourceIndexDatabasePaths
     )
   ]);
 
