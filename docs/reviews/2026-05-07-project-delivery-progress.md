@@ -186,6 +186,10 @@ Implemented:
   The verifier reads a local path or HTTP manifest URL, resolves every artifact,
   checks sha256 and size, and opens SQLite docs bundles to confirm required
   tables exist.
+- Release install verification now includes a source-index SQLite smoke check:
+  `source_index_sqlite` artifacts must contain indexed `files`,
+  `source_chunks`, and `fts_chunks` rows, not only empty tables with correct
+  checksums.
 - Public `sources` channel coverage is now generated from the release catalog's
   official release list. Current catalog coverage is 101 vanilla source profile
   packages, including older releases such as 1.14.4 and 1.12.2 plus current
@@ -297,13 +301,14 @@ MCP source-index-only vanilla source.bundle backend: red test first returned nee
 mdm-sources loader source profiles: generated 18 loader-specific metadata-only source profile packages for Forge/NeoForge/Fabric/Quilt; vanilla source profile output shape is locked to exclude loader-only fields; node --test tests/*.test.mjs passed 38 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
 MCP loader source profile recommendations: minecraft-<version>-forge/neoforge/fabric/quilt-source-profile package ids are now recognized as versioned source profiles; focused recommendation tests passed 2 files / 10 tests and mcp-server TypeScript build passed
 mdm-sources source-index payload schema: added schema/source-index-payload.schema.json, schema subset anyOf support, source_index schemaId enforcement, and README contract notes; node --test tests/*.test.mjs passed 39 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test/schema files stayed under 500 lines
+mdm-sources source-index install smoke: red test first showed an empty source_index_sqlite artifact with all required tables passed install verification; verify-release-install now rejects source-index SQLite artifacts with zero files/source_chunks/fts_chunks rows. node --test tests/*.test.mjs passed 40 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.2%.
-- MDM resource/package delivery: 96.4%.
-- Overall project deliverability: 96.6%.
+- MDM resource/package delivery: 96.6%.
+- Overall project deliverability: 96.7%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
