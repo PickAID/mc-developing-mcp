@@ -34,9 +34,11 @@ real release distribution, broader package corpus coverage, and final UX polish.
 - `mc_develop` now emits conservative MDM package recommendations by task
   signal, including confirmation-safe `mdmReleaseInstall` hints that default to
   `downloadPolicy: "disabled"`.
-- Source lookup and mapping-migration requests now recommend the public
-  `sources` channel profile when available, while actual source generation stays
-  runtime-local and user-confirmed.
+- Source lookup and mapping-migration requests now recommend version-specific
+  public `sources` channel profiles when available. Explicit request versions
+  such as 1.14.4 or 26.1 take priority; otherwise MCP falls back to the detected
+  workspace runtime version. Actual source generation stays runtime-local and
+  user-confirmed.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -107,7 +109,7 @@ MCP real mdm-sources release consumption: installed and searched core-docs-searc
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
 MCP MDM package recommendations: KubeJS/datapack task produced safe install hints without auto-download
-MCP source profile recommendations: source lookup task recommended minecraft-1.20.1-vanilla-source-profile
+MCP source profile recommendations: versioned source lookup tasks recommended minecraft-1.14.4, 1.20.1, and 26.1 vanilla source profiles
 ```
 
 ## Completion Estimate
@@ -120,7 +122,7 @@ The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Teach MCP to select generated vanilla source profiles by workspace version
-  rather than recommending only the first matching source profile.
+- Extend version-aware profile selection beyond vanilla source profiles to
+  datapack/resourcepack/mapping package families.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus.

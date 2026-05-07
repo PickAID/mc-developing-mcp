@@ -191,7 +191,9 @@ async function executeMcpDevelopTool(
     const mdmDocs = await loadMdmDocsResourcesFromStatus(mdmResources);
     const mdmPackageRecommendations = buildMdmPackageRecommendations({
       requestText: input.requestText,
-      mdmResources
+      mdmResources,
+      minecraftVersion:
+        bootstrap.workspaceContext?.descriptor.currentRuntime.minecraftVersion
     });
     const vanillaReleaseCatalog =
       await loadMdmVanillaReleaseCatalog(mdmResources);

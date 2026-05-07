@@ -70,7 +70,7 @@ describe("mc_develop mdm package recommendations", () => {
 
     const result = await registry.calls[0].handler({
       requestText:
-        "Need Minecraft source lookup for ItemStack while migrating mappings.",
+        "Need Minecraft 1.20.1 source lookup for ItemStack while migrating mappings.",
       runtimeRoot,
       workspaceRoot
     });
@@ -94,13 +94,126 @@ describe("mc_develop mdm package recommendations", () => {
       }
     });
   });
+
+  it("prefers the requested Minecraft version when recommending source profiles", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-version-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Need Minecraft 1.14.4 source lookup for a legacy rendering migration.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmPackageRecommendations: {
+        suggestions: expect.arrayContaining([
+          expect.objectContaining({
+            packageId: "minecraft-1.14.4-vanilla-source-profile",
+            priority: "high",
+            matchedSignals: expect.arrayContaining(["sources"])
+          })
+        ])
+      }
+    });
+  });
+
+  it("prefers modern Minecraft release-line source profiles from request text", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-modern-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Need Minecraft 26.1 source lookup for class and mapping migration.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmPackageRecommendations: {
+        suggestions: expect.arrayContaining([
+          expect.objectContaining({
+            packageId: "minecraft-26.1-vanilla-source-profile",
+            priority: "high",
+            matchedSignals: expect.arrayContaining(["sources"])
+          })
+        ])
+      }
+    });
+  });
+
+  it("uses workspace Minecraft version when request text has no explicit version", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-workspace-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot, "1.14.4");
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Need Minecraft source lookup for a legacy block renderer.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmPackageRecommendations: {
+        suggestions: expect.arrayContaining([
+          expect.objectContaining({
+            packageId: "minecraft-1.14.4-vanilla-source-profile",
+            priority: "high",
+            matchedSignals: expect.arrayContaining(["sources"])
+          })
+        ])
+      }
+    });
+  });
 });
 
-async function createWorkspaceRoot(tempRoot: string): Promise<string> {
+async function createWorkspaceRoot(
+  tempRoot: string,
+  minecraftVersion?: string
+): Promise<string> {
   const root = join(tempRoot, "workspace");
 
   await mkdir(join(root, "kubejs", "server_scripts"), { recursive: true });
   await writeFile(join(root, "kubejs", "server_scripts", "main.js"), "\n");
+  if (minecraftVersion) {
+    await writeFile(
+      join(root, "build.gradle"),
+      `minecraft_version = "${minecraftVersion}"\n`
+    );
+  }
 
   return root;
 }
@@ -115,7 +228,9 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
       packageIndexEntry("kubejs-1.20.1-guidance", "kubejs"),
       packageIndexEntry("minecraft-1.20.1-vanilla-datapack-profile", "datapack"),
       packageIndexEntry("client-visual-1.20.1-guidance", "client-visual"),
-      packageIndexEntry("minecraft-1.20.1-vanilla-source-profile", "sources")
+      packageIndexEntry("minecraft-1.14.4-vanilla-source-profile", "sources"),
+      packageIndexEntry("minecraft-1.20.1-vanilla-source-profile", "sources"),
+      packageIndexEntry("minecraft-26.1-vanilla-source-profile", "sources")
     ]
   });
   await writePackage(root, {
@@ -141,11 +256,27 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     capabilities: ["docs_search", "resourcepack_trace"]
   });
   await writePackage(root, {
+    id: "minecraft-1.14.4-vanilla-source-profile",
+    channel: "sources",
+    family: "vanilla-sources",
+    artifactName:
+      "minecraft-1.14.4-vanilla-source-profile-0.1.0.mdm-resource.json",
+    capabilities: ["source_lookup", "source_chunk_search"]
+  });
+  await writePackage(root, {
     id: "minecraft-1.20.1-vanilla-source-profile",
     channel: "sources",
     family: "vanilla-sources",
     artifactName:
       "minecraft-1.20.1-vanilla-source-profile-0.1.0.mdm-resource.json",
+    capabilities: ["source_lookup", "source_chunk_search"]
+  });
+  await writePackage(root, {
+    id: "minecraft-26.1-vanilla-source-profile",
+    channel: "sources",
+    family: "vanilla-sources",
+    artifactName:
+      "minecraft-26.1-vanilla-source-profile-0.1.0.mdm-resource.json",
     capabilities: ["source_lookup", "source_chunk_search"]
   });
 

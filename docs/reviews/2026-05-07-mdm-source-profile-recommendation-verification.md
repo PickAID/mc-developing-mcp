@@ -5,8 +5,9 @@ Author: m1hono
 
 ## Scope
 
-This verifies that MCP can recommend the public `sources` channel profile added
-to `mdm-sources` instead of requiring the agent to guess the package id.
+This verifies that MCP can recommend public `sources` channel profiles from
+`mdm-sources` instead of requiring the agent to guess package ids. Source
+profile selection is version-aware.
 
 The recommendation remains confirmation-safe: it suggests an
 `mdmReleaseInstall` request with `downloadPolicy: "disabled"` and does not
@@ -17,7 +18,7 @@ download or generate source content by itself.
 For a request like:
 
 ```text
-Need Minecraft source lookup for ItemStack while migrating mappings.
+Need Minecraft 1.20.1 source lookup for ItemStack while migrating mappings.
 ```
 
 `mc_develop` now returns:
@@ -51,6 +52,15 @@ registry entries:
 
 That keeps package recommendation logic from depending only on package id text.
 
+Additional verified cases:
+
+- `Minecraft 1.14.4 source lookup` recommends
+  `minecraft-1.14.4-vanilla-source-profile`.
+- `Minecraft 26.1 source lookup` recommends
+  `minecraft-26.1-vanilla-source-profile`.
+- When request text has no explicit version, MCP falls back to the detected
+  workspace runtime Minecraft version.
+
 ## Verification
 
 Commands:
@@ -63,7 +73,7 @@ pnpm --filter @mcpskill/resource-registry test -- src/local-registry.test.ts src
 Results:
 
 ```text
-MCP recommendation targeted run: 94 test files passed, 288 tests passed
+MCP recommendation targeted run: 94 test files passed, 291 tests passed
 resource-registry targeted run: 8 test files passed, 31 tests passed
 ```
 

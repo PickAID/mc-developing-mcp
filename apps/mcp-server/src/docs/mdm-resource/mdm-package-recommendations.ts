@@ -32,6 +32,7 @@ export interface MdmPackageRecommendations {
 export interface BuildMdmPackageRecommendationsInput {
   requestText: string;
   mdmResources: MdmResourceStatusContext;
+  minecraftVersion?: string;
   limit?: number;
 }
 
@@ -48,11 +49,16 @@ export function buildMdmPackageRecommendations(
   }
 
   const signals = detectRequestSignals(input.requestText);
+  const requestedMinecraftVersions = detectRequestedMinecraftVersions({
+    requestText: input.requestText,
+    workspaceMinecraftVersion: input.minecraftVersion
+  });
   const suggestions = (input.mdmResources.summary?.packages ?? [])
     .map((resourcePackage) =>
       scorePackage({
         resourcePackage,
         signals,
+        requestedMinecraftVersions,
         registryRoot: input.mdmResources.registryRoot
       })
     )
@@ -77,15 +83,23 @@ export function buildMdmPackageRecommendations(
 function scorePackage(input: {
   resourcePackage: MdmResourceStatusEntry;
   signals: Set<RequestSignal>;
+  requestedMinecraftVersions: string[];
   registryRoot?: string;
 }): ScoredRecommendation | undefined {
   const matchedSignals = matchPackageSignals(input.resourcePackage, input.signals);
   if (matchedSignals.length === 0) {
     return undefined;
   }
+  if (!matchesRequestedSourceVersion(input.resourcePackage, input.requestedMinecraftVersions)) {
+    return undefined;
+  }
 
   const statusWeight = input.resourcePackage.status === "ready" ? -1 : 1;
-  const score = matchedSignals.length * 10 + statusWeight;
+  const versionWeight = getRequestedVersionWeight(
+    input.resourcePackage,
+    input.requestedMinecraftVersions
+  );
+  const score = matchedSignals.length * 10 + versionWeight + statusWeight;
   const priority = resolvePriority({
     score,
     status: input.resourcePackage.status,
@@ -123,6 +137,23 @@ function detectRequestSignals(requestText: string): Set<RequestSignal> {
   return signals;
 }
 
+function detectMinecraftVersions(requestText: string): string[] {
+  const matches = requestText.match(/\b(?:\d+\.)+\d+\b/gu) ?? [];
+  return [...new Set(matches)];
+}
+
+function detectRequestedMinecraftVersions(input: {
+  requestText: string;
+  workspaceMinecraftVersion?: string;
+}): string[] {
+  const textVersions = detectMinecraftVersions(input.requestText);
+  if (textVersions.length > 0) {
+    return textVersions;
+  }
+
+  return input.workspaceMinecraftVersion ? [input.workspaceMinecraftVersion] : [];
+}
+
 function addSignal(
   signals: Set<RequestSignal>,
   text: string,
@@ -157,6 +188,47 @@ function matchPackageSignals(
 
     return searchable.includes(signal);
   });
+}
+
+function matchesRequestedSourceVersion(
+  resourcePackage: MdmResourceStatusEntry,
+  requestedMinecraftVersions: string[]
+): boolean {
+  if (requestedMinecraftVersions.length === 0 || !isVanillaSourceProfile(resourcePackage)) {
+    return true;
+  }
+
+  return requestedMinecraftVersions.includes(getVanillaSourceProfileVersion(resourcePackage) ?? "");
+}
+
+function getRequestedVersionWeight(
+  resourcePackage: MdmResourceStatusEntry,
+  requestedMinecraftVersions: string[]
+): number {
+  if (
+    requestedMinecraftVersions.length === 0 ||
+    !isVanillaSourceProfile(resourcePackage)
+  ) {
+    return 0;
+  }
+
+  return requestedMinecraftVersions.includes(
+    getVanillaSourceProfileVersion(resourcePackage) ?? ""
+  )
+    ? 100
+    : 0;
+}
+
+function isVanillaSourceProfile(resourcePackage: MdmResourceStatusEntry): boolean {
+  return /^minecraft-.+-vanilla-source-profile$/u.test(resourcePackage.packageId);
+}
+
+function getVanillaSourceProfileVersion(
+  resourcePackage: MdmResourceStatusEntry
+): string | undefined {
+  return resourcePackage.packageId.match(
+    /^minecraft-(?<version>.+)-vanilla-source-profile$/u
+  )?.groups?.version;
 }
 
 function resolvePriority(input: {
