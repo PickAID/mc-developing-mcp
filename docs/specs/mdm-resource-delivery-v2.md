@@ -148,10 +148,11 @@ The verified path is:
     SQLite docs lookup.
 11. Recommend KubeJS and datapack packages from task intent with
     confirmation-safe install hints.
-12. Generate public `sources` channel profiles from the release catalog seed
-    matrix for Minecraft 1.7.10, 1.12.2, 1.18.2, 1.20.1, 1.21.1, 26.1, and
-    26.1.2. These profiles point to local generation and runtime-private cache
-    ownership without bundling Minecraft source.
+12. Generate public `sources` channel profiles from the release catalog's
+    official `releases[]` list. This must cover every cataloged official
+    release, including older releases such as 1.14.4 and 1.12.2 plus current
+    26.1.x releases. These profiles point to local generation and
+    runtime-private cache ownership without bundling Minecraft source.
 13. Generate `registry/index.json` and `registry/packages/*.json` from package
     manifests while preserving existing release metadata.
 14. Provide a single producer-side sync entrypoint that runs source profile
@@ -172,11 +173,8 @@ The system is not complete until these exist:
   `global`, ProbeJS, and scope-specific rules.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
-- Public `sources` channel profile coverage beyond the generated Minecraft
-  1.7.10, 1.12.2, 1.18.2, 1.20.1, 1.21.1, 26.1, and 26.1.2 vanilla source
-  acquisition seed set.
-- Version coverage for the full target matrix, including loader and
-  mapping-specific variants.
+- Loader and mapping-specific source profile variants beyond the generated
+  vanilla profiles.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.

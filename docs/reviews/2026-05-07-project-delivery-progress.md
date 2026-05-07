@@ -64,10 +64,11 @@ Implemented:
   rewrite tracked registry metadata.
 - Release workflow uploads only artifacts listed in `mdm-release-manifest.json`,
   not arbitrary stale `release-out/*` files.
-- Public `sources` channel seed coverage is now generated from the release
-  catalog for Minecraft 1.7.10, 1.12.2, 1.18.2, 1.20.1, 1.21.1, 26.1, and
-  26.1.2 vanilla source acquisition. These are profile/guidance artifacts only
-  and do not bundle Minecraft source.
+- Public `sources` channel coverage is now generated from the release catalog's
+  official release list. Current catalog coverage is 101 vanilla source profile
+  packages, including older releases such as 1.14.4 and 1.12.2 plus current
+  26.1.x releases. These are profile/guidance artifacts only and do not bundle
+  Minecraft source.
 - `mdm-sources` now has producer-side sync tools for source profiles and
   registry files, plus a single `sync-repository` entrypoint. Schema/registry
   entries are generated from package manifests instead of hand-copied per
@@ -78,8 +79,7 @@ Not done:
 - Live published GitHub Release acceptance run.
 - Signing/provenance/retention policy.
 - Large public docs corpus.
-- Full source profile coverage across every target version beyond the generated
-  seed set.
+- Loader-specific and mapping-specific source profile variants beyond vanilla.
 - Source/mapping package corpus beyond the initial vanilla source profile seed
   coverage, initial mapping profile, and runtime generation paths.
 
@@ -99,10 +99,10 @@ Current fresh checks from this slice:
 
 ```text
 mdm-sources node --test tests/*.test.mjs: 24 passed
-mdm-sources node tools/validate.mjs: packageCount 21, errorCount 0
+mdm-sources node tools/validate.mjs: packageCount 115, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
-mdm-sources sources profile: packageCount 21, sources artifacts 7, sync tools tested, full tests 24 passed
+mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
@@ -120,8 +120,7 @@ The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Extend generated public `sources` channel profiles beyond the
-  1.7.10/1.12.2/1.18.2/1.20.1/1.21.1/26.1/26.1.2 vanilla seed set and teach
-  MCP to recommend them for source/mapping tasks by workspace version.
+- Teach MCP to select generated vanilla source profiles by workspace version
+  rather than recommending only the first matching source profile.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus.
