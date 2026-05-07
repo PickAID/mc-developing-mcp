@@ -11,6 +11,8 @@ import {
   buildSourcePackageAcquisitionEvidence,
   buildVanillaSourcePackCoordinate,
   ensureSourcePackageInstalled,
+  readSourcePackageConfirmation,
+  readSourcePackageInstallState,
   readSourceAcquisitionJobState,
   type SourcePackageAcquisitionEvidence,
   type SourceAcquisitionJobRunner,
@@ -78,9 +80,40 @@ export async function resolveVanillaSource(
     };
   }
 
-  const sourcePackage = buildVanillaSourcePackCoordinate(
-    versionResolution.minecraftVersion
+  const sourcePackage = buildVanillaSourcePackCoordinate(versionResolution.minecraftVersion);
+  const existingInstallState = await readSourcePackageInstallState(
+    input.runtimeLayout,
+    sourcePackage
   );
+  const initialSourceJob = await readSourceAcquisitionJobState(input.runtimeLayout, sourcePackage);
+  const indexOnlyReferences =
+    existingInstallState?.status === "ready"
+      ? []
+      : await resolveSourceReferences(
+          undefined,
+          input.request,
+          input.scanBudget ?? 64,
+          input.sourceIndexDatabasePaths ?? [],
+          sourcePackage.minecraftVersion
+        );
+
+  if (indexOnlyReferences.length > 0) {
+    const acquisition = await buildIndexOnlyAcquisitionEvidence(
+      input.runtimeLayout,
+      sourcePackage,
+      initialSourceJob
+    );
+
+    return {
+      status: "ready",
+      minecraftVersion: sourcePackage.minecraftVersion,
+      packageId: sourcePackage.packageId,
+      references: indexOnlyReferences,
+      acquisition,
+      summary: `Resolved ${indexOnlyReferences.length} vanilla source chunk(s) from source index artifact before source-pack installation.`
+    };
+  }
+
   const ensureResult = await ensureSourcePackageInstalled({
     runtimeLayout: input.runtimeLayout,
     sourcePackage,
@@ -90,10 +123,7 @@ export async function resolveVanillaSource(
     jobRunner: input.jobRunner
   });
   const acquisition = buildSourcePackageAcquisitionEvidence(ensureResult, {
-    sourceJob: await readSourceAcquisitionJobState(
-      input.runtimeLayout,
-      sourcePackage
-    )
+    sourceJob: await readSourceAcquisitionJobState(input.runtimeLayout, sourcePackage)
   });
 
   if (ensureResult.status === "needs_confirmation") {
@@ -165,23 +195,46 @@ export async function resolveVanillaSource(
   };
 }
 
+async function buildIndexOnlyAcquisitionEvidence(
+  runtimeLayout: ManagedRuntimeLayout,
+  sourcePackage: ReturnType<typeof buildVanillaSourcePackCoordinate>,
+  sourceJob: Awaited<ReturnType<typeof readSourceAcquisitionJobState>>
+): Promise<SourcePackageAcquisitionEvidence | undefined> {
+  const confirmation = await readSourcePackageConfirmation(runtimeLayout, sourcePackage);
+  if (confirmation) {
+    return undefined;
+  }
+
+  return buildSourcePackageAcquisitionEvidence(
+    {
+      status: "needs_confirmation",
+      package: sourcePackage,
+      confirmationScope: "package-version",
+      summary: "Source package still requires explicit confirmation; source index artifact supplied compact chunk evidence."
+    },
+    { sourceJob }
+  );
+}
+
 async function resolveSourceReferences(
   installPath: string | undefined,
   request: VanillaSourceRequest,
   scanBudget: number,
-  sourceIndexDatabasePaths: string[]
+  sourceIndexDatabasePaths: string[],
+  minecraftVersion?: string
 ): Promise<VanillaSourceReference[]> {
-  if (!installPath) {
-    return [];
-  }
-
   const indexedReferences = await tryResolveIndexedReferences(
     installPath,
     request,
-    sourceIndexDatabasePaths
+    sourceIndexDatabasePaths,
+    minecraftVersion
   );
   if (indexedReferences.length > 0) {
     return indexedReferences;
+  }
+
+  if (!installPath) {
+    return [];
   }
 
   const exactRelativePath = deriveVanillaRelativePath(request);
@@ -203,25 +256,30 @@ async function resolveSourceReferences(
 }
 
 async function tryResolveIndexedReferences(
-  installPath: string,
+  installPath: string | undefined,
   request: VanillaSourceRequest,
-  sourceIndexDatabasePaths: string[]
+  sourceIndexDatabasePaths: string[],
+  minecraftVersion?: string
 ): Promise<VanillaSourceReference[]> {
   const databasePaths = uniqueStrings([
-    join(installPath, "source-index.sqlite"),
+    ...(installPath ? [join(installPath, "source-index.sqlite")] : []),
     ...sourceIndexDatabasePaths
   ]);
   const references = (
     await Promise.all(
       databasePaths.flatMap((databasePath) =>
-        selectIndexedMatches(databasePath, request).map((match) =>
-          readIndexedReference(installPath, databasePath, match)
-        )
+        selectIndexedMatches(databasePath, request)
+          .filter((match) => sourceIndexMatchTargetsVersion(match, minecraftVersion))
+          .map((match) => readIndexedReference(installPath, databasePath, match))
       )
     )
   ).filter((reference): reference is VanillaSourceReference => reference !== undefined);
 
   return references.slice(0, request.maxFiles ?? 3);
+}
+
+function sourceIndexMatchTargetsVersion(match: SourceIndexMatch, minecraftVersion?: string): boolean {
+  return !minecraftVersion || !match.packageId || match.packageId.startsWith(`minecraft-${minecraftVersion}-`);
 }
 
 function selectIndexedMatches(
@@ -275,24 +333,26 @@ function selectIndexedMatches(
 }
 
 async function readIndexedReference(
-  installPath: string,
+  installPath: string | undefined,
   databasePath: string,
   match: SourceIndexMatch
 ): Promise<VanillaSourceReference | undefined> {
-  const file = await readIndexedSourceFile({
-    sourceRoot: installPath,
-    databasePath,
-    path: match.path,
-    startLine: match.startLine,
-    maxLines: 120
-  }).catch((error: unknown) => {
-    if (isFileNotFound(error)) {
-      return undefined;
-    }
-    throw error;
-  });
+  const file = installPath
+    ? await readIndexedSourceFile({
+        sourceRoot: installPath,
+        databasePath,
+        path: match.path,
+        startLine: match.startLine,
+        maxLines: 120
+      }).catch((error: unknown) => {
+        if (isFileNotFound(error)) {
+          return undefined;
+        }
+        throw error;
+      })
+    : undefined;
 
-  if (!file) {
+  if (!file || !installPath) {
     return readIndexedChunkReference(databasePath, match);
   }
 

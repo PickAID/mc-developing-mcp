@@ -61,6 +61,10 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   when cached source indexes are available and a stable Java FQCN/path can be
   extracted. The preview returns metadata, paths, line ranges, chunk ids, and
   match reasons only; it intentionally does not return source/chunk content.
+- Explicit MDM `source_index_sqlite` artifacts can now satisfy vanilla
+  `source.bundle` requests even before the vanilla source-pack confirmation is
+  granted. The response returns compact SQLite chunk evidence while preserving
+  acquisition evidence that the full source pack still needs confirmation.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -278,13 +282,14 @@ MCP service-profile/source-acquisition source-index awareness: red tests first s
 MCP resource status source-index metadata guard: resource-registry status.test.ts now confirms ready source_index_sqlite packages preserve artifactType/artifactKind/queryAdapter/artifactPath/capabilities; resource-registry package tests passed 8 files / 34 tests, focused cross-package source-index tests passed 6 files / 19 tests
 MCP shared source-index chunk reader and recommendations: red test first showed readIndexedSourceChunk was not exported by @mcpskill/source-index; source-index indexer.test.ts passed 7 tests, vanilla-source-adapter resolve.test.ts passed 8 tests, source.bundle MDM source-index test passed, source-index recommendation focused tests passed 5 files / 25 tests, and source-index/vanilla-adapter/mcp-server TypeScript builds passed
 MCP source acquisition source-index preview: red test first showed source_acquisition_plan only reported cached database paths; now it previews lightweight source-index matches for stable FQCN/path requests and skips unreadable SQLite indexes with warnings; context-query-source-acquisition.test.ts passed 6 tests, focused source-index/source-bundle/context-query suite passed 3 files / 14 tests, and mcp-server TypeScript build passed
+MCP source-index-only vanilla source.bundle backend: red test first returned needs_confirmation when an explicit source_index_sqlite had ItemStack chunks but no source-pack confirmation existed; reviewers then caught that confirmed-but-uninstalled source packs could still trigger recipe execution before using SQLite evidence and that unfiltered explicit indexes could cross Minecraft versions. The resolver now preflights explicit source indexes before install when no ready source-pack install exists, filters index matches by target Minecraft version, and does not fabricate installing acquisition evidence when installation is intentionally skipped. vanilla-source-adapter source-index/resolve tests passed 2 files / 12 tests, source.bundle MDM source-index test passed 2 tests, mcp-tools-mdm-source-index-resources.test.ts passed 1 test, mcp-server TypeScript build passed, and touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 98.9%.
+- MCP core capability: 99.0%.
 - MDM resource/package delivery: 95.5%.
-- Overall project deliverability: 95.9%.
+- Overall project deliverability: 96.0%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

@@ -89,7 +89,80 @@ describe("source.bundle MDM source index artifacts", () => {
       }
     });
   });
+
+  it("uses source index sqlite chunks before requiring source-pack confirmation", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-index-runtime-"));
+    const indexSourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-index-src-"));
+    const workspaceRoot = await createForgeWorkspace();
+    const databasePath = join(runtimeRoot, "artifacts", "minecraft-1.20.1-source-index.sqlite");
+
+    await writeItemStackSourceIndex(indexSourceRoot, databasePath);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Read net.minecraft.world.item.ItemStack from vanilla sources."
+    );
+    const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      sourceIndexDatabasePaths: [databasePath],
+      executeRecipe: async () => {
+        throw new Error("source-pack install should not run");
+      }
+    });
+
+    await expect(
+      executor({
+        candidate: getWorkspaceSourceCandidate(evidencePlan),
+        evidencePlan,
+        requestPlan
+      })
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "vanilla_source",
+        result: {
+          status: "ready",
+          references: [
+            {
+              reason: "indexed vanilla source chunk match",
+              relativePath: "net/minecraft/world/item/ItemStack.java",
+              content: expect.stringContaining("public class ItemStack")
+            }
+          ]
+        }
+      }
+    });
+  });
 });
+
+async function writeItemStackSourceIndex(
+  indexSourceRoot: string,
+  databasePath: string
+): Promise<void> {
+  await mkdir(join(indexSourceRoot, "net", "minecraft", "world", "item"), {
+    recursive: true
+  });
+  await mkdir(join(databasePath, ".."), { recursive: true });
+  await writeFile(
+    join(indexSourceRoot, "net", "minecraft", "world", "item", "ItemStack.java"),
+    [
+      "package net.minecraft.world.item;",
+      "public class ItemStack {",
+      "  public ItemStack copy() { return this; }",
+      "}"
+    ].join("\n")
+  );
+  await buildSourceIndex({
+    sourceRoot: indexSourceRoot,
+    databasePath,
+    packageId: "minecraft-1.20.1-source-index"
+  });
+}
 
 async function createForgeWorkspace(): Promise<string> {
   const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-forge-workspace-"));
