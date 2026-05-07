@@ -148,10 +148,10 @@ The verified path is:
     SQLite docs lookup.
 11. Recommend KubeJS and datapack packages from task intent with
     confirmation-safe install hints.
-12. Build a public `sources` channel profile for Minecraft 1.20.1 that points
-    to local generation and runtime-private cache ownership without bundling
-    Minecraft source.
-13. Recommend that source profile from `mc_develop` for source lookup and
+12. Build public `sources` channel profiles for Minecraft 1.18.2, 1.20.1, and
+    1.21.1 that point to local generation and runtime-private cache ownership
+    without bundling Minecraft source.
+13. Recommend the source profile family from `mc_develop` for source lookup and
     mapping-migration requests without auto-installing or generating source.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
@@ -167,10 +167,10 @@ The system is not complete until these exist:
   `global`, ProbeJS, and scope-specific rules.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
-- Public `sources` channel profile coverage beyond the first Minecraft 1.20.1
-  vanilla source acquisition profile.
-- Version coverage beyond 1.20.1, at least from 1.18.2 through current target
-  versions.
+- Public `sources` channel profile coverage beyond the initial Minecraft
+  1.18.2, 1.20.1, and 1.21.1 vanilla source acquisition seed set.
+- Version coverage for the full target matrix from 1.18.2 through current
+  target versions, including loader and mapping-specific variants.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.
