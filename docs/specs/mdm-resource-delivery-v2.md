@@ -5,7 +5,7 @@
 Current status: install-smoke, SQLite docs E2E, generated vanilla
 source/datapack/resourcepack/mapping profile channels, and opt-in Yarn mapping
 metadata acquisition are capable. It is not yet a full product deliverable
-because live release acceptance, signing/provenance, Parchment/Mojmap providers,
+because live release acceptance, signing/provenance, Parchment provider support,
 loader variants, and larger public corpus coverage are still pending.
 
 The public `mdm-sources` repository now has schema validation and initial
@@ -30,9 +30,11 @@ source.
 Mapping providers must be opt-in or explicitly injected. The MCP may parse Tiny
 v2 mapping text and `.zip`/`.jar` artifacts containing `.tiny` files, and it may
 resolve Yarn build artifacts from Maven metadata when
-`MCPSKILL_YARN_MAVEN_BASE_URL` is configured. It must not perform default remote
-mapping downloads unless a provider, URL template, or Maven base URL is
-configured by the runtime environment.
+`MCPSKILL_YARN_MAVEN_BASE_URL` is configured. It may also resolve Mojang
+official mapping artifacts from a configured version manifest when
+`MCPSKILL_MOJANG_VERSION_MANIFEST_URL` is configured. It must not perform
+default remote mapping downloads unless a provider, URL template, Maven base
+URL, or Mojang manifest URL is configured by the runtime environment.
 
 The public repository is therefore a seed and profile repository, not a dump of
 every useful artifact.
@@ -219,7 +221,15 @@ The verified path is:
     `${minecraftVersion}+build.N` version, fetches the corresponding
     `yarn-...-v2.jar`, and writes only runtime-private mapping indexes.
     Metadata misses are provider-unavailable results and must not be cached as
-    ready empty indexes. Parchment/Mojmap providers are still pending.
+    ready empty indexes.
+23. Mojmap acquisition can be enabled with
+    `MCPSKILL_MOJANG_VERSION_MANIFEST_URL`. The resolver follows the configured
+    Mojang version manifest to the requested version JSON, fetches optional
+    `client_mappings` and `server_mappings` artifacts when present, parses
+    ProGuard text into `official -> mojmap` mapping entries, and writes only
+    runtime-private mapping indexes. Missing versions or missing mapping
+    artifacts are provider-unavailable results and must not be cached as ready
+    empty indexes. Parchment providers are still pending.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -235,7 +245,7 @@ mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanill
 mdm-sources mappings release build: packages 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
 MCP mapping index work item runner: source-package-manager 16 files, 65 tests passed
-MCP runtime mapping index adapter, Tiny v2 provider, and Yarn Maven resolver: mcp-server 96 files, 316 tests passed in focused acceptance run
+MCP runtime mapping index adapter, Tiny v2 provider, Yarn Maven resolver, and Mojmap manifest resolver: mcp-server 98 files, 322 tests passed in focused acceptance run
 ```
 
 ## Non-Deliverable Areas
@@ -249,8 +259,8 @@ The system is not complete until these exist:
   animation, and resource-pack patterns.
 - Loader and mapping-specific source/data/resource profile variants beyond the
   generated vanilla profiles.
-- Parchment/Mojmap acquisition providers behind the runtime-private mapping
-  index adapter.
+- Parchment acquisition provider behind the runtime-private mapping index
+  adapter.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.

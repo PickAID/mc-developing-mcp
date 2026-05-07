@@ -11,8 +11,8 @@ evidence, datapack/resourcepack evidence, MDM resource install/status, SQLite
 docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
-broader package corpus coverage, loader-specific variants, Parchment/Mojmap
-mapping providers, and final UX polish.
+broader package corpus coverage, loader-specific variants, Parchment mapping
+provider support, and final UX polish.
 
 ## Current Capabilities
 
@@ -57,6 +57,13 @@ mapping providers, and final UX polish.
   runtime-private JSONL. Metadata misses are reported as provider-unavailable
   and are not cached as ready empty indexes. This remains opt-in and uses
   injected fetchers in tests.
+- MCP can resolve official Mojang/Mojmap mappings when
+  `MCPSKILL_MOJANG_VERSION_MANIFEST_URL` is explicitly configured. It reads the
+  configured version manifest, follows the requested version JSON, fetches
+  `client_mappings` and `server_mappings` when present, parses ProGuard mapping
+  text, and stores only runtime-private `official -> mojmap` mapping indexes.
+  Missing versions or missing mapping artifacts are provider-unavailable and are
+  not cached as ready empty indexes.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -114,9 +121,9 @@ Not done:
 - Signing/provenance/retention policy.
 - Large public docs corpus.
 - Loader-specific and mapping-specific source profile variants beyond vanilla.
-- Parchment/Mojmap providers beyond the runtime-private mapping index adapter,
-  configurable Tiny v2 provider, automatic Yarn Maven metadata resolver, and
-  public metadata profiles.
+- Parchment provider support beyond the runtime-private mapping index adapter,
+  configurable Tiny v2 provider, automatic Yarn Maven metadata resolver, Mojmap
+  manifest resolver, and public metadata profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
 
 ## Evidence
@@ -152,6 +159,7 @@ MCP runtime mapping index adapter and Tiny v2 provider: mcp-server 96 files / 31
 MCP runtime mapping index cache hardening: unsafe version segment rejected, corrupt JSONL rebuilt, EISDIR read error propagated
 MCP configurable Yarn Tiny v2 provider: URL template is opt-in through MCPSKILL_YARN_MAPPING_URL_TEMPLATE and supports injected fetch verification
 MCP Yarn Maven metadata resolver: selected highest matching Yarn build, fetched v2 jar, confirmed no mapping fetch when no provider/env is configured, and does not cache metadata misses as ready empty indexes; mcp-server 96 files / 316 tests passed for focused acceptance run
+MCP Mojmap manifest resolver: parsed ProGuard mappings, followed configured Mojang version manifest to client/server mapping artifacts, confirmed Mojmap requests do not use Yarn provider env, and confirmed no default Mojang fetch without env; mcp-server 98 files / 322 tests passed for focused acceptance run
 ```
 
 ## Completion Estimate
@@ -164,7 +172,7 @@ The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Add Parchment/Mojmap providers behind the existing runtime-private mapping
+- Add Parchment provider support behind the existing runtime-private mapping
   index adapter, without committing generated mapping tables to public
   repositories.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping

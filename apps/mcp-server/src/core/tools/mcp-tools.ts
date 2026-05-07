@@ -46,6 +46,7 @@ import {
   createTinyV2MappingIndexProvider,
   createYarnMavenTinyV2MappingIndexProvider
 } from "../../source-acquisition/source-acquisition-mapping-provider.js";
+import { createMojangManifestMappingIndexProvider } from "../../source-acquisition/source-acquisition-mojmap-provider.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -300,8 +301,9 @@ function resolveMappingIndexProvider(
   }
 
   const yarnTemplate = env.MCPSKILL_YARN_MAPPING_URL_TEMPLATE;
+  let yarnProvider: MappingIndexProvider | undefined;
   if (yarnTemplate) {
-    return createTinyV2MappingIndexProvider({
+    yarnProvider = createTinyV2MappingIndexProvider({
       fetch: options.mappingIndexFetch,
       resolveUrl: (request) =>
         request.mappingFamily === "yarn"
@@ -311,14 +313,53 @@ function resolveMappingIndexProvider(
   }
 
   const yarnMavenBaseUrl = env.MCPSKILL_YARN_MAVEN_BASE_URL;
-  if (yarnMavenBaseUrl) {
-    return createYarnMavenTinyV2MappingIndexProvider({
+  if (!yarnProvider && yarnMavenBaseUrl) {
+    yarnProvider = createYarnMavenTinyV2MappingIndexProvider({
       fetch: options.mappingIndexFetch,
       mavenBaseUrl: yarnMavenBaseUrl
     });
   }
 
-  return undefined;
+  const mojangManifestUrl = env.MCPSKILL_MOJANG_VERSION_MANIFEST_URL;
+  const mojmapProvider = mojangManifestUrl
+    ? createMojangManifestMappingIndexProvider({
+        fetch: options.mappingIndexFetch,
+        versionManifestUrl: mojangManifestUrl
+      })
+    : undefined;
+  if (!yarnProvider && !mojmapProvider) {
+    return undefined;
+  }
+
+  return async (request) => {
+    if (request.mappingFamily === "yarn") {
+      return yarnProvider
+        ? yarnProvider(request)
+        : unavailableConfiguredMappingProvider(request);
+    }
+    if (request.mappingFamily === "mojmap") {
+      return mojmapProvider
+        ? mojmapProvider(request)
+        : unavailableConfiguredMappingProvider(request);
+    }
+
+    return unavailableConfiguredMappingProvider(request);
+  };
+}
+
+function unavailableConfiguredMappingProvider(request: {
+  minecraftVersion: string;
+  mappingFamily: string;
+}): ReturnType<MappingIndexProvider> {
+  return Promise.resolve({
+    provenance: {
+      status: "mapping_family_unavailable",
+      minecraftVersion: request.minecraftVersion,
+      mappingFamily: request.mappingFamily
+    },
+    cacheable: false,
+    entries: []
+  });
 }
 
 function expandMappingUrlTemplate(
