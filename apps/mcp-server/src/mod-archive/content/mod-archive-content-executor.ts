@@ -77,7 +77,8 @@ export function createMcpServerModArchiveContentExecutor(
     executeMcpServerModArchiveContent(input, {
       cache,
       inventoryDatabasePath,
-      runtimeRoot: options.runtimeRoot
+      runtimeRoot: options.runtimeRoot,
+      sourceIndexDatabasePaths: options.sourceIndexDatabasePaths
     });
 }
 

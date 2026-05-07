@@ -39,6 +39,9 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   Mixin member evidence collection. This avoids relying on recursive discovery
   of a hard-coded `source-index.sqlite` filename and lets installed release
   artifacts participate in compact member proof.
+- A newly installed `source_index_sqlite` release artifact can now be consumed
+  in the same `mc_develop` call for Mixin member proof. The executor now carries
+  MDM source-index database paths through the mod-archive content executor.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -245,6 +248,7 @@ MCP Parchment Maven resolver: selected release metadata, fetched parchment zip, 
 MCP v2 guidance docs synthesis: docs-retrieval package 15 tests passed; installed client-visual guidance artifact was cached and hit through mc_develop docs_lookup; real artifact search matched dynamic texture reload cleanup, nine slice metadata, and shader sampler render target; mcp-server 100 files / 329 tests passed for focused acceptance run
 MCP source-index artifact routing: resource-registry 8 files / 33 tests passed; mcp-server 100 files / 330 tests passed; source_index_sqlite artifacts preserve artifactType/artifactKind/queryAdapter, convert to v2 source_index/source_index_sqlite, and are excluded from docs SQLite lookup
 MCP explicit source-index database paths: mcp-server 100 files / 331 tests passed; non-source-index.sqlite MDM artifact path produced valid Mixin method proof for com.example.compat.TargetApi.call()
+MCP installed source-index release consumption: initial red test showed downloaded source_index_sqlite artifact was ready in MDM status but searchedSourceIndexes stayed 0; fix propagated sourceIndexDatabasePaths through createMcpServerModArchiveContentExecutor; mcp-server 101 files / 332 tests passed and same-call mdmReleaseInstall produced valid Mixin proof for com.example.compat.TargetApi.call()
 ```
 
 ## Completion Estimate
