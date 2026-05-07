@@ -63,6 +63,43 @@ describe("buildSourceAcquisitionWorkItems", () => {
     ]);
   });
 
+  it("turns workspace routes into workspace overlay work items", () => {
+    const workspaceRoot = "/packs/dev-workspace";
+
+    expect(
+      buildSourceAcquisitionWorkItems({
+        route: routeFixture({
+          origin: "workspace_gradle",
+          artifactStrategy: "read_declared_dependencies",
+          cacheMode: "workspace_overlay"
+        }),
+        workspaceRoot
+      })
+    ).toEqual([
+      {
+        kind: "workspace_gradle_dependencies",
+        workspaceRoot,
+        cacheScope: "workspace_overlay"
+      }
+    ]);
+    expect(
+      buildSourceAcquisitionWorkItems({
+        route: routeFixture({
+          origin: "workspace_probejs",
+          artifactStrategy: "read_probejs_types_and_registries",
+          cacheMode: "workspace_overlay"
+        }),
+        workspaceRoot
+      })
+    ).toEqual([
+      {
+        kind: "workspace_probejs_types",
+        workspaceRoot,
+        cacheScope: "workspace_overlay"
+      }
+    ]);
+  });
+
   it("does not produce impossible work items without required inputs", () => {
     expect(
       buildSourceAcquisitionWorkItems({
@@ -79,6 +116,24 @@ describe("buildSourceAcquisitionWorkItems", () => {
           origin: "official",
           artifactStrategy: "generate_vanilla_source_or_assets",
           cacheMode: "runtime_artifact_cache"
+        })
+      })
+    ).toEqual([]);
+    expect(
+      buildSourceAcquisitionWorkItems({
+        route: routeFixture({
+          origin: "workspace_gradle",
+          artifactStrategy: "read_declared_dependencies",
+          cacheMode: "workspace_overlay"
+        })
+      })
+    ).toEqual([]);
+    expect(
+      buildSourceAcquisitionWorkItems({
+        route: routeFixture({
+          origin: "workspace_probejs",
+          artifactStrategy: "read_probejs_types_and_registries",
+          cacheMode: "workspace_overlay"
         })
       })
     ).toEqual([]);

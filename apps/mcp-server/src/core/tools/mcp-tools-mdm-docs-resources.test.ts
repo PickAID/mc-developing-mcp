@@ -135,7 +135,10 @@ async function createMdmReleaseOut(body: string): Promise<MdmTestReleaseOut> {
         format: "json",
         artifactName,
         sha256,
-        sizeBytes: Buffer.byteLength(body)
+        sizeBytes: Buffer.byteLength(body),
+        releaseChannel: "required",
+        releaseFamily: "core-docs",
+        capabilities: ["docs_search", "docs_direct_read"]
       }
     ]
   });

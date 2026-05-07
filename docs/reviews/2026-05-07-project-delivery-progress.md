@@ -67,6 +67,11 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   package state.
 - MCP source-package-manager now emits the same source-index schema id as
   `mdm-sources`: `mdm.source.index.sqlite`.
+- Source acquisition workspace routes now execute through the unified work item
+  runner. Gradle workspace routes read declared dependencies and repositories;
+  ProbeJS workspace routes call the existing ProbeJS/KubeJS evidence path for
+  type/resource summaries. This keeps the public MCP surface at `mc_develop`
+  while making workspace-local evidence visible in the source acquisition flow.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -260,10 +265,10 @@ Not done:
   generation from allowed local/user-confirmed inputs.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
-- Source acquisition workspace-route execution parity: Gradle and ProbeJS
-  workspace routes are planned and lower-level adapters exist, but the unified
-  work item runner still needs to execute those route types inside the same
-  source-acquisition flow.
+- Source acquisition workspace-route execution parity is now covered for the
+  Gradle and ProbeJS happy paths. Remaining work is broader end-to-end
+  `mc_develop` acceptance over real modpack workspaces and richer payload
+  ranking/budgeting.
 
 ## Evidence
 
@@ -333,13 +338,14 @@ mdm-sources SQLite metadata completeness schema: batch hardening now requires sq
 MCP resource-registry SQLite metadata parity: red test first showed fractional minUserVersion passed resource-registry package metadata parsing; parser now rejects fractional, negative, NaN, and Infinity values as non-finite/non-integer metadata. resource-registry tests passed 8 files / 38 tests and resource-registry TypeScript build passed; touched files stayed under 500 lines
 MCP release manifest contract parity: red tests first showed unsupported schemaVersion, path-like artifactName, invalid sha256, fractional sizeBytes, missing releaseChannel/releaseFamily, and empty capabilities were accepted by MCP release manifest parsing; parser now rejects those before adapting release packages. resource-registry tests passed 8 files / 45 tests and resource-registry TypeScript build passed; touched source/test files stayed under 500 lines
 MCP source-index schema id parity: red tests first showed source-package-manager emitted mdm.sources.index.sqlite while mdm-sources/resource-registry use mdm.source.index.sqlite; source-package-manager now emits the single-source contract id. source-package-manager v2 adapter test passed 1 file / 6 tests; package-registry v2 validation test passed 1 file / 12 tests; source-package-manager and package-registry TypeScript builds passed; touched source/test files stayed under 500 lines
+MCP source acquisition workspace execution: workspace_gradle/read_declared_dependencies and workspace_probejs/read_probejs_types_and_registries routes now build executable workspace_overlay work items and dispatch through injected/default handlers. source-package-manager test passed 16 files / 66 tests; MCP focused source acquisition tests passed 2 files / 9 tests; full mcp-server test passed 104 files / 342 tests after updating release manifest fixtures and high-level source-acquisition assertions; source-package-manager and mcp-server TypeScript builds passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.4%.
+- MCP core capability: 99.5%.
 - MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.2%.
+- Overall project deliverability: 97.3%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

@@ -18,6 +18,15 @@ export interface SourceAcquisitionWorkItemRunnerHandlers {
   mappingIndex?: (
     item: Extract<SourceAcquisitionWorkItem, { kind: "mapping_index" }>
   ) => Promise<SourceAcquisitionWorkItemHandlerResult>;
+  workspaceGradleDependencies?: (
+    item: Extract<
+      SourceAcquisitionWorkItem,
+      { kind: "workspace_gradle_dependencies" }
+    >
+  ) => Promise<SourceAcquisitionWorkItemHandlerResult>;
+  workspaceProbeJsTypes?: (
+    item: Extract<SourceAcquisitionWorkItem, { kind: "workspace_probejs_types" }>
+  ) => Promise<SourceAcquisitionWorkItemHandlerResult>;
 }
 
 export type SourceAcquisitionWorkItemExecutionStatus =
@@ -105,6 +114,10 @@ function selectHandler(
       return handlers.remoteMetadata;
     case "mapping_index":
       return handlers.mappingIndex;
+    case "workspace_gradle_dependencies":
+      return handlers.workspaceGradleDependencies;
+    case "workspace_probejs_types":
+      return handlers.workspaceProbeJsTypes;
   }
 }
 

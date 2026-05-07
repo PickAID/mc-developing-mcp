@@ -24,12 +24,23 @@ export type SourceAcquisitionWorkItem =
       minecraftVersion: string;
       mappingFamily: "yarn" | "parchment" | "mojmap";
       cacheScope: "private_runtime";
+    }
+  | {
+      kind: "workspace_gradle_dependencies";
+      workspaceRoot: string;
+      cacheScope: "workspace_overlay";
+    }
+  | {
+      kind: "workspace_probejs_types";
+      workspaceRoot: string;
+      cacheScope: "workspace_overlay";
     };
 
 export interface SourceAcquisitionWorkItemInput {
   route: SourceAcquisitionRoute;
   paths?: string[];
   minecraftVersion?: string;
+  workspaceRoot?: string;
 }
 
 export function buildSourceAcquisitionWorkItems(
@@ -43,6 +54,10 @@ export function buildSourceAcquisitionWorkItems(
     case "resolve_remote_jar_metadata":
     case "resolve_remote_source_repository":
       return buildRemoteMetadataWorkItem(input.route.origin);
+    case "read_declared_dependencies":
+      return buildWorkspaceGradleDependenciesWorkItem(input.workspaceRoot);
+    case "read_probejs_types_and_registries":
+      return buildWorkspaceProbeJsTypesWorkItem(input.workspaceRoot);
     default:
       return [];
   }
@@ -90,6 +105,38 @@ function buildRemoteMetadataWorkItem(
       kind: "remote_metadata",
       source: origin,
       cacheScope: "metadata"
+    }
+  ];
+}
+
+function buildWorkspaceGradleDependenciesWorkItem(
+  workspaceRoot?: string
+): SourceAcquisitionWorkItem[] {
+  if (!workspaceRoot) {
+    return [];
+  }
+
+  return [
+    {
+      kind: "workspace_gradle_dependencies",
+      workspaceRoot,
+      cacheScope: "workspace_overlay"
+    }
+  ];
+}
+
+function buildWorkspaceProbeJsTypesWorkItem(
+  workspaceRoot?: string
+): SourceAcquisitionWorkItem[] {
+  if (!workspaceRoot) {
+    return [];
+  }
+
+  return [
+    {
+      kind: "workspace_probejs_types",
+      workspaceRoot,
+      cacheScope: "workspace_overlay"
     }
   ];
 }

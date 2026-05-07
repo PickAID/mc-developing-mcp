@@ -290,13 +290,13 @@ describe("registerMcpServerTools", () => {
           payload: {
             source: "source_acquisition_plan",
             workItemExecutionStatus: "partial",
-            workItemExecutions: [
-              {
+            workItemExecutions: expect.arrayContaining([
+              expect.objectContaining({
                 kind: "remote_metadata",
                 status: "skipped",
                 reason: "handler_unavailable"
-              }
-            ]
+              })
+            ])
           }
         },
         {

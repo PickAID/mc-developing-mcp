@@ -7,7 +7,7 @@ import {
 import type { SourceAcquisitionWorkItem } from "./source-acquisition-hand-off.js";
 
 describe("runSourceAcquisitionWorkItems", () => {
-  it("dispatches jar, vanilla, remote, and mapping work items to injected handlers", async () => {
+  it("dispatches all work item kinds to injected handlers", async () => {
     const calls: string[] = [];
     const result = await runSourceAcquisitionWorkItems({
       workItems: workItemsFixture(),
@@ -18,15 +18,19 @@ describe("runSourceAcquisitionWorkItems", () => {
       "jar:/packs/libs/example.jar",
       "vanilla:1.21.1",
       "remote:modrinth",
-      "mapping:yarn:1.21.1"
+      "mapping:yarn:1.21.1",
+      "workspace-gradle:/packs/dev-workspace",
+      "workspace-probejs:/packs/dev-workspace"
     ]);
     expect(result).toMatchObject({
       status: "completed",
-      completedCount: 4,
+      completedCount: 6,
       skippedCount: 0,
       failedCount: 0
     });
     expect(result.executions.map((execution) => execution.status)).toEqual([
+      "completed",
+      "completed",
       "completed",
       "completed",
       "completed",
@@ -44,7 +48,7 @@ describe("runSourceAcquisitionWorkItems", () => {
 
     expect(result.status).toBe("partial");
     expect(result.completedCount).toBe(1);
-    expect(result.skippedCount).toBe(3);
+    expect(result.skippedCount).toBe(5);
     expect(result.executions).toEqual([
       expect.objectContaining({
         kind: "jar_index",
@@ -62,6 +66,16 @@ describe("runSourceAcquisitionWorkItems", () => {
       }),
       expect.objectContaining({
         kind: "mapping_index",
+        status: "skipped",
+        reason: "handler_unavailable"
+      }),
+      expect.objectContaining({
+        kind: "workspace_gradle_dependencies",
+        status: "skipped",
+        reason: "handler_unavailable"
+      }),
+      expect.objectContaining({
+        kind: "workspace_probejs_types",
         status: "skipped",
         reason: "handler_unavailable"
       })
@@ -115,6 +129,16 @@ function workItemsFixture(): SourceAcquisitionWorkItem[] {
       minecraftVersion: "1.21.1",
       mappingFamily: "yarn",
       cacheScope: "private_runtime"
+    },
+    {
+      kind: "workspace_gradle_dependencies",
+      workspaceRoot: "/packs/dev-workspace",
+      cacheScope: "workspace_overlay"
+    },
+    {
+      kind: "workspace_probejs_types",
+      workspaceRoot: "/packs/dev-workspace",
+      cacheScope: "workspace_overlay"
     }
   ];
 }
@@ -138,6 +162,14 @@ function handlersFixture(
     async mappingIndex(item) {
       calls.push(`mapping:${item.mappingFamily}:${item.minecraftVersion}`);
       return { summary: "indexed mappings" };
+    },
+    async workspaceGradleDependencies(item) {
+      calls.push(`workspace-gradle:${item.workspaceRoot}`);
+      return { summary: "read workspace Gradle dependencies" };
+    },
+    async workspaceProbeJsTypes(item) {
+      calls.push(`workspace-probejs:${item.workspaceRoot}`);
+      return { summary: "read workspace ProbeJS types" };
     }
   };
 }

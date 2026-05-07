@@ -189,7 +189,10 @@ describe("mc_develop mdm resource status", () => {
                   format: "json",
                   artifactName,
                   sha256: hashText(body),
-                  sizeBytes: Buffer.byteLength(body)
+                  sizeBytes: Buffer.byteLength(body),
+                  releaseChannel: "required",
+                  releaseFamily: "core-docs",
+                  capabilities: ["docs_search", "docs_direct_read"]
                 }
               ]
             })

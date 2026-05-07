@@ -10,11 +10,16 @@ import {
   type SourceAcquisitionWorkItemRunnerHandlers,
   type SourceAcquisitionRoute
 } from "@mcpskill/source-package-manager";
+import {
+  readGradleDeclaredDependencies,
+  readGradleMavenRepositories
+} from "@mcpskill/gradle-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "../request/execution/request-handler.js";
+import { executeMcpServerProbeJsTypes } from "../probejs/types/probejs-types-executor.js";
 
 export interface McpServerSourceAcquisitionPlanExecutorOptions {
   workItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
@@ -33,6 +38,9 @@ export async function executeMcpServerSourceAcquisitionPlan(
   }
 
   const descriptor = input.requestPlan.requestContext.workspaceContext?.descriptor;
+  const workspaceRoot =
+    input.requestPlan.requestContext.workspaceContext?.workspaceRoot ??
+    descriptor?.root;
   const requestText = input.requestPlan.requestText ?? "";
   const minecraftVersion =
     descriptor?.currentRuntime.minecraftVersion ??
@@ -59,13 +67,20 @@ export async function executeMcpServerSourceAcquisitionPlan(
     buildSourceAcquisitionWorkItems({
       route,
       paths: routePaths(route, descriptor?.modArchivePaths),
-      minecraftVersion
+      minecraftVersion,
+      workspaceRoot
     })
   ).concat(mappingIndexWorkItems(requestText, minecraftVersion));
-  const workItemResult = options.workItemHandlers
+  const workItemHandlers = mergeWorkItemHandlers(
+    defaultWorkspaceWorkItemHandlers(input),
+    options.workItemHandlers
+  );
+  const shouldRunWorkItems =
+    options.workItemHandlers !== undefined || hasWorkspaceWorkItems(workItems);
+  const workItemResult = shouldRunWorkItems
     ? await runSourceAcquisitionWorkItems({
         workItems,
-        handlers: options.workItemHandlers
+        handlers: workItemHandlers
       })
     : undefined;
   const sourceIndexPreview = buildSourceIndexPreview({
@@ -96,6 +111,81 @@ export async function executeMcpServerSourceAcquisitionPlan(
       workItemExecutions: workItemResult?.executions
     }
   };
+}
+
+function defaultWorkspaceWorkItemHandlers(
+  input: McpServerEvidenceExecutorInput
+): SourceAcquisitionWorkItemRunnerHandlers {
+  return {
+    async workspaceGradleDependencies(item) {
+      const [dependencies, repositories] = await Promise.all([
+        readGradleDeclaredDependencies({ workspaceRoot: item.workspaceRoot }),
+        readGradleMavenRepositories({ workspaceRoot: item.workspaceRoot })
+      ]);
+
+      return {
+        summary: `Read ${dependencies.length} Gradle dependencies and ${repositories.length} repositories from workspace.`,
+        payload: {
+          source: "workspace_gradle",
+          workspaceRoot: item.workspaceRoot,
+          dependencyCount: dependencies.length,
+          repositoryCount: repositories.length,
+          dependencies: dependencies.slice(0, 20),
+          repositories: repositories.slice(0, 10)
+        }
+      };
+    },
+    async workspaceProbeJsTypes(item) {
+      const workspaceContext = input.requestPlan.requestContext.workspaceContext;
+      if (!workspaceContext) {
+        throw new Error("No workspace context available for ProbeJS work item.");
+      }
+
+      const result = await executeMcpServerProbeJsTypes({
+        ...input,
+        candidate: {
+          ...input.candidate,
+          id: `${input.candidate.id}-workspace-probejs`,
+          routeStep: "probejs_types",
+          provenance: "probejs_types",
+          reason: "Read ProbeJS workspace types and registries."
+        },
+        requestPlan: {
+          ...input.requestPlan,
+          requestContext: {
+            ...input.requestPlan.requestContext,
+            workspaceContext: {
+              ...workspaceContext,
+              workspaceRoot: item.workspaceRoot
+            }
+          }
+        }
+      });
+
+      return {
+        summary: result.summary,
+        payload: result.payload
+      };
+    }
+  };
+}
+
+function mergeWorkItemHandlers(
+  defaults: SourceAcquisitionWorkItemRunnerHandlers,
+  overrides?: SourceAcquisitionWorkItemRunnerHandlers
+): SourceAcquisitionWorkItemRunnerHandlers {
+  return {
+    ...defaults,
+    ...overrides
+  };
+}
+
+function hasWorkspaceWorkItems(workItems: SourceAcquisitionWorkItem[]): boolean {
+  return workItems.some(
+    (workItem) =>
+      workItem.kind === "workspace_gradle_dependencies" ||
+      workItem.kind === "workspace_probejs_types"
+  );
 }
 
 function routePaths(
