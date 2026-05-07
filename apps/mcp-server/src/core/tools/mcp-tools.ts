@@ -221,7 +221,10 @@ async function executeMcpDevelopTool(
       lspDiagnostics,
       javaDiagnosticsPreparation,
       sourceBundle: {
-        vanillaReleaseCatalog
+        vanillaReleaseCatalog,
+        sourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
+          (artifact) => artifact.artifactPath
+        )
       },
       contextQuery: {
         docsRecords: mdmDocs.records,

@@ -42,6 +42,11 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - A newly installed `source_index_sqlite` release artifact can now be consumed
   in the same `mc_develop` call for Mixin member proof. The executor now carries
   MDM source-index database paths through the mod-archive content executor.
+- Installed MDM `source_index_sqlite` artifacts are now also available to
+  `source.bundle` vanilla source lookup. If the installed vanilla source pack
+  lacks the actual `.java` file, MCP can still return compact
+  `source_chunks.content` evidence from the SQLite artifact instead of wasting
+  context searching for missing workspace source.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -128,6 +133,10 @@ Implemented:
   `javaSymbols`, `javaMembers`, and `sourceChunks` arrays. This lets future
   corpus generators or AI-maintained local packages emit normalized index data
   without pretending every record is only a file summary.
+- Source-index payloads are now validated before release build. Invalid
+  top-level `javaMembers` without a path, invalid member kinds, and malformed
+  `sourceChunks` without content or chunk ids are rejected by
+  `tools/validate.mjs` instead of failing later during SQLite materialization.
 - Release builder cleans stale output before writing `release-out`.
 - Release package metadata mapping is split out of the release builder, keeping
   `tools/build-local-release.mjs` below the 500-line project limit after the
@@ -222,8 +231,9 @@ mdm-sources release install verifier: verifiedCount 411/411, first core-docs-req
 mdm-sources release upload list: 413 files, including mdm-release-manifest.json, mdm-release-summary.json, and 411 manifest-declared artifacts
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 mdm-sources source-index SQLite artifact fixture: artifactName minecraft-1.20.1-source-index-0.1.0.sqlite, artifactType source_index, artifactKind source_index, queryAdapter source_index_sqlite, requiredTables files/java_symbols/java_members/fts_files/source_chunks/fts_chunks
-mdm-sources source-index schema alignment: node --test tests/build-local-release-source-index.test.mjs passed; node --test tests/validate-v2.test.mjs tests/verify-release-install.test.mjs tests/build-local-release-source-index.test.mjs passed 13 tests; node --test tests/*.test.mjs passed 35 tests; node tools/validate.mjs packageCount 411 errorCount 0; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411/411
-mdm-sources normalized source-index payloads: source-index release test passed with files plus javaSymbols/javaMembers/sourceChunks; node tools/validate.mjs packageCount 411 errorCount 0; node --test tests/*.test.mjs passed 35 tests; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411 artifacts
+mdm-sources source-index schema alignment: node --test tests/build-local-release-source-index.test.mjs passed; node --test tests/validate-v2.test.mjs tests/verify-release-install.test.mjs tests/build-local-release-source-index.test.mjs passed 13 tests; node --test tests/*.test.mjs passed 38 tests after payload validation; node tools/validate.mjs packageCount 411 errorCount 0; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411/411
+mdm-sources normalized source-index payloads: source-index release test passed with files plus javaSymbols/javaMembers/sourceChunks; validate-v2 now has 12 tests including missing java member path, invalid memberKind, and missing source chunk content/chunkId; node tools/validate.mjs packageCount 411 errorCount 0; node --test tests/*.test.mjs passed 38 tests; local release schema verifier packageCount 411 errorCount 0; install verifier verified 411 artifacts
+mdm-sources source-index payload contract validation: committed and pushed PickAID/mdm-sources main 44ed09b; tools/validate.mjs 389 lines, tools/source-index-payload-validation.mjs 144 lines, tests/validate-v2.test.mjs 322 lines
 mdm-sources release builder maintainability: build-local-release.mjs reduced to 384 lines by moving package metadata mapping into tools/release-package-metadata.mjs; node tools/validate.mjs packageCount 411 errorCount 0; node --test tests/*.test.mjs passed 35 tests; release schema verifier packageCount 411 errorCount 0; install verifier verified 411 artifacts
 mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
@@ -249,13 +259,14 @@ MCP v2 guidance docs synthesis: docs-retrieval package 15 tests passed; installe
 MCP source-index artifact routing: resource-registry 8 files / 33 tests passed; mcp-server 100 files / 330 tests passed; source_index_sqlite artifacts preserve artifactType/artifactKind/queryAdapter, convert to v2 source_index/source_index_sqlite, and are excluded from docs SQLite lookup
 MCP explicit source-index database paths: mcp-server 100 files / 331 tests passed; non-source-index.sqlite MDM artifact path produced valid Mixin method proof for com.example.compat.TargetApi.call()
 MCP installed source-index release consumption: initial red test showed downloaded source_index_sqlite artifact was ready in MDM status but searchedSourceIndexes stayed 0; fix propagated sourceIndexDatabasePaths through createMcpServerModArchiveContentExecutor; mcp-server 101 files / 332 tests passed and same-call mdmReleaseInstall produced valid Mixin proof for com.example.compat.TargetApi.call()
+MCP source.bundle MDM source-index chunks: initial red test returned installed_but_no_match when only an external source_index_sqlite artifact had ItemStack chunks; fix passed MDM sourceIndexArtifacts into source.bundle and added sqlite chunk fallback when source files are absent; mcp-server 102 files / 333 tests passed
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 98%.
-- MDM resource/package delivery: 95%.
-- Overall project deliverability: 95%.
+- MCP core capability: 98.5%.
+- MDM resource/package delivery: 95.5%.
+- Overall project deliverability: 95.5%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

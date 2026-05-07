@@ -28,6 +28,7 @@ import {
   deriveVanillaRelativePath,
   type VanillaSourceRequest
 } from "./request.js";
+import { readIndexedSourceChunk } from "./source-index-chunks.js";
 import { resolveVanillaMinecraftVersion } from "./version.js";
 
 export interface VanillaSourceReference {
@@ -52,6 +53,7 @@ export interface ResolveVanillaSourceInput {
   executeRecipe: SourcePackageRecipeExecutor;
   jobRunner?: SourceAcquisitionJobRunner;
   scanBudget?: number;
+  sourceIndexDatabasePaths?: string[];
 }
 
 export interface ResolveVanillaSourceResult {
@@ -139,7 +141,8 @@ export async function resolveVanillaSource(
   const references = await resolveSourceReferences(
     ensureResult.installState.installPath,
     input.request,
-    input.scanBudget ?? 64
+    input.scanBudget ?? 64,
+    input.sourceIndexDatabasePaths ?? []
   );
 
   if (references.length === 0) {
@@ -165,7 +168,8 @@ export async function resolveVanillaSource(
 async function resolveSourceReferences(
   installPath: string | undefined,
   request: VanillaSourceRequest,
-  scanBudget: number
+  scanBudget: number,
+  sourceIndexDatabasePaths: string[]
 ): Promise<VanillaSourceReference[]> {
   if (!installPath) {
     return [];
@@ -173,7 +177,8 @@ async function resolveSourceReferences(
 
   const indexedReferences = await tryResolveIndexedReferences(
     installPath,
-    request
+    request,
+    sourceIndexDatabasePaths
   );
   if (indexedReferences.length > 0) {
     return indexedReferences;
@@ -199,17 +204,24 @@ async function resolveSourceReferences(
 
 async function tryResolveIndexedReferences(
   installPath: string,
-  request: VanillaSourceRequest
+  request: VanillaSourceRequest,
+  sourceIndexDatabasePaths: string[]
 ): Promise<VanillaSourceReference[]> {
-  const databasePath = join(installPath, "source-index.sqlite");
-  const matches = selectIndexedMatches(databasePath, request);
-  const references = await Promise.all(
-    matches.map((match) => readIndexedReference(installPath, databasePath, match))
-  );
+  const databasePaths = uniqueStrings([
+    join(installPath, "source-index.sqlite"),
+    ...sourceIndexDatabasePaths
+  ]);
+  const references = (
+    await Promise.all(
+      databasePaths.flatMap((databasePath) =>
+        selectIndexedMatches(databasePath, request).map((match) =>
+          readIndexedReference(installPath, databasePath, match)
+        )
+      )
+    )
+  ).filter((reference): reference is VanillaSourceReference => reference !== undefined);
 
-  return references.filter(
-    (reference): reference is VanillaSourceReference => reference !== undefined
-  );
+  return references.slice(0, request.maxFiles ?? 3);
 }
 
 function selectIndexedMatches(
@@ -273,10 +285,15 @@ async function readIndexedReference(
     path: match.path,
     startLine: match.startLine,
     maxLines: 120
+  }).catch((error: unknown) => {
+    if (isFileNotFound(error)) {
+      return undefined;
+    }
+    throw error;
   });
 
   if (!file) {
-    return undefined;
+    return readIndexedChunkReference(databasePath, match);
   }
 
   return {
@@ -293,6 +310,33 @@ async function readIndexedReference(
       file.path,
       file.startLine,
       file.endLine
+    )
+  };
+}
+
+function readIndexedChunkReference(
+  databasePath: string,
+  match: SourceIndexMatch
+): VanillaSourceReference | undefined {
+  const chunk = readIndexedSourceChunk(databasePath, match);
+  if (!chunk) {
+    return undefined;
+  }
+
+  return {
+    path: `${databasePath}#${chunk.path}`,
+    relativePath: chunk.path,
+    content: chunk.content,
+    reason: "indexed vanilla source chunk match",
+    startLine: chunk.startLine,
+    endLine: chunk.endLine,
+    totalLines: chunk.endLine,
+    chunkId: chunk.chunkId,
+    matchReasons: match.matchReasons,
+    nextReads: buildSourceReadNextReads(
+      chunk.path,
+      chunk.startLine,
+      chunk.endLine
     )
   };
 }
@@ -386,4 +430,8 @@ function isFileNotFound(error: unknown): error is NodeJS.ErrnoException {
     "code" in error &&
     (error as NodeJS.ErrnoException).code === "ENOENT"
   );
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values.filter((value) => value.length > 0))];
 }

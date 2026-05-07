@@ -43,6 +43,7 @@ export interface McpServerSourceBundleExecutorOptions {
   gradleSourceDiscovery?: McpServerGradleSourceDiscoveryOptions;
   externalShaderReference?: ClientVisualExternalShaderReferenceOptions;
   vanillaReleaseCatalog?: MdmVanillaReleaseCatalogContext;
+  sourceIndexDatabasePaths?: string[];
   executeRecipe: SourcePackageRecipeExecutor;
   fallbackExecutor?: McpServerEvidenceExecutor;
 }
@@ -136,7 +137,8 @@ export function buildMcpServerSourceBundleExecutor(
       recipes: options.recipes ?? {},
       recipeProvider: buildSourcePackageRecipeProvider(options, input),
       executeRecipe: options.executeRecipe,
-      jobRunner: options.jobRunner
+      jobRunner: options.jobRunner,
+      sourceIndexDatabasePaths: options.sourceIndexDatabasePaths
     });
 
     return {
