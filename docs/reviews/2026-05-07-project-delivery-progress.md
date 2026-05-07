@@ -112,9 +112,16 @@ Implemented:
 - Release builder now emits `mdm-release-summary.json` with provenance, manifest
   hash, package counts, artifact distributions, total size, and per-artifact
   hashes.
+- Release manifest and summary now have tracked schema contracts in
+  `mdm-sources/schema/release-manifest.schema.json` and
+  `mdm-sources/schema/release-summary.schema.json`.
 - Release tooling now defines the manifest install contract: package artifacts
   resolve as siblings of `mdm-release-manifest.json`, equivalent to
   `new URL(entry.artifactName, manifestUrl)` for remote MCP clients.
+- Release workflow now runs `tools/verify-release-schema.mjs` before upload.
+  The verifier validates the release manifest and summary schema subset, then
+  checks that summary package counts, artifact names, and artifact hashes match
+  the manifest.
 - Release workflow now runs `tools/verify-release-install.mjs` before upload.
   The verifier reads a local path or HTTP manifest URL, resolves every artifact,
   checks sha256 and size, and opens SQLite docs bundles to confirm required
@@ -176,9 +183,10 @@ Recent verification records:
 Current fresh checks from this slice:
 
 ```text
-mdm-sources node --test tests/*.test.mjs: 29 passed
+mdm-sources node --test tests/*.test.mjs: 32 passed
 mdm-sources node tools/validate.mjs: packageCount 411, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
+mdm-sources release schema verifier: packageCount 411, errorCount 0
 mdm-sources release summary: manifest packageCount 411, artifactCount 411, totalSizeBytes 2375815, formats json 409/jsonl 1/sqlite 1
 mdm-sources release install verifier: verifiedCount 411/411, first core-docs-required, sqlite core-docs-search-sqlite sizeBytes 32768, last minecraft-26.1-vanilla-source-profile
 mdm-sources release upload list: 413 files, including mdm-release-manifest.json, mdm-release-summary.json, and 411 manifest-declared artifacts
