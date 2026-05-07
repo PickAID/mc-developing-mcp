@@ -11,8 +11,8 @@ evidence, datapack/resourcepack evidence, MDM resource install/status, SQLite
 docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
-broader package corpus coverage, mapping/loader-specific variants, and final UX
-polish.
+broader package corpus coverage, loader-specific variants, real local mapping
+table acquisition/indexing, and final UX polish.
 
 ## Current Capabilities
 
@@ -81,10 +81,15 @@ Implemented:
   licensing notes, runtime pack metadata resolution policy, and local cache
   ownership. They do not bundle vanilla data files, assets, archive indexes, or
   private modpack-derived content.
-- `mdm-sources` now has producer-side sync tools for source, datapack, and
-  resourcepack profiles plus registry files, with a single `sync-repository`
-  entrypoint. Schema/registry entries are generated from package manifests
-  instead of hand-copied per version.
+- Public `mappings` channel coverage is generated from the same official release
+  catalog. Current catalog coverage is 101 Yarn mapping profile packages,
+  covering 1.0 through current 26.1.x catalog releases. These are namespace and
+  acquisition-policy profiles only; they do not bundle generated mapping tables
+  or remapped source.
+- `mdm-sources` now has producer-side sync tools for source, datapack,
+  resourcepack, and mapping profiles plus registry files, with a single
+  `sync-repository` entrypoint. Schema/registry entries are generated from
+  package manifests instead of hand-copied per version.
 
 Not done:
 
@@ -92,8 +97,8 @@ Not done:
 - Signing/provenance/retention policy.
 - Large public docs corpus.
 - Loader-specific and mapping-specific source profile variants beyond vanilla.
-- Mapping package corpus beyond the initial mapping profile and runtime
-  generation/acquisition paths.
+- Runtime mapping table download/generation/indexing integration beyond public
+  metadata profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
 
 ## Evidence
@@ -112,12 +117,13 @@ Current fresh checks from this slice:
 
 ```text
 mdm-sources node --test tests/*.test.mjs: 24 passed
-mdm-sources node tools/validate.mjs: packageCount 311, errorCount 0
+mdm-sources node tools/validate.mjs: packageCount 411, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
 mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
+mdm-sources mapping profiles: generated packages 101, release artifacts 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
@@ -128,15 +134,15 @@ MCP versioned profile recommendations: source/datapack/resourcepack/mapping task
 ## Completion Estimate
 
 - MCP core capability: 95%.
-- MDM resource/package delivery: 80-83%.
-- Overall project deliverability: 83-86%.
+- MDM resource/package delivery: 83-86%.
+- Overall project deliverability: 85-88%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Extend mapping package generation safely without bundling generated mapping
-  tables.
+- Add runtime mapping table acquisition/indexing adapters for Yarn/Parchment
+  without committing generated mapping tables to public repositories.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially KubeJS, client visual, loader-specific, and API-specific
   guidance packages.

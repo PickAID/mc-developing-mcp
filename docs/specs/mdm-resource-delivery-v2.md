@@ -3,9 +3,10 @@
 ## Status
 
 Current status: install-smoke, SQLite docs E2E, and generated vanilla
-source/datapack/resourcepack profile channels are capable. It is not yet a full
-product deliverable because live release acceptance, signing/provenance, mapping
-variants, loader variants, and larger public corpus coverage are still pending.
+source/datapack/resourcepack/mapping profile channels are capable. It is not
+yet a full product deliverable because live release acceptance,
+signing/provenance, runtime mapping table acquisition/indexing, loader variants,
+and larger public corpus coverage are still pending.
 
 The public `mdm-sources` repository now has schema validation and initial
 curated package families. It is still an early package source, not a complete
@@ -119,7 +120,8 @@ A package cannot be considered release-ready unless:
   id strings.
 - Generated public profile payloads must state whether they bundle exact content
   or only describe runtime-local acquisition/resolution. Vanilla source,
-  datapack, and resourcepack generated profiles must remain metadata-only.
+  datapack, resourcepack, and mapping generated profiles must remain
+  metadata-only.
 
 ## Current Evidence
 
@@ -181,6 +183,14 @@ The verified path is:
     notes, and runtime cache ownership. Exact pack formats and generated archive
     indexes are resolved from local jars/version metadata by MCP runtime, not
     hard-coded as public corpus truth.
+19. Generate public `mappings` channel profiles from the official `releases[]`
+    list. Current producer verification generates 101 packages and 101 local
+    release artifacts, from `minecraft-1.0-yarn-mapping-profile` through
+    `minecraft-26.1.2-yarn-mapping-profile`.
+20. Mapping profile payloads must include `schemaVersion`, `profileKind`,
+    `generatedFrom`, namespace graph, lookup policy, upstream licensing notes,
+    and runtime cache ownership. They must set `bundlesGeneratedMappings:
+    false`, `bundlesRemappedSource: false`, and `localGenerationOnly: true`.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -190,9 +200,10 @@ Latest producer-side verification for this slice:
 
 ```text
 mdm-sources node --test tests/*.test.mjs: 24 passed
-mdm-sources node tools/validate.mjs: packageCount 311, errorCount 0
+mdm-sources node tools/validate.mjs: packageCount 411, errorCount 0
 mdm-sources datapack release build: packages 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
+mdm-sources mappings release build: packages 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
 ```
 
@@ -207,6 +218,8 @@ The system is not complete until these exist:
   animation, and resource-pack patterns.
 - Loader and mapping-specific source/data/resource profile variants beyond the
   generated vanilla profiles.
+- Runtime mapping table acquisition/indexing adapters for Yarn/Parchment/Mojmap
+  beyond public metadata profiles.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.
