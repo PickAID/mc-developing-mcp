@@ -119,16 +119,24 @@ Implemented:
   resourcepack, and mapping profiles plus registry files, with a single
   `sync-repository` entrypoint. Schema/registry entries are generated from
   package manifests instead of hand-copied per version.
+- The public KubeJS 1.20.1 guidance package has been expanded to version 0.2.0.
+  It now covers script scope selection, KubeJS-first event selection,
+  ForgeEvents, NativeEvents, Java interop, `global` state discipline,
+  ProbeJS-as-local-evidence policy, debug/logging hygiene, reload lifecycle,
+  integration boundaries, and datapack/resourcepack/client-server separation.
+  It remains public guidance only and does not include private ProbeJS dumps or
+  modpack scripts.
 
 Not done:
 
 - Live published GitHub Release acceptance run.
 - Signing/provenance/retention policy.
 - Large public docs corpus.
-- Loader-specific and mapping-specific source profile variants beyond vanilla.
 - Loader-specific and mapping-specific source profile variants beyond vanilla
   source profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
+- Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
+  MCP selection that deeply reads installed guidance payloads.
 
 ## Evidence
 
@@ -153,6 +161,8 @@ mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
 mdm-sources mapping profiles: generated packages 101, release artifacts 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
+mdm-sources KubeJS guidance 0.2.0: docs release artifact kubejs-1.20.1-guidance-0.2.0.mdm-resource.json, sha256 38c698ea30bf3c437c96514f18c351278cdcf4062de1f56f4da8075241fde0f3, sizeBytes 16454
+mdm-sources KubeJS guidance artifact content: scopeRules 4, eventBridgeRules 4, integrationBoundaries 5, lookupHints 10
 MCP real mdm-sources release consumption: installed and searched core-docs-search-sqlite
 MCP stdio real release consumption: installed and searched core-docs-search-sqlite through JSON-RPC
 MCP remote URL acceptance: installed real SQLite bytes through GitHub Release shaped manifest/artifact URLs
@@ -170,13 +180,13 @@ MCP Parchment Maven resolver: selected release metadata, fetched parchment zip, 
 ## Completion Estimate
 
 - MCP core capability: 97%.
-- MDM resource/package delivery: 85-88%.
-- Overall project deliverability: 88-91%.
+- MDM resource/package delivery: 88-90%.
+- Overall project deliverability: 90-92%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
-  corpus, especially KubeJS, client visual, loader-specific, and API-specific
-  guidance packages.
+  corpus, especially client visual, loader-specific, and API-specific guidance
+  packages.

@@ -253,6 +253,8 @@ mdm-sources node tools/validate.mjs: packageCount 411, errorCount 0
 mdm-sources datapack release build: packages 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
 mdm-sources mappings release build: packages 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
+mdm-sources KubeJS guidance 0.2.0 release build: kubejs-1.20.1-guidance-0.2.0.mdm-resource.json, sha256 38c698ea30bf3c437c96514f18c351278cdcf4062de1f56f4da8075241fde0f3, sizeBytes 16454
+mdm-sources KubeJS guidance 0.2.0 payload: scopeRules 4, eventBridgeRules 4, integrationBoundaries 5, lookupHints 10
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
 MCP mapping index work item runner: source-package-manager 16 files, 65 tests passed
 MCP runtime mapping index adapter, Tiny v2 provider, Yarn Maven resolver, Mojmap manifest resolver, and Parchment Maven resolver: mcp-server 100 files, 328 tests passed in focused acceptance run
@@ -263,8 +265,9 @@ MCP runtime mapping index adapter, Tiny v2 provider, Yarn Maven resolver, Mojmap
 The system is not complete until these exist:
 
 - Larger docs search corpus beyond the initial JSONL/SQLite package.
-- Deeper KubeJS guidance package coverage for ForgeEvents, NativeEvents,
-  `global`, ProbeJS, and scope-specific rules.
+- Broader KubeJS guidance corpus and dynamic MCP consumption beyond the initial
+  1.20.1 guidance package. ForgeEvents, NativeEvents, `global`, ProbeJS, and
+  scope-specific public guidance now have first-layer coverage.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
 - Loader and mapping-specific source/data/resource profile variants beyond the
