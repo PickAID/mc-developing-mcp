@@ -219,6 +219,55 @@ describe("executeMcpServerMappingIndexWorkItem", () => {
     }
   });
 
+  it("does not cache provider-unavailable mapping results", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mapping-miss-"));
+    const runtimeRoot = join(tempRoot, "runtime");
+    const indexPath = join(
+      runtimeRoot,
+      "source-acquisition",
+      "mapping-indexes",
+      "yarn",
+      "1.21.1",
+      "mappings.jsonl"
+    );
+    let providerCalls = 0;
+
+    try {
+      const result = await executeMcpServerMappingIndexWorkItem({
+        runtimeRoot,
+        minecraftVersion: "1.21.1",
+        mappingFamily: "yarn",
+        provider: async () => {
+          providerCalls += 1;
+          return {
+            provenance: { status: "yarn_version_unavailable" },
+            cacheable: false,
+            entries: []
+          };
+        }
+      });
+
+      expect(providerCalls).toBe(1);
+      expect(result).toMatchObject({
+        payload: {
+          status: "provider_unavailable",
+          provenance: {
+            status: "yarn_version_unavailable"
+          },
+          cache: {
+            hit: false,
+            commitPolicy: "not_cached"
+          }
+        }
+      });
+      await expect(readFile(indexPath, "utf-8")).rejects.toMatchObject({
+        code: "ENOENT"
+      });
+    } finally {
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it("does not treat non-ENOENT cache read failures as cache misses", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mapping-eisdir-"));
     const runtimeRoot = join(tempRoot, "runtime");

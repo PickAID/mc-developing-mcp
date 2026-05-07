@@ -20,6 +20,7 @@ export interface MappingIndexProviderRequest {
 
 export interface MappingIndexProviderResult {
   provenance?: unknown;
+  cacheable?: boolean;
   entries: MappingIndexEntry[];
 }
 
@@ -83,6 +84,13 @@ export async function executeMcpServerMappingIndexWorkItem(input: {
     minecraftVersion: input.minecraftVersion,
     mappingFamily: input.mappingFamily
   });
+  if (provided.cacheable === false) {
+    return mappingIndexUnavailableResult({
+      ...input,
+      provenance: provided.provenance
+    });
+  }
+
   await writeMappingIndex(indexPath, provided, {
     minecraftVersion: input.minecraftVersion,
     mappingFamily: input.mappingFamily
@@ -274,6 +282,28 @@ function mappingIndexResult(input: {
         hit: input.cacheHit,
         scope: "private_runtime",
         commitPolicy: "private_generated_cache"
+      }
+    }
+  };
+}
+
+function mappingIndexUnavailableResult(input: {
+  minecraftVersion: string;
+  mappingFamily: "yarn" | "parchment" | "mojmap";
+  provenance?: unknown;
+}): SourceAcquisitionWorkItemHandlerResult {
+  return {
+    summary: "Mapping index provider did not return cacheable mapping entries.",
+    payload: {
+      source: "source_acquisition_mapping_index",
+      status: "provider_unavailable",
+      minecraftVersion: input.minecraftVersion,
+      mappingFamily: input.mappingFamily,
+      provenance: input.provenance,
+      cache: {
+        hit: false,
+        scope: "private_runtime",
+        commitPolicy: "not_cached"
       }
     }
   };

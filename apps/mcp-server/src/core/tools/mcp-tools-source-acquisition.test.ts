@@ -221,6 +221,126 @@ describe("mc_develop source acquisition acceptance", () => {
       ])
     });
   });
+
+  it("materializes Yarn mappings from configured Fabric Maven metadata", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mapping-maven-runtime-");
+    const workspaceRoot = await createEmptyWorkspace();
+    const fetchedUrls: string[] = [];
+
+    registerMcpServerTools(registry, {
+      env: {
+        MCPSKILL_YARN_MAVEN_BASE_URL: "https://maven.fabricmc.test"
+      },
+      mappingIndexFetch: async (url) => {
+        fetchedUrls.push(url.toString());
+        if (url.pathname.endsWith("/maven-metadata.xml")) {
+          return new Response(
+            [
+              "<metadata><versioning><versions>",
+              "<version>1.21.1+build.2</version>",
+              "<version>1.20.1+build.10</version>",
+              "<version>1.21.1+build.12</version>",
+              "</versions></versioning></metadata>"
+            ].join(""),
+            { status: 200 }
+          );
+        }
+
+        return new Response(
+          createZipWithContents([
+            {
+              name: "mappings/mappings.tiny",
+              content:
+                "tiny\t2\t0\tofficial\tnamed\nc\ta\tnet.minecraft.MavenHit\n"
+            }
+          ]),
+          { status: 200 }
+        );
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Find source for a NeoForge mod from Modrinth and Yarn mappings for Minecraft 1.21.1 mixin target.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(fetchedUrls).toEqual([
+      "https://maven.fabricmc.test/net/fabricmc/yarn/maven-metadata.xml",
+      "https://maven.fabricmc.test/net/fabricmc/yarn/1.21.1%2Bbuild.12/yarn-1.21.1%2Bbuild.12-v2.jar"
+    ]);
+    expect(result.structuredContent).toMatchObject({
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "source_acquisition_plan",
+          payload: expect.objectContaining({
+            workItemExecutions: expect.arrayContaining([
+              expect.objectContaining({
+                kind: "mapping_index",
+                payload: expect.objectContaining({
+                  status: "ready",
+                  entryCount: 1,
+                  provenance: expect.objectContaining({
+                    yarnVersion: "1.21.1+build.12"
+                  })
+                })
+              })
+            ])
+          })
+        })
+      ])
+    });
+  });
+
+  it("does not fetch Yarn mappings when no mapping provider is configured", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mapping-disabled-runtime-");
+    const workspaceRoot = await createEmptyWorkspace();
+    const fetchedUrls: string[] = [];
+
+    registerMcpServerTools(registry, {
+      env: {
+        MCPSKILL_YARN_MAPPING_URL_TEMPLATE: undefined,
+        MCPSKILL_YARN_MAVEN_BASE_URL: undefined
+      },
+      mappingIndexFetch: async (url) => {
+        fetchedUrls.push(url.toString());
+        return new Response("", { status: 500 });
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Find source for a NeoForge mod from Modrinth and Yarn mappings for Minecraft 1.21.1 mixin target.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(fetchedUrls).toEqual([]);
+    expect(result.structuredContent).toMatchObject({
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "source_acquisition_plan",
+          payload: expect.objectContaining({
+            workItemExecutions: expect.arrayContaining([
+              expect.objectContaining({
+                kind: "mapping_index",
+                payload: expect.objectContaining({
+                  status: "provider_required",
+                  minecraftVersion: "1.21.1",
+                  mappingFamily: "yarn"
+                })
+              })
+            ])
+          })
+        })
+      ])
+    });
+  });
 });
 
 async function createModpackWorkspace(): Promise<string> {
@@ -265,13 +385,22 @@ function createCapturingRegistry(): CapturingRegistry {
 }
 
 function createZip(entryNames: string[]): Buffer {
+  return createZipWithContents(
+    entryNames.map((name) => ({
+      name,
+      content: "{}\n"
+    }))
+  );
+}
+
+function createZipWithContents(entries: Array<{ name: string; content: string }>): Buffer {
   const localParts: Buffer[] = [];
   const centralParts: Buffer[] = [];
   let localOffset = 0;
 
-  for (const entryName of entryNames) {
-    const name = Buffer.from(entryName);
-    const content = Buffer.from("{}\n");
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = Buffer.from(entry.content);
     const localHeader = Buffer.alloc(30);
     const centralHeader = Buffer.alloc(46);
 
@@ -298,8 +427,8 @@ function createZip(entryNames: string[]): Buffer {
   const eocd = Buffer.alloc(22);
 
   eocd.writeUInt32LE(0x06054b50, 0);
-  eocd.writeUInt16LE(entryNames.length, 8);
-  eocd.writeUInt16LE(entryNames.length, 10);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
   eocd.writeUInt32LE(centralDirectory.length, 12);
   eocd.writeUInt32LE(localFiles.length, 16);
 

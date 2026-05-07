@@ -23,6 +23,13 @@ export interface TinyV2MappingProviderOptions {
   toNamespace?: string;
 }
 
+export interface YarnMavenTinyV2MappingProviderOptions {
+  mavenBaseUrl: string;
+  fetch?: (url: URL) => Promise<Response>;
+  fromNamespace?: string;
+  toNamespace?: string;
+}
+
 export function parseTinyV2Mappings(
   input: TinyV2MappingParseInput
 ): MappingIndexProviderResult {
@@ -133,6 +140,59 @@ export function createTinyV2MappingIndexProvider(
   };
 }
 
+export function createYarnMavenTinyV2MappingIndexProvider(
+  options: YarnMavenTinyV2MappingProviderOptions
+): MappingIndexProvider {
+  return async (request) => {
+    if (request.mappingFamily !== "yarn") {
+      return unavailableYarnMavenResult(request, "mapping_family_unavailable");
+    }
+
+    const metadataUrl = yarnMetadataUrl(options.mavenBaseUrl);
+    const metadataResponse = await (options.fetch ?? fetch)(metadataUrl);
+    if (!metadataResponse.ok) {
+      throw new Error(
+        `Yarn Maven metadata download failed for ${metadataUrl.toString()}: ${metadataResponse.status} ${metadataResponse.statusText}`
+      );
+    }
+
+    const metadata = await metadataResponse.text();
+    const yarnVersion = selectHighestYarnBuild(
+      extractMavenMetadataVersions(metadata),
+      request.minecraftVersion
+    );
+    if (!yarnVersion) {
+      return unavailableYarnMavenResult(request, "yarn_version_unavailable");
+    }
+
+    const artifactUrl = yarnArtifactUrl(options.mavenBaseUrl, yarnVersion);
+    const artifactResponse = await (options.fetch ?? fetch)(artifactUrl);
+    if (!artifactResponse.ok) {
+      throw new Error(
+        `Yarn mapping artifact download failed for ${artifactUrl.toString()}: ${artifactResponse.status} ${artifactResponse.statusText}`
+      );
+    }
+
+    const parsed = parseTinyV2Mappings({
+      ...request,
+      fromNamespace: options.fromNamespace,
+      toNamespace: options.toNamespace,
+      content: await readMappingContent(artifactResponse)
+    });
+
+    return {
+      ...parsed,
+      provenance: {
+        ...(typeof parsed.provenance === "object" && parsed.provenance !== null
+          ? parsed.provenance
+          : {}),
+        yarnVersion,
+        artifactUrl: artifactUrl.toString()
+      }
+    };
+  };
+}
+
 async function readMappingContent(response: Response): Promise<string> {
   const bytes = Buffer.from(await response.arrayBuffer());
   if (looksLikeZip(bytes)) {
@@ -164,6 +224,60 @@ function readTinyMappingFromZip(bytes: Buffer): string {
   }
 
   return readZipEntryContent(bytes, entry).toString("utf-8");
+}
+
+function yarnMetadataUrl(mavenBaseUrl: string): URL {
+  return new URL("net/fabricmc/yarn/maven-metadata.xml", normalizedBaseUrl(mavenBaseUrl));
+}
+
+function yarnArtifactUrl(mavenBaseUrl: string, yarnVersion: string): URL {
+  const encodedVersion = encodeURIComponent(yarnVersion);
+  return new URL(
+    `net/fabricmc/yarn/${encodedVersion}/yarn-${encodedVersion}-v2.jar`,
+    normalizedBaseUrl(mavenBaseUrl)
+  );
+}
+
+function normalizedBaseUrl(value: string): string {
+  return value.endsWith("/") ? value : `${value}/`;
+}
+
+function extractMavenMetadataVersions(metadata: string): string[] {
+  return [...metadata.matchAll(/<version>([^<]+)<\/version>/gu)].map(
+    (match) => match[1]?.trim() ?? ""
+  );
+}
+
+function selectHighestYarnBuild(
+  versions: string[],
+  minecraftVersion: string
+): string | undefined {
+  const prefix = `${minecraftVersion}+build.`;
+  return versions
+    .map((version) => ({
+      version,
+      build: version.startsWith(prefix)
+        ? Number.parseInt(version.slice(prefix.length), 10)
+        : Number.NaN
+    }))
+    .filter((candidate) => Number.isSafeInteger(candidate.build))
+    .sort((left, right) => right.build - left.build)[0]?.version;
+}
+
+function unavailableYarnMavenResult(
+  request: MappingIndexProviderRequest,
+  status: string
+): MappingIndexProviderResult {
+  return {
+    provenance: {
+      format: "tiny_v2",
+      status,
+      minecraftVersion: request.minecraftVersion,
+      mappingFamily: request.mappingFamily
+    },
+    cacheable: false,
+    entries: []
+  };
 }
 
 function normalizeClassName(name: string): string {

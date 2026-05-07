@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createYarnMavenTinyV2MappingIndexProvider,
   createTinyV2MappingIndexProvider,
   parseTinyV2Mappings
 } from "./source-acquisition-mapping-provider.js";
@@ -229,6 +230,96 @@ describe("createTinyV2MappingIndexProvider", () => {
 
     expect(result.entries[0]).toMatchObject({
       toName: "Correct"
+    });
+  });
+});
+
+describe("createYarnMavenTinyV2MappingIndexProvider", () => {
+  it("resolves the highest matching Yarn build from Maven metadata", async () => {
+    const fetchedUrls: string[] = [];
+    const provider = createYarnMavenTinyV2MappingIndexProvider({
+      mavenBaseUrl: "https://maven.fabricmc.test",
+      fetch: async (url) => {
+        fetchedUrls.push(url.toString());
+        if (url.pathname.endsWith("/maven-metadata.xml")) {
+          return textResponse([
+            "<metadata>",
+            "  <versioning>",
+            "    <versions>",
+            "      <version>1.21.1+build.1</version>",
+            "      <version>1.20.6+build.3</version>",
+            "      <version>1.21.1+build.12</version>",
+            "      <version>1.21.1+build.2</version>",
+            "    </versions>",
+            "  </versioning>",
+            "</metadata>"
+          ].join("\n"));
+        }
+
+        return bytesResponse(
+          createZip([
+            {
+              name: "mappings/mappings.tiny",
+              content:
+                "tiny\t2\t0\tofficial\tintermediary\tnamed\nc\ta\tclass_1799\tnet/minecraft/world/item/ItemStack\n"
+            }
+          ])
+        );
+      }
+    });
+
+    const result = await provider({
+      minecraftVersion: "1.21.1",
+      mappingFamily: "yarn"
+    });
+
+    expect(fetchedUrls).toEqual([
+      "https://maven.fabricmc.test/net/fabricmc/yarn/maven-metadata.xml",
+      "https://maven.fabricmc.test/net/fabricmc/yarn/1.21.1%2Bbuild.12/yarn-1.21.1%2Bbuild.12-v2.jar"
+    ]);
+    expect(result.provenance).toMatchObject({
+      format: "tiny_v2",
+      mappingFamily: "yarn",
+      yarnVersion: "1.21.1+build.12",
+      artifactUrl:
+        "https://maven.fabricmc.test/net/fabricmc/yarn/1.21.1%2Bbuild.12/yarn-1.21.1%2Bbuild.12-v2.jar"
+    });
+    expect(result.entries[0]).toMatchObject({
+      fromNamespace: "official",
+      toNamespace: "named",
+      toName: "net.minecraft.world.item.ItemStack"
+    });
+  });
+
+  it("does not fetch an artifact when metadata has no matching Minecraft version", async () => {
+    const fetchedUrls: string[] = [];
+    const provider = createYarnMavenTinyV2MappingIndexProvider({
+      mavenBaseUrl: "https://maven.fabricmc.test",
+      fetch: async (url) => {
+        fetchedUrls.push(url.toString());
+        return textResponse(
+          "<metadata><versioning><versions><version>1.20.1+build.10</version></versions></versioning></metadata>"
+        );
+      }
+    });
+
+    const result = await provider({
+      minecraftVersion: "1.21.1",
+      mappingFamily: "yarn"
+    });
+
+    expect(fetchedUrls).toEqual([
+      "https://maven.fabricmc.test/net/fabricmc/yarn/maven-metadata.xml"
+    ]);
+    expect(result).toEqual({
+      provenance: {
+        format: "tiny_v2",
+        status: "yarn_version_unavailable",
+        minecraftVersion: "1.21.1",
+        mappingFamily: "yarn"
+      },
+      cacheable: false,
+      entries: []
     });
   });
 });

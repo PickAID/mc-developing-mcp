@@ -42,7 +42,10 @@ import {
 } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
 import type { MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-index.js";
-import { createTinyV2MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-provider.js";
+import {
+  createTinyV2MappingIndexProvider,
+  createYarnMavenTinyV2MappingIndexProvider
+} from "../../source-acquisition/source-acquisition-mapping-provider.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -297,17 +300,25 @@ function resolveMappingIndexProvider(
   }
 
   const yarnTemplate = env.MCPSKILL_YARN_MAPPING_URL_TEMPLATE;
-  if (!yarnTemplate) {
-    return undefined;
+  if (yarnTemplate) {
+    return createTinyV2MappingIndexProvider({
+      fetch: options.mappingIndexFetch,
+      resolveUrl: (request) =>
+        request.mappingFamily === "yarn"
+          ? expandMappingUrlTemplate(yarnTemplate, request)
+          : undefined
+    });
   }
 
-  return createTinyV2MappingIndexProvider({
-    fetch: options.mappingIndexFetch,
-    resolveUrl: (request) =>
-      request.mappingFamily === "yarn"
-        ? expandMappingUrlTemplate(yarnTemplate, request)
-        : undefined
-  });
+  const yarnMavenBaseUrl = env.MCPSKILL_YARN_MAVEN_BASE_URL;
+  if (yarnMavenBaseUrl) {
+    return createYarnMavenTinyV2MappingIndexProvider({
+      fetch: options.mappingIndexFetch,
+      mavenBaseUrl: yarnMavenBaseUrl
+    });
+  }
+
+  return undefined;
 }
 
 function expandMappingUrlTemplate(

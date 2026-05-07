@@ -11,8 +11,8 @@ evidence, datapack/resourcepack evidence, MDM resource install/status, SQLite
 docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
-broader package corpus coverage, loader-specific variants, real mapping table
-providers, and final UX polish.
+broader package corpus coverage, loader-specific variants, Parchment/Mojmap
+mapping providers, and final UX polish.
 
 ## Current Capabilities
 
@@ -49,6 +49,14 @@ providers, and final UX polish.
   text or `.zip`/`.jar` artifacts containing `.tiny` mappings, and `mc_develop`
   can enable Yarn mapping downloads only when `MCPSKILL_YARN_MAPPING_URL_TEMPLATE`
   is configured. No mapping download happens by default.
+- MCP can also resolve Yarn mappings from Fabric-style Maven metadata when
+  `MCPSKILL_YARN_MAVEN_BASE_URL` is explicitly configured. It reads
+  `net/fabricmc/yarn/maven-metadata.xml`, selects the highest
+  `${minecraftVersion}+build.N` entry for the requested Minecraft version, then
+  downloads the matching `yarn-...-v2.jar` and materializes the Tiny v2 rows into
+  runtime-private JSONL. Metadata misses are reported as provider-unavailable
+  and are not cached as ready empty indexes. This remains opt-in and uses
+  injected fetchers in tests.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -106,8 +114,8 @@ Not done:
 - Signing/provenance/retention policy.
 - Large public docs corpus.
 - Loader-specific and mapping-specific source profile variants beyond vanilla.
-- Automatic Yarn build metadata resolution and Parchment/Mojmap providers beyond
-  the runtime-private mapping index adapter, configurable Tiny v2 provider, and
+- Parchment/Mojmap providers beyond the runtime-private mapping index adapter,
+  configurable Tiny v2 provider, automatic Yarn Maven metadata resolver, and
   public metadata profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
 
@@ -143,6 +151,7 @@ MCP runtime mapping index adapter: source-package-manager 16 files / 65 tests pa
 MCP runtime mapping index adapter and Tiny v2 provider: mcp-server 96 files / 311 tests passed
 MCP runtime mapping index cache hardening: unsafe version segment rejected, corrupt JSONL rebuilt, EISDIR read error propagated
 MCP configurable Yarn Tiny v2 provider: URL template is opt-in through MCPSKILL_YARN_MAPPING_URL_TEMPLATE and supports injected fetch verification
+MCP Yarn Maven metadata resolver: selected highest matching Yarn build, fetched v2 jar, confirmed no mapping fetch when no provider/env is configured, and does not cache metadata misses as ready empty indexes; mcp-server 96 files / 316 tests passed for focused acceptance run
 ```
 
 ## Completion Estimate
@@ -155,9 +164,9 @@ The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Add automatic Yarn build metadata resolution plus Parchment/Mojmap providers
-  behind the existing runtime-private mapping index adapter, without committing
-  generated mapping tables to public repositories.
+- Add Parchment/Mojmap providers behind the existing runtime-private mapping
+  index adapter, without committing generated mapping tables to public
+  repositories.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially KubeJS, client visual, loader-specific, and API-specific
   guidance packages.
