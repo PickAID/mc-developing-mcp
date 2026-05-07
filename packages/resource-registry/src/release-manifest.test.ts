@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   findMdmReleasePackage,
+  readMdmReleaseManifest,
   readMdmReleaseManifestFile,
   resolveMdmReleaseArtifactUrl,
   fetchMdmReleaseManifest,
@@ -81,6 +82,53 @@ describe("mdm release manifest", () => {
     await expect(readMdmReleaseManifestFile(manifestPath)).rejects.toThrow(
       "mdm release package field required must be a boolean"
     );
+  });
+
+  it.each([
+    {
+      name: "unsupported schema version",
+      patch: { schemaVersion: 2 },
+      error: /schemaVersion must be 1/
+    },
+    {
+      name: "path-like artifact name",
+      packagePatch: { artifactName: "nested/core-docs.json" },
+      error: /artifactName must be a file name/
+    },
+    {
+      name: "invalid sha256",
+      packagePatch: { sha256: "not-a-sha" },
+      error: /sha256 must be a lowercase sha256/
+    },
+    {
+      name: "fractional size",
+      packagePatch: { sizeBytes: 12.5 },
+      error: /sizeBytes must be a non-negative integer/
+    },
+    {
+      name: "missing release channel",
+      deletePackageField: "releaseChannel",
+      error: /releaseChannel is required/
+    },
+    {
+      name: "missing release family",
+      deletePackageField: "releaseFamily",
+      error: /releaseFamily must be a non-empty string/
+    },
+    {
+      name: "empty capability",
+      packagePatch: { capabilities: ["docs_search", ""] },
+      error: /capabilities must contain non-empty strings/
+    }
+  ])("rejects $name", ({ patch, packagePatch, deletePackageField, error }) => {
+    const manifest = fixtureManifest();
+    Object.assign(manifest, patch);
+    Object.assign(manifest.packages[0], packagePatch);
+    if (deletePackageField !== undefined) {
+      delete manifest.packages[0][deletePackageField];
+    }
+
+    expect(() => readMdmReleaseManifest(manifest)).toThrow(error);
   });
 
   it("converts release manifests into resource registry summaries", () => {

@@ -142,7 +142,7 @@ describe("parsePackageManifestV2", () => {
         artifact: {
           kind: "source_index",
           format: "sqlite",
-          schemaId: "mdm.sources.index.sqlite",
+          schemaId: "mdm.source.index.sqlite",
           schemaVersion: 1,
           entrypoint: "source-index.sqlite"
         },

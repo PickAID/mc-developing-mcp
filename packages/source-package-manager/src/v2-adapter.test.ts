@@ -43,6 +43,7 @@ describe("source package v2 adapter", () => {
         artifact: {
           kind: "source_index",
           format: "sqlite",
+          schemaId: "mdm.source.index.sqlite",
           entrypoint: "source-index.sqlite",
           provenance: {
             sourceKind: "generated_local",
@@ -199,6 +200,7 @@ describe("source package v2 adapter", () => {
       artifact: {
         kind: "source_index",
         format: "sqlite",
+        schemaId: "mdm.source.index.sqlite",
         entrypoint: "source-index.sqlite"
       },
       query: { adapter: "source_index_sqlite" },

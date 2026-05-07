@@ -79,7 +79,7 @@ export function readMdmReleaseManifest(
 
   return {
     source,
-    schemaVersion: numberField(value, "schemaVersion"),
+    schemaVersion: schemaVersionField(value),
     generatedAt: stringField(value, "generatedAt"),
     packages: value.packages.map(readReleasePackage)
   };
@@ -176,9 +176,9 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
     variant,
     required,
     format,
-    artifactName: stringField(value, "artifactName"),
-    sha256: stringField(value, "sha256"),
-    sizeBytes: numberField(value, "sizeBytes"),
+    artifactName: artifactNameField(value),
+    sha256: sha256Field(value),
+    sizeBytes: nonNegativeIntegerField(value, "sizeBytes"),
     metadata: resolveMdmResourcePackageMetadata(value.metadata, {
       packageId,
       required,
@@ -188,9 +188,9 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
     }),
     artifactKind: optionalString(value.artifactKind, "artifactKind"),
     queryAdapter: optionalString(value.queryAdapter, "queryAdapter"),
-    releaseChannel: optionalReleaseChannel(value.releaseChannel),
-    releaseFamily: optionalString(value.releaseFamily, "releaseFamily"),
-    capabilities: optionalCapabilities(value.capabilities)
+    releaseChannel: releaseChannelField(value.releaseChannel),
+    releaseFamily: stringField(value, "releaseFamily"),
+    capabilities: capabilitiesField(value.capabilities)
   };
 }
 
@@ -229,6 +229,49 @@ function numberField(record: Record<string, unknown>, field: string): number {
   }
 
   return value;
+}
+
+function schemaVersionField(record: Record<string, unknown>): number {
+  const schemaVersion = numberField(record, "schemaVersion");
+  if (schemaVersion !== 1) {
+    throw new Error("mdm release manifest schemaVersion must be 1.");
+  }
+
+  return schemaVersion;
+}
+
+function nonNegativeIntegerField(
+  record: Record<string, unknown>,
+  field: string
+): number {
+  const value = numberField(record, field);
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(
+      `mdm release package field ${field} must be a non-negative integer.`
+    );
+  }
+
+  return value;
+}
+
+function artifactNameField(record: Record<string, unknown>): string {
+  const artifactName = stringField(record, "artifactName");
+  if (artifactName.includes("/") || artifactName.includes("\\")) {
+    throw new Error("mdm release package field artifactName must be a file name.");
+  }
+
+  return artifactName;
+}
+
+function sha256Field(record: Record<string, unknown>): string {
+  const sha256 = stringField(record, "sha256");
+  if (!/^[a-f0-9]{64}$/.test(sha256)) {
+    throw new Error(
+      "mdm release package field sha256 must be a lowercase sha256."
+    );
+  }
+
+  return sha256;
 }
 
 function booleanField(record: Record<string, unknown>, field: string): boolean {
@@ -273,18 +316,34 @@ function optionalReleaseChannel(
   return value as PackageReleaseV2["channel"];
 }
 
-function optionalCapabilities(
-  value: unknown
-): PackageCapabilityV2[] | undefined {
+function releaseChannelField(value: unknown): PackageReleaseV2["channel"] {
   if (value === undefined) {
-    return undefined;
+    throw new Error("mdm release package field releaseChannel is required.");
+  }
+  const releaseChannel = optionalReleaseChannel(value);
+  if (releaseChannel === undefined) {
+    throw new Error("mdm release package field releaseChannel is required.");
+  }
+
+  return releaseChannel;
+}
+
+function capabilitiesField(value: unknown): PackageCapabilityV2[] {
+  if (value === undefined) {
+    throw new Error("mdm release package field capabilities is required.");
   }
   if (!Array.isArray(value)) {
     throw new Error("mdm release package field capabilities must be an array.");
   }
 
   return value.map((entry) => {
-    return stringValue(entry, "capabilities") as PackageCapabilityV2;
+    if (typeof entry !== "string" || entry.length === 0) {
+      throw new Error(
+        "mdm release package field capabilities must contain non-empty strings."
+      );
+    }
+
+    return entry as PackageCapabilityV2;
   });
 }
 

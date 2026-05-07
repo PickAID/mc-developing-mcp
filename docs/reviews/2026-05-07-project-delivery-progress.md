@@ -60,6 +60,13 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - MCP resource-registry now rejects invalid SQLite `minUserVersion` metadata at
   manifest parse time unless it is a finite non-negative integer, matching the
   stricter `mdm-sources` release manifest schema.
+- MCP resource-registry now enforces the release manifest contract for
+  schemaVersion, artifact file names, lowercase sha256 digests, non-negative
+  integer artifact sizes, required release routing metadata, and non-empty
+  package capabilities before a release manifest can be adapted into runtime
+  package state.
+- MCP source-package-manager now emits the same source-index schema id as
+  `mdm-sources`: `mdm.source.index.sqlite`.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -253,6 +260,10 @@ Not done:
   generation from allowed local/user-confirmed inputs.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
+- Source acquisition workspace-route execution parity: Gradle and ProbeJS
+  workspace routes are planned and lower-level adapters exist, but the unified
+  work item runner still needs to execute those route types inside the same
+  source-acquisition flow.
 
 ## Evidence
 
@@ -320,13 +331,15 @@ mdm-sources SQLite minUserVersion install gate: red test first showed a SQLite a
 mdm-sources release manifest SQLite metadata schema: red test first showed malformed metadata.sqlite.minUserVersion and metadata.sqlite.requiredTables entries passed release schema verification; release-manifest.schema.json now validates SQLite metadata field types. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched schema/test files stayed under 500 lines
 mdm-sources SQLite metadata completeness schema: batch hardening now requires sqlite.databaseName, integer non-negative sqlite.minUserVersion, and non-empty sqlite.requiredTables in release metadata. node --test tests/*.test.mjs passed 41 tests; node tools/validate.mjs packageCount 429 errorCount 0; release schema verifier packageCount 429 errorCount 0; install verifier verifiedCount 429/429 totalSizeBytes 2496075; touched schema/test files stayed under 500 lines
 MCP resource-registry SQLite metadata parity: red test first showed fractional minUserVersion passed resource-registry package metadata parsing; parser now rejects fractional, negative, NaN, and Infinity values as non-finite/non-integer metadata. resource-registry tests passed 8 files / 38 tests and resource-registry TypeScript build passed; touched files stayed under 500 lines
+MCP release manifest contract parity: red tests first showed unsupported schemaVersion, path-like artifactName, invalid sha256, fractional sizeBytes, missing releaseChannel/releaseFamily, and empty capabilities were accepted by MCP release manifest parsing; parser now rejects those before adapting release packages. resource-registry tests passed 8 files / 45 tests and resource-registry TypeScript build passed; touched source/test files stayed under 500 lines
+MCP source-index schema id parity: red tests first showed source-package-manager emitted mdm.sources.index.sqlite while mdm-sources/resource-registry use mdm.source.index.sqlite; source-package-manager now emits the single-source contract id. source-package-manager v2 adapter test passed 1 file / 6 tests; package-registry v2 validation test passed 1 file / 12 tests; source-package-manager and package-registry TypeScript builds passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.3%.
+- MCP core capability: 99.4%.
 - MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.1%.
+- Overall project deliverability: 97.2%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

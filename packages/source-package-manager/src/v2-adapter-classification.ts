@@ -115,7 +115,7 @@ export function schemaIdFor(kind: ArtifactKindV2): string {
     case "source_tree":
       return "mdm.sources.tree";
     case "source_index":
-      return "mdm.sources.index.sqlite";
+      return "mdm.source.index.sqlite";
     case "datapack_bundle":
       return "mdm.datapack.directory";
     case "resourcepack_bundle":
