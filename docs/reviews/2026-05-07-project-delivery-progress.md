@@ -72,6 +72,10 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   ProbeJS workspace routes call the existing ProbeJS/KubeJS evidence path for
   type/resource summaries. This keeps the public MCP surface at `mc_develop`
   while making workspace-local evidence visible in the source acquisition flow.
+- MCP resource-registry now validates SQLite release artifacts during install,
+  before writing ready cache state. The install path rejects missing required
+  tables, SQLite `user_version` below metadata requirements, and empty
+  `source_index_sqlite` databases with no indexed files/chunks.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -339,13 +343,14 @@ MCP resource-registry SQLite metadata parity: red test first showed fractional m
 MCP release manifest contract parity: red tests first showed unsupported schemaVersion, path-like artifactName, invalid sha256, fractional sizeBytes, missing releaseChannel/releaseFamily, and empty capabilities were accepted by MCP release manifest parsing; parser now rejects those before adapting release packages. resource-registry tests passed 8 files / 45 tests and resource-registry TypeScript build passed; touched source/test files stayed under 500 lines
 MCP source-index schema id parity: red tests first showed source-package-manager emitted mdm.sources.index.sqlite while mdm-sources/resource-registry use mdm.source.index.sqlite; source-package-manager now emits the single-source contract id. source-package-manager v2 adapter test passed 1 file / 6 tests; package-registry v2 validation test passed 1 file / 12 tests; source-package-manager and package-registry TypeScript builds passed; touched source/test files stayed under 500 lines
 MCP source acquisition workspace execution: workspace_gradle/read_declared_dependencies and workspace_probejs/read_probejs_types_and_registries routes now build executable workspace_overlay work items and dispatch through injected/default handlers. source-package-manager test passed 16 files / 66 tests; MCP focused source acquisition tests passed 2 files / 9 tests; full mcp-server test passed 104 files / 342 tests after updating release manifest fixtures and high-level source-acquisition assertions; source-package-manager and mcp-server TypeScript builds passed; touched source/test files stayed under 500 lines
+MCP install-time SQLite contract gate: red installer tests first showed invalid SQLite docs/source-index artifacts were downloaded and cached as ready; installer now rejects invalid_artifact before writing cache state, sharing SQLite validation with status summaries. resource-registry test passed 8 files / 47 tests; MCP focused MDM resource tests passed 4 files / 9 tests; mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.5%.
+- MCP core capability: 99.6%.
 - MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.3%.
+- Overall project deliverability: 97.4%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

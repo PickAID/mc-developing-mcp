@@ -195,7 +195,12 @@ describe("summarizeMdmResourceStatus", () => {
     );
 
     await mkdir(join(artifactPath, ".."), { recursive: true });
-    createSqliteArtifact(artifactPath, 1, ["files", "source_chunks"]);
+    createSqliteArtifact(artifactPath, 1, [
+      "files",
+      "source_chunks",
+      "fts_chunks"
+    ]);
+    appendSourceIndexRows(artifactPath);
     const sha256 = await sha256File(artifactPath);
     await writeCachedResourceState(cacheLayout, {
       packageId: "minecraft-1.20.1-source-index",
@@ -387,7 +392,7 @@ function sourceIndexPackageEntry(
         commitPolicy: "repository_manifest",
         sqlite: {
           minUserVersion: 1,
-          requiredTables: ["files", "source_chunks"]
+          requiredTables: ["files", "source_chunks", "fts_chunks"]
         }
       }
     }
@@ -409,6 +414,21 @@ function createSqliteArtifact(
     for (const table of tables) {
       database.exec(`CREATE TABLE ${table} (id TEXT PRIMARY KEY);`);
     }
+  } finally {
+    database.close();
+  }
+}
+
+function appendSourceIndexRows(artifactPath: string): void {
+  const sqlite = require("node:sqlite") as {
+    DatabaseSync: new (path: string) => { exec(sql: string): void; close(): void };
+  };
+  const database = new sqlite.DatabaseSync(artifactPath);
+
+  try {
+    database.exec("INSERT INTO files (id) VALUES ('ItemStack.java');");
+    database.exec("INSERT INTO source_chunks (id) VALUES ('chunk-1');");
+    database.exec("INSERT INTO fts_chunks (id) VALUES ('chunk-1');");
   } finally {
     database.close();
   }

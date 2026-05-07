@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 
 import type {
@@ -13,8 +12,7 @@ import {
   type MdmResourceCacheLayout,
   type MdmResourceCacheState
 } from "./cache.js";
-
-const require = createRequire(import.meta.url);
+import { validateMdmSqliteArtifact } from "./sqlite-artifact-validation.js";
 
 export type MdmResourcePackageStatus =
   | "missing_required"
@@ -142,7 +140,11 @@ async function summarizePackage(input: {
     };
   }
 
-  const validationError = validateArtifact(input.state.artifactPath, input.metadata);
+  const validationError = validateArtifact(
+    input.state.artifactPath,
+    input.metadata,
+    input.queryAdapter
+  );
   if (validationError) {
     return {
       packageId: input.packageId,
@@ -235,76 +237,14 @@ function countStatuses(
 
 function validateArtifact(
   artifactPath: string,
-  metadata: MdmResourcePackageMetadata | undefined
+  metadata: MdmResourcePackageMetadata | undefined,
+  queryAdapter?: string
 ): string | undefined {
-  if (metadata?.storageKind !== "sqlite_bundle") {
-    return undefined;
-  }
-
-  return validateSqliteArtifact(artifactPath, metadata.sqlite);
-}
-
-function validateSqliteArtifact(
-  artifactPath: string,
-  validation: MdmResourcePackageMetadata["sqlite"]
-): string | undefined {
-  const database = openDatabase(artifactPath);
-  try {
-    const userVersion = readUserVersion(database);
-    const minUserVersion = validation?.minUserVersion;
-    if (minUserVersion !== undefined && userVersion < minUserVersion) {
-      return `Cached SQLite resource requires user_version >= ${minUserVersion}; found ${userVersion}.`;
-    }
-
-    const requiredTables = validation?.requiredTables ?? [];
-    const missingTables = requiredTables.filter(
-      (tableName) => !hasTableOrView(database, tableName)
-    );
-    if (missingTables.length > 0) {
-      return `Cached SQLite resource is missing required table(s): ${missingTables.join(", ")}.`;
-    }
-
-    return undefined;
-  } catch (error) {
-    return `Cached SQLite resource is invalid: ${toErrorMessage(error)}.`;
-  } finally {
-    database.close();
-  }
-}
-
-function readUserVersion(database: SqliteDatabase): number {
-  const row = database.prepare("PRAGMA user_version").get();
-  const value = row?.user_version;
-  return typeof value === "number" ? value : 0;
-}
-
-function hasTableOrView(database: SqliteDatabase, tableName: string): boolean {
-  const row = database.prepare(
-    "SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?"
-  ).get(tableName);
-  return row !== undefined;
+  return validateMdmSqliteArtifact({ artifactPath, metadata, queryAdapter });
 }
 
 async function hashFile(path: string): Promise<string> {
   return createHash("sha256")
     .update(await readFile(path))
     .digest("hex");
-}
-
-function toErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
-interface SqliteDatabase {
-  prepare(sql: string): {
-    get(...params: unknown[]): Record<string, unknown> | undefined;
-  };
-  close(): void;
-}
-
-function openDatabase(databasePath: string): SqliteDatabase {
-  const sqlite = require("node:sqlite") as {
-    DatabaseSync: new (path: string) => SqliteDatabase;
-  };
-  return new sqlite.DatabaseSync(databasePath);
 }

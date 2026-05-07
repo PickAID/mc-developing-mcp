@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import {
@@ -14,6 +14,7 @@ import {
   type MdmReleaseManifest,
   type MdmReleaseManifestPackage
 } from "./release-manifest.js";
+import { validateMdmSqliteArtifact } from "./sqlite-artifact-validation.js";
 
 export type MdmArtifactDownloadPolicy = "disabled" | "allowed";
 
@@ -23,6 +24,7 @@ export type MdmArtifactInstallStatus =
   | "downloaded"
   | "not_found"
   | "invalid_checksum"
+  | "invalid_artifact"
   | "download_failed";
 
 export interface MdmArtifactFetchResponse {
@@ -160,6 +162,22 @@ async function downloadAndCacheArtifact(input: {
     recursive: true
   });
   await writeFile(artifactPath, bytes);
+  const artifactError = validateMdmSqliteArtifact({
+    artifactPath,
+    metadata: input.resourcePackage.metadata,
+    queryAdapter: input.resourcePackage.queryAdapter
+  });
+  if (artifactError) {
+    await rm(artifactPath, { force: true });
+    return {
+      status: "invalid_artifact",
+      packageId: input.resourcePackage.packageId,
+      artifactUrl: input.artifactUrl,
+      expectedSha256: input.resourcePackage.sha256,
+      actualSha256,
+      message: artifactError
+    };
+  }
   await writeCachedResourceState(input.cacheLayout, state);
 
   return {

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -98,6 +99,68 @@ describe("ensureMdmReleasePackageCached", () => {
       readCachedResourceState(cacheLayout, "core-docs-required")
     ).resolves.toBeUndefined();
   });
+
+  it("rejects SQLite artifacts missing required tables before writing cache state", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-install-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const bytes = await sqliteFixture(async (database) => {
+      database.exec("PRAGMA user_version = 3");
+      database.exec("CREATE TABLE docs_entries(id TEXT PRIMARY KEY)");
+    });
+
+    const result = await ensureMdmReleasePackageCached({
+      manifest: sqliteManifest(bytes, {
+        requiredTables: ["docs_entries", "docs_entries_fts"],
+        minUserVersion: 3
+      }),
+      packageId: "core-docs-sqlite",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async () => okResponse(bytes)
+    });
+
+    expect(result).toMatchObject({
+      status: "invalid_artifact",
+      packageId: "core-docs-sqlite",
+      message: expect.stringContaining("missing required table(s): docs_entries_fts")
+    });
+    await expect(
+      readCachedResourceState(cacheLayout, "core-docs-sqlite")
+    ).resolves.toBeUndefined();
+  });
+
+  it("rejects empty source-index SQLite artifacts before writing cache state", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-install-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const bytes = await sqliteFixture(async (database) => {
+      database.exec("PRAGMA user_version = 3");
+      database.exec("CREATE TABLE files(id TEXT PRIMARY KEY)");
+      database.exec("CREATE TABLE java_symbols(id TEXT PRIMARY KEY)");
+      database.exec("CREATE TABLE java_members(id TEXT PRIMARY KEY)");
+      database.exec("CREATE VIRTUAL TABLE fts_files USING fts5(path)");
+      database.exec("CREATE TABLE source_chunks(chunk_id TEXT PRIMARY KEY)");
+      database.exec("CREATE VIRTUAL TABLE fts_chunks USING fts5(content)");
+    });
+
+    const result = await ensureMdmReleasePackageCached({
+      manifest: sourceIndexManifest(bytes),
+      packageId: "minecraft-1.20.1-source-index",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async () => okResponse(bytes)
+    });
+
+    expect(result).toMatchObject({
+      status: "invalid_artifact",
+      packageId: "minecraft-1.20.1-source-index",
+      message: expect.stringContaining(
+        "source index sqlite must contain indexed files and chunks"
+      )
+    });
+    await expect(
+      readCachedResourceState(cacheLayout, "minecraft-1.20.1-source-index")
+    ).resolves.toBeUndefined();
+  });
 });
 
 function fixtureManifest(body: string): MdmReleaseManifest {
@@ -123,7 +186,78 @@ function fixtureManifest(body: string): MdmReleaseManifest {
   };
 }
 
-function okResponse(body: string): Awaited<ReturnType<MdmArtifactFetch>> {
+function sqliteManifest(
+  body: Buffer,
+  sqlite: { requiredTables: string[]; minUserVersion: number }
+): MdmReleaseManifest {
+  return {
+    source:
+      "https://example.test/releases/download/mdm-resources-v0.1.0/mdm-release-manifest.json",
+    schemaVersion: 1,
+    generatedAt: "2026-04-29T01:05:10.846Z",
+    packages: [
+      {
+        packageId: "core-docs-sqlite",
+        version: "0.1.0",
+        namespace: "core",
+        artifactType: "docs",
+        variant: "docs",
+        required: false,
+        format: "sqlite",
+        artifactName: "core-docs-sqlite-0.1.0.sqlite",
+        sha256: sha256(body),
+        sizeBytes: body.byteLength,
+        metadata: {
+          storageKind: "sqlite_bundle",
+          installTier: "optional_dataset",
+          commitPolicy: "repository_manifest",
+          sqlite: {
+            databaseName: "core-docs-sqlite.sqlite",
+            ...sqlite
+          }
+        }
+      }
+    ]
+  };
+}
+
+function sourceIndexManifest(body: Buffer): MdmReleaseManifest {
+  return {
+    ...sqliteManifest(body, {
+      requiredTables: [
+        "files",
+        "java_symbols",
+        "java_members",
+        "fts_files",
+        "source_chunks",
+        "fts_chunks"
+      ],
+      minUserVersion: 3
+    }),
+    packages: [
+      {
+        ...sqliteManifest(body, {
+          requiredTables: [
+            "files",
+            "java_symbols",
+            "java_members",
+            "fts_files",
+            "source_chunks",
+            "fts_chunks"
+          ],
+          minUserVersion: 3
+        }).packages[0],
+        packageId: "minecraft-1.20.1-source-index",
+        artifactType: "source_index",
+        artifactKind: "source_index",
+        queryAdapter: "source_index_sqlite",
+        artifactName: "minecraft-1.20.1-source-index-0.1.0.sqlite"
+      }
+    ]
+  };
+}
+
+function okResponse(body: string | Buffer): Awaited<ReturnType<MdmArtifactFetch>> {
   return {
     ok: true,
     status: 200,
@@ -131,6 +265,29 @@ function okResponse(body: string): Awaited<ReturnType<MdmArtifactFetch>> {
   };
 }
 
-function sha256(body: string): string {
+function sha256(body: string | Buffer): string {
   return createHash("sha256").update(body).digest("hex");
+}
+
+async function sqliteFixture(
+  writeSchema: (database: TestSqliteDatabase) => void
+): Promise<Buffer> {
+  const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-sqlite-"));
+  const databasePath = join(root, "fixture.sqlite");
+  const { DatabaseSync } = createRequire(import.meta.url)("node:sqlite") as {
+    DatabaseSync: new (path: string) => TestSqliteDatabase;
+  };
+  const database = new DatabaseSync(databasePath);
+  try {
+    writeSchema(database);
+  } finally {
+    database.close();
+  }
+
+  return readFile(databasePath);
+}
+
+interface TestSqliteDatabase {
+  exec(sql: string): void;
+  close(): void;
 }
