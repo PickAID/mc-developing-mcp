@@ -7,7 +7,7 @@ import {
 import type { SourceAcquisitionWorkItem } from "./source-acquisition-hand-off.js";
 
 describe("runSourceAcquisitionWorkItems", () => {
-  it("dispatches jar, vanilla, and remote work items to injected handlers", async () => {
+  it("dispatches jar, vanilla, remote, and mapping work items to injected handlers", async () => {
     const calls: string[] = [];
     const result = await runSourceAcquisitionWorkItems({
       workItems: workItemsFixture(),
@@ -17,15 +17,17 @@ describe("runSourceAcquisitionWorkItems", () => {
     expect(calls).toEqual([
       "jar:/packs/libs/example.jar",
       "vanilla:1.21.1",
-      "remote:modrinth"
+      "remote:modrinth",
+      "mapping:yarn:1.21.1"
     ]);
     expect(result).toMatchObject({
       status: "completed",
-      completedCount: 3,
+      completedCount: 4,
       skippedCount: 0,
       failedCount: 0
     });
     expect(result.executions.map((execution) => execution.status)).toEqual([
+      "completed",
       "completed",
       "completed",
       "completed"
@@ -42,7 +44,7 @@ describe("runSourceAcquisitionWorkItems", () => {
 
     expect(result.status).toBe("partial");
     expect(result.completedCount).toBe(1);
-    expect(result.skippedCount).toBe(2);
+    expect(result.skippedCount).toBe(3);
     expect(result.executions).toEqual([
       expect.objectContaining({
         kind: "jar_index",
@@ -57,6 +59,11 @@ describe("runSourceAcquisitionWorkItems", () => {
       expect.objectContaining({
         kind: "remote_metadata",
         status: "completed"
+      }),
+      expect.objectContaining({
+        kind: "mapping_index",
+        status: "skipped",
+        reason: "handler_unavailable"
       })
     ]);
   });
@@ -102,6 +109,12 @@ function workItemsFixture(): SourceAcquisitionWorkItem[] {
       kind: "remote_metadata",
       source: "modrinth",
       cacheScope: "metadata"
+    },
+    {
+      kind: "mapping_index",
+      minecraftVersion: "1.21.1",
+      mappingFamily: "yarn",
+      cacheScope: "private_runtime"
     }
   ];
 }
@@ -121,6 +134,10 @@ function handlersFixture(
     async remoteMetadata(item) {
       calls.push(`remote:${item.source}`);
       return { summary: "resolved remote metadata" };
+    },
+    async mappingIndex(item) {
+      calls.push(`mapping:${item.mappingFamily}:${item.minecraftVersion}`);
+      return { summary: "indexed mappings" };
     }
   };
 }

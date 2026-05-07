@@ -18,6 +18,12 @@ export type SourceAcquisitionWorkItem =
       kind: "remote_metadata";
       source: Exclude<SourceAcquisitionRemoteSource, "official">;
       cacheScope: "metadata";
+    }
+  | {
+      kind: "mapping_index";
+      minecraftVersion: string;
+      mappingFamily: "yarn" | "parchment" | "mojmap";
+      cacheScope: "private_runtime";
     };
 
 export interface SourceAcquisitionWorkItemInput {

@@ -5,8 +5,8 @@
 Current status: install-smoke, SQLite docs E2E, and generated vanilla
 source/datapack/resourcepack/mapping profile channels are capable. It is not
 yet a full product deliverable because live release acceptance,
-signing/provenance, runtime mapping table acquisition/indexing, loader variants,
-and larger public corpus coverage are still pending.
+signing/provenance, real mapping table providers, loader variants, and larger
+public corpus coverage are still pending.
 
 The public `mdm-sources` repository now has schema validation and initial
 curated package families. It is still an early package source, not a complete
@@ -20,6 +20,12 @@ redistributable packages.
 MCP local cache owns derived/private/generated packages. This includes vanilla
 source generated from official manifests, remapped source trees, jar indexes,
 ProbeJS snapshots, modpack-derived registries, and embeddings.
+
+Runtime mapping indexes are also local/private generated cache. Public mapping
+profiles may describe namespace policy and acquisition routes, but provider
+output such as Yarn/Parchment/Mojmap lookup rows must be materialized under the
+MCP runtime root and never committed into the workspace or public package
+source.
 
 The public repository is therefore a seed and profile repository, not a dump of
 every useful artifact.
@@ -191,6 +197,15 @@ The verified path is:
     `generatedFrom`, namespace graph, lookup policy, upstream licensing notes,
     and runtime cache ownership. They must set `bundlesGeneratedMappings:
     false`, `bundlesRemappedSource: false`, and `localGenerationOnly: true`.
+21. MCP may append a `mapping_index` source acquisition work item when request
+    text has mapping/remap/obfuscation intent and a Minecraft version is known.
+    This work item must use `cacheScope: "private_runtime"`, reject unsafe path
+    segments, validate cached JSONL headers/entries, rebuild corrupt JSONL only
+    through an explicit provider, and propagate non-`ENOENT` filesystem read
+    errors.
+22. Current MCP implementation can materialize provider-supplied mapping entries
+    into runtime JSONL. It does not yet include production Yarn/Parchment/Mojmap
+    download or parsing providers.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -205,6 +220,8 @@ mdm-sources datapack release build: packages 101, first minecraft-1.0-vanilla-da
 mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
 mdm-sources mappings release build: packages 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
+MCP mapping index work item runner: source-package-manager 16 files, 65 tests passed
+MCP runtime mapping index adapter: mcp-server 95 files, 302 tests passed
 ```
 
 ## Non-Deliverable Areas
@@ -218,8 +235,8 @@ The system is not complete until these exist:
   animation, and resource-pack patterns.
 - Loader and mapping-specific source/data/resource profile variants beyond the
   generated vanilla profiles.
-- Runtime mapping table acquisition/indexing adapters for Yarn/Parchment/Mojmap
-  beyond public metadata profiles.
+- Production Yarn/Parchment/Mojmap mapping table acquisition providers behind
+  the runtime-private mapping index adapter.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.

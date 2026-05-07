@@ -15,6 +15,9 @@ export interface SourceAcquisitionWorkItemRunnerHandlers {
   remoteMetadata?: (
     item: Extract<SourceAcquisitionWorkItem, { kind: "remote_metadata" }>
   ) => Promise<SourceAcquisitionWorkItemHandlerResult>;
+  mappingIndex?: (
+    item: Extract<SourceAcquisitionWorkItem, { kind: "mapping_index" }>
+  ) => Promise<SourceAcquisitionWorkItemHandlerResult>;
 }
 
 export type SourceAcquisitionWorkItemExecutionStatus =
@@ -100,6 +103,8 @@ function selectHandler(
       return handlers.vanillaGeneration;
     case "remote_metadata":
       return handlers.remoteMetadata;
+    case "mapping_index":
+      return handlers.mappingIndex;
   }
 }
 

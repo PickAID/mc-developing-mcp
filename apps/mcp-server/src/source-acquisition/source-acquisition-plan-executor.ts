@@ -2,6 +2,7 @@ import {
   buildSourceAcquisitionWorkItems,
   planSourceAcquisition,
   runSourceAcquisitionWorkItems,
+  type SourceAcquisitionWorkItem,
   type SourceAcquisitionWorkItemRunnerHandlers,
   type SourceAcquisitionRoute
 } from "@mcpskill/source-package-manager";
@@ -55,7 +56,7 @@ export async function executeMcpServerSourceAcquisitionPlan(
       paths: routePaths(route, descriptor?.modArchivePaths),
       minecraftVersion
     })
-  );
+  ).concat(mappingIndexWorkItems(requestText, minecraftVersion));
   const workItemResult = options.workItemHandlers
     ? await runSourceAcquisitionWorkItems({
         workItems,
@@ -113,4 +114,41 @@ function inferRemoteSources(
 
 function inferMinecraftVersion(requestText: string): string | undefined {
   return requestText.match(/\b1\.\d{1,2}(?:\.\d+)?\b/)?.[0];
+}
+
+function mappingIndexWorkItems(
+  requestText: string,
+  minecraftVersion?: string
+): SourceAcquisitionWorkItem[] {
+  if (!minecraftVersion || !hasMappingIntent(requestText)) {
+    return [];
+  }
+
+  return [
+    {
+      kind: "mapping_index",
+      minecraftVersion,
+      mappingFamily: inferMappingFamily(requestText),
+      cacheScope: "private_runtime"
+    }
+  ];
+}
+
+function hasMappingIntent(requestText: string): boolean {
+  return /\b(mapping|mappings|mapped|remap|yarn|parchment|mojmap|obfuscated|mixin target)\b|映射|混淆/u.test(
+    requestText.toLowerCase()
+  );
+}
+
+function inferMappingFamily(
+  requestText: string
+): "yarn" | "parchment" | "mojmap" {
+  const normalized = requestText.toLowerCase();
+  if (/\bparchment\b/.test(normalized)) {
+    return "parchment";
+  }
+  if (/\bmojmap\b|\bmojang mappings?\b/.test(normalized)) {
+    return "mojmap";
+  }
+  return "yarn";
 }

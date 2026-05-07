@@ -22,6 +22,10 @@ import {
   hasRequiredConstraints,
   parseExternalModRequest
 } from "../external-mod/resolution/external-mod-resolution-request.js";
+import {
+  executeMcpServerMappingIndexWorkItem,
+  type MappingIndexProvider
+} from "./source-acquisition-mapping-index.js";
 import { executeMcpServerVanillaGenerationWorkItem } from "./source-acquisition-vanilla-generation.js";
 
 export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
@@ -37,6 +41,7 @@ export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
   curseForgeCredentialProvider?: () => string | undefined;
   curseForgeFetch?: ResolveCurseForgeModInput["fetch"];
   curseForgeApiBaseUrl?: string;
+  mappingIndexProvider?: MappingIndexProvider;
 }
 
 export function createMcpServerSourceAcquisitionWorkItemHandlers(
@@ -79,6 +84,25 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
           recipeProvider: options.vanillaRecipeProvider,
           executeRecipe: options.vanillaExecuteRecipe
         }
+      });
+    },
+    mappingIndex: async (item) => {
+      if (!options.runtimeRoot) {
+        return {
+          summary:
+            "Mapping index materialization needs a runtime root for private cache storage.",
+          payload: {
+            source: "source_acquisition_mapping_index",
+            status: "runtime_root_required"
+          }
+        };
+      }
+
+      return await executeMcpServerMappingIndexWorkItem({
+        runtimeRoot: options.runtimeRoot,
+        minecraftVersion: item.minecraftVersion,
+        mappingFamily: item.mappingFamily,
+        provider: options.mappingIndexProvider
       });
     }
   };

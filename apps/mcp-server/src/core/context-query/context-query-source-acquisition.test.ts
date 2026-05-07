@@ -70,9 +70,63 @@ describe("context.query source acquisition plan", () => {
       }
     });
   });
+
+  it("adds mapping index work items for versioned mapping requests", async () => {
+    const executor = buildMcpServerContextQueryExecutor({
+      sourceAcquisitionWorkItemHandlers: {
+        mappingIndex: async (item) => ({
+          summary: `indexed ${item.mappingFamily} ${item.minecraftVersion}`,
+          payload: {
+            source: "test_mapping_index",
+            minecraftVersion: item.minecraftVersion,
+            mappingFamily: item.mappingFamily
+          }
+        })
+      }
+    });
+
+    const result = await executor(
+      inputFixture({
+        requestText: "Need Yarn mappings for Minecraft 1.21.1 mixin target."
+      })
+    );
+
+    expect(result.matched).toBe(true);
+    expect(result.payload).toMatchObject({
+      source: "source_acquisition_plan"
+    });
+    expect((result.payload as { workItems: unknown[] }).workItems).toEqual(
+      expect.arrayContaining([
+        {
+          kind: "mapping_index",
+          minecraftVersion: "1.21.1",
+          mappingFamily: "yarn",
+          cacheScope: "private_runtime"
+        }
+      ])
+    );
+    expect(
+      (result.payload as { workItemExecutions: unknown[] }).workItemExecutions
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "mapping_index",
+          status: "completed",
+          payload: {
+            source: "test_mapping_index",
+            minecraftVersion: "1.21.1",
+            mappingFamily: "yarn"
+          }
+        })
+      ])
+    );
+  });
 });
 
-function inputFixture(): McpServerEvidenceExecutorInput {
+function inputFixture(input: { requestText?: string } = {}): McpServerEvidenceExecutorInput {
+  const requestText =
+    input.requestText ?? "Find source for a NeoForge mod from Modrinth.";
+
   return {
     candidate: {
       id: "candidate-1-source_acquisition_plan",
@@ -85,7 +139,7 @@ function inputFixture(): McpServerEvidenceExecutorInput {
       reliability: "high",
       reason: "Plan source acquisition.",
       pathHints: [],
-      queryHint: "Find source for a NeoForge mod from Modrinth."
+      queryHint: requestText
     },
     evidencePlan: {
       appId: "mcp-server",
@@ -97,14 +151,19 @@ function inputFixture(): McpServerEvidenceExecutorInput {
         fallbackCandidateIds: []
       }
     },
-    requestPlan: requestPlanFixture()
+    requestPlan: requestPlanFixture({ requestText })
   };
 }
 
-function requestPlanFixture(): McpServerEvidenceExecutorInput["requestPlan"] {
+function requestPlanFixture(input: {
+  requestText?: string;
+} = {}): McpServerEvidenceExecutorInput["requestPlan"] {
+  const requestText =
+    input.requestText ?? "Find source for a NeoForge mod from Modrinth.";
+
   return {
     appId: "mcp-server",
-    requestText: "Find source for a NeoForge mod from Modrinth.",
+    requestText,
     requestContext: {},
     toolGuidance: {
       availableTools: ["context.query"],

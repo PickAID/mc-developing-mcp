@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -196,6 +196,90 @@ describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
           }
         }
       });
+    } finally {
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("materializes mapping index work items into runtime-private cache", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mapping-index-"));
+    const runtimeRoot = join(tempRoot, "runtime");
+
+    try {
+      const handlers = createMcpServerSourceAcquisitionWorkItemHandlers({
+        requestText: "Need Yarn mappings for Minecraft 1.21.1.",
+        runtimeRoot,
+        mappingIndexProvider: async (request) => ({
+          provenance: {
+            source: "test-fixture",
+            minecraftVersion: request.minecraftVersion,
+            mappingFamily: request.mappingFamily
+          },
+          entries: [
+            {
+              fromNamespace: "official",
+              toNamespace: "named",
+              fromName: "a",
+              toName: "net.minecraft.world.item.ItemStack",
+              kind: "class"
+            },
+            {
+              fromNamespace: "intermediary",
+              toNamespace: "named",
+              fromName: "method_31574",
+              toName: "getCount",
+              kind: "method",
+              owner: "net.minecraft.world.item.ItemStack",
+              descriptor: "()I"
+            }
+          ]
+        })
+      });
+
+      const workItem: SourceAcquisitionWorkItem = {
+        kind: "mapping_index",
+        minecraftVersion: "1.21.1",
+        mappingFamily: "yarn",
+        cacheScope: "private_runtime"
+      };
+      const first = await runSourceAcquisitionWorkItems({
+        workItems: [workItem],
+        handlers
+      });
+      const second = await runSourceAcquisitionWorkItems({
+        workItems: [workItem],
+        handlers
+      });
+
+      expect(first.executions[0]).toMatchObject({
+        status: "completed",
+        payload: {
+          source: "source_acquisition_mapping_index",
+          status: "ready",
+          minecraftVersion: "1.21.1",
+          mappingFamily: "yarn",
+          entryCount: 2,
+          cache: {
+            hit: false,
+            scope: "private_runtime"
+          }
+        }
+      });
+      expect(second.executions[0]).toMatchObject({
+        status: "completed",
+        payload: {
+          cache: {
+            hit: true
+          }
+        }
+      });
+
+      const indexPath = (first.executions[0].payload as {
+        indexPath: string;
+      }).indexPath;
+      expect(await readFile(indexPath, "utf-8")).toContain(
+        "net.minecraft.world.item.ItemStack"
+      );
     } finally {
       await rm(tempRoot, { recursive: true, force: true });
     }
