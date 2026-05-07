@@ -2,8 +2,10 @@
 
 ## Status
 
-Current status: install-smoke and SQLite docs E2E capable, not full product
-deliverable.
+Current status: install-smoke, SQLite docs E2E, and generated vanilla
+source/datapack/resourcepack profile channels are capable. It is not yet a full
+product deliverable because live release acceptance, signing/provenance, mapping
+variants, loader variants, and larger public corpus coverage are still pending.
 
 The public `mdm-sources` repository now has schema validation and initial
 curated package families. It is still an early package source, not a complete
@@ -115,6 +117,9 @@ A package cannot be considered release-ready unless:
 - MCP can preserve package release channel, family, and capability metadata
   through local registry status so recommendations do not depend only on package
   id strings.
+- Generated public profile payloads must state whether they bundle exact content
+  or only describe runtime-local acquisition/resolution. Vanilla source,
+  datapack, and resourcepack generated profiles must remain metadata-only.
 
 ## Current Evidence
 
@@ -161,10 +166,35 @@ The verified path is:
     lookup, mapping-migration, datapack, and resourcepack requests without
     auto-installing or generating private artifacts. Request text versions take
     priority; otherwise MCP uses detected workspace runtime version evidence.
+16. Generate public `datapack` channel profiles from the official `releases[]`
+    list. Current producer verification generates 101 packages and 101 local
+    release artifacts, from `minecraft-1.0-vanilla-datapack-profile` through
+    `minecraft-26.1-vanilla-datapack-profile`.
+17. Generate public `resourcepack` channel profiles from the official
+    `releases[]` list. Current producer verification generates 101 packages and
+    101 local release artifacts, from
+    `minecraft-1.0-vanilla-resourcepack-profile` through
+    `minecraft-26.1-vanilla-resourcepack-profile`.
+18. Datapack/resourcepack payloads must include `schemaVersion`, `profileKind`,
+    `generatedFrom`, `target`, `packMcmeta.packFormatSource:
+    "runtime_resolved"`, roots, trace rules, distribution policy, licensing
+    notes, and runtime cache ownership. Exact pack formats and generated archive
+    indexes are resolved from local jars/version metadata by MCP runtime, not
+    hard-coded as public corpus truth.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
 `--no-registry-update` CI builds that do not mutate tracked registry metadata.
+
+Latest producer-side verification for this slice:
+
+```text
+mdm-sources node --test tests/*.test.mjs: 24 passed
+mdm-sources node tools/validate.mjs: packageCount 311, errorCount 0
+mdm-sources datapack release build: packages 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
+mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
+mdm-sources file size guard: no source/test tool file exceeds 500 lines
+```
 
 ## Non-Deliverable Areas
 
@@ -175,8 +205,8 @@ The system is not complete until these exist:
   `global`, ProbeJS, and scope-specific rules.
 - Deeper client visual package coverage for UI, rendering, shader, model, atlas,
   animation, and resource-pack patterns.
-- Loader and mapping-specific source profile variants beyond the generated
-  vanilla profiles.
+- Loader and mapping-specific source/data/resource profile variants beyond the
+  generated vanilla profiles.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.
