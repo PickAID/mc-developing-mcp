@@ -1,4 +1,8 @@
 import {
+  querySourceIndex,
+  type SourceIndexMatch
+} from "@mcpskill/source-index";
+import {
   buildSourceAcquisitionWorkItems,
   planSourceAcquisition,
   runSourceAcquisitionWorkItems,
@@ -64,6 +68,10 @@ export async function executeMcpServerSourceAcquisitionPlan(
         handlers: options.workItemHandlers
       })
     : undefined;
+  const sourceIndexPreview = buildSourceIndexPreview({
+    requestText,
+    databasePaths: options.sourceIndexDatabasePaths ?? []
+  });
 
   return {
     matched: true,
@@ -82,6 +90,7 @@ export async function executeMcpServerSourceAcquisitionPlan(
         databaseCount: options.sourceIndexDatabasePaths?.length ?? 0,
         databases: options.sourceIndexDatabasePaths ?? []
       },
+      ...(sourceIndexPreview ? { sourceIndexPreview } : {}),
       workItemExecutionStatus: workItemResult?.status,
       workItemExecutions: workItemResult?.executions
     }
@@ -93,6 +102,100 @@ function routePaths(
   localJarPaths?: string[]
 ): string[] | undefined {
   return route.origin === "local_jar" ? localJarPaths : undefined;
+}
+
+function buildSourceIndexPreview(input: {
+  requestText: string;
+  databasePaths: string[];
+}): SourceIndexPreview | undefined {
+  const query = inferSourceIndexQuery(input.requestText);
+  if (!query || input.databasePaths.length === 0) {
+    return undefined;
+  }
+
+  const matches: SourceIndexPreviewMatch[] = [];
+  const warnings: string[] = [];
+  let searchedDatabaseCount = 0;
+  for (const databasePath of input.databasePaths.slice(0, 3)) {
+    searchedDatabaseCount += 1;
+    const result = safeQuerySourceIndex(databasePath, query);
+    if (!result) {
+      warnings.push(`Skipped unreadable source index ${databasePath}.`);
+      continue;
+    }
+    for (const match of result.matches) {
+      matches.push(toPreviewMatch(databasePath, match));
+      if (matches.length >= 5) {
+        return {
+          query,
+          searchedDatabaseCount,
+          matches,
+          warnings: optionalWarnings(warnings)
+        };
+      }
+    }
+  }
+
+  return {
+    query,
+    searchedDatabaseCount,
+    matches,
+    warnings: optionalWarnings(warnings)
+  };
+}
+
+function safeQuerySourceIndex(
+  databasePath: string,
+  query: string
+): ReturnType<typeof querySourceIndex> | undefined {
+  try {
+    return querySourceIndex({
+      databasePath,
+      ...querySourceIndexInput(query),
+      limit: 3
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+function querySourceIndexInput(query: string) {
+  if (query.includes("/")) {
+    return { pathLike: query.endsWith(".java") ? query : `${query}.java` };
+  }
+  if (/^(?:[a-z_][\w]*\.)+[A-Z_]\w*(?:\.[A-Z_]\w*)?$/u.test(query)) {
+    return { symbol: query };
+  }
+  if (/^[A-Z_]\w*$/u.test(query)) {
+    return { symbol: query };
+  }
+  return { text: query };
+}
+
+function inferSourceIndexQuery(requestText: string): string | undefined {
+  return (
+    requestText.match(/\bnet\.minecraft(?:\.[A-Za-z_][A-Za-z0-9_]*)+\b/u)?.[0] ??
+    requestText.match(/\bnet\/minecraft(?:\/[A-Za-z0-9_]+)+(?:\.java)?\b/u)?.[0]
+  );
+}
+
+function toPreviewMatch(
+  databasePath: string,
+  match: SourceIndexMatch
+): SourceIndexPreviewMatch {
+  return {
+    databasePath,
+    path: match.path,
+    kind: match.kind,
+    packageId: match.packageId,
+    qualifiedName: match.qualifiedName,
+    memberName: match.memberName,
+    memberKind: match.memberKind,
+    startLine: match.startLine,
+    endLine: match.endLine,
+    chunkId: match.chunkId,
+    matchReasons: match.matchReasons
+  };
 }
 
 function inferRemoteSources(
@@ -115,6 +218,31 @@ function inferRemoteSources(
   }
 
   return sources.length > 0 ? sources : ["official", "modrinth", "curseforge"];
+}
+
+interface SourceIndexPreview {
+  query?: string;
+  searchedDatabaseCount: number;
+  matches: SourceIndexPreviewMatch[];
+  warnings?: string[];
+}
+
+interface SourceIndexPreviewMatch {
+  databasePath: string;
+  path: string;
+  kind: SourceIndexMatch["kind"];
+  packageId?: string;
+  qualifiedName?: string;
+  memberName?: string;
+  memberKind?: SourceIndexMatch["memberKind"];
+  startLine?: number;
+  endLine?: number;
+  chunkId?: string;
+  matchReasons?: string[];
+}
+
+function optionalWarnings(warnings: string[]): string[] | undefined {
+  return warnings.length > 0 ? warnings : undefined;
 }
 
 function inferMinecraftVersion(requestText: string): string | undefined {

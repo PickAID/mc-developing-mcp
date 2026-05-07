@@ -1,5 +1,10 @@
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
+import { buildSourceIndex } from "@mcpskill/source-index";
 import { buildMcpServerContextQueryExecutor } from "./context-query-executor.js";
 import type { McpServerEvidenceExecutorInput } from "../../request/execution/request-handler.js";
 
@@ -139,6 +144,85 @@ describe("context.query source acquisition plan", () => {
           databaseCount: 1,
           databases: [
             "/runtime/artifacts/minecraft-1.20.1-source-index-0.1.0.sqlite"
+          ]
+        }
+      }
+    });
+  });
+
+  it("previews lightweight source index hits for source acquisition requests", async () => {
+    const sourceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-plan-src-"));
+    const databasePath = join(sourceRoot, "source-index.sqlite");
+
+    await mkdir(join(sourceRoot, "net", "minecraft", "world", "item"), {
+      recursive: true
+    });
+    await writeFile(
+      join(sourceRoot, "net", "minecraft", "world", "item", "ItemStack.java"),
+      [
+        "package net.minecraft.world.item;",
+        "public class ItemStack {",
+        "  public ItemStack copy() { return this; }",
+        "}"
+      ].join("\n")
+    );
+    await buildSourceIndex({
+      sourceRoot,
+      databasePath,
+      packageId: "minecraft-1.20.1-source-index"
+    });
+
+    const executor = buildMcpServerContextQueryExecutor({
+      sourceIndexDatabasePaths: [databasePath]
+    });
+
+    const result = await executor(
+      inputFixture({
+        requestText: "Need source for net.minecraft.world.item.ItemStack copy method."
+      })
+    );
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "source_acquisition_plan",
+        sourceIndexPreview: {
+          query: "net.minecraft.world.item.ItemStack",
+          searchedDatabaseCount: 1,
+          matches: [
+            {
+              databasePath,
+              path: "net/minecraft/world/item/ItemStack.java",
+              qualifiedName: "net.minecraft.world.item.ItemStack",
+              matchReasons: expect.arrayContaining(["symbol"])
+            }
+          ]
+        }
+      }
+    });
+  });
+
+  it("keeps source acquisition planning available when a source index is unreadable", async () => {
+    const executor = buildMcpServerContextQueryExecutor({
+      sourceIndexDatabasePaths: ["/missing/source-index.sqlite"]
+    });
+
+    const result = await executor(
+      inputFixture({
+        requestText: "Need source for net.minecraft.world.item.ItemStack."
+      })
+    );
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "source_acquisition_plan",
+        sourceIndexPreview: {
+          query: "net.minecraft.world.item.ItemStack",
+          searchedDatabaseCount: 1,
+          matches: [],
+          warnings: [
+            "Skipped unreadable source index /missing/source-index.sqlite."
           ]
         }
       }

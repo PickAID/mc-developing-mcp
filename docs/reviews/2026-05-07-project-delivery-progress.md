@@ -57,6 +57,10 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - MDM package recommendations now recognize `source_index_sqlite`,
   `source_index`, `source_lookup`, and `source_chunk_search` as source signals,
   and version-match `minecraft-<version>-source-index` packages.
+- `source_acquisition_plan` now includes a lightweight `sourceIndexPreview`
+  when cached source indexes are available and a stable Java FQCN/path can be
+  extracted. The preview returns metadata, paths, line ranges, chunk ids, and
+  match reasons only; it intentionally does not return source/chunk content.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -273,13 +277,14 @@ MCP source.bundle MDM source-index chunks: initial red test returned installed_b
 MCP service-profile/source-acquisition source-index awareness: red tests first showed explicit MDM source-index paths were ignored by service-profile and absent from source_acquisition_plan payload; service-profile profile.test.ts passed 3 tests, context-query-source-acquisition.test.ts passed 4 tests, mcp-server and service-profile TypeScript builds passed
 MCP resource status source-index metadata guard: resource-registry status.test.ts now confirms ready source_index_sqlite packages preserve artifactType/artifactKind/queryAdapter/artifactPath/capabilities; resource-registry package tests passed 8 files / 34 tests, focused cross-package source-index tests passed 6 files / 19 tests
 MCP shared source-index chunk reader and recommendations: red test first showed readIndexedSourceChunk was not exported by @mcpskill/source-index; source-index indexer.test.ts passed 7 tests, vanilla-source-adapter resolve.test.ts passed 8 tests, source.bundle MDM source-index test passed, source-index recommendation focused tests passed 5 files / 25 tests, and source-index/vanilla-adapter/mcp-server TypeScript builds passed
+MCP source acquisition source-index preview: red test first showed source_acquisition_plan only reported cached database paths; now it previews lightweight source-index matches for stable FQCN/path requests and skips unreadable SQLite indexes with warnings; context-query-source-acquisition.test.ts passed 6 tests, focused source-index/source-bundle/context-query suite passed 3 files / 14 tests, and mcp-server TypeScript build passed
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 98.8%.
+- MCP core capability: 98.9%.
 - MDM resource/package delivery: 95.5%.
-- Overall project deliverability: 95.8%.
+- Overall project deliverability: 95.9%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
