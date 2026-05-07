@@ -104,6 +104,11 @@ Implemented:
 - Real SQLite docs artifact generation from normalized JSON input.
 - SQLite docs artifacts declare `storageKind: "sqlite_bundle"`, required tables,
   and minimum `user_version`.
+- Real SQLite source-index artifact generation from normalized JSON input is now
+  supported on the `mdm-sources` producer side. `source_index` packages use
+  `artifactType: "source_index"`, `artifactKind: "source_index"`, and
+  `queryAdapter: "source_index_sqlite"` in release manifests, and the install
+  verifier checks `source_files` plus `source_files_fts`.
 - Release builder cleans stale output before writing `release-out`.
 - Release workflow builds with `--no-registry-update` so CI publishing does not
   rewrite tracked registry metadata.
@@ -165,6 +170,10 @@ Not done:
 - Loader-specific and mapping-specific source profile variants beyond vanilla
   source profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
+- MCP consumer-side explicit `source_index_sqlite` routing. The producer can now
+  create and verify source-index SQLite artifacts, but MCP still needs a
+  dedicated source-index artifact lane instead of treating all MDM SQLite
+  bundles as docs or relying on recursive filename discovery.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
 
@@ -183,7 +192,7 @@ Recent verification records:
 Current fresh checks from this slice:
 
 ```text
-mdm-sources node --test tests/*.test.mjs: 32 passed
+mdm-sources node --test tests/*.test.mjs: 35 passed
 mdm-sources node tools/validate.mjs: packageCount 411, errorCount 0
 mdm-sources build --no-registry-update: cleaned stale output and did not mutate registry
 mdm-sources release schema verifier: packageCount 411, errorCount 0
@@ -191,6 +200,7 @@ mdm-sources release summary: manifest packageCount 411, artifactCount 411, total
 mdm-sources release install verifier: verifiedCount 411/411, first core-docs-required, sqlite core-docs-search-sqlite sizeBytes 32768, last minecraft-26.1-vanilla-source-profile
 mdm-sources release upload list: 413 files, including mdm-release-manifest.json, mdm-release-summary.json, and 411 manifest-declared artifacts
 mdm-sources SQLite artifact: userVersion 3, docs_entries 5, docs_entries_fts 5
+mdm-sources source-index SQLite artifact fixture: artifactName minecraft-1.20.1-source-index-0.1.0.sqlite, artifactType source_index, artifactKind source_index, queryAdapter source_index_sqlite, requiredTables source_files/source_files_fts
 mdm-sources sources profile: packageCount 115, sources artifacts 101, sync tools tested, full tests 24 passed
 mdm-sources datapack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-datapack-profile, last minecraft-26.1-vanilla-datapack-profile
 mdm-sources resourcepack profiles: generated packages 101, release artifacts 101, first minecraft-1.0-vanilla-resourcepack-profile, last minecraft-26.1-vanilla-resourcepack-profile
