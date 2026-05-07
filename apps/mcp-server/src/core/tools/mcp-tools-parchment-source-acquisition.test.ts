@@ -14,36 +14,33 @@ afterEach(async () => {
   );
 });
 
-describe("mc_develop Mojmap source acquisition acceptance", () => {
-  it("materializes Mojmap mappings from a configured Mojang manifest", async () => {
+describe("mc_develop Parchment source acquisition acceptance", () => {
+  it("materializes Parchment mappings from configured Maven metadata", async () => {
     const registry = createCapturingRegistry();
     const fetchedUrls: string[] = [];
 
     registerMcpServerTools(registry, {
       env: {
         MCPSKILL_YARN_MAPPING_URL_TEMPLATE: "https://maven.test/yarn/{version}",
-        MCPSKILL_MOJANG_VERSION_MANIFEST_URL:
-          "https://piston-meta.test/version_manifest_v2.json"
+        MCPSKILL_PARCHMENT_MAVEN_BASE_URL: "https://maven.parchmentmc.test"
       },
       mappingIndexFetch: async (url) => {
         fetchedUrls.push(url.toString());
-        return mojmapResponse(url);
+        return parchmentResponse(url);
       }
     });
 
     const result = await registry.calls[0].handler({
       requestText:
-        "Find source for a NeoForge mod from Modrinth and Mojang mappings mojmap for Minecraft 1.21.1 obfuscated ItemStack mixin target.",
-      runtimeRoot: await createTempRoot("mcpskill-mojmap-runtime-"),
+        "Find source for a NeoForge mod from Modrinth and Parchment mappings for Minecraft 1.21.1 ItemStack parameter names.",
+      runtimeRoot: await createTempRoot("mcpskill-parchment-runtime-"),
       workspaceRoot: await createEmptyWorkspace()
     });
 
     expect(result.isError).toBeUndefined();
     expect(fetchedUrls).toEqual([
-      "https://piston-meta.test/version_manifest_v2.json",
-      "https://piston-meta.test/v1/packages/abc/1.21.1.json",
-      "https://piston-data.test/client.txt",
-      "https://piston-data.test/server.txt"
+      "https://maven.parchmentmc.test/org/parchmentmc/data/parchment-1.21.1/maven-metadata.xml",
+      "https://maven.parchmentmc.test/org/parchmentmc/data/parchment-1.21.1/2024.11.17/parchment-1.21.1-2024.11.17.zip"
     ]);
     expect(result.structuredContent).toMatchObject({
       executions: expect.arrayContaining([
@@ -55,12 +52,11 @@ describe("mc_develop Mojmap source acquisition acceptance", () => {
                 kind: "mapping_index",
                 payload: expect.objectContaining({
                   status: "ready",
-                  mappingFamily: "mojmap",
-                  entryCount: 4,
+                  mappingFamily: "parchment",
+                  entryCount: 2,
                   provenance: expect.objectContaining({
-                    format: "proguard",
-                    fromNamespace: "official",
-                    toNamespace: "mojmap"
+                    format: "parchment_json",
+                    parchmentVersion: "2024.11.17"
                   })
                 })
               })
@@ -71,7 +67,7 @@ describe("mc_develop Mojmap source acquisition acceptance", () => {
     });
   });
 
-  it("does not fetch Mojmap mappings when no Mojang provider is configured", async () => {
+  it("does not fetch Parchment mappings when no Parchment provider is configured", async () => {
     const registry = createCapturingRegistry();
     const fetchedUrls: string[] = [];
 
@@ -90,8 +86,8 @@ describe("mc_develop Mojmap source acquisition acceptance", () => {
 
     const result = await registry.calls[0].handler({
       requestText:
-        "Find source for a NeoForge mod from Modrinth and Mojang mappings mojmap for Minecraft 1.21.1 obfuscated ItemStack mixin target.",
-      runtimeRoot: await createTempRoot("mcpskill-mojmap-disabled-runtime-"),
+        "Find source for a NeoForge mod from Modrinth and Parchment mappings for Minecraft 1.21.1 ItemStack parameter names.",
+      runtimeRoot: await createTempRoot("mcpskill-parchment-disabled-runtime-"),
       workspaceRoot: await createEmptyWorkspace()
     });
 
@@ -107,7 +103,7 @@ describe("mc_develop Mojmap source acquisition acceptance", () => {
                 kind: "mapping_index",
                 payload: expect.objectContaining({
                   status: "provider_required",
-                  mappingFamily: "mojmap"
+                  mappingFamily: "parchment"
                 })
               })
             ])
@@ -118,41 +114,34 @@ describe("mc_develop Mojmap source acquisition acceptance", () => {
   });
 });
 
-function mojmapResponse(url: URL): Response {
-  if (url.pathname.endsWith("version_manifest_v2.json")) {
-    return jsonResponse({
-      versions: [
-        {
-          id: "1.21.1",
-          url: "https://piston-meta.test/v1/packages/abc/1.21.1.json"
-        }
-      ]
-    });
-  }
-  if (url.pathname.endsWith("1.21.1.json")) {
-    return jsonResponse({
-      downloads: {
-        client_mappings: { url: "https://piston-data.test/client.txt" },
-        server_mappings: { url: "https://piston-data.test/server.txt" }
-      }
-    });
+function parchmentResponse(url: URL): Response {
+  if (url.pathname.endsWith("/maven-metadata.xml")) {
+    return new Response(
+      "<metadata><versioning><release>2024.11.17</release></versioning></metadata>",
+      { status: 200 }
+    );
   }
 
   return new Response(
-    "net.minecraft.world.item.ItemStack -> cxo:\n    int count -> b\n",
+    createZipWithContents([
+      {
+        name: "parchment.json",
+        content: JSON.stringify({
+          classes: [
+            {
+              name: "net/minecraft/world/item/ItemStack",
+              methods: [{ name: "getCount", descriptor: "()I" }]
+            }
+          ]
+        })
+      }
+    ]),
     { status: 200 }
   );
 }
 
-function jsonResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    status: 200,
-    headers: { "content-type": "application/json" }
-  });
-}
-
 async function createEmptyWorkspace(): Promise<string> {
-  const root = await createTempRoot("mcpskill-mojmap-empty-");
+  const root = await createTempRoot("mcpskill-parchment-empty-");
   await mkdir(root, { recursive: true });
   return root;
 }
@@ -171,6 +160,48 @@ function createCapturingRegistry(): CapturingRegistry {
       calls.push({ name, handler });
     }
   };
+}
+
+function createZipWithContents(entries: Array<{ name: string; content: string }>): Buffer {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let localOffset = 0;
+
+  for (const entry of entries) {
+    const name = Buffer.from(entry.name);
+    const content = Buffer.from(entry.content);
+    const localHeader = Buffer.alloc(30);
+    const centralHeader = Buffer.alloc(46);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt32LE(content.length, 18);
+    localHeader.writeUInt32LE(content.length, 22);
+    localHeader.writeUInt16LE(name.length, 26);
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt32LE(content.length, 20);
+    centralHeader.writeUInt32LE(content.length, 24);
+    centralHeader.writeUInt16LE(name.length, 28);
+    centralHeader.writeUInt32LE(localOffset, 42);
+
+    localParts.push(localHeader, name, content);
+    centralParts.push(centralHeader, name);
+    localOffset += localHeader.length + name.length + content.length;
+  }
+
+  const centralDirectory = Buffer.concat(centralParts);
+  const localFiles = Buffer.concat(localParts);
+  const eocd = Buffer.alloc(22);
+
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(centralDirectory.length, 12);
+  eocd.writeUInt32LE(localFiles.length, 16);
+
+  return Buffer.concat([localFiles, centralDirectory, eocd]);
 }
 
 interface CapturingRegistry {

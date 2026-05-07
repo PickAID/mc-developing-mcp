@@ -305,7 +305,8 @@ describe("mc_develop source acquisition acceptance", () => {
       env: {
         MCPSKILL_YARN_MAPPING_URL_TEMPLATE: undefined,
         MCPSKILL_YARN_MAVEN_BASE_URL: undefined,
-        MCPSKILL_MOJANG_VERSION_MANIFEST_URL: undefined
+        MCPSKILL_MOJANG_VERSION_MANIFEST_URL: undefined,
+        MCPSKILL_PARCHMENT_MAVEN_BASE_URL: undefined
       },
       mappingIndexFetch: async (url) => {
         fetchedUrls.push(url.toString());

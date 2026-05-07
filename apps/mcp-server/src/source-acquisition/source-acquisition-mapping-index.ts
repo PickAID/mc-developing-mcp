@@ -11,6 +11,12 @@ export interface MappingIndexEntry {
   kind: "class" | "field" | "method";
   owner?: string;
   descriptor?: string;
+  javadoc?: string[];
+  parameters?: Array<{
+    index: number;
+    name: string;
+    javadoc?: string;
+  }>;
 }
 
 export interface MappingIndexProviderRequest {
@@ -256,7 +262,28 @@ function isMappingEntryRecord(value: unknown): value is {
     "kind" in value &&
     (value.kind === "class" || value.kind === "field" || value.kind === "method") &&
     (!("owner" in value) || typeof value.owner === "string") &&
-    (!("descriptor" in value) || typeof value.descriptor === "string")
+    (!("descriptor" in value) || typeof value.descriptor === "string") &&
+    (!("javadoc" in value) ||
+      (Array.isArray(value.javadoc) &&
+        value.javadoc.every((line) => typeof line === "string"))) &&
+    (!("parameters" in value) ||
+      (Array.isArray(value.parameters) && value.parameters.every(isParameterEntry)))
+  );
+}
+
+function isParameterEntry(value: unknown): value is {
+  index: number;
+  name: string;
+  javadoc?: string;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "index" in value &&
+    Number.isInteger(value.index) &&
+    "name" in value &&
+    typeof value.name === "string" &&
+    (!("javadoc" in value) || typeof value.javadoc === "string")
   );
 }
 

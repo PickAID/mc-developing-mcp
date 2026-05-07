@@ -42,11 +42,7 @@ import {
 } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
 import type { MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-index.js";
-import {
-  createTinyV2MappingIndexProvider,
-  createYarnMavenTinyV2MappingIndexProvider
-} from "../../source-acquisition/source-acquisition-mapping-provider.js";
-import { createMojangManifestMappingIndexProvider } from "../../source-acquisition/source-acquisition-mojmap-provider.js";
+import { resolveMappingIndexProvider } from "./mcp-tools-mapping-provider.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -235,7 +231,10 @@ async function executeMcpDevelopTool(
             requestText: input.requestText,
             runtimeRoot,
             remoteMetadataPolicy: "disabled",
-            mappingIndexProvider: resolveMappingIndexProvider(options, env)
+            mappingIndexProvider: resolveMappingIndexProvider({
+              options,
+              env
+            })
           })
       }
     });
@@ -290,86 +289,6 @@ function resolveToolEnv(options: McpToolRuntimeOptions): NodeJS.ProcessEnv {
     ...process.env,
     ...options.env
   };
-}
-
-function resolveMappingIndexProvider(
-  options: McpToolRuntimeOptions,
-  env: NodeJS.ProcessEnv
-): MappingIndexProvider | undefined {
-  if (options.mappingIndexProvider) {
-    return options.mappingIndexProvider;
-  }
-
-  const yarnTemplate = env.MCPSKILL_YARN_MAPPING_URL_TEMPLATE;
-  let yarnProvider: MappingIndexProvider | undefined;
-  if (yarnTemplate) {
-    yarnProvider = createTinyV2MappingIndexProvider({
-      fetch: options.mappingIndexFetch,
-      resolveUrl: (request) =>
-        request.mappingFamily === "yarn"
-          ? expandMappingUrlTemplate(yarnTemplate, request)
-          : undefined
-    });
-  }
-
-  const yarnMavenBaseUrl = env.MCPSKILL_YARN_MAVEN_BASE_URL;
-  if (!yarnProvider && yarnMavenBaseUrl) {
-    yarnProvider = createYarnMavenTinyV2MappingIndexProvider({
-      fetch: options.mappingIndexFetch,
-      mavenBaseUrl: yarnMavenBaseUrl
-    });
-  }
-
-  const mojangManifestUrl = env.MCPSKILL_MOJANG_VERSION_MANIFEST_URL;
-  const mojmapProvider = mojangManifestUrl
-    ? createMojangManifestMappingIndexProvider({
-        fetch: options.mappingIndexFetch,
-        versionManifestUrl: mojangManifestUrl
-      })
-    : undefined;
-  if (!yarnProvider && !mojmapProvider) {
-    return undefined;
-  }
-
-  return async (request) => {
-    if (request.mappingFamily === "yarn") {
-      return yarnProvider
-        ? yarnProvider(request)
-        : unavailableConfiguredMappingProvider(request);
-    }
-    if (request.mappingFamily === "mojmap") {
-      return mojmapProvider
-        ? mojmapProvider(request)
-        : unavailableConfiguredMappingProvider(request);
-    }
-
-    return unavailableConfiguredMappingProvider(request);
-  };
-}
-
-function unavailableConfiguredMappingProvider(request: {
-  minecraftVersion: string;
-  mappingFamily: string;
-}): ReturnType<MappingIndexProvider> {
-  return Promise.resolve({
-    provenance: {
-      status: "mapping_family_unavailable",
-      minecraftVersion: request.minecraftVersion,
-      mappingFamily: request.mappingFamily
-    },
-    cacheable: false,
-    entries: []
-  });
-}
-
-function expandMappingUrlTemplate(
-  template: string,
-  request: { minecraftVersion: string; mappingFamily: string }
-): string {
-  return template
-    .replaceAll("{version}", encodeURIComponent(request.minecraftVersion))
-    .replaceAll("{minecraftVersion}", encodeURIComponent(request.minecraftVersion))
-    .replaceAll("{family}", encodeURIComponent(request.mappingFamily));
 }
 
 function resolveRuntimeRoot(
