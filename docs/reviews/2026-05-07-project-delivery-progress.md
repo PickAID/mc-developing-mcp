@@ -11,10 +11,10 @@ evidence, datapack/resourcepack evidence, MDM resource install/status, SQLite
 docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
-broader package corpus coverage, loader-specific variants, and final UX polish.
-The release producer is now hardened enough to verify local release
-installability before upload; the remaining live-release gap is the actual
-public GitHub Release acceptance run.
+broader package corpus coverage, source-index schema alignment,
+loader-specific variants, and final UX polish. The release producer is now
+hardened enough to verify local release installability before upload; the
+remaining live-release gap is the actual public GitHub Release acceptance run.
 
 ## Current Capabilities
 
@@ -31,6 +31,10 @@ public GitHub Release acceptance run.
   `downloadPolicy: "allowed"` is explicitly supplied.
 - SQLite docs artifacts can be installed, marked ready, searched through
   `docs_lookup`, and returned as `source: "sqlite"` evidence.
+- MDM release metadata now preserves `artifactType`, `artifactKind`, and
+  `queryAdapter` through registry, status, and v2 manifest conversion. Installed
+  `source_index_sqlite` artifacts are routed into a dedicated source-index lane
+  and excluded from docs SQLite lookup.
 - GitHub Release shaped remote `manifestUrl` installs are covered with injected
   fetchers, real `mdm-sources` SQLite artifact bytes, checksum verification, and
   docs lookup.
@@ -109,6 +113,12 @@ Implemented:
   `artifactType: "source_index"`, `artifactKind: "source_index"`, and
   `queryAdapter: "source_index_sqlite"` in release manifests, and the install
   verifier checks `source_files` plus `source_files_fts`.
+- Important current limitation: the producer source-index SQLite schema uses
+  `source_files` and `source_files_fts`, while the MCP runtime
+  `@mcpskill/source-index` query engine currently expects `files`,
+  `java_symbols`, `java_members`, `source_chunks`, and `fts_chunks`. This means
+  the current MCP slice can classify and route those artifacts safely, but real
+  source querying requires the next schema-alignment slice.
 - Release builder cleans stale output before writing `release-out`.
 - Release workflow builds with `--no-registry-update` so CI publishing does not
   rewrite tracked registry metadata.
@@ -170,10 +180,10 @@ Not done:
 - Loader-specific and mapping-specific source profile variants beyond vanilla
   source profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
-- MCP consumer-side explicit `source_index_sqlite` routing. The producer can now
-  create and verify source-index SQLite artifacts, but MCP still needs a
-  dedicated source-index artifact lane instead of treating all MDM SQLite
-  bundles as docs or relying on recursive filename discovery.
+- Producer/consumer source-index SQLite schema alignment. MCP now has the
+  dedicated source-index artifact lane, but the producer artifact schema still
+  needs to match the runtime `@mcpskill/source-index` schema before real symbol
+  and source chunk queries are enabled.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
 
@@ -222,17 +232,21 @@ MCP Yarn Maven metadata resolver: selected highest matching Yarn build, fetched 
 MCP Mojmap manifest resolver: parsed ProGuard mappings, followed configured Mojang version manifest to client/server mapping artifacts, confirmed Mojmap requests do not use Yarn provider env, and confirmed no default Mojang fetch without env; mcp-server 98 files / 322 tests passed for focused acceptance run
 MCP Parchment Maven resolver: selected release metadata, fetched parchment zip, parsed parchment.json as mojmap-to-parchment enrichment entries with javadocs/parameters, and confirmed no default Parchment fetch without env; mcp-server 100 files / 328 tests passed for focused acceptance run
 MCP v2 guidance docs synthesis: docs-retrieval package 15 tests passed; installed client-visual guidance artifact was cached and hit through mc_develop docs_lookup; real artifact search matched dynamic texture reload cleanup, nine slice metadata, and shader sampler render target; mcp-server 100 files / 329 tests passed for focused acceptance run
+MCP source-index artifact routing: resource-registry 8 files / 33 tests passed; mcp-server 100 files / 330 tests passed; source_index_sqlite artifacts preserve artifactType/artifactKind/queryAdapter, convert to v2 source_index/source_index_sqlite, and are excluded from docs SQLite lookup
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 98%.
-- MDM resource/package delivery: 93-94%.
-- Overall project deliverability: 94-95%.
+- MDM resource/package delivery: 94%.
+- Overall project deliverability: 95%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
 
+- Align producer source-index SQLite output with `@mcpskill/source-index`, or
+  add a compatibility reader with explicit degraded behavior for metadata-only
+  indexes.
 - Run live GitHub Release acceptance once a release exists.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially loader-specific and API-specific guidance packages.

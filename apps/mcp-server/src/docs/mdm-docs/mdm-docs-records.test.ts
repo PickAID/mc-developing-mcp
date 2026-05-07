@@ -177,6 +177,70 @@ describe("loadMdmDocsResourcesFromStatus", () => {
       errors: []
     });
   });
+
+  it("routes source index sqlite artifacts away from docs lookup", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-docs-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const sqlitePath = join(
+      cacheLayout.artifactsDir,
+      "minecraft-1.20.1-source-index",
+      "minecraft-1.20.1-source-index-0.1.0.sqlite"
+    );
+
+    await mkdir(join(cacheLayout.artifactsDir, "minecraft-1.20.1-source-index"), {
+      recursive: true
+    });
+    createDocsSqliteArtifact(sqlitePath);
+    await writeCachedResourceState(
+      cacheLayout,
+      state(
+        "minecraft-1.20.1-source-index",
+        sqlitePath,
+        await readBinaryBody(sqlitePath)
+      )
+    );
+
+    const result = await loadMdmDocsResourcesFromStatus({
+      status: "available",
+      cacheRoot: cacheLayout.root,
+      summary: {
+        packages: [
+          {
+            packageId: "minecraft-1.20.1-source-index",
+            required: false,
+            status: "ready",
+            artifactPath: sqlitePath,
+            message: "ready",
+            queryAdapter: "source_index_sqlite",
+            metadata: {
+              storageKind: "sqlite_bundle",
+              installTier: "runtime_or_optional_dataset",
+              commitPolicy: "repository_manifest",
+              sqlite: {
+                requiredTables: ["files", "java_symbols", "java_members"]
+              }
+            }
+          }
+        ],
+        counts: {
+          missing_required: 0,
+          missing_optional: 0,
+          ready: 1,
+          invalid_checksum: 0
+        }
+      },
+      message: "loaded"
+    } satisfies MdmResourceStatusContext);
+
+    expect(result.records).toEqual([]);
+    expect(result.sqliteArtifacts).toEqual([]);
+    expect(result.sourceIndexArtifacts).toEqual([
+      {
+        packageId: "minecraft-1.20.1-source-index",
+        artifactPath: sqlitePath
+      }
+    ]);
+  });
 });
 
 async function writeArtifact(

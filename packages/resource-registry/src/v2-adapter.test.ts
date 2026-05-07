@@ -138,6 +138,52 @@ describe("resource registry v2 adapter", () => {
     });
   });
 
+  it("maps source index sqlite packages without treating them as docs sqlite", () => {
+    const manifest = toPackageManifestV2(
+      summaryFixture({
+        id: "minecraft-1.20.1-source-index",
+        required: false,
+        format: "sqlite",
+        artifactType: "source_index",
+        artifactKind: "source_index",
+        queryAdapter: "source_index_sqlite",
+        releaseChannel: "sources",
+        releaseFamily: "vanilla-source-index",
+        capabilities: ["source_lookup", "source_chunk_search", "java_symbol_lookup"],
+        metadata: {
+          storageKind: "sqlite_bundle",
+          installTier: "runtime_or_optional_dataset",
+          commitPolicy: "repository_manifest"
+        },
+        detail: {
+          ...summaryFixture().detail,
+          artifactType: "source_index",
+          artifactKind: "source_index",
+          queryAdapter: "source_index_sqlite"
+        }
+      })
+    );
+
+    expect(manifest).toMatchObject({
+      target: {
+        mappings: ["official", "mojmap"]
+      },
+      artifact: {
+        kind: "source_index",
+        format: "sqlite",
+        schemaId: "mdm.source.index.sqlite"
+      },
+      query: {
+        adapter: "source_index_sqlite",
+        capabilities: ["source_lookup", "source_chunk_search", "java_symbol_lookup"]
+      },
+      release: {
+        channel: "sources",
+        family: "vanilla-source-index"
+      }
+    });
+  });
+
   it("converts generated local caches into private evictable packages", () => {
     const manifest = toPackageManifestV2(
       summaryFixture({

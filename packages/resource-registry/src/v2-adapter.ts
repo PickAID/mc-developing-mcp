@@ -32,7 +32,7 @@ export function toPackageManifestV2(
       displayName: humanizePackageId(summary.id),
       description: `v2 view of mdm resource package ${summary.id}`
     },
-    target: {},
+    target: resolveTarget(summary),
     artifact: {
       kind: artifactKind,
       format: resolveArtifactFormat(summary.format),
@@ -90,9 +90,22 @@ function resolveMetadata(
   };
 }
 
+function resolveTarget(summary: MdmResourcePackageSummary): PackageManifestV2["target"] {
+  if (summary.artifactKind === "source_index" || summary.queryAdapter === "source_index_sqlite") {
+    return {
+      mappings: ["official", "mojmap"]
+    };
+  }
+
+  return {};
+}
+
 function resolveCapabilities(summary: MdmResourcePackageSummary): PackageCapabilityV2[] {
   if (summary.capabilities?.length) {
     return summary.capabilities;
+  }
+  if (summary.artifactKind === "source_index" || summary.queryAdapter === "source_index_sqlite") {
+    return ["source_lookup", "source_chunk_search", "java_symbol_lookup"];
   }
   if (summary.releaseChannel === "mappings") {
     return ["mapping_lookup", "mapping_explain"];
@@ -111,6 +124,9 @@ function resolveQueryAdapter(
   summary: MdmResourcePackageSummary,
   metadata: MdmResourcePackageMetadata
 ): QueryAdapterV2 {
+  if (summary.queryAdapter === "source_index_sqlite") {
+    return "source_index_sqlite";
+  }
   if (summary.releaseChannel === "mappings") {
     return "mapping_index";
   }
@@ -128,6 +144,9 @@ function resolveQueryAdapter(
 }
 
 function resolveArtifactKind(summary: MdmResourcePackageSummary): ArtifactKindV2 {
+  if (summary.artifactKind === "source_index") {
+    return "source_index";
+  }
   if (summary.releaseChannel === "mappings") {
     return "mapping_bundle";
   }
@@ -161,6 +180,9 @@ function resolveSchemaId(
   }
   if (artifactKind === "resourcepack_bundle") {
     return "mdm.resourcepack.json";
+  }
+  if (artifactKind === "source_index") {
+    return "mdm.source.index.sqlite";
   }
 
   return queryAdapter === "sqlite_docs" ? "mdm.docs.sqlite" : "mdm.docs.json";

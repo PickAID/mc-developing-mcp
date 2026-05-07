@@ -57,6 +57,9 @@ async function readPackageSummary(
     manifestPath,
     required,
     format,
+    artifactType: optionalString(entry.artifactType),
+    artifactKind: optionalString(entry.artifactKind),
+    queryAdapter: optionalString(entry.queryAdapter),
     currentRelease: releaseField(entry.currentRelease),
     metadata: resolveMdmResourcePackageMetadata(entry.metadata, {
       packageId: id,
@@ -101,6 +104,9 @@ function readDetail(
     schemaVersion: numberField(value, "schemaVersion"),
     id,
     sourcePath,
+    artifactType: optionalString(value.artifactType ?? summary.artifactType),
+    artifactKind: optionalString(value.artifactKind ?? summary.artifactKind),
+    queryAdapter: optionalString(value.queryAdapter ?? summary.queryAdapter),
     currentRelease: releaseField(value.currentRelease),
     metadata: resolveMdmResourcePackageMetadata(value.metadata ?? summary.metadata, {
       packageId: id,

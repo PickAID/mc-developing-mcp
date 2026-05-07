@@ -9,6 +9,7 @@ import type { MdmResourceStatusContext } from "../mdm-resource/mdm-resource-stat
 export interface MdmDocsResourceLoadResult {
   records: DocsPackageRecord[];
   sqliteArtifacts: MdmDocsSqliteArtifact[];
+  sourceIndexArtifacts: MdmSourceIndexArtifact[];
   summary: MdmDocsResourceSummary;
 }
 
@@ -31,10 +32,16 @@ export interface MdmDocsSqliteArtifact {
   artifactPath: string;
 }
 
+export interface MdmSourceIndexArtifact {
+  packageId: string;
+  artifactPath: string;
+}
+
 interface ReadyMdmDocsArtifact {
   packageId: string;
   artifactPath: string;
   storageKind: MdmResourcePackageStorageKind | undefined;
+  queryAdapter: string | undefined;
 }
 
 export async function loadMdmDocsResourcesFromStatus(
@@ -49,14 +56,23 @@ export async function loadMdmDocsResourcesFromStatus(
     .map((resourcePackage) => ({
       packageId: resourcePackage.packageId,
       artifactPath: resourcePackage.artifactPath,
-      storageKind: resourcePackage.metadata?.storageKind
+      storageKind: resourcePackage.metadata?.storageKind,
+      queryAdapter: resourcePackage.queryAdapter
     }))
     .filter(isReadyMdmDocsArtifact);
+  const sourceIndexArtifacts = artifacts
+    .filter((artifact) => artifact.queryAdapter === "source_index_sqlite")
+    .map(({ packageId, artifactPath }) => ({ packageId, artifactPath }));
   const sqliteArtifacts = artifacts
-    .filter((artifact) => artifact.storageKind === "sqlite_bundle")
+    .filter((artifact) =>
+      artifact.storageKind === "sqlite_bundle" &&
+      artifact.queryAdapter !== "source_index_sqlite"
+    )
     .map(({ packageId, artifactPath }) => ({ packageId, artifactPath }));
   const recordArtifacts = artifacts.filter(
-    (artifact) => artifact.storageKind !== "sqlite_bundle"
+    (artifact) =>
+      artifact.storageKind !== "sqlite_bundle" &&
+      artifact.queryAdapter !== "source_index_sqlite"
   );
   const settled = await Promise.all(
     recordArtifacts.map(async (artifact) => {
@@ -89,6 +105,7 @@ export async function loadMdmDocsResourcesFromStatus(
   return {
     records,
     sqliteArtifacts,
+    sourceIndexArtifacts,
     summary: {
       status: errors.length > 0 ? "degraded" : "available",
       artifactCount: artifacts.length,
@@ -104,6 +121,7 @@ function isReadyMdmDocsArtifact(
     packageId: string;
     artifactPath: string | undefined;
     storageKind: MdmResourcePackageStorageKind | undefined;
+    queryAdapter: string | undefined;
   }
 ): artifact is ReadyMdmDocsArtifact {
   return typeof artifact.artifactPath === "string" && artifact.artifactPath.length > 0;
@@ -119,6 +137,7 @@ function emptyResult(status: MdmResourceStatusContext["status"]): MdmDocsResourc
   return {
     records: [],
     sqliteArtifacts: [],
+    sourceIndexArtifacts: [],
     summary: {
       status,
       artifactCount: 0,

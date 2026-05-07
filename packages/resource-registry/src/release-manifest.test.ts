@@ -125,6 +125,33 @@ describe("mdm release manifest", () => {
       ]
     });
   });
+
+  it("preserves source index release package routing fields", () => {
+    const registry = toMdmResourceRegistryFromReleaseManifest({
+      ...readFixtureManifest(),
+      packages: [sourceIndexReleasePackage()]
+    });
+
+    expect(registry.packages[0]).toMatchObject({
+      id: "minecraft-1.20.1-source-index",
+      format: "sqlite",
+      artifactType: "source_index",
+      artifactKind: "source_index",
+      queryAdapter: "source_index_sqlite",
+      metadata: {
+        storageKind: "sqlite_bundle",
+        installTier: "runtime_or_optional_dataset",
+        sqlite: {
+          requiredTables: ["files", "java_symbols", "java_members"]
+        }
+      },
+      detail: {
+        artifactType: "source_index",
+        artifactKind: "source_index",
+        queryAdapter: "source_index_sqlite"
+      }
+    });
+  });
 });
 
 function readFixtureManifest() {
@@ -157,5 +184,34 @@ function fixtureManifest() {
         capabilities: ["docs_search", "docs_direct_read"]
       }
     ]
+  };
+}
+
+function sourceIndexReleasePackage() {
+  return {
+    packageId: "minecraft-1.20.1-source-index",
+    version: "0.1.0",
+    namespace: "minecraft",
+    artifactType: "source_index",
+    artifactKind: "source_index",
+    queryAdapter: "source_index_sqlite",
+    variant: "sources",
+    required: false,
+    format: "sqlite",
+    artifactName: "minecraft-1.20.1-source-index-0.1.0.sqlite",
+    sha256:
+      "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
+    sizeBytes: 4096,
+    metadata: {
+      storageKind: "sqlite_bundle",
+      installTier: "runtime_or_optional_dataset",
+      commitPolicy: "repository_manifest",
+      sqlite: {
+        requiredTables: ["files", "java_symbols", "java_members"]
+      }
+    },
+    releaseChannel: "sources" as const,
+    releaseFamily: "vanilla-source-index",
+    capabilities: ["source_lookup", "source_chunk_search", "java_symbol_lookup"] as const
   };
 }

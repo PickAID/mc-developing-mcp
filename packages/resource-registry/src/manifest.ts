@@ -19,6 +19,7 @@ export type MdmResourcePackageStorageKind =
 export type MdmResourcePackageInstallTier =
   | "required_docs"
   | "optional_dataset"
+  | "runtime_or_optional_dataset"
   | "optional_accelerator"
   | "private_local_cache";
 
@@ -44,6 +45,9 @@ export interface MdmResourcePackageDetail {
   id: string;
   packageVersion?: string;
   sourcePath: string;
+  artifactType?: string;
+  artifactKind?: string;
+  queryAdapter?: string;
   currentRelease: MdmResourceRelease | null;
   metadata?: MdmResourcePackageMetadata;
   releaseChannel?: PackageReleaseV2["channel"];
@@ -57,6 +61,9 @@ export interface MdmResourcePackageSummary {
   manifestPath: string;
   required: boolean;
   format: string;
+  artifactType?: string;
+  artifactKind?: string;
+  queryAdapter?: string;
   currentRelease?: MdmResourceRelease | null;
   metadata?: MdmResourcePackageMetadata;
   releaseChannel?: PackageReleaseV2["channel"];

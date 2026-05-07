@@ -28,6 +28,9 @@ export interface MdmResourceStatusEntry {
   required: boolean;
   status: MdmResourcePackageStatus;
   metadata?: MdmResourcePackageMetadata;
+  artifactType?: string;
+  artifactKind?: string;
+  queryAdapter?: string;
   releaseChannel?: MdmResourcePackageSummary["releaseChannel"];
   releaseFamily?: string;
   capabilities?: NonNullable<MdmResourcePackageSummary["capabilities"]>;
@@ -65,6 +68,12 @@ export async function summarizeMdmResourceStatus(
         release,
         state,
         metadata: resourcePackage.detail.metadata ?? resourcePackage.metadata,
+        artifactType:
+          resourcePackage.detail.artifactType ?? resourcePackage.artifactType,
+        artifactKind:
+          resourcePackage.detail.artifactKind ?? resourcePackage.artifactKind,
+        queryAdapter:
+          resourcePackage.detail.queryAdapter ?? resourcePackage.queryAdapter,
         releaseChannel:
           resourcePackage.detail.releaseChannel ?? resourcePackage.releaseChannel,
         releaseFamily:
@@ -87,6 +96,9 @@ async function summarizePackage(input: {
   release: MdmResourceRelease | null;
   state: MdmResourceCacheState | undefined;
   metadata: MdmResourcePackageMetadata | undefined;
+  artifactType: string | undefined;
+  artifactKind: string | undefined;
+  queryAdapter: string | undefined;
   releaseChannel: MdmResourcePackageSummary["releaseChannel"];
   releaseFamily: string | undefined;
   capabilities: NonNullable<MdmResourcePackageSummary["capabilities"]> | undefined;
@@ -97,6 +109,9 @@ async function summarizePackage(input: {
       input.required,
       input.release,
       input.metadata,
+      input.artifactType,
+      input.artifactKind,
+      input.queryAdapter,
       input.releaseChannel,
       input.releaseFamily,
       input.capabilities
@@ -113,6 +128,9 @@ async function summarizePackage(input: {
       required: input.required,
       status: "invalid_checksum",
       metadata: input.metadata,
+      artifactType: input.artifactType,
+      artifactKind: input.artifactKind,
+      queryAdapter: input.queryAdapter,
       releaseChannel: input.releaseChannel,
       releaseFamily: input.releaseFamily,
       capabilities: input.capabilities,
@@ -131,6 +149,9 @@ async function summarizePackage(input: {
       required: input.required,
       status: "invalid_artifact",
       metadata: input.metadata,
+      artifactType: input.artifactType,
+      artifactKind: input.artifactKind,
+      queryAdapter: input.queryAdapter,
       releaseChannel: input.releaseChannel,
       releaseFamily: input.releaseFamily,
       capabilities: input.capabilities,
@@ -147,6 +168,9 @@ async function summarizePackage(input: {
     required: input.required,
     status: "ready",
     metadata: input.metadata,
+    artifactType: input.artifactType,
+    artifactKind: input.artifactKind,
+    queryAdapter: input.queryAdapter,
     releaseChannel: input.releaseChannel,
     releaseFamily: input.releaseFamily,
     capabilities: input.capabilities,
@@ -163,6 +187,9 @@ function missingEntry(
   required: boolean,
   release: MdmResourceRelease | null,
   metadata: MdmResourcePackageMetadata | undefined,
+  artifactType: string | undefined,
+  artifactKind: string | undefined,
+  queryAdapter: string | undefined,
   releaseChannel: MdmResourcePackageSummary["releaseChannel"],
   releaseFamily: string | undefined,
   capabilities: NonNullable<MdmResourcePackageSummary["capabilities"]> | undefined
@@ -174,6 +201,9 @@ function missingEntry(
     required,
     status,
     metadata,
+    artifactType,
+    artifactKind,
+    queryAdapter,
     releaseChannel,
     releaseFamily,
     capabilities,

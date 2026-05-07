@@ -17,6 +17,8 @@ export interface MdmReleaseManifestPackage {
   version: string;
   namespace: string;
   artifactType: string;
+  artifactKind?: string;
+  queryAdapter?: string;
   variant: string;
   required: boolean;
   format: string;
@@ -118,6 +120,9 @@ export function toMdmResourceRegistryFromReleaseManifest(
         manifestPath: manifest.source,
         required: resourcePackage.required,
         format: resourcePackage.format,
+        artifactType: resourcePackage.artifactType,
+        artifactKind: resourcePackage.artifactKind,
+        queryAdapter: resourcePackage.queryAdapter,
         metadata,
         releaseChannel: resourcePackage.releaseChannel,
         releaseFamily: resourcePackage.releaseFamily,
@@ -133,6 +138,9 @@ export function toMdmResourceRegistryFromReleaseManifest(
           id: resourcePackage.packageId,
           packageVersion: resourcePackage.version,
           sourcePath: `release:${resourcePackage.artifactName}`,
+          artifactType: resourcePackage.artifactType,
+          artifactKind: resourcePackage.artifactKind,
+          queryAdapter: resourcePackage.queryAdapter,
           metadata,
           releaseChannel: resourcePackage.releaseChannel,
           releaseFamily: resourcePackage.releaseFamily,
@@ -178,6 +186,8 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
       artifactType,
       variant
     }),
+    artifactKind: optionalString(value.artifactKind, "artifactKind"),
+    queryAdapter: optionalString(value.queryAdapter, "queryAdapter"),
     releaseChannel: optionalReleaseChannel(value.releaseChannel),
     releaseFamily: optionalString(value.releaseFamily, "releaseFamily"),
     capabilities: optionalCapabilities(value.capabilities)

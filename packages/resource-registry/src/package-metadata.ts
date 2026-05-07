@@ -90,6 +90,7 @@ function optionalInstallTier(
   return optionalEnum(value, [
     "required_docs",
     "optional_dataset",
+    "runtime_or_optional_dataset",
     "optional_accelerator",
     "private_local_cache"
   ]);
