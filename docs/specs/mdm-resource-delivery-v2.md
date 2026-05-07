@@ -27,6 +27,11 @@ output such as Yarn/Parchment/Mojmap lookup rows must be materialized under the
 MCP runtime root and never committed into the workspace or public package
 source.
 
+Mapping providers must be opt-in or explicitly injected. The MCP may parse Tiny
+v2 mapping text and `.zip`/`.jar` artifacts containing `.tiny` files, but it must
+not perform default remote mapping downloads unless a provider or URL template is
+configured by the runtime environment.
+
 The public repository is therefore a seed and profile repository, not a dump of
 every useful artifact.
 
@@ -204,8 +209,10 @@ The verified path is:
     through an explicit provider, and propagate non-`ENOENT` filesystem read
     errors.
 22. Current MCP implementation can materialize provider-supplied mapping entries
-    into runtime JSONL. It does not yet include production Yarn/Parchment/Mojmap
-    download or parsing providers.
+    into runtime JSONL and parse Tiny v2 mapping text or zip/jar artifacts. Yarn
+    Tiny v2 download can be enabled with `MCPSKILL_YARN_MAPPING_URL_TEMPLATE`;
+    automatic Yarn build metadata resolution and Parchment/Mojmap providers are
+    still pending.
 
 The sibling `mdm-sources` release builder now also supports real `.sqlite`
 artifacts, SQLite package metadata, output directory cleanup, and
@@ -221,7 +228,7 @@ mdm-sources resourcepack release build: packages 101, first minecraft-1.0-vanill
 mdm-sources mappings release build: packages 101, first minecraft-1.0-yarn-mapping-profile, last minecraft-26.1.2-yarn-mapping-profile
 mdm-sources file size guard: no source/test tool file exceeds 500 lines
 MCP mapping index work item runner: source-package-manager 16 files, 65 tests passed
-MCP runtime mapping index adapter: mcp-server 95 files, 302 tests passed
+MCP runtime mapping index adapter and Tiny v2 provider: mcp-server 96 files, 311 tests passed
 ```
 
 ## Non-Deliverable Areas
@@ -235,8 +242,8 @@ The system is not complete until these exist:
   animation, and resource-pack patterns.
 - Loader and mapping-specific source/data/resource profile variants beyond the
   generated vanilla profiles.
-- Production Yarn/Parchment/Mojmap mapping table acquisition providers behind
-  the runtime-private mapping index adapter.
+- Automatic Yarn build metadata resolution and Parchment/Mojmap acquisition
+  providers behind the runtime-private mapping index adapter.
 - Deeper MCP selection logic that uses package profile payloads, workspace
   version, and loader evidence beyond the current conservative text-signal
   selector.

@@ -110,6 +110,117 @@ describe("mc_develop source acquisition acceptance", () => {
       ])
     });
   });
+
+  it("materializes mapping indexes through an injected provider", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mapping-e2e-runtime-");
+    const workspaceRoot = await createEmptyWorkspace();
+
+    registerMcpServerTools(registry, {
+      mappingIndexProvider: async () => ({
+        provenance: { source: "test-provider" },
+        entries: [
+          {
+            fromNamespace: "official",
+            toNamespace: "named",
+            fromName: "a",
+            toName: "net.minecraft.world.item.ItemStack",
+            kind: "class"
+          }
+        ]
+      })
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Find source for a NeoForge mod from Modrinth and Yarn mappings for Minecraft 1.21.1 mixin target.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "source_acquisition_plan",
+          payload: expect.objectContaining({
+            workItemExecutions: expect.arrayContaining([
+              expect.objectContaining({
+                kind: "mapping_index",
+                status: "completed",
+                payload: expect.objectContaining({
+                  source: "source_acquisition_mapping_index",
+                  status: "ready",
+                  minecraftVersion: "1.21.1",
+                  mappingFamily: "yarn",
+                  entryCount: 1,
+                  cache: expect.objectContaining({
+                    scope: "private_runtime"
+                  })
+                })
+              })
+            ])
+          })
+        })
+      ])
+    });
+  });
+
+  it("materializes Yarn mappings from a configured Tiny v2 URL template", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-mapping-template-runtime-");
+    const workspaceRoot = await createEmptyWorkspace();
+    const fetchedUrls: string[] = [];
+
+    registerMcpServerTools(registry, {
+      env: {
+        MCPSKILL_YARN_MAPPING_URL_TEMPLATE:
+          "https://maven.test/yarn/{version}/mappings.tiny"
+      },
+      mappingIndexFetch: async (url) => {
+        fetchedUrls.push(url.toString());
+        return new Response(
+          "tiny\t2\t0\tofficial\tnamed\nc\ta\tnet.minecraft.TemplateHit\n",
+          { status: 200 }
+        );
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Find source for a NeoForge mod from Modrinth and Yarn mappings for Minecraft 1.21.1 mixin target.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(fetchedUrls).toEqual([
+      "https://maven.test/yarn/1.21.1/mappings.tiny"
+    ]);
+    expect(result.structuredContent).toMatchObject({
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "source_acquisition_plan",
+          payload: expect.objectContaining({
+            workItemExecutions: expect.arrayContaining([
+              expect.objectContaining({
+                kind: "mapping_index",
+                payload: expect.objectContaining({
+                  status: "ready",
+                  entryCount: 1,
+                  provenance: expect.objectContaining({
+                    format: "tiny_v2",
+                    fromNamespace: "official",
+                    toNamespace: "named"
+                  })
+                })
+              })
+            ])
+          })
+        })
+      ])
+    });
+  });
 });
 
 async function createModpackWorkspace(): Promise<string> {

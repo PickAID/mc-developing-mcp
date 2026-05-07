@@ -1,0 +1,193 @@
+import {
+  normalizeArchivePath,
+  readZipCentralDirectory,
+  readZipEntryContent
+} from "@mcpskill/jar-source-adapter";
+
+import type {
+  MappingIndexProvider,
+  MappingIndexProviderRequest,
+  MappingIndexProviderResult
+} from "./source-acquisition-mapping-index.js";
+
+export interface TinyV2MappingParseInput extends MappingIndexProviderRequest {
+  content: string;
+  fromNamespace?: string;
+  toNamespace?: string;
+}
+
+export interface TinyV2MappingProviderOptions {
+  resolveUrl: (request: MappingIndexProviderRequest) => string | undefined;
+  fetch?: (url: URL) => Promise<Response>;
+  fromNamespace?: string;
+  toNamespace?: string;
+}
+
+export function parseTinyV2Mappings(
+  input: TinyV2MappingParseInput
+): MappingIndexProviderResult {
+  const lines = input.content.split(/\r?\n/u);
+  const header = parseTinyHeader(lines[0]);
+  const fromIndex = namespaceIndex(
+    header.namespaces,
+    input.fromNamespace ?? header.namespaces[0]
+  );
+  const toIndex = namespaceIndex(
+    header.namespaces,
+    input.toNamespace ?? header.namespaces.at(-1)
+  );
+  const entries: MappingIndexProviderResult["entries"] = [];
+  let currentOwner: string | undefined;
+
+  for (const rawLine of lines.slice(1)) {
+    if (rawLine.trim().length === 0) {
+      continue;
+    }
+
+    const depth = rawLine.match(/^\t*/u)?.[0].length ?? 0;
+    const columns = rawLine.trimStart().split("\t");
+    if (depth === 0 && columns[0] === "c") {
+      const names = columns.slice(1);
+      const fromName = names[fromIndex];
+      const toName = names[toIndex];
+      if (!fromName || !toName) {
+        currentOwner = undefined;
+        continue;
+      }
+      const normalizedFromName = normalizeClassName(fromName);
+      const normalizedToName = normalizeClassName(toName);
+      currentOwner = normalizedToName;
+      entries.push({
+        kind: "class",
+        fromNamespace: header.namespaces[fromIndex],
+        toNamespace: header.namespaces[toIndex],
+        fromName: normalizedFromName,
+        toName: normalizedToName
+      });
+      continue;
+    }
+
+    if (depth === 1 && (columns[0] === "f" || columns[0] === "m")) {
+      const descriptor = columns[1];
+      const names = columns.slice(2);
+      const fromName = names[fromIndex];
+      const toName = names[toIndex];
+      if (!descriptor || !fromName || !toName) {
+        continue;
+      }
+      entries.push({
+        kind: columns[0] === "f" ? "field" : "method",
+        fromNamespace: header.namespaces[fromIndex],
+        toNamespace: header.namespaces[toIndex],
+        fromName,
+        toName,
+        owner: currentOwner,
+        descriptor
+      });
+    }
+  }
+
+  return {
+    provenance: {
+      format: "tiny_v2",
+      minecraftVersion: input.minecraftVersion,
+      mappingFamily: input.mappingFamily,
+      fromNamespace: header.namespaces[fromIndex],
+      toNamespace: header.namespaces[toIndex]
+    },
+    entries
+  };
+}
+
+export function createTinyV2MappingIndexProvider(
+  options: TinyV2MappingProviderOptions
+): MappingIndexProvider {
+  return async (request) => {
+    const resolvedUrl = options.resolveUrl(request);
+    if (!resolvedUrl) {
+      return {
+        provenance: {
+          format: "tiny_v2",
+          status: "url_unavailable",
+          minecraftVersion: request.minecraftVersion,
+          mappingFamily: request.mappingFamily
+        },
+        entries: []
+      };
+    }
+
+    const url = new URL(resolvedUrl);
+    const response = await (options.fetch ?? fetch)(url);
+    if (!response.ok) {
+      throw new Error(
+        `Mapping download failed for ${url.toString()}: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return parseTinyV2Mappings({
+      ...request,
+      fromNamespace: options.fromNamespace,
+      toNamespace: options.toNamespace,
+      content: await readMappingContent(response)
+    });
+  };
+}
+
+async function readMappingContent(response: Response): Promise<string> {
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (looksLikeZip(bytes)) {
+    return readTinyMappingFromZip(bytes);
+  }
+  return bytes.toString("utf-8");
+}
+
+function looksLikeZip(bytes: Buffer): boolean {
+  return bytes.length >= 4 && bytes.readUInt32LE(0) === 0x04034b50;
+}
+
+function readTinyMappingFromZip(bytes: Buffer): string {
+  const entries = readZipCentralDirectory(bytes);
+  const normalizedEntries = entries.map((entry) => ({
+    entry,
+    relativePath: normalizeArchivePath(entry.name)
+  }));
+  const entry =
+    normalizedEntries.find(
+      (candidate) => candidate.relativePath === "mappings/mappings.tiny"
+    )?.entry ??
+    normalizedEntries.find(
+      (candidate) => candidate.relativePath?.endsWith(".tiny") === true
+    )?.entry;
+
+  if (!entry) {
+    throw new Error("Tiny mapping artifact did not contain a .tiny file.");
+  }
+
+  return readZipEntryContent(bytes, entry).toString("utf-8");
+}
+
+function normalizeClassName(name: string): string {
+  return name.replaceAll("/", ".");
+}
+
+function parseTinyHeader(line: string | undefined): { namespaces: string[] } {
+  const columns = line?.split("\t") ?? [];
+  if (columns[0] !== "tiny" || columns[1] !== "2") {
+    throw new Error("Expected Tiny v2 mapping header.");
+  }
+
+  const namespaces = columns.slice(3);
+  if (namespaces.length < 2 || namespaces.some((name) => name.length === 0)) {
+    throw new Error("Tiny v2 mapping header must declare at least two namespaces.");
+  }
+
+  return { namespaces };
+}
+
+function namespaceIndex(namespaces: string[], namespace: string | undefined): number {
+  const index = namespace ? namespaces.indexOf(namespace) : -1;
+  if (index === -1) {
+    throw new Error(`Tiny mapping namespace ${namespace ?? "<missing>"} was not found.`);
+  }
+  return index;
+}

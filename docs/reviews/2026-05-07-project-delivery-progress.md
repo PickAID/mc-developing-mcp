@@ -45,6 +45,10 @@ providers, and final UX polish.
   into JSONL under the MCP runtime root. Unsafe cache keys are rejected, damaged
   mapping JSONL is rebuilt through the provider, and non-missing filesystem
   read errors are not silently treated as cache misses.
+- MCP now has a Tiny v2 mapping provider foundation. It can parse raw Tiny v2
+  text or `.zip`/`.jar` artifacts containing `.tiny` mappings, and `mc_develop`
+  can enable Yarn mapping downloads only when `MCPSKILL_YARN_MAPPING_URL_TEMPLATE`
+  is configured. No mapping download happens by default.
 - Datapack and resourcepack support are separate package families and separate
   evidence profiles.
 - Resourcepack/client-visual support covers assets, models, blockstates,
@@ -102,8 +106,9 @@ Not done:
 - Signing/provenance/retention policy.
 - Large public docs corpus.
 - Loader-specific and mapping-specific source profile variants beyond vanilla.
-- Real Yarn/Parchment/Mojmap mapping table download/generation providers beyond
-  the runtime-private mapping index adapter and public metadata profiles.
+- Automatic Yarn build metadata resolution and Parchment/Mojmap providers beyond
+  the runtime-private mapping index adapter, configurable Tiny v2 provider, and
+  public metadata profiles.
 - Loader-specific source/data/resource profile variants beyond vanilla.
 
 ## Evidence
@@ -135,8 +140,9 @@ MCP remote URL acceptance: installed real SQLite bytes through GitHub Release sh
 MCP MDM package recommendations: KubeJS/datapack task produced safe install hints without auto-download
 MCP versioned profile recommendations: source/datapack/resourcepack/mapping tasks selected requested Minecraft versions
 MCP runtime mapping index adapter: source-package-manager 16 files / 65 tests passed
-MCP runtime mapping index adapter: mcp-server 95 files / 302 tests passed
+MCP runtime mapping index adapter and Tiny v2 provider: mcp-server 96 files / 311 tests passed
 MCP runtime mapping index cache hardening: unsafe version segment rejected, corrupt JSONL rebuilt, EISDIR read error propagated
+MCP configurable Yarn Tiny v2 provider: URL template is opt-in through MCPSKILL_YARN_MAPPING_URL_TEMPLATE and supports injected fetch verification
 ```
 
 ## Completion Estimate
@@ -149,9 +155,9 @@ The next large slice should focus on source-channel package coverage and corpus
 growth:
 
 - Run live GitHub Release acceptance once a release exists.
-- Add real Yarn/Parchment/Mojmap mapping providers behind the existing
-  runtime-private mapping index adapter, without committing generated mapping
-  tables to public repositories.
+- Add automatic Yarn build metadata resolution plus Parchment/Mojmap providers
+  behind the existing runtime-private mapping index adapter, without committing
+  generated mapping tables to public repositories.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially KubeJS, client visual, loader-specific, and API-specific
   guidance packages.

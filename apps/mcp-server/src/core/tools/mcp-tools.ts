@@ -41,6 +41,8 @@ import {
   type MdmPackageRecommendations
 } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
+import type { MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-index.js";
+import { createTinyV2MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-provider.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -121,6 +123,8 @@ export interface McpToolRuntimeOptions {
   mdmReleaseManifestFetch?: MdmReleaseFetch;
   mdmArtifactFetch?: MdmArtifactFetch;
   mdmReleaseNow?: () => string;
+  mappingIndexProvider?: MappingIndexProvider;
+  mappingIndexFetch?: (url: URL) => Promise<Response>;
 }
 
 export function registerMcpServerTools(
@@ -226,7 +230,8 @@ async function executeMcpDevelopTool(
           createMcpServerSourceAcquisitionWorkItemHandlers({
             requestText: input.requestText,
             runtimeRoot,
-            remoteMetadataPolicy: "disabled"
+            remoteMetadataPolicy: "disabled",
+            mappingIndexProvider: resolveMappingIndexProvider(options, env)
           })
       }
     });
@@ -281,6 +286,38 @@ function resolveToolEnv(options: McpToolRuntimeOptions): NodeJS.ProcessEnv {
     ...process.env,
     ...options.env
   };
+}
+
+function resolveMappingIndexProvider(
+  options: McpToolRuntimeOptions,
+  env: NodeJS.ProcessEnv
+): MappingIndexProvider | undefined {
+  if (options.mappingIndexProvider) {
+    return options.mappingIndexProvider;
+  }
+
+  const yarnTemplate = env.MCPSKILL_YARN_MAPPING_URL_TEMPLATE;
+  if (!yarnTemplate) {
+    return undefined;
+  }
+
+  return createTinyV2MappingIndexProvider({
+    fetch: options.mappingIndexFetch,
+    resolveUrl: (request) =>
+      request.mappingFamily === "yarn"
+        ? expandMappingUrlTemplate(yarnTemplate, request)
+        : undefined
+  });
+}
+
+function expandMappingUrlTemplate(
+  template: string,
+  request: { minecraftVersion: string; mappingFamily: string }
+): string {
+  return template
+    .replaceAll("{version}", encodeURIComponent(request.minecraftVersion))
+    .replaceAll("{minecraftVersion}", encodeURIComponent(request.minecraftVersion))
+    .replaceAll("{family}", encodeURIComponent(request.mappingFamily));
 }
 
 function resolveRuntimeRoot(
