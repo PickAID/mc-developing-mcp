@@ -187,6 +187,11 @@ is the actual public GitHub Release acceptance run.
   `mdm-release-summary.json`, validates both schemas, checks manifest/summary
   consistency, and verifies `summary.manifest.sha256` against the fetched
   manifest body without downloading package artifacts.
+- `mdm-sources` now has a single live release acceptance command:
+  `tools/verify-live-release.mjs <manifest-path-or-url>`. It combines remote
+  schema/summary verification with installability verification, reports
+  structured `passed`/`failed` schema and install summaries, and uses only
+  temporary files for SQLite inspection.
 
 ## `mdm-sources` Status
 
@@ -431,13 +436,14 @@ mdm-sources local release acceptance report: tools/write-release-acceptance-repo
 MCP MDM release acceptance status context: mc_develop structured mdmResources now includes compact releaseAcceptance when local mdm-sources release-out/mdm-release-acceptance-report.json exists; missing report is non-fatal and invalid report shape is summarized as invalid. focused status/resource tests passed 2 files / 10 tests; real/remote MDM release focused suite passed 4 files / 12 tests; mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 mdm-sources release workflow acceptance gate: .github/workflows/release.yml now uses tools/write-release-acceptance-report.mjs --out release-out before publishing, verifies manifest/summary/report files exist, and still derives upload files only from tools/list-release-artifacts.mjs release-out/mdm-release-manifest.json. Focused workflow/list/report tests passed 3 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 46 tests; touched workflow/test files stayed under 500 lines
 mdm-sources remote release schema verifier: tools/verify-release-schema.mjs now reads HTTP(S) manifest URLs plus sibling mdm-release-summary.json, supports injected fetchers for tests, reports HTTP failures with status, and rejects summary.manifest.sha256 mismatches against the manifest body. Focused schema/install tests passed 12 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 49 tests; local acceptance report remained status passed with packageCount 465, artifactCount 467, installVerifiedCount 465; touched source/test files stayed under 500 lines
+mdm-sources live release verifier: tools/verify-live-release.mjs now accepts a local or GitHub Release-shaped manifest path/url, runs schema+summary verifier and install verifier, and returns structured status without publishing or writing repository caches. Focused live/schema/install tests passed 14 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 52 tests; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.9%.
-- MDM resource/package delivery: 98.6%.
-- Overall project deliverability: 98.9%.
+- MDM resource/package delivery: 98.7%.
+- Overall project deliverability: 99.0%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
