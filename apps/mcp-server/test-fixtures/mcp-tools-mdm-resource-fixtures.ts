@@ -219,6 +219,54 @@ export function mdmGuidanceArtifactBody(): string {
   });
 }
 
+export function mdmResourcepackGuidanceArtifactBody(): string {
+  return JSON.stringify({
+    schemaVersion: 1,
+    package: {
+      identity: {
+        packageId: "resourcepack-1.20.1-guidance",
+        displayName: "Resource Pack 1.20.1 Guidance",
+        namespace: "resourcepack"
+      },
+      artifact: {
+        kind: "docs_bundle",
+        format: "json"
+      },
+      capabilities: ["docs_search", "docs_direct_read", "resourcepack_trace"]
+    },
+    payload: {
+      "payload/resourcepack-guidance.json": {
+        repoPath:
+          "packages/docs/resourcepack/1.20.1/payload/resourcepack-guidance.json",
+        content: JSON.stringify({
+          schemaVersion: 1,
+          minecraftVersion: "1.20.1",
+          purpose:
+            "Turn resource pack requests into traceable model, texture, shader, sound, font, language, and UI evidence.",
+          implementationChains: [
+            {
+              id: "block-model-trace",
+              chain: [
+                "blockstate json",
+                "variant model reference",
+                "parent model chain",
+                "texture file and optional .mcmeta"
+              ]
+            }
+          ],
+          relationshipDiscoveryRules: [
+            {
+              id: "model-parent-texture-walk",
+              start: ["blockstate json", "item model json"],
+              follow: ["parent model recursion", "texture variable substitution"]
+            }
+          ]
+        })
+      }
+    }
+  });
+}
+
 async function writeJson(path: string, value: unknown): Promise<void> {
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
 }

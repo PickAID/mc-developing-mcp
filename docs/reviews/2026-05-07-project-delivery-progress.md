@@ -159,6 +159,12 @@ is the actual public GitHub Release acceptance run.
 - Resourcepack/client-visual support covers assets, models, blockstates,
   textures, atlases, language, sounds, UI assets, shader-related paths, and
   resource reference tracing at compact evidence level.
+- `mdm-sources` now includes a dedicated public
+  `resourcepack-1.20.1-guidance` docs package. It covers pack metadata, model
+  and texture traces, atlas relationships, animated texture metadata, font/lang
+  chains, sound events, shader resources, UI texture evidence, archive/cache
+  boundaries, and public/private distribution limits without shipping assets or
+  generated indexes.
 - Installed v2 `json_docs` guidance bundles can now be synthesized into compact
   searchable docs records even when the payload is structured guidance rather
   than an explicit `entries[]` document index. This lets cached client-visual or
@@ -467,13 +473,15 @@ mdm-sources release provenance notes: tools/write-release-notes.mjs now renders 
 mdm-sources post-publish live verification: release workflow now runs tools/verify-live-release.mjs against the published GitHub Release manifest URL after gh release create/upload, with 4 bounded attempts for GitHub asset visibility delay. Workflow tests assert the verify step occurs after publish and uses the GitHub Release URL. Focused workflow/live tests passed 4 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 54 tests; touched workflow/test files stayed under 500 lines
 mdm-sources release distribution policy: docs/release-policy.md now defines manifest-listed release assets, private data exclusions, provenance fields, no-signature/no-attestation semantics, Release asset retention expectations, and future workflow artifact retention requirements. release-policy test passed; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 55 tests; touched docs/test files stayed under 500 lines
 MCP structured guidance synthesis: docs-retrieval now synthesizes searchable records from KubeJS principles/scopeRules/lookupHints and client-visual implementation/relationship sections, so installed MDM guidance packages are not limited to purpose/hardRules. `pnpm --filter @mcpskill/docs-retrieval test` passed 4 files / 16 tests; focused MCP MDM docs/resource suite passed 4 files / 22 tests; `pnpm --filter @mcpskill/mcp-server exec tsc -b` passed; touched source/test files stayed under 500 lines
+mdm-sources resourcepack guidance package: resourcepack-1.20.1-guidance added as a public json_docs docs bundle with resourcepack_trace capability and no asset/private-cache payloads. `node tools/validate.mjs` returned packageCount 466 errorCount 0; release schema verifier returned packageCount 466 errorCount 0; release install verifier verifiedCount 466/466 totalSizeBytes 2746327; artifact resourcepack-1.20.1-guidance-0.1.0.mdm-resource.json sha256 78b30435da54905a3a80702e0e133aa8b058bbd1dae3323fa603f962e6d2e36e sizeBytes 14250; `node --test tests/*.test.mjs` passed 55 tests; local acceptance report status passed packageCount 466 artifactCount 468 installVerifiedCount 466
+MCP resourcepack guidance consumption: explicit install of resourcepack-1.20.1-guidance through `mdmReleaseInstall.downloadPolicy="allowed"` made the cached guidance available to `docs_lookup`; focused tests passed 3 files / 13 tests and `pnpm --filter @mcpskill/mcp-server exec tsc -b` passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.9%.
-- MDM resource/package delivery: 99.1%.
-- Overall project deliverability: 99.4%.
+- MDM resource/package delivery: 99.2%.
+- Overall project deliverability: 99.45%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
@@ -481,7 +489,7 @@ growth:
 - Generate and validate broader source-index corpora from allowed local or
   user-confirmed inputs, without committing Minecraft source or private
   workspace indexes.
-- Publish and run live GitHub Release acceptance for the current 465-package /
-  467-artifact release output.
+- Publish and run live GitHub Release acceptance for the current 466-package /
+  468-artifact release output.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially loader-specific and API-specific guidance packages.
