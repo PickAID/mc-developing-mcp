@@ -164,6 +164,13 @@ is the actual public GitHub Release acceptance run.
   than an explicit `entries[]` document index. This lets cached client-visual or
   KubeJS guidance packages participate in MCP `docs_lookup` without adding a
   public tool or copying large prompt blocks.
+- Structured guidance synthesis now indexes known high-value sections such as
+  KubeJS `principles`, `scopeRules`, `eventBridgeRules`, `lookupHints`, and
+  client visual `implementationChains`, `relationshipDiscoveryRules`, and
+  `visualTargets`. This makes installed MDM guidance packages searchable by
+  concrete concepts like `ForgeEvents`, `NativeEvents`, `ServerEvents.recipes`,
+  renderer binding, dynamic texture reload, shader consumers, and asset
+  relationship tracing without injecting large prompt text.
 - The public client-visual 1.20.1 guidance package has been expanded to version
   0.2.0. It now carries structured visual targets, evidence-chain contracts,
   relationship discovery rules, role-equivalent API search terms, distribution
@@ -359,8 +366,10 @@ Not done:
   for normalized allowed inputs, but broad datasets still need controlled
   generation from local/user-confirmed source roots and policy-approved
   payloads.
-- Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
-  MCP selection that deeply reads installed guidance payloads.
+- Broader KubeJS corpus beyond the initial 1.20.1 guidance package. Dynamic
+  MCP reading of installed structured guidance payloads now covers the main
+  KubeJS/client-visual sections, but the public corpus still needs more
+  versioned/API-specific packages.
 - Source acquisition workspace-route execution parity is now covered for the
   Gradle and ProbeJS happy paths. Remaining work is broader end-to-end
   `mc_develop` acceptance over real modpack workspaces and richer payload
@@ -457,13 +466,14 @@ mdm-sources live release verifier: tools/verify-live-release.mjs now accepts a l
 mdm-sources release provenance notes: tools/write-release-notes.mjs now renders GitHub Release notes from release summary and acceptance report, including repository/ref/revision, manifest sha256, package/artifact totals, live verify command, and explicit no-signature/no-private-cache policy text. Workflow updates notes on both release create and existing-release upload paths. Focused workflow/notes/live tests passed 6 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 54 tests; touched workflow/source/test files stayed under 500 lines
 mdm-sources post-publish live verification: release workflow now runs tools/verify-live-release.mjs against the published GitHub Release manifest URL after gh release create/upload, with 4 bounded attempts for GitHub asset visibility delay. Workflow tests assert the verify step occurs after publish and uses the GitHub Release URL. Focused workflow/live tests passed 4 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 54 tests; touched workflow/test files stayed under 500 lines
 mdm-sources release distribution policy: docs/release-policy.md now defines manifest-listed release assets, private data exclusions, provenance fields, no-signature/no-attestation semantics, Release asset retention expectations, and future workflow artifact retention requirements. release-policy test passed; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 55 tests; touched docs/test files stayed under 500 lines
+MCP structured guidance synthesis: docs-retrieval now synthesizes searchable records from KubeJS principles/scopeRules/lookupHints and client-visual implementation/relationship sections, so installed MDM guidance packages are not limited to purpose/hardRules. `pnpm --filter @mcpskill/docs-retrieval test` passed 4 files / 16 tests; focused MCP MDM docs/resource suite passed 4 files / 22 tests; `pnpm --filter @mcpskill/mcp-server exec tsc -b` passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.9%.
-- MDM resource/package delivery: 99.0%.
-- Overall project deliverability: 99.3%.
+- MDM resource/package delivery: 99.1%.
+- Overall project deliverability: 99.4%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

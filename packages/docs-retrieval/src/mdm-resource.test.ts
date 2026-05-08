@@ -47,27 +47,29 @@ describe("MDM docs resource records", () => {
       JSON.stringify(fixtureV2GuidanceArtifact(), null, 2)
     );
 
-    await expect(readMdmDocsResourceRecords(artifactPath)).resolves.toEqual([
-      expect.objectContaining({
-        entryId: "client-visual-1.20.1-guidance-purpose",
-        packageId: "client-visual-1.20.1-guidance",
-        title: "Client Visual 1.20.1 Guidance Purpose",
-        summary:
-          "Translate low-knowledge visual requests into concrete Minecraft implementation evidence chains.",
-        searchTerms: expect.arrayContaining([
-          "client-visual-1.20.1-guidance",
-          "resourcepack_trace",
-          "block-entity-visual",
-          "renderer implementation"
-        ])
-      }),
-      expect.objectContaining({
-        entryId: "client-visual-1.20.1-guidance-hard-rules",
-        packageId: "client-visual-1.20.1-guidance",
-        summary:
-          "Do not invent renderer code without checking registry id, client binding, asset path, sync evidence, and loader/version API proof."
-      })
-    ]);
+    await expect(readMdmDocsResourceRecords(artifactPath)).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          entryId: "client-visual-1.20.1-guidance-purpose",
+          packageId: "client-visual-1.20.1-guidance",
+          title: "Client Visual 1.20.1 Guidance Purpose",
+          summary:
+            "Translate low-knowledge visual requests into concrete Minecraft implementation evidence chains.",
+          searchTerms: expect.arrayContaining([
+            "client-visual-1.20.1-guidance",
+            "resourcepack_trace",
+            "block-entity-visual",
+            "renderer implementation"
+          ])
+        }),
+        expect.objectContaining({
+          entryId: "client-visual-1.20.1-guidance-hard-rules",
+          packageId: "client-visual-1.20.1-guidance",
+          summary:
+            "Do not invent renderer code without checking registry id, client binding, asset path, sync evidence, and loader/version API proof."
+        })
+      ])
+    );
   });
 
   it("searches synthesized guidance docs by compact topic terms", async () => {
@@ -93,7 +95,7 @@ describe("MDM docs resource records", () => {
       resourceRecords: records
     });
 
-    expect(result.hits).toEqual([
+    expect(result.hits).toEqual(expect.arrayContaining([
       expect.objectContaining({
         entryId: "client-visual-1.20.1-guidance-purpose",
         matchedTerms: expect.arrayContaining([
@@ -102,7 +104,7 @@ describe("MDM docs resource records", () => {
           "nine slice"
         ])
       })
-    ]);
+    ]));
   });
 
   it("reads structured docs records from a sqlite MDM docs artifact", async () => {

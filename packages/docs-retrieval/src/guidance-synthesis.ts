@@ -42,6 +42,8 @@ export function synthesizeGuidanceRecords(
     );
   }
 
+  records.push(...synthesizeKnownSections(input));
+
   return records;
 }
 
@@ -51,13 +53,17 @@ function buildRecord(input: {
   title: string;
   summary: string;
   terms: string[];
+  kind?: DocsPackageRecord["kind"];
+  scriptScopes?: string[];
+  eventNames?: string[];
+  codeSymbols?: string[];
 }): DocsPackageRecord {
   const entryId = `${input.input.packageId}-${input.entrySuffix}`;
 
   return {
     entryId,
     packageId: input.input.packageId,
-    kind: "concept",
+    kind: input.kind ?? "concept",
     title: input.title,
     path: `${input.input.repoPath}#${entryId}`,
     headings: [],
@@ -68,11 +74,43 @@ function buildRecord(input: {
       input.summary,
       ...input.terms
     ]),
-    scriptScopes: [],
+    scriptScopes: input.scriptScopes ?? [],
     addonNames: [],
-    eventNames: [],
-    codeSymbols: []
+    eventNames: input.eventNames ?? [],
+    codeSymbols: input.codeSymbols ?? []
   };
+}
+
+function synthesizeKnownSections(input: GuidanceSynthesisInput): DocsPackageRecord[] {
+  return KNOWN_SECTIONS.flatMap((section) =>
+    objectArrayField(input.content[section.field]).map((entry, index) => {
+      const id =
+        stringField(entry.id) ??
+        stringField(entry.scope) ??
+        stringField(entry.query) ??
+        stringField(entry.bridge) ??
+        String(index + 1);
+      const title = sectionTitle(entry);
+      const summary = sectionSummary(entry);
+
+      return buildRecord({
+        input,
+        entrySuffix: `${section.field}-${slug(id)}`,
+        title,
+        summary,
+        terms: [
+          section.field,
+          title,
+          ...section.terms(entry),
+          ...collectGuidanceTerms(entry)
+        ],
+        kind: section.kind,
+        scriptScopes: section.scriptScopes(entry),
+        eventNames: stringArrayField(entry.examples),
+        codeSymbols: stringArrayField(entry.examples)
+      });
+    })
+  );
 }
 
 function collectGuidanceTerms(value: unknown): string[] {
@@ -113,6 +151,67 @@ function stringArrayField(value: unknown): string[] {
     return [];
   }
   return value.filter((entry): entry is string => typeof entry === "string");
+}
+
+function compactStrings(values: Array<string | undefined>): string[] {
+  return values.filter((value): value is string => value !== undefined);
+}
+
+function objectArrayField(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(isRecord);
+}
+
+function sectionTitle(entry: Record<string, unknown>): string {
+  return (
+    stringField(entry.title) ??
+    stringField(entry.scope) ??
+    stringField(entry.query) ??
+    stringField(entry.bridge) ??
+    stringField(entry.id) ??
+    "Guidance Section"
+  );
+}
+
+function sectionSummary(entry: Record<string, unknown>): string {
+  return uniqueStrings(compactStrings([
+    stringField(entry.guidance),
+    stringField(entry.purpose),
+    stringField(entry.use),
+    stringField(entry.useWhen),
+    stringField(entry.selectionRule),
+    stringField(entry.externalReferenceRule),
+    ...stringArrayField(entry.rules),
+    ...stringArrayField(entry.chain),
+    ...stringArrayField(entry.follow),
+    ...stringArrayField(entry.requireEvidenceForNineSlice),
+    ...stringArrayField(entry.reportAsConflict),
+    ...stringArrayField(entry.entryEvidence),
+    ...stringArrayField(entry.assetRelations),
+    ...stringArrayField(entry.mustNotAssume)
+  ])).join(" ");
+}
+
+function scopeTerms(entry: Record<string, unknown>): string[] {
+  const scope = stringField(entry.scope);
+  return scope ? [scope] : [];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function slug(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/[^a-z0-9._:-]+/g, "-")
+      .replaceAll(/^-+|-+$/g, "") || "section"
+  );
 }
 
 function uniqueStrings(values: string[]): string[] {
@@ -168,3 +267,68 @@ const STOP_WORDS = new Set([
   "with",
   "without"
 ]);
+
+const KNOWN_SECTIONS: Array<{
+  field: string;
+  kind: DocsPackageRecord["kind"];
+  terms: (entry: Record<string, unknown>) => string[];
+  scriptScopes: (entry: Record<string, unknown>) => string[];
+}> = [
+  {
+    field: "principles",
+    kind: "concept",
+    terms: () => [],
+    scriptScopes: () => []
+  },
+  {
+    field: "scopeRules",
+    kind: "resource-layout",
+    terms: scopeTerms,
+    scriptScopes: scopeTerms
+  },
+  {
+    field: "eventBridgeRules",
+    kind: "event-catalog",
+    terms: (entry) =>
+      [
+        stringField(entry.bridge),
+        stringField(entry.useWhen),
+        stringField(entry.selectionRule)
+      ].filter((value): value is string => Boolean(value)),
+    scriptScopes: () => []
+  },
+  {
+    field: "lookupHints",
+    kind: "concept",
+    terms: (entry) =>
+      [stringField(entry.query), stringField(entry.use)].filter(
+        (value): value is string => Boolean(value)
+      ),
+    scriptScopes: () => []
+  },
+  {
+    field: "implementationChains",
+    kind: "api-proof",
+    terms: (entry) => stringArrayField(entry.chain),
+    scriptScopes: () => []
+  },
+  {
+    field: "relationshipDiscoveryRules",
+    kind: "api-proof",
+    terms: (entry) => [
+      ...stringArrayField(entry.start),
+      ...stringArrayField(entry.follow)
+    ],
+    scriptScopes: () => []
+  },
+  {
+    field: "visualTargets",
+    kind: "api-proof",
+    terms: (entry) => [
+      ...stringArrayField(entry.entryEvidence),
+      ...stringArrayField(entry.assetRelations),
+      ...stringArrayField(entry.mustNotAssume)
+    ],
+    scriptScopes: () => []
+  }
+];
