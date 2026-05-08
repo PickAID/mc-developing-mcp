@@ -1,6 +1,6 @@
 {
   "name": "@mcpskill/mcp-server",
-  "version": "0.1.0-next.0",
+  "version": "0.1.0-next.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,7 +8,7 @@
     "dist"
   ],
   "bin": {
-    "mc-developing-mcp": "./dist/stdio.js"
+    "mc-developing-mcp": "dist/stdio.js"
   },
   "exports": {
     ".": {
