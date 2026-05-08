@@ -177,6 +177,11 @@ is the actual public GitHub Release acceptance run.
   registry status. This keeps the public tool surface unchanged while letting
   agents see whether the current local release output passed producer-side
   acceptance.
+- `mdm-sources` release CI now builds through
+  `tools/write-release-acceptance-report.mjs` before publishing. The workflow
+  still uploads only `tools/list-release-artifacts.mjs` manifest-declared
+  artifacts, so the human acceptance JSON/Markdown reports stay local workflow
+  evidence and are not silently distributed as MDM release assets.
 
 ## `mdm-sources` Status
 
@@ -419,13 +424,14 @@ mdm-sources source-index package producer: create-source-index-package.mjs now c
 MCP runtime-local source-index discovery: mc_develop now discovers existing runtimeRoot source-index.sqlite databases, merges them with installed MDM source_index_sqlite artifacts, and feeds them into service-profile, context.query, and source.bundle without adding public tools or downloads. Focused mcp-server source-index tests passed 3 files / 10 tests and mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 mdm-sources local release acceptance report: tools/write-release-acceptance-report.mjs generated release-out/mdm-release-acceptance-report.json and .md without registry mutation or publishing; status passed, packageCount 465, artifactCount 467, totalSizeBytes 2732077, repositoryErrorCount 0, schemaErrorCount 0, installVerifiedCount 465. node --test tests/write-release-acceptance-report.test.mjs passed 1 test; node tools/validate.mjs returned packageCount 465 errorCount 0; node --test tests/*.test.mjs passed 46 tests; touched source/test files stayed under 500 lines
 MCP MDM release acceptance status context: mc_develop structured mdmResources now includes compact releaseAcceptance when local mdm-sources release-out/mdm-release-acceptance-report.json exists; missing report is non-fatal and invalid report shape is summarized as invalid. focused status/resource tests passed 2 files / 10 tests; real/remote MDM release focused suite passed 4 files / 12 tests; mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
+mdm-sources release workflow acceptance gate: .github/workflows/release.yml now uses tools/write-release-acceptance-report.mjs --out release-out before publishing, verifies manifest/summary/report files exist, and still derives upload files only from tools/list-release-artifacts.mjs release-out/mdm-release-manifest.json. Focused workflow/list/report tests passed 3 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 46 tests; touched workflow/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.9%.
-- MDM resource/package delivery: 98.4%.
-- Overall project deliverability: 98.7%.
+- MDM resource/package delivery: 98.5%.
+- Overall project deliverability: 98.8%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
