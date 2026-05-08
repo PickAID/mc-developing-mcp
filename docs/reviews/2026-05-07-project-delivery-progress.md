@@ -204,6 +204,10 @@ is the actual public GitHub Release acceptance run.
   `https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/mdm-release-manifest.json`
   with bounded retries, so uploaded manifest, summary, artifacts, checksums, and
   SQLite installability are verified from the published asset URLs.
+- `mdm-sources` now has an explicit release distribution policy document. It
+  defines the manifest-listed upload rule, private data boundary, lightweight
+  provenance fields, no-signature/no-attestation semantics, Release asset
+  retention expectations, and future workflow artifact retention constraints.
 
 ## `mdm-sources` Status
 
@@ -345,7 +349,8 @@ Implemented:
 Not done:
 
 - Live published GitHub Release acceptance run.
-- Signing/provenance/retention policy.
+- Real cryptographic signing or GitHub artifact attestation. Current release
+  policy and notes deliberately provide visible provenance, not signing.
 - Large public docs corpus.
 - Loader-specific profile coverage beyond the first curated matrix and broader
   API-specific profile variants beyond the current source/datapack/resourcepack
@@ -451,13 +456,14 @@ mdm-sources remote release schema verifier: tools/verify-release-schema.mjs now 
 mdm-sources live release verifier: tools/verify-live-release.mjs now accepts a local or GitHub Release-shaped manifest path/url, runs schema+summary verifier and install verifier, and returns structured status without publishing or writing repository caches. Focused live/schema/install tests passed 14 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 52 tests; touched source/test files stayed under 500 lines
 mdm-sources release provenance notes: tools/write-release-notes.mjs now renders GitHub Release notes from release summary and acceptance report, including repository/ref/revision, manifest sha256, package/artifact totals, live verify command, and explicit no-signature/no-private-cache policy text. Workflow updates notes on both release create and existing-release upload paths. Focused workflow/notes/live tests passed 6 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 54 tests; touched workflow/source/test files stayed under 500 lines
 mdm-sources post-publish live verification: release workflow now runs tools/verify-live-release.mjs against the published GitHub Release manifest URL after gh release create/upload, with 4 bounded attempts for GitHub asset visibility delay. Workflow tests assert the verify step occurs after publish and uses the GitHub Release URL. Focused workflow/live tests passed 4 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 54 tests; touched workflow/test files stayed under 500 lines
+mdm-sources release distribution policy: docs/release-policy.md now defines manifest-listed release assets, private data exclusions, provenance fields, no-signature/no-attestation semantics, Release asset retention expectations, and future workflow artifact retention requirements. release-policy test passed; node tools/validate.mjs returned packageCount 465 errorCount 0; full mdm-sources tests passed 55 tests; touched docs/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.9%.
-- MDM resource/package delivery: 98.9%.
-- Overall project deliverability: 99.2%.
+- MDM resource/package delivery: 99.0%.
+- Overall project deliverability: 99.3%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
