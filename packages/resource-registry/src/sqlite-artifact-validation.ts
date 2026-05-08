@@ -62,7 +62,7 @@ function requiredSqliteTables(input: MdmSqliteArtifactValidationInput): string[]
     ];
   }
 
-  return [];
+  return ["docs_entries", "docs_entries_fts"];
 }
 
 function validateSourceIndexContent(

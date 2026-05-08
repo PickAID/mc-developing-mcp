@@ -161,6 +161,32 @@ describe("ensureMdmReleasePackageCached", () => {
       readCachedResourceState(cacheLayout, "minecraft-1.20.1-source-index")
     ).resolves.toBeUndefined();
   });
+
+  it("uses docs SQLite default required tables when metadata omits table names", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-install-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const bytes = await sqliteFixture(async (database) => {
+      database.exec("PRAGMA user_version = 3");
+      database.exec("CREATE TABLE docs_entries(id TEXT PRIMARY KEY)");
+    });
+
+    const result = await ensureMdmReleasePackageCached({
+      manifest: sqliteManifestWithoutRequiredTables(bytes),
+      packageId: "core-docs-sqlite",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async () => okResponse(bytes)
+    });
+
+    expect(result).toMatchObject({
+      status: "invalid_artifact",
+      packageId: "core-docs-sqlite",
+      message: expect.stringContaining("docs_entries_fts")
+    });
+    await expect(
+      readCachedResourceState(cacheLayout, "core-docs-sqlite")
+    ).resolves.toBeUndefined();
+  });
 });
 
 function fixtureManifest(body: string): MdmReleaseManifest {
@@ -252,6 +278,31 @@ function sourceIndexManifest(body: Buffer): MdmReleaseManifest {
         artifactKind: "source_index",
         queryAdapter: "source_index_sqlite",
         artifactName: "minecraft-1.20.1-source-index-0.1.0.sqlite"
+      }
+    ]
+  };
+}
+
+function sqliteManifestWithoutRequiredTables(body: Buffer): MdmReleaseManifest {
+  const manifest = sqliteManifest(body, {
+    requiredTables: ["docs_entries"],
+    minUserVersion: 3
+  });
+
+  return {
+    ...manifest,
+    packages: [
+      {
+        ...manifest.packages[0],
+        metadata: {
+          storageKind: "sqlite_bundle",
+          installTier: "optional_dataset",
+          commitPolicy: "repository_manifest",
+          sqlite: {
+            databaseName: "core-docs-sqlite.sqlite",
+            minUserVersion: 3
+          }
+        }
       }
     ]
   };

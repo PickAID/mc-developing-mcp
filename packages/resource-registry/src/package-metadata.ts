@@ -181,6 +181,11 @@ function requireStringArray(value: unknown, field: string): string[] {
   if (!Array.isArray(value)) {
     throw new Error(`mdm package metadata field ${field} must be an array.`);
   }
+  if (value.length === 0) {
+    throw new Error(
+      `mdm package metadata field ${field} must contain at least one table.`
+    );
+  }
 
   return value.map((entry) => requireString(entry, field));
 }

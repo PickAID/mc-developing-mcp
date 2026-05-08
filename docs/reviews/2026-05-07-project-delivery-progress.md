@@ -79,6 +79,10 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - MCP resource-registry's real `mdm-sources` smoke now includes the public
   `sources` channel, proving vanilla source acquisition profile packages build,
   adapt to v2 package metadata, install into cache, and expose their payload.
+- MCP resource-registry now rejects empty SQLite `requiredTables` metadata and
+  matches the `mdm-sources` SQLite verifier fallback for docs SQLite artifacts:
+  when table metadata is omitted, `docs_entries` and `docs_entries_fts` are
+  required.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -348,13 +352,14 @@ MCP source-index schema id parity: red tests first showed source-package-manager
 MCP source acquisition workspace execution: workspace_gradle/read_declared_dependencies and workspace_probejs/read_probejs_types_and_registries routes now build executable workspace_overlay work items and dispatch through injected/default handlers. source-package-manager test passed 16 files / 66 tests; MCP focused source acquisition tests passed 2 files / 9 tests; full mcp-server test passed 104 files / 342 tests after updating release manifest fixtures and high-level source-acquisition assertions; source-package-manager and mcp-server TypeScript builds passed; touched source/test files stayed under 500 lines
 MCP install-time SQLite contract gate: red installer tests first showed invalid SQLite docs/source-index artifacts were downloaded and cached as ready; installer now rejects invalid_artifact before writing cache state, sharing SQLite validation with status summaries. resource-registry test passed 8 files / 47 tests; MCP focused MDM resource tests passed 4 files / 9 tests; mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 MCP mdm-sources sources-channel smoke: red assertion first assumed source profile preferredFallbacks were lifted into v2 query metadata; smoke now verifies the actual contract: sources channel packages expose source_lookup/source_chunk_search capabilities, json_docs adapter, vanilla-sources release family, cache installation, and payload/source-profile.json content. resource-registry test passed 8 files / 47 tests; touched test file stayed under 500 lines
+MCP SQLite metadata verifier parity: red tests first showed empty metadata.sqlite.requiredTables and docs SQLite artifacts without explicit requiredTables were accepted; parser now rejects empty requiredTables and install-time validation falls back to docs_entries/docs_entries_fts for docs SQLite. resource-registry test passed 8 files / 49 tests; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.6%.
 - MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.5%.
+- Overall project deliverability: 97.6%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

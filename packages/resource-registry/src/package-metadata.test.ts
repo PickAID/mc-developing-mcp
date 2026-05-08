@@ -104,4 +104,21 @@ describe("resolveMdmResourcePackageMetadata", () => {
       ).toThrow(/minUserVersion must be a non-negative integer/);
     }
   );
+
+  it("rejects empty SQLite required tables", () => {
+    expect(() =>
+      resolveMdmResourcePackageMetadata(
+        {
+          sqlite: {
+            requiredTables: []
+          }
+        },
+        {
+          packageId: "docs-sqlite-bundle",
+          required: false,
+          format: "sqlite"
+        }
+      )
+    ).toThrow(/requiredTables must contain at least one table/);
+  });
 });
