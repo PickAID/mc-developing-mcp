@@ -11,10 +11,11 @@ evidence, datapack/resourcepack evidence, MDM resource install/status, SQLite
 docs lookup, and conservative source acquisition handlers.
 
 The remaining delivery gap is now concentrated in live release distribution,
-broader package corpus coverage, source-index corpus generation,
-loader-specific variants, and final UX polish. The release producer is now
-hardened enough to verify local release installability before upload; the
-remaining live-release gap is the actual public GitHub Release acceptance run.
+broader package corpus coverage, source-index corpus generation, and final UX
+polish. The release producer now has a local acceptance report covering
+manifest generation, schema verification, install verification, artifact-list
+shape, and repository validation before upload. The remaining live-release gap
+is the actual public GitHub Release acceptance run.
 
 ## Current Capabilities
 
@@ -258,6 +259,12 @@ Implemented:
   together and verifies they remain four independent artifacts plus
   manifest/summary files. The test also checks JSON payload isolation and SQLite
   table isolation between docs and source-index artifacts.
+- Local release acceptance now has a dedicated `mdm-sources` report tool:
+  `tools/write-release-acceptance-report.mjs`. It builds `release-out` without
+  mutating registry metadata, runs repository validation, release schema
+  verification, install verification, and artifact-list enumeration, then writes
+  compact JSON and Markdown reports for human review. It does not publish a
+  GitHub Release or perform remote downloads.
 - Public `sources` channel coverage is now generated from the release catalog's
   official release list. Current catalog coverage is 101 vanilla source profile
   packages, including older releases such as 1.14.4 and 1.12.2 plus current
@@ -309,10 +316,10 @@ Not done:
 - Loader-specific profile coverage beyond the first curated matrix and broader
   API-specific profile variants beyond the current source/datapack/resourcepack
   loader set.
-- Larger real source-index corpus coverage and live release acceptance. The
-  producer path is now explicit for normalized allowed inputs, but broad
-  datasets still need controlled generation from local/user-confirmed source
-  roots and policy-approved payloads.
+- Larger real source-index corpus coverage. The producer path is now explicit
+  for normalized allowed inputs, but broad datasets still need controlled
+  generation from local/user-confirmed source roots and policy-approved
+  payloads.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
 - Source acquisition workspace-route execution parity is now covered for the
@@ -402,13 +409,14 @@ mdm-sources loader datapack/resourcepack profiles: sync-repository now generates
 MCP loader datapack/resourcepack recommendations: request/workspace loader now prefers matching loader-specific datapack/resourcepack profiles, filters other loader profiles, and falls back to vanilla profiles when loader packages are absent; source signal matching no longer treats resourcepack as source evidence; focused mcp-server recommendation tests passed 4 files / 15 tests and mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 mdm-sources source-index package producer: create-source-index-package.mjs now creates v2 source_index_sqlite packages from normalized local/user-confirmed payload JSON, rejects target mismatches, syncs registry metadata by default, and builds into install-verified SQLite release artifacts. node --test tests/create-source-index-package.test.mjs tests/build-local-release-source-index.test.mjs passed 3 tests; node --test tests/*.test.mjs passed 45 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; touched source/test files stayed under 500 lines
 MCP runtime-local source-index discovery: mc_develop now discovers existing runtimeRoot source-index.sqlite databases, merges them with installed MDM source_index_sqlite artifacts, and feeds them into service-profile, context.query, and source.bundle without adding public tools or downloads. Focused mcp-server source-index tests passed 3 files / 10 tests and mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
+mdm-sources local release acceptance report: tools/write-release-acceptance-report.mjs generated release-out/mdm-release-acceptance-report.json and .md without registry mutation or publishing; status passed, packageCount 465, artifactCount 467, totalSizeBytes 2732077, repositoryErrorCount 0, schemaErrorCount 0, installVerifiedCount 465. node --test tests/write-release-acceptance-report.test.mjs passed 1 test; node tools/validate.mjs returned packageCount 465 errorCount 0; node --test tests/*.test.mjs passed 46 tests; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
 - MCP core capability: 99.9%.
-- MDM resource/package delivery: 98.0%.
-- Overall project deliverability: 98.4%.
+- MDM resource/package delivery: 98.3%.
+- Overall project deliverability: 98.6%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
@@ -416,6 +424,7 @@ growth:
 - Generate and validate broader source-index corpora from allowed local or
   user-confirmed inputs, without committing Minecraft source or private
   workspace indexes.
-- Run live GitHub Release acceptance once a release exists.
+- Publish and run live GitHub Release acceptance for the current 465-package /
+  467-artifact release output.
 - Expand package coverage beyond the initial docs/datapack/resourcepack/mapping
   corpus, especially loader-specific and API-specific guidance packages.
