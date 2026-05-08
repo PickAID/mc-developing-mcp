@@ -71,6 +71,50 @@ describe("mdm resource status context", () => {
       "MDM resource status: ready=1; missing_required=1"
     );
   });
+
+  it("summarizes a local mdm-sources release acceptance report when present", async () => {
+    const mdmSourcesRoot = await createMdmSourcesRoot();
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-runtime-"));
+    await mkdir(join(mdmSourcesRoot, "release-out"), { recursive: true });
+    await writeJson(
+      join(mdmSourcesRoot, "release-out", "mdm-release-acceptance-report.json"),
+      {
+        schemaVersion: 1,
+        generatedAt: "2026-05-08T00:00:00.000Z",
+        status: "passed",
+        release: {
+          packageCount: 465,
+          artifactCount: 467,
+          totalSizeBytes: 2732077
+        },
+        checks: {
+          repository: { errorCount: 0 },
+          schema: { errorCount: 0 },
+          install: { packageCount: 465, verifiedCount: 465 }
+        }
+      }
+    );
+
+    const context = await buildMdmResourceStatusContext({
+      mdmSourcesRoot,
+      runtimeRoot
+    });
+
+    expect(context.releaseAcceptance).toEqual({
+      status: "passed",
+      generatedAt: "2026-05-08T00:00:00.000Z",
+      packageCount: 465,
+      artifactCount: 467,
+      totalSizeBytes: 2732077,
+      repositoryErrorCount: 0,
+      schemaErrorCount: 0,
+      installVerifiedCount: 465,
+      installPackageCount: 465
+    });
+    expect(formatMdmResourceStatusPrompt(context)).toContain(
+      "MDM release acceptance: status=passed; packages=465; artifacts=467; install=465/465"
+    );
+  });
 });
 
 async function createMdmSourcesRoot(): Promise<string> {

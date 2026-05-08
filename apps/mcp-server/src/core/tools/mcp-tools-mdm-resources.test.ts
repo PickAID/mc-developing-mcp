@@ -1,4 +1,4 @@
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -54,6 +54,58 @@ describe("mc_develop mdm resource status", () => {
             missing_optional: 0,
             invalid_checksum: 0
           }
+        }
+      }
+    });
+  });
+
+  it("returns local mdm-sources release acceptance status in structured content", async () => {
+    const registry = createCapturingRegistry();
+    const mdmSourcesRoot = await createMdmSourcesRoot();
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-runtime-"));
+    const workspaceRoot = await createWorkspaceRoot();
+    await mkdir(join(mdmSourcesRoot, "release-out"), { recursive: true });
+    await writeFile(
+      join(mdmSourcesRoot, "release-out", "mdm-release-acceptance-report.json"),
+      `${JSON.stringify({
+        schemaVersion: 1,
+        generatedAt: "2026-05-08T00:00:00.000Z",
+        status: "passed",
+        release: {
+          packageCount: 465,
+          artifactCount: 467,
+          totalSizeBytes: 2732077
+        },
+        checks: {
+          repository: { errorCount: 0 },
+          schema: { errorCount: 0 },
+          install: { packageCount: 465, verifiedCount: 465 }
+        }
+      })}\n`
+    );
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Check local MDM release readiness.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmResources: {
+        releaseAcceptance: {
+          status: "passed",
+          packageCount: 465,
+          artifactCount: 467,
+          installVerifiedCount: 465,
+          installPackageCount: 465
         }
       }
     });
