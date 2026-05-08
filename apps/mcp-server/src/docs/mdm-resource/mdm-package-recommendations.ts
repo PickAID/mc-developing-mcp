@@ -33,6 +33,7 @@ export interface BuildMdmPackageRecommendationsInput {
   requestText: string;
   mdmResources: MdmResourceStatusContext;
   minecraftVersion?: string;
+  minecraftLoader?: string;
   limit?: number;
 }
 
@@ -53,12 +54,15 @@ export function buildMdmPackageRecommendations(
     requestText: input.requestText,
     workspaceMinecraftVersion: input.minecraftVersion
   });
+  const requestedMinecraftLoader =
+    detectMinecraftLoader(input.requestText) ?? normalizeMinecraftLoader(input.minecraftLoader);
   const suggestions = (input.mdmResources.summary?.packages ?? [])
     .map((resourcePackage) =>
       scorePackage({
         resourcePackage,
         signals,
         requestedMinecraftVersions,
+        requestedMinecraftLoader,
         registryRoot: input.mdmResources.registryRoot
       })
     )
@@ -84,6 +88,7 @@ function scorePackage(input: {
   resourcePackage: MdmResourceStatusEntry;
   signals: Set<RequestSignal>;
   requestedMinecraftVersions: string[];
+  requestedMinecraftLoader?: MinecraftProfileLoader;
   registryRoot?: string;
 }): ScoredRecommendation | undefined {
   const matchedSignals = matchPackageSignals(input.resourcePackage, input.signals);
@@ -93,13 +98,20 @@ function scorePackage(input: {
   if (!matchesRequestedVersionedProfile(input.resourcePackage, input.requestedMinecraftVersions)) {
     return undefined;
   }
+  if (!matchesRequestedLoaderProfile(input.resourcePackage, input.requestedMinecraftLoader)) {
+    return undefined;
+  }
 
   const statusWeight = input.resourcePackage.status === "ready" ? -1 : 1;
   const versionWeight = getRequestedVersionWeight(
     input.resourcePackage,
     input.requestedMinecraftVersions
   );
-  const score = matchedSignals.length * 10 + versionWeight + statusWeight;
+  const loaderWeight = getRequestedLoaderWeight(
+    input.resourcePackage,
+    input.requestedMinecraftLoader
+  );
+  const score = matchedSignals.length * 10 + versionWeight + loaderWeight + statusWeight;
   const priority = resolvePriority({
     score,
     status: input.resourcePackage.status,
@@ -154,6 +166,42 @@ function detectRequestedMinecraftVersions(input: {
   return input.workspaceMinecraftVersion ? [input.workspaceMinecraftVersion] : [];
 }
 
+function detectMinecraftLoader(requestText: string): MinecraftProfileLoader | undefined {
+  const normalized = requestText.toLowerCase();
+  if (/\bneo[\s-]?forge\b/u.test(normalized)) {
+    return "neoforge";
+  }
+  if (/\bfabric\b/u.test(normalized)) {
+    return "fabric";
+  }
+  if (/\bquilt\b/u.test(normalized)) {
+    return "quilt";
+  }
+  if (/\bforge\b/u.test(normalized)) {
+    return "forge";
+  }
+
+  return undefined;
+}
+
+function normalizeMinecraftLoader(loader: string | undefined): MinecraftProfileLoader | undefined {
+  if (!loader) {
+    return undefined;
+  }
+
+  const normalized = loader.toLowerCase().replace(/[\s_-]+/gu, "");
+  if (
+    normalized === "forge" ||
+    normalized === "neoforge" ||
+    normalized === "fabric" ||
+    normalized === "quilt"
+  ) {
+    return normalized;
+  }
+
+  return undefined;
+}
+
 function addSignal(
   signals: Set<RequestSignal>,
   text: string,
@@ -189,7 +237,7 @@ function matchPackageSignals(
       return /docs|guidance|sqlite|jsonl/u.test(searchable);
     }
     if (signal === "sources") {
-      return /sources?|source[-_ ]?(?:index|lookup|chunk|pack|tree)|source_index_sqlite/u.test(
+      return /\bsources?\b|\bsource[-_ ]?(?:index|lookup|chunk|pack|tree)\b|source_index_sqlite/u.test(
         searchable
       );
     }
@@ -207,6 +255,22 @@ function matchesRequestedVersionedProfile(
   }
 
   return requestedMinecraftVersions.includes(getVersionedMinecraftProfileVersion(resourcePackage) ?? "");
+}
+
+function matchesRequestedLoaderProfile(
+  resourcePackage: MdmResourceStatusEntry,
+  requestedMinecraftLoader: MinecraftProfileLoader | undefined
+): boolean {
+  if (!requestedMinecraftLoader) {
+    return true;
+  }
+
+  const profile = getVersionedMinecraftProfile(resourcePackage);
+  return (
+    profile?.loader === undefined ||
+    profile.loader === "vanilla" ||
+    profile.loader === requestedMinecraftLoader
+  );
 }
 
 function getRequestedVersionWeight(
@@ -227,6 +291,18 @@ function getRequestedVersionWeight(
     : 0;
 }
 
+function getRequestedLoaderWeight(
+  resourcePackage: MdmResourceStatusEntry,
+  requestedMinecraftLoader: MinecraftProfileLoader | undefined
+): number {
+  if (!requestedMinecraftLoader) {
+    return 0;
+  }
+
+  const profile = getVersionedMinecraftProfile(resourcePackage);
+  return profile?.loader === requestedMinecraftLoader ? 50 : 0;
+}
+
 function isVersionedMinecraftProfile(resourcePackage: MdmResourceStatusEntry): boolean {
   return getVersionedMinecraftProfileVersion(resourcePackage) !== undefined;
 }
@@ -234,11 +310,38 @@ function isVersionedMinecraftProfile(resourcePackage: MdmResourceStatusEntry): b
 function getVersionedMinecraftProfileVersion(
   resourcePackage: MdmResourceStatusEntry
 ): string | undefined {
-  const match = resourcePackage.packageId.match(
-    /^minecraft-(?<version>.+)-(?:(?:vanilla|forge|neoforge|fabric|quilt)-source|vanilla-(?:datapack|resourcepack)|[a-z0-9-]+-mapping)-profile$|^minecraft-(?<indexVersion>.+)-source-index$/u
+  const profile = getVersionedMinecraftProfile(resourcePackage);
+  if (profile) {
+    return profile.version;
+  }
+
+  const indexMatch = resourcePackage.packageId.match(
+    /^minecraft-(?<version>.+)-source-index$/u
   );
 
-  return match?.groups?.version ?? match?.groups?.indexVersion;
+  return indexMatch?.groups?.version;
+}
+
+function getVersionedMinecraftProfile(
+  resourcePackage: MdmResourceStatusEntry
+): MinecraftProfile | undefined {
+  const match = resourcePackage.packageId.match(
+    /^minecraft-(?<version>.+)-(?<loader>vanilla|forge|neoforge|fabric|quilt)-(?<kind>source|datapack|resourcepack)-profile$/u
+  );
+  if (match?.groups?.version && match.groups.loader) {
+    return {
+      version: match.groups.version,
+      loader: match.groups.loader as MinecraftProfileLoader | "vanilla"
+    };
+  }
+
+  const mappingMatch = resourcePackage.packageId.match(
+    /^minecraft-(?<version>.+)-[a-z0-9-]+-mapping-profile$/u
+  );
+
+  return mappingMatch?.groups?.version
+    ? { version: mappingMatch.groups.version }
+    : undefined;
 }
 
 function resolvePriority(input: {
@@ -302,6 +405,13 @@ type RequestSignal =
   | "mappings"
   | "sources"
   | "docs";
+
+type MinecraftProfileLoader = "forge" | "neoforge" | "fabric" | "quilt";
+
+interface MinecraftProfile {
+  version: string;
+  loader?: MinecraftProfileLoader | "vanilla";
+}
 
 type ScoredRecommendation = MdmPackageRecommendation & {
   score: number;

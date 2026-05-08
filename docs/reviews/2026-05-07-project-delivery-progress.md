@@ -263,6 +263,12 @@ Implemented:
   are metadata-only `loader-sources` profiles that describe runtime-private
   Minecraft and loader API source acquisition; they do not bundle source,
   remapped trees, generated indexes, or private workspace data.
+- Public loader-specific datapack and resourcepack profiles now cover the same
+  first loader matrix. These 36 packages are metadata-only `loader-datapack`
+  and `loader-resourcepack` profiles with loader target metadata, mapping
+  families, Gradle/ProbeJS/local resolution hints, and explicit distribution
+  boundaries. They do not bundle vanilla data files, asset files, generated
+  archive indexes, private loader workspace files, or private modpack data.
 - Public `datapack` and `resourcepack` channel coverage is generated from the
   same official release catalog. Current catalog coverage is 101 datapack
   profile packages and 101 resourcepack profile packages, covering 1.0 through
@@ -294,8 +300,9 @@ Not done:
 - Live published GitHub Release acceptance run.
 - Signing/provenance/retention policy.
 - Large public docs corpus.
-- Loader-specific source profile coverage beyond the first curated matrix, and
-  loader-specific data/resource profile variants beyond vanilla.
+- Loader-specific profile coverage beyond the first curated matrix and broader
+  API-specific profile variants beyond the current source/datapack/resourcepack
+  loader set.
 - Larger real source-index corpus generation and live release acceptance. The
   schema path is aligned, but broad source-index datasets still need controlled
   generation from allowed local/user-confirmed inputs.
@@ -384,13 +391,15 @@ MCP source_index_sqlite cross-repo smoke: new resource-registry smoke builds a t
 MCP source acquisition policy/budget guards: source-acquisition-no-workspace-policy.test.ts and source-acquisition-probejs-budget.test.ts passed 2 files / 2 tests; no-workspace requests excluded workspace_gradle/workspace_probejs routes and ProbeJS large file evidence returned 20 capped item entries from 160 total without serializing raw file text; mcp-server TypeScript build passed; touched test files stayed under 500 lines
 MCP datapack/resourcepack release split smoke: resource-registry test passed 10 files / 51 tests; mdm-sources real 1.20.1 datapack/resourcepack packages kept separate release families, artifact kinds, query capabilities, cache installs, and ready statuses; touched test file stayed under 500 lines
 mdm-sources release artifact split smoke: node --test tests/release-artifact-split.test.mjs passed 1 test; node --test tests/*.test.mjs passed 43 tests; node tools/validate.mjs returned packageCount 429 errorCount 0; fixture release emitted four independent artifacts for docs sqlite, source-index sqlite, datapack json, and resourcepack json plus manifest/summary, with no cross-type payload/table mixing; touched test file stayed under 500 lines
+mdm-sources loader datapack/resourcepack profiles: sync-repository now generates 18 loader datapack and 18 loader resourcepack metadata-only packages for Forge/NeoForge/Fabric/Quilt across the first curated loader matrix; node --test tests/sync-repository.test.mjs passed 1 test; node --test tests/*.test.mjs passed 43 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; touched source/test files stayed under 500 lines
+MCP loader datapack/resourcepack recommendations: request/workspace loader now prefers matching loader-specific datapack/resourcepack profiles, filters other loader profiles, and falls back to vanilla profiles when loader packages are absent; source signal matching no longer treats resourcepack as source evidence; focused mcp-server recommendation tests passed 4 files / 15 tests and mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.8%.
-- MDM resource/package delivery: 97.5%.
-- Overall project deliverability: 98.0%.
+- MCP core capability: 99.85%.
+- MDM resource/package delivery: 97.8%.
+- Overall project deliverability: 98.2%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

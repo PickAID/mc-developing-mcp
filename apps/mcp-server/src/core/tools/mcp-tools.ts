@@ -197,7 +197,9 @@ async function executeMcpDevelopTool(
       requestText: input.requestText,
       mdmResources,
       minecraftVersion:
-        bootstrap.workspaceContext?.descriptor.currentRuntime.minecraftVersion
+        bootstrap.workspaceContext?.descriptor.currentRuntime.minecraftVersion,
+      minecraftLoader:
+        bootstrap.workspaceContext?.descriptor.currentRuntime.loader
     });
     const vanillaReleaseCatalog =
       await loadMdmVanillaReleaseCatalog(mdmResources);
