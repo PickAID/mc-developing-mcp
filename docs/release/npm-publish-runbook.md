@@ -2,6 +2,8 @@
 
 This runbook prepares a real npm upload for `mc-developing-mcp`. Do not publish from a dirty tree and do not publish `0.0.0`.
 
+Publishing to npm is irreversible for a package version. A published `name@version` cannot be reused later even if it is unpublished, and unpublish is constrained by npm policy. Treat every publish command as permanent.
+
 ## Release Shape
 
 The MCP server is not a single self-contained tarball. `@mcpskill/mcp-server` imports internal runtime packages, so the publishable package closure must be released together in the order listed by `scripts/npm-publish-packages.mjs`.
@@ -11,6 +13,7 @@ The MCP server is not a single self-contained tarball. `@mcpskill/mcp-server` im
 - Choose a real version before publishing. The current development version `0.0.0` is not a release version.
 - Decide whether the public release remains `UNLICENSED` or moves to an SPDX license with a root `LICENSE` file.
 - Confirm the npm account has publish rights for the `@mcpskill` scope.
+- Confirm the `@mcpskill` npm scope exists. If the publishing account is not the `mcpskill` user, create or obtain access to the `mcpskill` npm organization before publishing any package.
 - Prepare npm 2FA/OTP if the account requires it.
 - Confirm no private runtime cache, generated source cache, API key, or user modpack content is staged.
 - Confirm the companion MDM resources release is available and verified. The current bundled release is `mdm-resources-v0.2.0`:
@@ -76,10 +79,10 @@ node -e "import('./scripts/npm-publish-packages.mjs').then(m => console.log(m.pu
 For each package directory:
 
 ```sh
-pnpm --dir <package-dir> publish --access public
+pnpm --dir <package-dir> publish --access public --tag next
 ```
 
-Use `--tag next` for pre-release versions and the default `latest` tag only for stable releases.
+Use `--tag next` for pre-release versions such as `0.1.0-next.0`. Use the default `latest` tag only for stable releases. Never publish a `next` version without `--tag next`, because npm would otherwise attach the prerelease to the `latest` dist-tag.
 
 ## Post-Publish Checks
 
