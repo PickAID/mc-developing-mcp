@@ -42,7 +42,7 @@ import {
   type MdmPackageRecommendations
 } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
-import type { MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-index.js";
+import type { MappingIndexProvider } from "../../source-acquisition/mapping/source-acquisition-mapping-index.js";
 import { resolveMappingIndexProvider } from "./mcp-tools-mapping-provider.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { registerMcpServerTools } from "./mcp-tools.js";
+import { registerMcpServerTools } from "../tools/mcp-tools.js";
 import {
   createCapturingRegistry,
   createMdmReleaseOutForPackage,

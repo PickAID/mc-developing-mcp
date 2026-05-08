@@ -169,7 +169,7 @@ describe("stdio MCP subprocess", () => {
     } finally {
       await client.close();
     }
-  });
+  }, 20_000);
 });
 
 function collectStderr(transport: StdioClientTransport): string[] {

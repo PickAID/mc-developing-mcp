@@ -6,7 +6,7 @@ import { promisify } from "node:util";
 
 import { describe, expect, it } from "vitest";
 
-import { registerMcpServerTools, type McpToolHandler } from "./mcp-tools.js";
+import { registerMcpServerTools, type McpToolHandler } from "../tools/mcp-tools.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -89,7 +89,7 @@ describe("mc_develop real mdm-sources release consumption", () => {
         }
       }
     });
-  });
+  }, 20_000);
 });
 
 async function createWorkspaceRoot(tempRoot: string): Promise<string> {

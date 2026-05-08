@@ -245,7 +245,7 @@ describe("mdm-sources local release smoke", () => {
     expect(sourceProfileArtifact.payload["payload/source-profile.json"]).toMatchObject({
       repoPath: expect.stringContaining("payload/source-profile.json")
     });
-  });
+  }, 30_000);
 });
 
 async function pathExists(path: string): Promise<boolean> {

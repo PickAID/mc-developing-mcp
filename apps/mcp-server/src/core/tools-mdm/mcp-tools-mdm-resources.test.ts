@@ -8,7 +8,7 @@ import {
   resolveMdmResourceCacheLayout
 } from "@mcpskill/resource-registry";
 
-import { registerMcpServerTools } from "./mcp-tools.js";
+import { registerMcpServerTools } from "../tools/mcp-tools.js";
 import {
   createCapturingRegistry,
   createMdmReleaseOut,

@@ -25,7 +25,7 @@ import {
 import {
   executeMcpServerMappingIndexWorkItem,
   type MappingIndexProvider
-} from "./source-acquisition-mapping-index.js";
+} from "./mapping/source-acquisition-mapping-index.js";
 import { executeMcpServerVanillaGenerationWorkItem } from "./source-acquisition-vanilla-generation.js";
 
 export interface McpServerSourceAcquisitionWorkItemHandlerOptions {

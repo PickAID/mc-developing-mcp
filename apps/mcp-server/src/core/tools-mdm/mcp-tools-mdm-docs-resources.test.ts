@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { registerMcpServerTools, type McpToolHandler } from "./mcp-tools.js";
+import { registerMcpServerTools, type McpToolHandler } from "../tools/mcp-tools.js";
 
 describe("mc_develop MDM docs resource summary", () => {
   it("reports docs resource load failures without failing docs lookup", async () => {

@@ -1,10 +1,10 @@
-import type { MappingIndexProvider } from "../../source-acquisition/source-acquisition-mapping-index.js";
+import type { MappingIndexProvider } from "../../source-acquisition/mapping/source-acquisition-mapping-index.js";
 import {
   createTinyV2MappingIndexProvider,
   createYarnMavenTinyV2MappingIndexProvider
-} from "../../source-acquisition/source-acquisition-mapping-provider.js";
-import { createMojangManifestMappingIndexProvider } from "../../source-acquisition/source-acquisition-mojmap-provider.js";
-import { createParchmentMavenMappingIndexProvider } from "../../source-acquisition/source-acquisition-parchment-provider.js";
+} from "../../source-acquisition/mapping/source-acquisition-mapping-provider.js";
+import { createMojangManifestMappingIndexProvider } from "../../source-acquisition/mapping/source-acquisition-mojmap-provider.js";
+import { createParchmentMavenMappingIndexProvider } from "../../source-acquisition/mapping/source-acquisition-parchment-provider.js";
 
 export interface McpMappingProviderRuntimeOptions {
   env?: Partial<NodeJS.ProcessEnv>;

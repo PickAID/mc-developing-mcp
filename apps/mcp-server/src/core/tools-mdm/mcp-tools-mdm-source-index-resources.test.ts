@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { buildSourceIndex } from "@mcpskill/source-index";
 import { describe, expect, it } from "vitest";
 
-import { registerMcpServerTools } from "./mcp-tools.js";
+import { registerMcpServerTools } from "../tools/mcp-tools.js";
 import { createCapturingRegistry } from "../../../test-fixtures/mcp-tools-mdm-resource-fixtures.js";
 
 describe("mc_develop source-index mdm resources", () => {

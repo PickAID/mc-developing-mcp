@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { registerMcpServerTools, type McpToolHandler } from "./mcp-tools.js";
+import { registerMcpServerTools, type McpToolHandler } from "../tools/mcp-tools.js";
 
 describe("mc_develop mdm package recommendations", () => {
   it("recommends intent-matched missing MDM packages with confirmation-safe install hints", async () => {
