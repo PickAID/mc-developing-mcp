@@ -89,10 +89,20 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
 - MCP now has a high-level `mc_develop` workspace source acquisition acceptance
   test proving default workspace handlers return both Gradle dependency evidence
   and ProbeJS resource summary evidence through `source_acquisition_plan`.
+- Source acquisition now has a no-workspace policy guard: when no
+  `workspaceRoot` or workspace descriptor is present, workspace Gradle and
+  ProbeJS routes are not planned and their handlers are not called.
+- ProbeJS workspace evidence now has an explicit payload-budget guard for large
+  generated type/resource files. The source acquisition response returns compact
+  resource summaries and capped entries, not raw ProbeJS file text.
 - MCP resource-registry now has an independent `mdm-sources` source-index smoke
   that builds a temporary `source_index_sqlite` release fixture, adapts it to v2,
   installs it, and verifies ready status plus non-empty SQLite source-index
   tables.
+- MCP resource-registry now has an independent `mdm-sources`
+  datapack/resourcepack release split smoke. It proves datapack and
+  resourcepack channels keep separate release families, artifact kinds, query
+  capabilities, install cache entries, and ready status.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -237,6 +247,11 @@ Implemented:
 - Release manifest schema now treats SQLite release metadata as a complete
   release contract: `databaseName`, integer `minUserVersion`, and a non-empty
   `requiredTables` list are required for SQLite metadata in public releases.
+- Release artifact split is now covered by a minimal `mdm-sources` fixture that
+  builds docs SQLite, source-index SQLite, datapack JSON, and resourcepack JSON
+  together and verifies they remain four independent artifacts plus
+  manifest/summary files. The test also checks JSON payload isolation and SQLite
+  table isolation between docs and source-index artifacts.
 - Public `sources` channel coverage is now generated from the release catalog's
   official release list. Current catalog coverage is 101 vanilla source profile
   packages, including older releases such as 1.14.4 and 1.12.2 plus current
@@ -366,13 +381,16 @@ MCP SQLite metadata verifier parity: red tests first showed empty metadata.sqlit
 MCP source-index v2 contract hardening: red tests first showed source_index v2 packages could use docs schema/query metadata; package-registry now requires sqlite format, mdm.source.index.sqlite schema, and source_index_sqlite query adapter. package-registry test passed 2 files / 16 tests; touched files stayed under 500 lines
 MCP high-level workspace source acquisition acceptance: new mc_develop test confirms source_acquisition_plan returns completed workspace_gradle_dependencies and workspace_probejs_types payloads through default workspace handlers. focused mcp-server test passed 1 file / 1 test and mcp-server TypeScript build passed; touched test file stayed under 500 lines
 MCP source_index_sqlite cross-repo smoke: new resource-registry smoke builds a temporary mdm-sources source-index fixture, reads the release manifest, adapts it to v2 source_index/source_index_sqlite metadata, installs it, and verifies ready status plus non-empty files/java_symbols/java_members/source_chunks/fts_chunks counts. resource-registry test passed 9 files / 50 tests; touched test file stayed under 500 lines
+MCP source acquisition policy/budget guards: source-acquisition-no-workspace-policy.test.ts and source-acquisition-probejs-budget.test.ts passed 2 files / 2 tests; no-workspace requests excluded workspace_gradle/workspace_probejs routes and ProbeJS large file evidence returned 20 capped item entries from 160 total without serializing raw file text; mcp-server TypeScript build passed; touched test files stayed under 500 lines
+MCP datapack/resourcepack release split smoke: resource-registry test passed 10 files / 51 tests; mdm-sources real 1.20.1 datapack/resourcepack packages kept separate release families, artifact kinds, query capabilities, cache installs, and ready statuses; touched test file stayed under 500 lines
+mdm-sources release artifact split smoke: node --test tests/release-artifact-split.test.mjs passed 1 test; node --test tests/*.test.mjs passed 43 tests; node tools/validate.mjs returned packageCount 429 errorCount 0; fixture release emitted four independent artifacts for docs sqlite, source-index sqlite, datapack json, and resourcepack json plus manifest/summary, with no cross-type payload/table mixing; touched test file stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.7%.
-- MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.8%.
+- MCP core capability: 99.8%.
+- MDM resource/package delivery: 97.5%.
+- Overall project deliverability: 98.0%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
