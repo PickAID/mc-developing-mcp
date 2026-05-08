@@ -83,6 +83,16 @@ remaining live-release gap is the actual public GitHub Release acceptance run.
   matches the `mdm-sources` SQLite verifier fallback for docs SQLite artifacts:
   when table metadata is omitted, `docs_entries` and `docs_entries_fts` are
   required.
+- MCP package-registry now rejects `source_index` v2 manifests unless they use
+  the full source-index SQLite contract: sqlite artifact format,
+  `mdm.source.index.sqlite` schema id, and `source_index_sqlite` query adapter.
+- MCP now has a high-level `mc_develop` workspace source acquisition acceptance
+  test proving default workspace handlers return both Gradle dependency evidence
+  and ProbeJS resource summary evidence through `source_acquisition_plan`.
+- MCP resource-registry now has an independent `mdm-sources` source-index smoke
+  that builds a temporary `source_index_sqlite` release fixture, adapts it to v2,
+  installs it, and verifies ready status plus non-empty SQLite source-index
+  tables.
 - `source_acquisition_plan` now includes a lightweight version-filtered
   `sourceIndexPreview` when cached source indexes are available and a stable
   Java FQCN/path can be extracted. The preview returns metadata, paths, line
@@ -353,13 +363,16 @@ MCP source acquisition workspace execution: workspace_gradle/read_declared_depen
 MCP install-time SQLite contract gate: red installer tests first showed invalid SQLite docs/source-index artifacts were downloaded and cached as ready; installer now rejects invalid_artifact before writing cache state, sharing SQLite validation with status summaries. resource-registry test passed 8 files / 47 tests; MCP focused MDM resource tests passed 4 files / 9 tests; mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 MCP mdm-sources sources-channel smoke: red assertion first assumed source profile preferredFallbacks were lifted into v2 query metadata; smoke now verifies the actual contract: sources channel packages expose source_lookup/source_chunk_search capabilities, json_docs adapter, vanilla-sources release family, cache installation, and payload/source-profile.json content. resource-registry test passed 8 files / 47 tests; touched test file stayed under 500 lines
 MCP SQLite metadata verifier parity: red tests first showed empty metadata.sqlite.requiredTables and docs SQLite artifacts without explicit requiredTables were accepted; parser now rejects empty requiredTables and install-time validation falls back to docs_entries/docs_entries_fts for docs SQLite. resource-registry test passed 8 files / 49 tests; touched source/test files stayed under 500 lines
+MCP source-index v2 contract hardening: red tests first showed source_index v2 packages could use docs schema/query metadata; package-registry now requires sqlite format, mdm.source.index.sqlite schema, and source_index_sqlite query adapter. package-registry test passed 2 files / 16 tests; touched files stayed under 500 lines
+MCP high-level workspace source acquisition acceptance: new mc_develop test confirms source_acquisition_plan returns completed workspace_gradle_dependencies and workspace_probejs_types payloads through default workspace handlers. focused mcp-server test passed 1 file / 1 test and mcp-server TypeScript build passed; touched test file stayed under 500 lines
+MCP source_index_sqlite cross-repo smoke: new resource-registry smoke builds a temporary mdm-sources source-index fixture, reads the release manifest, adapts it to v2 source_index/source_index_sqlite metadata, installs it, and verifies ready status plus non-empty files/java_symbols/java_members/source_chunks/fts_chunks counts. resource-registry test passed 9 files / 50 tests; touched test file stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.6%.
+- MCP core capability: 99.7%.
 - MDM resource/package delivery: 97.2%.
-- Overall project deliverability: 97.6%.
+- Overall project deliverability: 97.8%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:

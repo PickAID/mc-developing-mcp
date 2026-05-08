@@ -158,6 +158,58 @@ describe("parsePackageManifestV2", () => {
     ).toThrow("source packages must declare target.mappings");
   });
 
+  it("requires source indexes to use the source index sqlite query contract", () => {
+    expect(() =>
+      parsePackageManifestV2({
+        ...publicSqliteDocsPackage,
+        target: {
+          mappings: ["official", "mojmap"]
+        },
+        artifact: {
+          kind: "source_index",
+          format: "sqlite",
+          schemaId: "mdm.source.index.sqlite",
+          schemaVersion: 1,
+          entrypoint: "source-index.sqlite"
+        },
+        capabilities: ["source_lookup"],
+        query: {
+          adapter: "sqlite_docs",
+          capabilities: ["source_lookup"],
+          defaultLimit: 8,
+          maxLimit: 50,
+          preferredFallbacks: []
+        }
+      })
+    ).toThrow("source_index packages must use source_index_sqlite query adapter");
+  });
+
+  it("requires source indexes to use the source index sqlite schema", () => {
+    expect(() =>
+      parsePackageManifestV2({
+        ...publicSqliteDocsPackage,
+        target: {
+          mappings: ["official", "mojmap"]
+        },
+        artifact: {
+          kind: "source_index",
+          format: "sqlite",
+          schemaId: "mdm.docs.sqlite",
+          schemaVersion: 1,
+          entrypoint: "source-index.sqlite"
+        },
+        capabilities: ["source_lookup"],
+        query: {
+          adapter: "source_index_sqlite",
+          capabilities: ["source_lookup"],
+          defaultLimit: 8,
+          maxLimit: 50,
+          preferredFallbacks: []
+        }
+      })
+    ).toThrow("source_index packages must use mdm.source.index.sqlite schema");
+  });
+
   it("accepts mapping bundles for explaining unmapped and mapped symbols", () => {
     const parsed = parsePackageManifestV2({
       ...publicSqliteDocsPackage,

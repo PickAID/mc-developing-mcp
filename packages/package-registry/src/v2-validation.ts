@@ -312,6 +312,17 @@ function validateManifest(manifest: PackageManifestV2): void {
   if (isSourceArtifact(artifact.kind) && target.mappings === undefined) {
     throw new Error("source packages must declare target.mappings");
   }
+  if (artifact.kind === "source_index") {
+    if (artifact.format !== "sqlite") {
+      throw new Error("source_index packages must use sqlite format");
+    }
+    if (artifact.schemaId !== "mdm.source.index.sqlite") {
+      throw new Error("source_index packages must use mdm.source.index.sqlite schema");
+    }
+    if (query.adapter !== "source_index_sqlite") {
+      throw new Error("source_index packages must use source_index_sqlite query adapter");
+    }
+  }
   if (artifact.kind === "mapping_bundle") {
     if (!capabilities.includes("mapping_lookup")) {
       throw new Error("mapping_bundle packages must declare mapping_lookup capability");
