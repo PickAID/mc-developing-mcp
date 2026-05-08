@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "tsc -b ../shared-types ../source-index ../source-package-manager . && vitest run --root ../.. packages/vanilla-source-adapter/src/resolve.test.ts"
+    "test": "tsc -b ../shared-types ../source-index ../source-package-manager . && vitest run --root ../.. packages/vanilla-source-adapter/src/resolve.test.ts packages/vanilla-source-adapter/src/resolve-source-index.test.ts"
   },
   "dependencies": {
     "@mcpskill/shared-types": "workspace:*",
