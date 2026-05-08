@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
-import type { SourceAcquisitionWorkItemHandlerResult } from "@mcpskill/source-package-manager";
+import type { SourceAcquisitionWorkItemHandlerResult } from "minecraft-developing-mcp-source-package-manager";
 
 export interface MappingIndexEntry {
   fromNamespace: string;

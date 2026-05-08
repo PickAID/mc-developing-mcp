@@ -2,7 +2,7 @@ import type {
   AgentRuntimeTaskRouteStep,
   AgentRuntimeToolName,
   McpServerRequestPlan
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export type McpServerEvidenceProvenance =
   | "logs"

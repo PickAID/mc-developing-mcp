@@ -2,11 +2,11 @@ import type {
   AgentRuntimeTaskRouteStep,
   DocsPackageManifest,
   McpServerRequestPlan
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 import {
   buildPackageRegistry,
   type PackageRegistry
-} from "@mcpskill/package-registry";
+} from "minecraft-developing-mcp-package-registry";
 
 import { BUILTIN_DOCS_PACKAGES } from "./builtin-packages.js";
 

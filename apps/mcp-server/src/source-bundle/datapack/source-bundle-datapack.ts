@@ -3,7 +3,7 @@ import {
   listDatapackFiles,
   resolveDatapackVersionProfile,
   summarizeDatapackFiles
-} from "@mcpskill/datapack-adapter";
+} from "minecraft-developing-mcp-datapack-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,

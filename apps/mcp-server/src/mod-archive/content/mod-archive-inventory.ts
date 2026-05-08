@@ -5,7 +5,7 @@ import {
   type ArchiveContentCache,
   type ModArchiveAssetKind,
   type ModArchiveDataKind
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 import { join } from "node:path";
 
 import type {

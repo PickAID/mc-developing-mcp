@@ -2,7 +2,7 @@ import type {
   SourcePackageCoordinate,
   SourcePackageEnsureResult,
   SourcePackageInstallStatus
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   createSourceAcquisitionJobState,

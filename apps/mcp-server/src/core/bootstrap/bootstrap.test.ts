@@ -24,10 +24,10 @@ describe("buildMcpServerBootstrap", () => {
       ["jdk", "jdtls", "gradle-support"]
     );
     expect(bootstrap.corePackages).toEqual([
-      "@mcpskill/agent-harness",
-      "@mcpskill/runtime-manager",
-      "@mcpskill/shared-types",
-      "@mcpskill/workspace-detector"
+      "minecraft-developing-mcp-agent-harness",
+      "minecraft-developing-mcp-runtime-manager",
+      "minecraft-developing-mcp-shared-types",
+      "minecraft-developing-mcp-workspace-detector"
     ]);
     expect(bootstrap.workspaceContext).toBeUndefined();
   });
@@ -44,7 +44,7 @@ describe("buildMcpServerBootstrap", () => {
 
     expect(bootstrap.workspaceContext).toMatchObject({
       workspaceRoot,
-      detectorPackage: "@mcpskill/workspace-detector",
+      detectorPackage: "minecraft-developing-mcp-workspace-detector",
       descriptor: {
         hasDatapack: true,
         currentRuntime: {

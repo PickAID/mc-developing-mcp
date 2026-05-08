@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/vanilla-source-adapter",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-vanilla-source-adapter",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,9 +18,9 @@
     "test": "tsc -b ../shared-types ../source-index ../source-package-manager . && vitest run --root ../.. packages/vanilla-source-adapter/src/resolve.test.ts packages/vanilla-source-adapter/src/resolve-source-index.test.ts"
   },
   "dependencies": {
-    "@mcpskill/shared-types": "workspace:*",
-    "@mcpskill/source-index": "workspace:*",
-    "@mcpskill/source-package-manager": "workspace:*"
+    "minecraft-developing-mcp-shared-types": "workspace:*",
+    "minecraft-developing-mcp-source-index": "workspace:*",
+    "minecraft-developing-mcp-source-package-manager": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

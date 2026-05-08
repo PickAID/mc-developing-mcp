@@ -3,7 +3,7 @@ import {
   buildModrinthMavenArtifact,
   buildRepositoryMavenArtifact,
   type ExternalModResolverResult
-} from "@mcpskill/external-mod-resolver";
+} from "minecraft-developing-mcp-external-mod-resolver";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../../request/evidence/evidence-plan.js";

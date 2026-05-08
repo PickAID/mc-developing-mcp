@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/docs-retrieval",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-docs-retrieval",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,8 +18,8 @@
     "test": "tsc -b ../shared-types ../package-registry . && vitest run --root ../.. packages/docs-retrieval/src/selector.test.ts packages/docs-retrieval/src/search.test.ts packages/docs-retrieval/src/mdm-resource.test.ts packages/docs-retrieval/src/guidance-synthesis.test.ts"
   },
   "dependencies": {
-    "@mcpskill/package-registry": "workspace:*",
-    "@mcpskill/shared-types": "workspace:*"
+    "minecraft-developing-mcp-package-registry": "workspace:*",
+    "minecraft-developing-mcp-shared-types": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

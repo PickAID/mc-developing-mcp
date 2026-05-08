@@ -11,18 +11,18 @@ import {
   type DatapackResourceReferenceTrace,
   type DatapackSearchMatch,
   type DatapackSkippedFile
-} from "@mcpskill/datapack-adapter";
+} from "minecraft-developing-mcp-datapack-adapter";
 import {
   buildSourcePackageAcquisitionEvidence,
   ensureSourcePackageInstalled,
   type SourcePackageRecipeExecutor,
   type SourcePackageRecipeProvider,
   type SourcePackageRecipeRegistry
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 import type {
   ManagedRuntimeLayout,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import type { McpServerEvidenceExecutorResult } from "../../request/execution/request-handler.js";
 import { buildSourceReadNextReads } from "../shared/source-read-next.js";

@@ -1,7 +1,7 @@
 import {
   readNestedArchiveContentFile,
   readNestedArchiveContentFiles
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type { McpServerEvidenceExecutorResult } from "../../request/execution/request-handler.js";
 import { applyModArchiveSourceLineRange } from "../read/mod-archive-source-read.js";

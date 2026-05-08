@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 import { describe, expect, it } from "vitest";
-import { createFileMavenMetadataCache } from "@mcpskill/external-mod-resolver";
+import { createFileMavenMetadataCache } from "minecraft-developing-mcp-external-mod-resolver";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { executeMcpServerRequest } from "./request-executor.js";

@@ -1,4 +1,4 @@
-import type { ManagedRuntimePolicy } from "@mcpskill/shared-types";
+import type { ManagedRuntimePolicy } from "minecraft-developing-mcp-shared-types";
 
 export function createDefaultRuntimePolicy(
   runtimeRoot: string

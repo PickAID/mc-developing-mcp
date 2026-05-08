@@ -1,23 +1,23 @@
 import {
   resolveVanillaSource,
   type VanillaSourceRequest
-} from "@mcpskill/vanilla-source-adapter";
-import { discoverMinecraftSourceArchives } from "@mcpskill/gradle-adapter";
-import { resolveManagedRuntimeLayout } from "@mcpskill/runtime-manager";
+} from "minecraft-developing-mcp-vanilla-source-adapter";
+import { discoverMinecraftSourceArchives } from "minecraft-developing-mcp-gradle-adapter";
+import { resolveManagedRuntimeLayout } from "minecraft-developing-mcp-runtime-manager";
 import type {
   SourcePackageRecipe,
   SourceAcquisitionJobRunner,
   SourcePackageRecipeExecutor,
   SourcePackageRecipeProvider,
   SourcePackageRecipeRegistry
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 import {
   buildMojangVanillaAssetsRecipeProvider,
   buildMojangVanillaDataPackRecipeProvider,
   buildMojangVanillaResourcePackRecipeProvider,
   buildVanillaSourcePackZipRecipe
-} from "@mcpskill/source-package-manager";
-import type { SourcePackageCoordinate } from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-source-package-manager";
+import type { SourcePackageCoordinate } from "minecraft-developing-mcp-shared-types";
 
 import type {
   McpServerEvidenceExecutor,

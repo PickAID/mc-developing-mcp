@@ -8,7 +8,7 @@ import type {
   ManagedRuntimeLayout,
   SourcePackageConfirmation,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { writeSourcePackageConfirmation } from "./confirmation.js";
 import { buildLocalSourcePackageRecipeExecutor } from "./executor.js";

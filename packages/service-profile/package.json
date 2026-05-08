@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/service-profile",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-service-profile",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,13 +18,13 @@
     "test": "tsc -b ../shared-types ../workspace-detector ../gradle-adapter ../jar-source-adapter ../java-jdtls-adapter ../kubejs-types-adapter ../datapack-adapter . && vitest run --root ../.. packages/service-profile/src/profile.test.ts"
   },
   "dependencies": {
-    "@mcpskill/datapack-adapter": "workspace:*",
-    "@mcpskill/gradle-adapter": "workspace:*",
-    "@mcpskill/jar-source-adapter": "workspace:*",
-    "@mcpskill/java-jdtls-adapter": "workspace:*",
-    "@mcpskill/kubejs-types-adapter": "workspace:*",
-    "@mcpskill/shared-types": "workspace:*",
-    "@mcpskill/workspace-detector": "workspace:*"
+    "minecraft-developing-mcp-datapack-adapter": "workspace:*",
+    "minecraft-developing-mcp-gradle-adapter": "workspace:*",
+    "minecraft-developing-mcp-jar-source-adapter": "workspace:*",
+    "minecraft-developing-mcp-java-jdtls-adapter": "workspace:*",
+    "minecraft-developing-mcp-kubejs-types-adapter": "workspace:*",
+    "minecraft-developing-mcp-shared-types": "workspace:*",
+    "minecraft-developing-mcp-workspace-detector": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

@@ -2,7 +2,7 @@ import type {
   CurrentRuntime,
   RuntimeConfidence,
   RuntimeDetectionSource
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export interface VanillaVersionResolution {
   matched: boolean;

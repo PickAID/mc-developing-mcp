@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { toInstalledSourcePackageManifestV2, toSourcePackageManifestsV2 } from "./v2-adapter.js";
 import type { SourcePackageRecipe } from "./contracts.js";
-import type { SourcePackageManifest } from "@mcpskill/shared-types";
+import type { SourcePackageManifest } from "minecraft-developing-mcp-shared-types";
 
 describe("source package v2 adapter", () => {
   it("converts source-pack recipes into source tree and source index packages", () => {

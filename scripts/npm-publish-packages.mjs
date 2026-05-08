@@ -1,21 +1,3 @@
 export const publishablePackages = [
-  "packages/shared-types",
-  "packages/package-registry",
-  "packages/source-index",
-  "packages/jar-source-adapter",
-  "packages/datapack-adapter",
-  "packages/gradle-adapter",
-  "packages/java-jdtls-adapter",
-  "packages/kubejs-types-adapter",
-  "packages/kubejs-language-service",
-  "packages/workspace-detector",
-  "packages/runtime-manager",
-  "packages/resource-registry",
-  "packages/external-mod-resolver",
-  "packages/agent-harness",
-  "packages/docs-retrieval",
-  "packages/source-package-manager",
-  "packages/vanilla-source-adapter",
-  "packages/service-profile",
   "apps/mcp-server"
 ];

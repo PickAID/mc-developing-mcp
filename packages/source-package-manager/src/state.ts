@@ -5,7 +5,7 @@ import type {
   ManagedRuntimeLayout,
   SourcePackageCoordinate,
   SourcePackageInstallState
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { resolveSourcePackagePaths } from "./layout.js";
 

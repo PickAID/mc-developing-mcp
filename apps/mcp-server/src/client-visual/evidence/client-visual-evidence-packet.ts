@@ -2,8 +2,8 @@ import type {
   DatapackDiscovery,
   DatapackResourceReferenceTrace,
   DatapackSearchMatch
-} from "@mcpskill/datapack-adapter";
-import type { WorkspaceDescriptor } from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-datapack-adapter";
+import type { WorkspaceDescriptor } from "minecraft-developing-mcp-shared-types";
 
 import {
   buildClientVisualApiProof,

@@ -1,4 +1,4 @@
-import type { ArchiveContentDomain } from "@mcpskill/jar-source-adapter";
+import type { ArchiveContentDomain } from "minecraft-developing-mcp-jar-source-adapter";
 
 import {
   createLineRangeEvidence,

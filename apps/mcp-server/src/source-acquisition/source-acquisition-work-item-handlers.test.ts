@@ -9,7 +9,7 @@ import {
   runSourceAcquisitionWorkItems,
   writeSourcePackageConfirmation,
   type SourceAcquisitionWorkItem
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import { createMcpServerSourceAcquisitionWorkItemHandlers } from "./source-acquisition-work-item-handlers.js";
 

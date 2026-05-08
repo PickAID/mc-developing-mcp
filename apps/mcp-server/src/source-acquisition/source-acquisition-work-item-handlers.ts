@@ -7,15 +7,15 @@ import {
   resolveModrinthMod,
   type ResolveCurseForgeModInput,
   type ResolveModrinthModInput
-} from "@mcpskill/external-mod-resolver";
-import { queryCachedModArchiveEntries } from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-external-mod-resolver";
+import { queryCachedModArchiveEntries } from "minecraft-developing-mcp-jar-source-adapter";
 import type {
   SourceAcquisitionWorkItemHandlerResult,
   SourceAcquisitionWorkItemRunnerHandlers,
   SourcePackageRecipeExecutor,
   SourcePackageRecipeProvider,
   SourcePackageRecipeRegistry
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import {
   collectMissingConstraints,

@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import type {
   ManagedRuntimeLayout,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import type {
   SourcePackageRecipe,

@@ -1,4 +1,4 @@
-export const JAR_SOURCE_ADAPTER_PACKAGE = "@mcpskill/jar-source-adapter";
+export const JAR_SOURCE_ADAPTER_PACKAGE = "minecraft-developing-mcp-jar-source-adapter";
 
 export * from "./java-source-archive.js";
 export * from "./archive-content.js";

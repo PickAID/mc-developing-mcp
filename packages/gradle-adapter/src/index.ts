@@ -1,4 +1,4 @@
-export const GRADLE_ADAPTER_PACKAGE = "@mcpskill/gradle-adapter";
+export const GRADLE_ADAPTER_PACKAGE = "minecraft-developing-mcp-gradle-adapter";
 
 export * from "./build-dependencies.js";
 export * from "./build-repositories.js";

@@ -3,7 +3,7 @@ import {
   type ArchiveContentCache,
   type ArchiveContentSkippedEntry,
   type ArchiveSetContentSearchMatch
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import {
   DEFAULT_MAX_ARCHIVES,

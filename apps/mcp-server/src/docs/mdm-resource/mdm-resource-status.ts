@@ -6,7 +6,7 @@ import {
   resolveMdmResourceCacheLayout,
   summarizeMdmResourceStatus,
   type MdmResourceStatusSummary
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 
 export type MdmResourceStatusContextState =
   | "unconfigured"

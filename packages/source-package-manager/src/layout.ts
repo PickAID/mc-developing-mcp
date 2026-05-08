@@ -1,6 +1,6 @@
 import { join } from "node:path";
 
-import type { ManagedRuntimeLayout, SourcePackageCoordinate } from "@mcpskill/shared-types";
+import type { ManagedRuntimeLayout, SourcePackageCoordinate } from "minecraft-developing-mcp-shared-types";
 
 export interface SourcePackagePaths {
   downloadsDir: string;

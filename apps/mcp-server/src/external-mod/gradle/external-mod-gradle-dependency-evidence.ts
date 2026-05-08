@@ -3,18 +3,18 @@ import { basename, normalize } from "node:path";
 import {
   buildRepositoryMavenArtifact,
   type ExternalModMavenArtifact
-} from "@mcpskill/external-mod-resolver";
+} from "minecraft-developing-mcp-external-mod-resolver";
 import {
   discoverDeclaredDependencyBinaryArchives,
   isDeclaredDependencyBinaryFile,
   readGradleDeclaredDependencies,
   type GradleDeclaredDependency,
   type GradleSourceArchiveCandidate
-} from "@mcpskill/gradle-adapter";
+} from "minecraft-developing-mcp-gradle-adapter";
 import type {
   ArchiveContentCache,
   ModArchiveCandidate
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type {
   McpServerExternalModMavenRepository,

@@ -3,11 +3,11 @@ import { join } from "node:path";
 import { readdir, stat } from "node:fs/promises";
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { LspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
+import type { LspDiagnosticRegistry } from "minecraft-developing-mcp-java-jdtls-adapter";
 import type {
   MdmArtifactFetch,
   MdmReleaseFetch
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 import { z } from "zod";
 
 import { buildMcpServerBootstrap } from "../bootstrap/bootstrap.js";
@@ -76,11 +76,11 @@ const mcpDevelopInputSchema = z.object({
   workspaceRoot: z
     .string()
     .optional()
-    .describe("Minecraft project or modpack root. Defaults to MCPSKILL_WORKSPACE_ROOT or process cwd."),
+    .describe("Minecraft project or modpack root. Defaults to MC_DEVELOPING_MCP_WORKSPACE_ROOT or process cwd."),
   runtimeRoot: z
     .string()
     .optional()
-    .describe("Managed MCP runtime/cache root. Defaults to MCPSKILL_RUNTIME_ROOT or ~/.cache/mc-developing-mcp/runtime."),
+    .describe("Managed MCP runtime/cache root. Defaults to MC_DEVELOPING_MCP_RUNTIME_ROOT or ~/.cache/mc-developing-mcp/runtime."),
   prismRoot: z
     .string()
     .optional()
@@ -167,7 +167,10 @@ async function executeMcpDevelopTool(
     const runtimeRoot = resolveRuntimeRoot(input, options);
     const workspaceRoot = resolveWorkspaceRoot(input, options);
     const env = resolveToolEnv(options);
-    const prismRoot = input.prismRoot ?? env.MCPSKILL_PRISM_ROOT;
+    const prismRoot =
+      input.prismRoot ??
+      env.MC_DEVELOPING_MCP_PRISM_ROOT ??
+      env.MCPSKILL_PRISM_ROOT;
     const bootstrap = await buildMcpServerBootstrap({
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
@@ -310,6 +313,8 @@ function resolveRuntimeRoot(
 ): string {
   return (
     input.runtimeRoot ??
+    options.env?.MC_DEVELOPING_MCP_RUNTIME_ROOT ??
+    process.env.MC_DEVELOPING_MCP_RUNTIME_ROOT ??
     options.env?.MCPSKILL_RUNTIME_ROOT ??
     process.env.MCPSKILL_RUNTIME_ROOT ??
     join(homedir(), ".cache", "mc-developing-mcp", "runtime")
@@ -322,6 +327,8 @@ function resolveWorkspaceRoot(
 ): string {
   return (
     input.workspaceRoot ??
+    options.env?.MC_DEVELOPING_MCP_WORKSPACE_ROOT ??
+    process.env.MC_DEVELOPING_MCP_WORKSPACE_ROOT ??
     options.env?.MCPSKILL_WORKSPACE_ROOT ??
     process.env.MCPSKILL_WORKSPACE_ROOT ??
     options.cwd ??

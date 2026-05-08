@@ -17,7 +17,7 @@ import {
   type JdtlsServiceProfile,
   type LspDiagnosticRegistry,
   type ResilientJdtlsManager
-} from "@mcpskill/java-jdtls-adapter";
+} from "minecraft-developing-mcp-java-jdtls-adapter";
 
 const DEFAULT_MAX_FALLBACK_JAVA_FILES = 8;
 const DEFAULT_MAX_REQUESTED_JAVA_FILES = 8;

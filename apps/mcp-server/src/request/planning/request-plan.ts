@@ -4,7 +4,7 @@ import type {
   McpServerRequestContext,
   McpServerRequestPlan,
   WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { buildMcpServerPromptAssembly } from "../../core/bootstrap/prompt-assembly.js";
 import { buildMcpServerRequestContext } from "./request-context.js";

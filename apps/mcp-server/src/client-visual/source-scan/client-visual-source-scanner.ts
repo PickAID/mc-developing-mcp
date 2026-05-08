@@ -1,7 +1,7 @@
 import { opendir, readFile, stat } from "node:fs/promises";
 import { extname, join, relative, resolve } from "node:path";
 
-import type { WorkspaceDescriptor } from "@mcpskill/shared-types";
+import type { WorkspaceDescriptor } from "minecraft-developing-mcp-shared-types";
 
 import {
   CLIENT_VISUAL_SOURCE_PATTERNS,

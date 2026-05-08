@@ -1,4 +1,4 @@
-import type { ArchiveContentDomain } from "@mcpskill/jar-source-adapter";
+import type { ArchiveContentDomain } from "minecraft-developing-mcp-jar-source-adapter";
 
 export const MOD_ARCHIVE_QUERY_LIMIT = 4;
 export const MOD_ARCHIVE_SEARCH_DOMAINS: ArchiveContentDomain[] = [

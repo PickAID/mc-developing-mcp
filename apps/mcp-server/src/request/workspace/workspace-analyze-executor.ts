@@ -5,7 +5,7 @@ import type {
   LspDiagnostic,
   LspDiagnosticRegistry,
   LspPublishDiagnosticsParams
-} from "@mcpskill/java-jdtls-adapter";
+} from "minecraft-developing-mcp-java-jdtls-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,

@@ -4,7 +4,7 @@ import {
   type KubeJsTypeResourceFile,
   type KubeJsTypeSemanticSummary,
   type SummarizeKubeJsTypeResourcesOptions
-} from "@mcpskill/kubejs-types-adapter";
+} from "minecraft-developing-mcp-kubejs-types-adapter";
 
 export interface ProbeResourceSummaryCacheOptions {
   maxEntries?: number;

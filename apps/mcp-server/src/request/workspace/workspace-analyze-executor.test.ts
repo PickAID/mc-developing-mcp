@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
-import { createLspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
+import { createLspDiagnosticRegistry } from "minecraft-developing-mcp-java-jdtls-adapter";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../evidence/evidence-plan.js";

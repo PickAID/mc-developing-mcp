@@ -2,8 +2,8 @@ import type {
   AgentRuntimeTaskRouteStep,
   AgentRuntimeToolName,
   McpServerRequestPlan
-} from "@mcpskill/shared-types";
-import type { DocsPackageSelectionResult } from "@mcpskill/docs-retrieval";
+} from "minecraft-developing-mcp-shared-types";
+import type { DocsPackageSelectionResult } from "minecraft-developing-mcp-docs-retrieval";
 
 import type {
   McpServerEvidenceCandidate,

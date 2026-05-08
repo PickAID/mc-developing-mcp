@@ -1,8 +1,8 @@
 import {
   readMdmDocsResourceRecords,
   type DocsPackageRecord
-} from "@mcpskill/docs-retrieval";
-import type { MdmResourcePackageStorageKind } from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-docs-retrieval";
+import type { MdmResourcePackageStorageKind } from "minecraft-developing-mcp-resource-registry";
 
 import type { MdmResourceStatusContext } from "../mdm-resource/mdm-resource-status.js";
 

@@ -1,4 +1,4 @@
-import type { AgentRuntimePromptFragment } from "@mcpskill/shared-types";
+import type { AgentRuntimePromptFragment } from "minecraft-developing-mcp-shared-types";
 
 import type { MinecraftServiceProfile } from "./types.js";
 

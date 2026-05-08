@@ -2,14 +2,14 @@ import type {
   AgentRuntimeToolName,
   McpServerBootstrap,
   McpServerRequestContext
-} from "@mcpskill/shared-types";
-import type { DocsPackageSelectionResult } from "@mcpskill/docs-retrieval";
-import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
-import type { LspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
+} from "minecraft-developing-mcp-shared-types";
+import type { DocsPackageSelectionResult } from "minecraft-developing-mcp-docs-retrieval";
+import type { ArchiveContentCache } from "minecraft-developing-mcp-jar-source-adapter";
+import type { LspDiagnosticRegistry } from "minecraft-developing-mcp-java-jdtls-adapter";
 import {
   buildLocalSourcePackageRecipeExecutor,
   type SourcePackageRecipeExecutor
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import {
   buildMcpServerEvidencePlan,

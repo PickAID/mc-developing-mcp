@@ -4,7 +4,7 @@ import type {
   McpServerPromptAssembly,
   McpServerPromptSection,
   McpServerRequestContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export function buildMcpServerPromptAssembly(
   requestContext: McpServerRequestContext

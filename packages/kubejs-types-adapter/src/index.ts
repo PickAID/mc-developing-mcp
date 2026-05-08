@@ -1,4 +1,4 @@
-export const KUBEJS_TYPES_ADAPTER_PACKAGE = "@mcpskill/kubejs-types-adapter";
+export const KUBEJS_TYPES_ADAPTER_PACKAGE = "minecraft-developing-mcp-kubejs-types-adapter";
 
 export { discoverKubeJsTypeResources } from "./discovery.js";
 export { readKubeJsTypeResource } from "./read.js";

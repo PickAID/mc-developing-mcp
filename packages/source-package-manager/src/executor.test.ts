@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 
 import { describe, expect, it } from "vitest";
 
-import type { ManagedRuntimeLayout } from "@mcpskill/shared-types";
-import { querySourceIndex } from "@mcpskill/source-index";
+import type { ManagedRuntimeLayout } from "minecraft-developing-mcp-shared-types";
+import { querySourceIndex } from "minecraft-developing-mcp-source-index";
 
 import { buildLocalSourcePackageRecipeExecutor } from "./executor.js";
 import { readSourcePackageManifest } from "./manifest.js";

@@ -1,131 +1,115 @@
-# mc-developing-mcp
+# minecraft-developing-mcp
 
-[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE)
-[![Node.js >=22.5.0](https://img.shields.io/badge/node-%3E%3D22.5.0-339933)](https://nodejs.org/)
-[![MCP](https://img.shields.io/badge/MCP-stdio-111827)](https://modelcontextprotocol.io/)
+[License: PolyForm Noncommercial 1.0.0](LICENSE)
+[Node.js >=22.5.0](https://nodejs.org/)
+[MCP stdio](https://modelcontextprotocol.io/)
 
-> A TypeScript MCP server that helps AI agents work on Minecraft Java modding, KubeJS, datapacks, resource packs, Gradle workspaces, local mod archives, and optional offline documentation packages.
+MCP server for AI-assisted Minecraft development.
 
-## What Is This?
+It helps an AI agent inspect real project evidence before writing Minecraft modding code. It is meant for Java mod projects, KubeJS modpacks, datapacks, resource packs, Gradle workspaces, crash logs, local mod jars, nested JarJar dependencies, mappings, and optional offline documentation packages.
 
-`mc-developing-mcp` is a Model Context Protocol server for Minecraft development workflows. It is designed to reduce the time an AI assistant wastes guessing project structure, searching for nonexistent source files, or relying on stale Minecraft knowledge.
+The public tool surface is intentionally small: clients normally run the `mc-developing-mcp` binary and call one MCP tool, `mc_develop`.
 
-The server exposes a deliberately small public MCP surface. Most users call one tool, `mc_develop`, and let the server choose the right evidence routes internally.
+## Why Use It?
 
-## Why It Exists
+Generic coding agents often waste context on Minecraft projects because the useful information is scattered across Gradle files, generated ProbeJS declarations, local jars, crash logs, datapack JSON, resource-pack assets, and version-specific APIs.
 
-Minecraft development often mixes Gradle projects, modpack jars, nested JarJar dependencies, generated ProbeJS types, KubeJS scripts, datapack content, resource-pack assets, loader metadata, mappings, and optional offline documentation. A generic coding assistant can burn a large context window before it even knows where the real information lives.
+`minecraft-developing-mcp` gives the agent a focused way to ask:
 
-This MCP acts as a compact evidence layer:
 
-| Problem | MCP behavior |
-| --- | --- |
-| Agent cannot find external mod source | Inspect Gradle dependencies, local jars, source jars, nested jars, and cached package indexes. |
-| Agent treats KubeJS like normal JavaScript | Route through KubeJS/ProbeJS-aware evidence and authoring policy. |
-| Crash log names a missing class or mixin target | Extract crash signals, trace owner jars, and inspect metadata or class indexes. |
-| Datapack/resource-pack version rules are unclear | Use version profiles and local/MDM package evidence when available. |
-| Offline docs are wanted but should not bloat npm | Install explicit MDM resource packages into the runtime cache only after confirmation. |
+| You are trying to do this          | What the MCP can check first                                                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Fix a modpack crash                | Logs, missing classes, mixin targets, metadata, owner jars, nested JarJar content.                          |
+| Write or fix KubeJS                | KubeJS folders, ProbeJS `.d.ts`, snippets, registries, items, events, and diagnostics.                      |
+| Work on a Java mod                 | Gradle dependencies, Maven repositories, source jars, Java diagnostics, mappings, and local source indexes. |
+| Edit datapacks                     | Pack roots, resource locations, version profiles, migration warnings, and vanilla datapack profiles.        |
+| Edit resource packs/client visuals | Assets, models, item references, resource paths, client rendering hints, and shader reference hooks.        |
+| Use offline docs                   | Explicitly installed MDM resource packages and SQLite indexes in a local cache.                             |
 
-## Key Features
 
-- **Single-tool public workflow**: `mc_develop` is the main MCP entrypoint; internal routes stay progressive and avoid tool-surface pollution.
-- **Workspace and modpack detection**: Reads Gradle, KubeJS, Prism-style roots when available, local jars, logs, datapack roots, resource-pack roots, and runtime cache state.
-- **Gradle and Java evidence**: Finds dependencies, source archives, binary archives, Maven repositories, local source indexes, and Java diagnostics when JDT LS is configured.
-- **Jar and JarJar source inspection**: Indexes jar entries, metadata, assets, data files, classes, nested jars, mixin targets, access wideners, and resource references.
-- **KubeJS and ProbeJS support**: Discovers ProbeJS type files, snippets, registry summaries, lifecycle/event evidence, and TypeScript language-service diagnostics without treating KubeJS as a normal npm project.
-- **Datapack and resource-pack support**: Keeps data and assets as separate first-class domains, including version profiles, resource locations, item/model references, and UI/client visual evidence routes.
-- **Source acquisition planning**: Can plan and run confirmed acquisition work for mappings, vanilla generation targets, local jars, remote metadata, and MDM source-index artifacts.
-- **Optional offline MDM resources**: Uses separately distributed resource packages and SQLite indexes without embedding generated Minecraft source, private modpack data, or user cache data in npm.
-- **Credential-safe remote lookup**: CurseForge and ShaderToy integrations require user-provided runtime credentials when needed; keys are not embedded in this package.
+The goal is not to replace the coding agent. The goal is to make the agent stop guessing and start from project evidence.
 
-## Quick Start
+## Installation
 
-### Requirements
-
-- Node.js `>=22.5.0`
-- An MCP client that can run stdio servers
-- Optional: a Minecraft workspace, modpack root, Gradle project, ProbeJS output, local jars, or MDM resource release manifest
-
-### Run From npm
-
-After the prerelease package graph is published, use:
+Current prerelease install:
 
 ```sh
-npx -y --package @mcpskill/mcp-server@next mc-developing-mcp
+npm install -g minecraft-developing-mcp@next
 ```
 
-For a client config that accepts command/args:
+Run the server:
+
+```sh
+mc-developing-mcp
+```
+
+For MCP clients, prefer `npx` so the project stays easy to update:
 
 ```json
 {
   "mcpServers": {
-    "mc-developing": {
+    "minecraft-developing": {
       "command": "npx",
-      "args": ["-y", "--package", "@mcpskill/mcp-server@next", "mc-developing-mcp"]
+      "args": ["-y", "--package", "minecraft-developing-mcp@next", "mc-developing-mcp"]
     }
   }
 }
 ```
 
-### Run From Source
+Requirements:
 
-```sh
-pnpm install
-pnpm build
-node apps/mcp-server/dist/stdio.js
-```
+- Node.js `>=22.5.0`
+- An MCP client that supports stdio servers
+- A Minecraft project or modpack root when you want workspace-specific evidence
 
-## Using `mc_develop`
+## Basic Use
 
-The tool accepts natural task text plus optional explicit roots and resource install instructions. A minimal request looks like:
+Ask your MCP client to use `mc_develop` before it writes code or diagnoses a Minecraft issue.
+
+Example request:
 
 ```json
 {
-  "requestText": "Analyze this modpack crash and find the likely missing class owner.",
+  "requestText": "This modpack crashes during startup. Find the likely missing class owner before suggesting a fix.",
   "workspaceRoot": "/path/to/minecraft-or-project"
 }
 ```
 
-For modpack or KubeJS-heavy work, point it at the actual instance or project root:
+KubeJS example:
 
 ```json
 {
-  "requestText": "Inspect KubeJS scripts and ProbeJS types before suggesting a recipe fix.",
+  "requestText": "Inspect ProbeJS/KubeJS context, then help fix this recipe script.",
   "workspaceRoot": "/path/to/PrismLauncher/instances/Example/minecraft"
 }
 ```
 
-The response is structured around evidence, not generic advice. Depending on the request, it may include workspace facts, route decisions, crash signals, Gradle dependencies, jar owners, ProbeJS summaries, resource-pack traces, datapack profiles, source-acquisition plans, and safe next actions.
+Datapack/resource-pack example:
 
-## Evidence Routes
+```json
+{
+  "requestText": "Check whether this resource location and model path are valid for this pack before editing assets.",
+  "workspaceRoot": "/path/to/resourcepack-or-modpack"
+}
+```
 
-| Route area | What it can inspect |
-| --- | --- |
-| Workspace | Project root, Minecraft/modpack roots, Gradle files, KubeJS folders, datapack/resource-pack roots, logs, runtime cache. |
-| Gradle | Repositories, dependency coordinates, source jars, binary jars, local Gradle cache archives, subproject dependencies. |
-| Java/JDT LS | Java diagnostics, file synchronization, restart-safe sessions, LSP-backed evidence when available. |
-| Mod archives | Mod metadata, jar inventory, nested JarJar archives, entry indexes, class owners, mixin targets, access wideners. |
-| KubeJS/ProbeJS | ProbeJS discovery, tolerant `.d.ts` reading, resource summaries, snippets/items/registries, lifecycle/event evidence. |
-| Datapack | Pack roots, resource locations, supported format profiles, migration analysis, vanilla datapack profile packages. |
-| Resource pack/client visual | Assets, models, item references, resource roots, UI/render/shader evidence, vanilla assets profile packages. |
-| External mods | Modrinth, CurseForge with API key, Maven repositories, local jars, Gradle-derived candidates. |
-| MDM resources | Optional docs, mappings, source profiles, SQLite indexes, and release-bundled package artifacts. |
+The response is compact evidence for the agent: detected workspace facts, relevant files, package status, route decisions, warnings, and follow-up actions.
 
-## Optional MDM Resources
+## Optional Offline Resources
 
-MDM resources are not bundled into the npm package. They are downloaded only when explicitly requested, verified, and cached under the MCP runtime root.
+The npm package does not bundle large generated datasets. Offline documentation and version profiles are distributed separately through MDM resource releases and are installed only when explicitly requested.
 
-Current public bundled release manifest:
+Current public resource manifest:
 
 ```txt
 https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json
 ```
 
-Example install request:
+Example:
 
 ```json
 {
-  "requestText": "Install and use offline MDM docs for this task.",
+  "requestText": "Install the compact offline docs index and use it for this task.",
   "mdmReleaseInstall": {
     "manifestUrl": "https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json",
     "packageId": "core-docs-search-sqlite",
@@ -134,78 +118,38 @@ Example install request:
 }
 ```
 
-Useful package examples:
+Common resource package types:
 
-| Package | Purpose |
-| --- | --- |
-| `core-docs-search-sqlite` | Compact SQLite docs search index. |
-| `minecraft-1.20.1-vanilla-datapack-profile` | Vanilla datapack/profile evidence. |
-| `minecraft-1.20.1-vanilla-resourcepack-profile` | Vanilla resource-pack/profile evidence. |
-| `minecraft-1.20.1-yarn-mapping-profile` | Mapping profile evidence. |
-| `minecraft-1.20.1-vanilla-source-profile` | Source profile metadata and index evidence, not a blanket npm-distributed source dump. |
 
-The release uses channel bundles for datapack, resourcepack, mappings, and source-profile packages. The MCP downloads the bundle asset, verifies checksums, extracts the requested package member, verifies that member, and stores only the selected artifact in the runtime cache.
+| Type                  | Example                                         |
+| --------------------- | ----------------------------------------------- |
+| Docs index            | `core-docs-search-sqlite`                       |
+| Datapack profile      | `minecraft-1.20.1-vanilla-datapack-profile`     |
+| Resource-pack profile | `minecraft-1.20.1-vanilla-resourcepack-profile` |
+| Mapping profile       | `minecraft-1.20.1-yarn-mapping-profile`         |
+| Source profile/index  | `minecraft-1.20.1-vanilla-source-profile`       |
 
-## Environment Variables
 
-| Variable | Description |
-| --- | --- |
-| `MCPSKILL_WORKSPACE_ROOT` | Default workspace or modpack root when `workspaceRoot` is not provided. |
-| `MCPSKILL_RUNTIME_ROOT` | Runtime/cache root. Defaults to `~/.cache/mc-developing-mcp/runtime`. |
-| `MCPSKILL_PRISM_ROOT` | Optional PrismLauncher root hint. The server must not assume Prism metadata exists. |
-| `MDM_SOURCES_ROOT` | Optional local checkout of `mdm-sources` for development and local resource testing. |
-| `CURSEFORGE_API_KEY` | Optional CurseForge API key for CurseForge project/file lookup. Create one at `https://console.curseforge.com/?#/api-keys`. |
-| `SHADERTOY_APP_KEY` | Optional ShaderToy API key for shader reference lookup. Without it, use a local browser fallback and keep summaries compact. |
-| `MCPSKILL_YARN_MAPPING_URL_TEMPLATE` | Optional direct Yarn mapping URL template containing `{version}`. |
-| `MCPSKILL_YARN_MAVEN_BASE_URL` | Optional Yarn Maven base URL. |
-| `MCPSKILL_MOJANG_VERSION_MANIFEST_URL` | Optional Mojang version manifest override. |
-| `MCPSKILL_PARCHMENT_MAVEN_BASE_URL` | Optional Parchment Maven base URL. |
+Downloaded artifacts are verified and stored in the local runtime cache. Private modpack caches, generated Minecraft source, ProbeJS outputs, and user jar-derived indexes should not be committed to this repository.
 
-## What Is Not Distributed
+## Configuration
 
-This repository and npm package should not contain:
+Environment variables:
 
-- Generated Minecraft source code that users must acquire or generate themselves.
-- Private ProbeJS outputs from user modpacks.
-- Private modpack indexes, local jar-derived caches, or user paths.
-- Embedded CurseForge, ShaderToy, npm, or other private API keys.
-- Large generated offline datasets that belong in separately versioned MDM resource releases.
 
-## Project Structure
+| Variable                           | Purpose                                                                                   |
+| ---------------------------------- | ----------------------------------------------------------------------------------------- |
+| `MC_DEVELOPING_MCP_WORKSPACE_ROOT` | Default workspace or modpack root if the request does not pass `workspaceRoot`.           |
+| `MC_DEVELOPING_MCP_RUNTIME_ROOT`   | Runtime/cache root. Defaults to `~/.cache/mc-developing-mcp/runtime`.                     |
+| `MC_DEVELOPING_MCP_PRISM_ROOT`     | Optional PrismLauncher root hint. The MCP must not assume Prism metadata exists.          |
+| `MDM_SOURCES_ROOT`                 | Optional local `mdm-sources` checkout for resource development.                           |
+| `CURSEFORGE_API_KEY`               | Optional CurseForge API key. Create one at `https://console.curseforge.com/?#/api-keys`.  |
+| `SHADERTOY_APP_KEY`                | Optional ShaderToy API key. Without it, use browser-based fallback and compact summaries. |
 
-```txt
-mc-developing-mcp/
-├── apps/
-│   ├── mcp-server/          # Published stdio MCP server
-│   └── agent-runtime/       # Private local runtime app
-├── packages/
-│   ├── agent-harness/       # Task routing, briefs, policies, and evidence injection
-│   ├── datapack-adapter/    # Datapack/resource-pack profiles and migration helpers
-│   ├── docs-retrieval/      # Offline docs records and guidance synthesis
-│   ├── external-mod-resolver/ # Modrinth, CurseForge, Maven, and local resolution
-│   ├── gradle-adapter/      # Gradle repository/dependency/source archive evidence
-│   ├── jar-source-adapter/  # Jar, nested jar, metadata, content, and class indexes
-│   ├── java-jdtls-adapter/  # JDT LS JSON-RPC/session/diagnostic support
-│   ├── kubejs-language-service/ # TypeScript-backed KubeJS diagnostics
-│   ├── kubejs-types-adapter/    # ProbeJS type/resource extraction
-│   ├── package-registry/    # MDM package schema validation
-│   ├── resource-registry/   # MDM artifact installation and cache status
-│   ├── runtime-manager/     # Local runtime/cache layout and policy
-│   ├── service-profile/     # Workspace/service profile assembly
-│   ├── source-index/        # Source/document index primitives
-│   ├── source-package-manager/ # Source acquisition jobs and hand-off logic
-│   ├── vanilla-source-adapter/ # Confirmed vanilla generation/source profile support
-│   └── workspace-detector/  # Workspace and modpack structure detection
-├── docs/
-│   ├── architecture/        # Runtime and routing boundaries
-│   ├── release/             # npm release runbook
-│   ├── reviews/             # Verification reports and command outputs
-│   ├── specs/               # Delivery/package architecture specs
-│   └── standards/           # KubeJS and client visual standards
-└── scripts/                 # Publish guards, pack dry-runs, and smoke checks
-```
 
-## Development
+Legacy `MCPSKILL_*` environment variables are still accepted for prerelease compatibility, but new setup should use the `MC_DEVELOPING_MCP_*` names.
+
+## Developer Setup
 
 ```sh
 pnpm install
@@ -213,7 +157,13 @@ pnpm build
 pnpm test
 ```
 
-Useful release checks:
+Targeted server tests:
+
+```sh
+pnpm --filter minecraft-developing-mcp test
+```
+
+Publish checks:
 
 ```sh
 pnpm publish:check
@@ -222,36 +172,43 @@ pnpm publish:install-smoke
 pnpm publish:release-check
 ```
 
-`publish:check` verifies package metadata, built entrypoints, public package closure, and that `dist` does not include test outputs or TypeScript source files. `publish:dry-run` packs each publishable package and verifies workspace dependency ranges are rewritten. `publish:install-smoke` installs the local tarballs into a temporary project and checks the installed `mc-developing-mcp` binary. `publish:release-check` runs the stricter release-mode guard.
+The publish dry-run and install smoke are important. They verify that workspace dependencies are rewritten to concrete npm versions and that the installed `mc-developing-mcp` binary can initialize and expose `mc_develop`.
 
-## Publishing
+## Architecture
 
-This repository publishes a package graph, not a single bundled package. Internal runtime packages must be published before `@mcpskill/mcp-server`.
+This is a TypeScript monorepo.
 
-Before publishing:
-
-```sh
-npm whoami
-pnpm test
-pnpm publish:check
-pnpm publish:dry-run
-pnpm publish:install-smoke
-pnpm publish:release-check
-git diff --check
+```txt
+apps/mcp-server/          Public stdio MCP server package.
+apps/agent-runtime/       Private runtime app for local experiments.
+packages/*                Internal libraries for workspace detection, Gradle, jars, KubeJS, docs, resources, source acquisition, and harness logic.
+docs/architecture/        Runtime and routing design notes.
+docs/specs/               Package/resource/source acquisition specs.
+docs/standards/           KubeJS and client visual standards.
+docs/reviews/             Verification reports with command output.
+scripts/                  Publish guards, pack dry-run, and install smoke scripts.
 ```
 
-For prereleases, publish with the `next` tag only:
+The public MCP API should stay progressive and small. New capabilities should normally be added behind `mc_develop` routing rather than exposed as many unrelated MCP tools.
 
-```sh
-pnpm publish --access public --tag next --otp <six-digit-code>
+## Naming And Package Policy
+
+The public package name is intended to be:
+
+```txt
+minecraft-developing-mcp
 ```
 
-Do not publish `0.1.0-next.0` without `--tag next`; npm publish is irreversible for a given `name@version`.
+The binary remains:
 
-See [`docs/release/npm-publish-runbook.md`](docs/release/npm-publish-runbook.md) and [`scripts/npm-publish-packages.mjs`](scripts/npm-publish-packages.mjs) for the current package order.
+```txt
+mc-developing-mcp
+```
+
+The earlier scoped prerelease should be treated as a transitional package name, not the recommended public install path.
 
 ## License
 
 This project is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
 
-Commercial use is not granted by this license. If you need commercial terms, contact the copyright holder.
+Commercial use is not granted by this license. Contact the copyright holder if you need commercial terms.

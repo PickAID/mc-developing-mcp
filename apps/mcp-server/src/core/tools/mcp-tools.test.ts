@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { deflateRawSync } from "node:zlib";
 
 import { afterEach, describe, expect, it } from "vitest";
-import { createLspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
+import { createLspDiagnosticRegistry } from "minecraft-developing-mcp-java-jdtls-adapter";
 
 import {
   MC_DEVELOP_TOOL_NAME,

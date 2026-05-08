@@ -1,4 +1,4 @@
-import type { SourcePackageId } from "@mcpskill/shared-types";
+import type { SourcePackageId } from "minecraft-developing-mcp-shared-types";
 
 import type { SourcePackageRecipe, SourcePackageRecipeRegistry } from "./contracts.js";
 

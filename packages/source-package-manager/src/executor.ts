@@ -4,8 +4,8 @@ import { dirname, join, relative } from "node:path";
 import {
   extractArchiveContent,
   extractJavaSourcesArchive
-} from "@mcpskill/jar-source-adapter";
-import { buildSourceIndex } from "@mcpskill/source-index";
+} from "minecraft-developing-mcp-jar-source-adapter";
+import { buildSourceIndex } from "minecraft-developing-mcp-source-index";
 
 import { resolveSourcePackagePaths } from "./layout.js";
 import {

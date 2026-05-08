@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   readCachedResourceState,
   resolveMdmResourceCacheLayout
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 
 import { registerMcpServerTools } from "../tools/mcp-tools.js";
 import {

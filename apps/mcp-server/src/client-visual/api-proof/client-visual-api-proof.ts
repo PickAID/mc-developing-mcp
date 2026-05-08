@@ -1,4 +1,4 @@
-import type { CurrentRuntime, Loader } from "@mcpskill/shared-types";
+import type { CurrentRuntime, Loader } from "minecraft-developing-mcp-shared-types";
 
 import type {
   ClientVisualSourceEvidence,

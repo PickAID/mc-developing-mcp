@@ -7,7 +7,7 @@ import {
   readCachedResourceState,
   resolveMdmResourceCacheLayout,
   writeCachedResourceState
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 import { describe, expect, it } from "vitest";
 
 import {

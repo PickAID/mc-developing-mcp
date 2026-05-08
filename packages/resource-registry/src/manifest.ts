@@ -1,7 +1,7 @@
 import type {
   PackageCapabilityV2,
   PackageReleaseV2
-} from "@mcpskill/package-registry";
+} from "minecraft-developing-mcp-package-registry";
 
 export interface MdmResourceRelease {
   artifactName: string;

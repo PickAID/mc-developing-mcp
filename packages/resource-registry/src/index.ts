@@ -1,4 +1,4 @@
-export const RESOURCE_REGISTRY_PACKAGE = "@mcpskill/resource-registry";
+export const RESOURCE_REGISTRY_PACKAGE = "minecraft-developing-mcp-resource-registry";
 export * from "./manifest.js";
 export * from "./package-metadata.js";
 export * from "./local-registry.js";

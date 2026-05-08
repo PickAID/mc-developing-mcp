@@ -139,7 +139,7 @@ function requestPlanFixture(
     requestContext: {
       workspaceContext: {
         workspaceRoot,
-        detectorPackage: "@mcpskill/workspace-detector",
+        detectorPackage: "minecraft-developing-mcp-workspace-detector",
         descriptor: {
           root: workspaceRoot,
           kind: "java-mod",

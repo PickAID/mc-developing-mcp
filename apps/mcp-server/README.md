@@ -1,11 +1,11 @@
-# @mcpskill/mcp-server
+# minecraft-developing-mcp
 
 MCP stdio server for Minecraft development assistance.
 
 ## Usage
 
 ```sh
-npx -y --package @mcpskill/mcp-server mc-developing-mcp
+npx -y --package minecraft-developing-mcp@next mc-developing-mcp
 ```
 
 For MCP client configuration, use the same command shape:
@@ -13,7 +13,7 @@ For MCP client configuration, use the same command shape:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "--package", "@mcpskill/mcp-server", "mc-developing-mcp"]
+  "args": ["-y", "--package", "minecraft-developing-mcp@next", "mc-developing-mcp"]
 }
 ```
 
@@ -36,4 +36,4 @@ The `mdm-resources-v0.2.0` release uses channel bundles for datapack, resourcepa
 
 External services that require credentials, such as CurseForge or ShaderToy API lookup, should be configured by the user at runtime. The package does not embed private API keys or generated private cache data.
 
-This package requires Node.js `>=22.5.0` because runtime indexing and offline documentation paths use `node:sqlite`. It is published as part of the `@mcpskill/*` package graph, so all internal runtime packages must be available from npm for `npx` installation to work.
+This package requires Node.js `>=22.5.0` because runtime indexing and offline documentation paths use `node:sqlite`. It is published as one public npm package; internal workspace modules are bundled into the package and are not required as public npm dependencies.

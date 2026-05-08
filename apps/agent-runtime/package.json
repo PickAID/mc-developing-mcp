@@ -1,5 +1,5 @@
 {
-  "name": "@mcpskill/agent-runtime",
+  "name": "minecraft-developing-mcp-agent-runtime",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -19,10 +19,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@mcpskill/agent-harness": "workspace:*",
-    "@mcpskill/runtime-manager": "workspace:*",
-    "@mcpskill/shared-types": "workspace:*",
-    "@mcpskill/workspace-detector": "workspace:*"
+    "minecraft-developing-mcp-agent-harness": "workspace:*",
+    "minecraft-developing-mcp-runtime-manager": "workspace:*",
+    "minecraft-developing-mcp-shared-types": "workspace:*",
+    "minecraft-developing-mcp-workspace-detector": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

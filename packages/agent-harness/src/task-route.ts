@@ -3,7 +3,7 @@ import type {
   AgentRuntimeTaskRoute,
   AgentRuntimeTaskRouteStep,
   AgentRuntimeToolName
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { detectHarnessTaskIntent } from "./intent.js";
 

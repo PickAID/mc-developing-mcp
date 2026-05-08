@@ -12,7 +12,7 @@ import {
   type MdmArtifactFetchResponse,
   type MdmReleaseFetch,
   type MdmReleaseManifest
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 
 export interface MdmReleaseInstallRequest {
   manifestUrl?: string;

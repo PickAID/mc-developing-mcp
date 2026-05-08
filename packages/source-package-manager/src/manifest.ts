@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import type {
   SourcePackageCoordinate,
   SourcePackageManifest
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 const SOURCE_PACKAGE_MANIFEST_FILE = "source-package.manifest.json";
 

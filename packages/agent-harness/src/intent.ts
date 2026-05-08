@@ -1,7 +1,7 @@
 import type {
   AgentRuntimeHarnessSnapshot,
   AgentRuntimeTaskIntent
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 const CRASH_KEYWORDS = [
   "crash",

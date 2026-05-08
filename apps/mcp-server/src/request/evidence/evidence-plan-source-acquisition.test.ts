@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { McpServerRequestPlan } from "@mcpskill/shared-types";
+import type { McpServerRequestPlan } from "minecraft-developing-mcp-shared-types";
 
 import { buildMcpServerEvidencePlan } from "./evidence-plan.js";
 

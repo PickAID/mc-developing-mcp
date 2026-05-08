@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import {
   resolveMdmResourceCacheLayout,
   writeCachedResourceState
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 
 import { loadMdmDocsResourcesFromStatus } from "./mdm-docs-records.js";
 import type { MdmResourceStatusContext } from "../mdm-resource/mdm-resource-status.js";

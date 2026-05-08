@@ -4,7 +4,7 @@ import type {
   RuntimeCandidate,
   RuntimeConfidence,
   RuntimeEvidence
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export interface CollectedRuntimeFact {
   minecraftVersion?: string;

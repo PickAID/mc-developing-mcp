@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   createKubeJsLanguageServiceCache,
   type KubeJsLanguageServiceProject
-} from "@mcpskill/kubejs-language-service";
+} from "minecraft-developing-mcp-kubejs-language-service";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../../request/evidence/evidence-plan.js";

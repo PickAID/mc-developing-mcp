@@ -1,7 +1,7 @@
 import {
   querySourceIndex,
   type SourceIndexMatch
-} from "@mcpskill/source-index";
+} from "minecraft-developing-mcp-source-index";
 import {
   buildSourceAcquisitionWorkItems,
   planSourceAcquisition,
@@ -9,11 +9,11 @@ import {
   type SourceAcquisitionWorkItem,
   type SourceAcquisitionWorkItemRunnerHandlers,
   type SourceAcquisitionRoute
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 import {
   readGradleDeclaredDependencies,
   readGradleMavenRepositories
-} from "@mcpskill/gradle-adapter";
+} from "minecraft-developing-mcp-gradle-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,

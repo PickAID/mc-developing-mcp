@@ -25,7 +25,7 @@ describe("buildMcpServerRequestContextWithServiceProfile", () => {
       {
         workspaceContext: {
           workspaceRoot,
-          detectorPackage: "@mcpskill/workspace-detector",
+          detectorPackage: "minecraft-developing-mcp-workspace-detector",
           descriptor: {
             root: workspaceRoot,
             kind: "modpack",

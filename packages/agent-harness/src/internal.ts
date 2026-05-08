@@ -1,4 +1,4 @@
-export const AGENT_HARNESS_PACKAGE = "@mcpskill/agent-harness";
+export const AGENT_HARNESS_PACKAGE = "minecraft-developing-mcp-agent-harness";
 
 export {
   buildHarnessDefaultRoute,
@@ -43,14 +43,14 @@ export type {
   HarnessRouteStep
 } from "./route.js";
 
-export type { AgentRuntimeHarnessSnapshot } from "@mcpskill/shared-types";
+export type { AgentRuntimeHarnessSnapshot } from "minecraft-developing-mcp-shared-types";
 export type {
   AgentRuntimeAuthoringPolicy,
   AgentRuntimeHarnessBrief,
   AgentRuntimeTaskIntent,
   AgentRuntimeTaskBrief,
   AgentRuntimeTaskRoute
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export type {
   HarnessRoutingScenario,

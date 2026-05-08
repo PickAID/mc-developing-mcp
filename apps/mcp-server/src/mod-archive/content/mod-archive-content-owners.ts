@@ -6,7 +6,7 @@ import {
   listArchiveContent,
   queryCachedModArchiveEntries,
   type ArchiveContentCache
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import { collectAccessWidenerTargetEvidence } from "../access-widener/access-widener-evidence.js";
 import { extractCrashLoaderDependency } from "../../external-mod/loader/external-mod-loader-dependency.js";

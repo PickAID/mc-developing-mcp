@@ -1,4 +1,4 @@
-export const DOCS_RETRIEVAL_PACKAGE = "@mcpskill/docs-retrieval";
+export const DOCS_RETRIEVAL_PACKAGE = "minecraft-developing-mcp-docs-retrieval";
 export * from "./builtin-packages.js";
 export * from "./mdm-resource.js";
 export * from "./records.js";

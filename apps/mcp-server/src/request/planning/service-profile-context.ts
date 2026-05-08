@@ -2,11 +2,11 @@ import {
   buildMinecraftServiceProfile,
   buildServiceProfilePromptFragment,
   type BuildMinecraftServiceProfileOptions
-} from "@mcpskill/service-profile";
+} from "minecraft-developing-mcp-service-profile";
 import type {
   McpServerBootstrap,
   McpServerRequestContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   formatMdmResourceStatusPrompt,

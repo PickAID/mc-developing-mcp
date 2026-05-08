@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { buildSourceIndex } from "@mcpskill/source-index";
+import { buildSourceIndex } from "minecraft-developing-mcp-source-index";
 import { describe, expect, it } from "vitest";
 
 import { registerMcpServerTools } from "../tools/mcp-tools.js";

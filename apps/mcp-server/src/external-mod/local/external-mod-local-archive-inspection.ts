@@ -9,7 +9,7 @@ import {
   type ModArchiveCandidate,
   type ModArchiveMetadata,
   type ZipEntry
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 export interface LocalModArchiveInspection {
   archiveMetadata?: ModArchiveMetadata;

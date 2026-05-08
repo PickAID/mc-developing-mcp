@@ -5,7 +5,7 @@ import type {
   AgentRuntimePromptFragment,
   AgentRuntimeToolName,
   WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { buildHarnessSnapshot } from "./snapshot.js";
 import {

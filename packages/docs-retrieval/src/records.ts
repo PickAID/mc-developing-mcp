@@ -1,4 +1,4 @@
-import type { DocsPackageKind } from "@mcpskill/shared-types";
+import type { DocsPackageKind } from "minecraft-developing-mcp-shared-types";
 
 export interface DocsPackageRecord {
   entryId: string;

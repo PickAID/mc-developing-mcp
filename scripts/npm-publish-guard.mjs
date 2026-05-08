@@ -6,7 +6,13 @@ const repoRoot = process.cwd();
 const publishableSet = new Set(publishablePackages);
 const packageNames = new Map();
 const failures = [];
-const releaseMode = process.env.MCPSKILL_RELEASE === "1";
+const internalDependencyPrefixes = [
+  "@mcpskill/",
+  "minecraft-developing-mcp-"
+];
+const releaseMode =
+  process.env.MC_DEVELOPING_MCP_RELEASE === "1" ||
+  process.env.MCPSKILL_RELEASE === "1";
 
 for (const packageDir of publishablePackages) {
   const packageJsonPath = join(repoRoot, packageDir, "package.json");
@@ -52,7 +58,7 @@ function checkPackage(packageDir) {
   expect(typeof packageJson.license === "string", `${label} must declare a license field`);
   expect(existsSync(distRoot), `${label} must be built before packing`);
   expectExists(packageJson.main, packageDir, label, "main");
-  expectExists(packageJson.types, packageDir, label, "types");
+  expect(!packageJson.types, `${label} must not publish declarations that expose internal workspace package names`);
 
   for (const [binName, binPath] of Object.entries(packageJson.bin ?? {})) {
     expectExists(binPath, packageDir, label, `bin ${binName}`);
@@ -60,8 +66,8 @@ function checkPackage(packageDir) {
 
   for (const dependencyName of internalDependencyNames(packageJson)) {
     const dependencyDir = packageNames.get(dependencyName);
-    expect(dependencyDir, `${label} depends on unpublished internal package ${dependencyName}`);
-    expect(dependencyDir ? publishableSet.has(dependencyDir) : false, `${label} dependency ${dependencyName} is outside publishable closure`);
+    expect(!dependencyDir, `${label} must bundle internal package ${dependencyName} instead of publishing it as an npm dependency`);
+    expect(!publishableSet.has(dependencyDir), `${label} dependency ${dependencyName} is inside publishable closure but should not be public`);
   }
 
   for (const filePath of walkFiles(distRoot)) {
@@ -74,6 +80,14 @@ function checkPackage(packageDir) {
       !rel.endsWith(".ts") || rel.endsWith(".d.ts"),
       `${label} includes TypeScript source ${rel}`
     );
+    expect(!rel.endsWith(".d.ts"), `${label} includes declaration output ${rel}`);
+  }
+
+  for (const [dependencyName] of dependencyEntries(packageJson)) {
+    expect(
+      !isInternalDependencyName(dependencyName),
+      `${label} exposes internal dependency ${dependencyName}`
+    );
   }
 }
 
@@ -82,7 +96,19 @@ function internalDependencyNames(packageJson) {
     ...Object.keys(packageJson.dependencies ?? {}),
     ...Object.keys(packageJson.peerDependencies ?? {}),
     ...Object.keys(packageJson.optionalDependencies ?? {})
-  ].filter((name) => name.startsWith("@mcpskill/"));
+  ].filter(isInternalDependencyName);
+}
+
+function isInternalDependencyName(name) {
+  return internalDependencyPrefixes.some((prefix) => name.startsWith(prefix));
+}
+
+function dependencyEntries(packageJson) {
+  return [
+    ...Object.entries(packageJson.dependencies ?? {}),
+    ...Object.entries(packageJson.peerDependencies ?? {}),
+    ...Object.entries(packageJson.optionalDependencies ?? {})
+  ];
 }
 
 function expectExists(packagePath, packageDir, label, fieldName) {

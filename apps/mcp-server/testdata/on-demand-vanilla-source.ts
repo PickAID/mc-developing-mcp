@@ -11,14 +11,14 @@ import {
   readSourcePackageInstallState,
   readSourcePackageManifest,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 import type {
   CurrentRuntime,
   ManagedRuntimeLayout,
   SourcePackageConfirmation,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
-import { resolveVanillaSource } from "@mcpskill/vanilla-source-adapter";
+} from "minecraft-developing-mcp-shared-types";
+import { resolveVanillaSource } from "minecraft-developing-mcp-vanilla-source-adapter";
 
 import { buildMcpServerBootstrap } from "../src/bootstrap.ts";
 import { buildMcpServerEvidencePlan } from "../src/evidence-plan.ts";

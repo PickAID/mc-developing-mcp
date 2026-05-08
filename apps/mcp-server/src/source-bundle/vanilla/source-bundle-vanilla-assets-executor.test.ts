@@ -8,8 +8,8 @@ import {
   buildLocalSourcePackageRecipeExecutor,
   buildVanillaResourcePackArchiveRecipe,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
-import type { SourcePackageConfirmation } from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-source-package-manager";
+import type { SourcePackageConfirmation } from "minecraft-developing-mcp-shared-types";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../../request/evidence/evidence-plan.js";

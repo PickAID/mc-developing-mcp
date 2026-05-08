@@ -1,9 +1,9 @@
-import type { CurrentRuntime, WorkspaceKind } from "@mcpskill/shared-types";
+import type { CurrentRuntime, WorkspaceKind } from "minecraft-developing-mcp-shared-types";
 import type {
   ExecutableResolver,
   JdtlsServiceProfile
-} from "@mcpskill/java-jdtls-adapter";
-import type { ModArchiveCandidate } from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-java-jdtls-adapter";
+import type { ModArchiveCandidate } from "minecraft-developing-mcp-jar-source-adapter";
 
 export type ServiceCapabilityStatus =
   | "ready"

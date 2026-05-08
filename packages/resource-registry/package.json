@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/resource-registry",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-resource-registry",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,7 +18,7 @@
     "test": "tsc -b . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
   },
   "dependencies": {
-    "@mcpskill/package-registry": "workspace:*"
+    "minecraft-developing-mcp-package-registry": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

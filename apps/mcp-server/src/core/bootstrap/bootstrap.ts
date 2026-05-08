@@ -3,12 +3,12 @@ import type {
     McpServerBootstrapOptions,
     WorkspaceBootstrapContext,
     WorkspaceBootstrapInput,
-} from "@mcpskill/shared-types";
-import { createDefaultRuntimePolicy } from "@mcpskill/runtime-manager";
+} from "minecraft-developing-mcp-shared-types";
+import { createDefaultRuntimePolicy } from "minecraft-developing-mcp-runtime-manager";
 import {
     detectWorkspace,
     WORKSPACE_DETECTOR_PACKAGE,
-} from "@mcpskill/workspace-detector";
+} from "minecraft-developing-mcp-workspace-detector";
 
 export function buildMcpServerBootstrap(
     runtimeRoot: string,
@@ -38,10 +38,10 @@ function createBaseBootstrap(runtimeRoot: string): McpServerBootstrap {
         appId: "mcp-server",
         runtimePolicy: createDefaultRuntimePolicy(runtimeRoot),
         corePackages: [
-            "@mcpskill/agent-harness",
-            "@mcpskill/runtime-manager",
-            "@mcpskill/shared-types",
-            "@mcpskill/workspace-detector",
+            "minecraft-developing-mcp-agent-harness",
+            "minecraft-developing-mcp-runtime-manager",
+            "minecraft-developing-mcp-shared-types",
+            "minecraft-developing-mcp-workspace-detector",
         ],
     };
 }

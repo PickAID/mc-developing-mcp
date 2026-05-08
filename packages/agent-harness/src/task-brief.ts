@@ -3,7 +3,7 @@ import type {
   AgentRuntimePromptFragment,
   AgentRuntimeTaskBrief,
   WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { buildHarnessBriefFromSnapshot } from "./brief.js";
 import { CLIENT_VISUAL_CAPABILITY_POLICY_TEXT } from "./client-visual-policy-text.js";

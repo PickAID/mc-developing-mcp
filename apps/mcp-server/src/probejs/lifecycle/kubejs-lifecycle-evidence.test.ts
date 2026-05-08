@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import type { ProbeJsLanguageProjectFile } from "@mcpskill/kubejs-language-service";
+import type { ProbeJsLanguageProjectFile } from "minecraft-developing-mcp-kubejs-language-service";
 
 import { buildKubeJsLifecycleEvidence } from "./kubejs-lifecycle-evidence.js";
 

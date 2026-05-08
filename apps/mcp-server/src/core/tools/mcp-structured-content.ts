@@ -3,7 +3,7 @@ import type { MdmResourceStatusContext } from "../../docs/mdm-resource/mdm-resou
 import type { McpMdmReleaseInstallResult } from "../../docs/mdm-resource/mdm-release-install.js";
 import type { MdmDocsResourceSummary } from "../../docs/mdm-docs/mdm-docs-records.js";
 import type { MdmPackageRecommendations } from "../../docs/mdm-resource/mdm-package-recommendations.js";
-import type { AgentRuntimePromptFragmentId } from "@mcpskill/shared-types";
+import type { AgentRuntimePromptFragmentId } from "minecraft-developing-mcp-shared-types";
 
 type RequiredBudgetOptions = Required<
   Omit<

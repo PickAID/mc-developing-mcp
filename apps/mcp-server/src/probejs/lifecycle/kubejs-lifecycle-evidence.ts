@@ -4,7 +4,7 @@ import { relative, resolve } from "node:path";
 import type {
   KubeJsScriptScope,
   ProbeJsLanguageProjectFile
-} from "@mcpskill/kubejs-language-service";
+} from "minecraft-developing-mcp-kubejs-language-service";
 
 export interface KubeJsLifecycleEvidenceInput {
   workspaceRoot: string;

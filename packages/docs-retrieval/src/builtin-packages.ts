@@ -1,4 +1,4 @@
-import type { DocsPackageManifest } from "@mcpskill/shared-types";
+import type { DocsPackageManifest } from "minecraft-developing-mcp-shared-types";
 
 export const CRYCHICDOC_KUBEJS_1201_PACKAGE: DocsPackageManifest = {
   packageId: "crychicdoc-kubejs-1.20.1-course-zh-cn",

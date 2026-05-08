@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import type {
   ManagedRuntimeLayout,
   SourcePackageConfirmation
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   readSourcePackageConfirmation,

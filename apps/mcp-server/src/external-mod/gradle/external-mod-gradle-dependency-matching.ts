@@ -1,6 +1,6 @@
-import { parseMavenCoordinate } from "@mcpskill/external-mod-resolver";
-import type { GradleDeclaredDependency } from "@mcpskill/gradle-adapter";
-import type { ModArchiveMetadata } from "@mcpskill/jar-source-adapter";
+import { parseMavenCoordinate } from "minecraft-developing-mcp-external-mod-resolver";
+import type { GradleDeclaredDependency } from "minecraft-developing-mcp-gradle-adapter";
+import type { ModArchiveMetadata } from "minecraft-developing-mcp-jar-source-adapter";
 
 import type { McpServerExternalModResolutionRequest } from "../resolution/external-mod-resolution-request.js";
 

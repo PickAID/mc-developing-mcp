@@ -1,5 +1,5 @@
 export const KUBEJS_LANGUAGE_SERVICE_PACKAGE =
-  "@mcpskill/kubejs-language-service";
+  "minecraft-developing-mcp-kubejs-language-service";
 
 export { createKubeJsLanguageServiceCache } from "./cache.js";
 export {

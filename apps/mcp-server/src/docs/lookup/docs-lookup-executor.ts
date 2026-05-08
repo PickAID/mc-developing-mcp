@@ -4,7 +4,7 @@ import {
   rankDocsSearchHits,
   type DocsSearchHit,
   type DocsPackageRecord
-} from "@mcpskill/docs-retrieval";
+} from "minecraft-developing-mcp-docs-retrieval";
 
 import type {
   McpServerEvidenceExecutorInput,

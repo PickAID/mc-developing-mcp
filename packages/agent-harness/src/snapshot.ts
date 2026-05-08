@@ -2,7 +2,7 @@ import type {
   AgentRuntimeHarnessFacts,
   AgentRuntimeHarnessSnapshot,
   WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { buildHarnessAuthoringPolicy } from "./policy.js";
 import { buildHarnessDefaultRoute } from "./route.js";

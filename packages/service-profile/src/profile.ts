@@ -1,11 +1,11 @@
 import { resolve } from "node:path";
 
-import { discoverDatapackContent, listDatapackFiles } from "@mcpskill/datapack-adapter";
-import { discoverGradleSourceArchives } from "@mcpskill/gradle-adapter";
-import { discoverModArchives } from "@mcpskill/jar-source-adapter";
-import { buildJdtlsServiceProfile } from "@mcpskill/java-jdtls-adapter";
-import { discoverKubeJsTypeResources } from "@mcpskill/kubejs-types-adapter";
-import { detectWorkspace } from "@mcpskill/workspace-detector";
+import { discoverDatapackContent, listDatapackFiles } from "minecraft-developing-mcp-datapack-adapter";
+import { discoverGradleSourceArchives } from "minecraft-developing-mcp-gradle-adapter";
+import { discoverModArchives } from "minecraft-developing-mcp-jar-source-adapter";
+import { buildJdtlsServiceProfile } from "minecraft-developing-mcp-java-jdtls-adapter";
+import { discoverKubeJsTypeResources } from "minecraft-developing-mcp-kubejs-types-adapter";
+import { detectWorkspace } from "minecraft-developing-mcp-workspace-detector";
 
 import { buildServiceProfileGuidance } from "./guidance.js";
 import { findSourceIndexDatabases } from "./source-indexes.js";

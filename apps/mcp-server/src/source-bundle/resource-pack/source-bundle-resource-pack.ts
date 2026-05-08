@@ -5,7 +5,7 @@ import {
   type ResourcePackProfileConfidence,
   type ResourcePackVersionMigrationAnalysis,
   type ResourcePackVersionProfile
-} from "@mcpskill/datapack-adapter";
+} from "minecraft-developing-mcp-datapack-adapter";
 
 export interface ResourcePackMigrationRequest {
   fromMinecraftVersion: string;

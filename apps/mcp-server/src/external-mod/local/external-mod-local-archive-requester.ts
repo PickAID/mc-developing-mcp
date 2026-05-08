@@ -4,7 +4,7 @@ import type {
   ModArchiveCandidate,
   ModArchiveMetadata,
   ModArchiveSource
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type { LocalModArchiveInspection } from "./external-mod-local-archive-inspection.js";
 

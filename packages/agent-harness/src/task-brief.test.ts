@@ -4,7 +4,7 @@ import type {
   CurrentRuntime,
   WorkspaceBootstrapContext,
   WorkspaceDescriptor
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   buildHarnessTaskBrief,
@@ -298,7 +298,7 @@ function createWorkspaceContext(
 
   return {
     workspaceRoot: descriptor.root,
-    detectorPackage: "@mcpskill/workspace-detector",
+    detectorPackage: "minecraft-developing-mcp-workspace-detector",
     descriptor
   };
 }

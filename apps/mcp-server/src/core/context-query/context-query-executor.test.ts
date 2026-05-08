@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
-import { createArchiveContentCache } from "@mcpskill/jar-source-adapter";
+import { createArchiveContentCache } from "minecraft-developing-mcp-jar-source-adapter";
 
 import { buildMcpServerBootstrap } from "../bootstrap/bootstrap.js";
 import { buildMcpServerContextQueryExecutor } from "./context-query-executor.js";

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type {
   AgentRuntimeHarnessSnapshot,
   CurrentRuntime
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   detectHarnessTaskIntent,

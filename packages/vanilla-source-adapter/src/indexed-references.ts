@@ -5,7 +5,7 @@ import {
   readIndexedSourceChunk,
   readIndexedSourceFile,
   type SourceIndexMatch
-} from "@mcpskill/source-index";
+} from "minecraft-developing-mcp-source-index";
 
 import {
   deriveVanillaRelativePath,

@@ -1,14 +1,14 @@
-import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
-import type { DocsPackageRecord } from "@mcpskill/docs-retrieval";
+import type { ArchiveContentCache } from "minecraft-developing-mcp-jar-source-adapter";
+import type { DocsPackageRecord } from "minecraft-developing-mcp-docs-retrieval";
 import {
   createFileMavenMetadataCache,
   type MavenMetadataCache,
   type ResolveMavenArtifactInput,
   type ResolveModrinthModInput,
   type ResolveCurseForgeModInput
-} from "@mcpskill/external-mod-resolver";
-import type { SourceAcquisitionWorkItemRunnerHandlers } from "@mcpskill/source-package-manager";
-import { readGradleMavenRepositories } from "@mcpskill/gradle-adapter";
+} from "minecraft-developing-mcp-external-mod-resolver";
+import type { SourceAcquisitionWorkItemRunnerHandlers } from "minecraft-developing-mcp-source-package-manager";
+import { readGradleMavenRepositories } from "minecraft-developing-mcp-gradle-adapter";
 
 import { executeMcpServerDocsLookup } from "../../docs/lookup/docs-lookup-executor.js";
 import type { MdmDocsSqliteArtifact } from "../../docs/mdm-docs/mdm-docs-records.js";

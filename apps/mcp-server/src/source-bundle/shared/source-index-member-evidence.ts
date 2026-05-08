@@ -4,7 +4,7 @@ import { join } from "node:path";
 import {
   querySourceIndex,
   type SourceIndexMatch
-} from "@mcpskill/source-index";
+} from "minecraft-developing-mcp-source-index";
 
 import type { MixinMemberReference } from "../../mod-archive/mixin/mixin-member-signals.js";
 import type { MixinTargetMemberEvidence } from "../../mod-archive/mixin/mixin-target-verifier.js";

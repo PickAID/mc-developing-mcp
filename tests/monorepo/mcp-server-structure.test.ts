@@ -22,7 +22,7 @@ const structuredSourceDirs = [
   "source-bundle"
 ];
 
-describe("@mcpskill/mcp-server source layout", () => {
+describe("minecraft-developing-mcp-mcp-server source layout", () => {
   it("keeps the src root limited to stable entrypoints", () => {
     expect(tsFilesAt(srcRoot).sort()).toEqual(["index.ts", "stdio.ts"]);
   });

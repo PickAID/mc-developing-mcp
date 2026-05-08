@@ -7,7 +7,7 @@ import type {
   ManagedRuntimeLayout,
   SourcePackageConfirmation,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   buildLocalSourcePackageRecipeExecutor,

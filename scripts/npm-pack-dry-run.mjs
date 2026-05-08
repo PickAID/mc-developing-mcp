@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { publishablePackages } from "./npm-publish-packages.mjs";
 
-const packDestination = mkdtempSync(join(tmpdir(), "mcpskill-pack-dry-run-"));
+const packDestination = mkdtempSync(join(tmpdir(), "mc-developing-mcp-pack-dry-run-"));
 
 try {
   for (const packageDir of publishablePackages) {
@@ -39,7 +39,7 @@ try {
 
     console.log(
       `${packageDir}: ${packResult.name}@${packResult.version} ` +
-        `${packResult.files.length} file(s), dependency ranges rewritten`
+        `${packResult.files.length} file(s), no workspace dependency ranges`
     );
   }
 } finally {

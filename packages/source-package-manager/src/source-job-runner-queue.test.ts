@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   ManagedRuntimeLayout,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   buildFileQueuedSourceAcquisitionJobRunner,

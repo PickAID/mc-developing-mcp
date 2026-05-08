@@ -4,12 +4,12 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import type { SourcePackageConfirmation } from "@mcpskill/shared-types";
+import type { SourcePackageConfirmation } from "minecraft-developing-mcp-shared-types";
 import {
   buildLocalSourcePackageRecipeExecutor,
   buildVanillaDataPackArchiveRecipe,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../../request/evidence/evidence-plan.js";

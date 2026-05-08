@@ -7,8 +7,8 @@ import {
   type ResolveMavenArtifactInput,
   type ResolveCurseForgeModInput,
   type ResolveModrinthModInput
-} from "@mcpskill/external-mod-resolver";
-import type { ArchiveContentCache } from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-external-mod-resolver";
+import type { ArchiveContentCache } from "minecraft-developing-mcp-jar-source-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,

@@ -9,10 +9,10 @@ import {
   type SourcePackageRecipeExecutor,
   type SourcePackageRecipeProvider,
   type SourcePackageRecipeRegistry
-} from "@mcpskill/source-package-manager";
-import type { ManagedRuntimeLayout } from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-source-package-manager";
+import type { ManagedRuntimeLayout } from "minecraft-developing-mcp-shared-types";
 
-import type { SourceAcquisitionWorkItemHandlerResult } from "@mcpskill/source-package-manager";
+import type { SourceAcquisitionWorkItemHandlerResult } from "minecraft-developing-mcp-source-package-manager";
 
 const require = createRequire(import.meta.url);
 

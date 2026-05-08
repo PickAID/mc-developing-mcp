@@ -1,8 +1,8 @@
 import {
   selectDocsPackages,
   type DocsPackageSelectionResult
-} from "@mcpskill/docs-retrieval";
-import type { AgentRuntimeTaskRouteStep, McpServerRequestPlan } from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-docs-retrieval";
+import type { AgentRuntimeTaskRouteStep, McpServerRequestPlan } from "minecraft-developing-mcp-shared-types";
 
 export function buildMcpServerDocsSelection(
   requestPlan: McpServerRequestPlan,

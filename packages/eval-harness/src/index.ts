@@ -1,1 +1,1 @@
-export const EVAL_HARNESS_PACKAGE = "@mcpskill/eval-harness";
+export const EVAL_HARNESS_PACKAGE = "minecraft-developing-mcp-eval-harness";

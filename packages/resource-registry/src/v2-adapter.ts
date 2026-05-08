@@ -6,7 +6,7 @@ import {
   type PackageLifecycleV2,
   type PackageManifestV2,
   type QueryAdapterV2
-} from "@mcpskill/package-registry";
+} from "minecraft-developing-mcp-package-registry";
 
 import type {
   MdmResourcePackageMetadata,

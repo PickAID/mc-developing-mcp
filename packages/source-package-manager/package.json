@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/source-package-manager",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-source-package-manager",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,10 +18,10 @@
     "test": "tsc -b ../shared-types ../jar-source-adapter ../package-registry ../source-index . && vitest run --root ../.. \"$PWD/src\"/*.test.ts"
   },
   "dependencies": {
-    "@mcpskill/jar-source-adapter": "workspace:*",
-    "@mcpskill/package-registry": "workspace:*",
-    "@mcpskill/source-index": "workspace:*",
-    "@mcpskill/shared-types": "workspace:*"
+    "minecraft-developing-mcp-jar-source-adapter": "workspace:*",
+    "minecraft-developing-mcp-package-registry": "workspace:*",
+    "minecraft-developing-mcp-source-index": "workspace:*",
+    "minecraft-developing-mcp-shared-types": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import { publishablePackages } from "./npm-publish-packages.mjs";
 
-const tempRoot = mkdtempSync(join(tmpdir(), "mcpskill-install-smoke-"));
+const tempRoot = mkdtempSync(join(tmpdir(), "mc-developing-mcp-install-smoke-"));
 const tarballRoot = join(tempRoot, "tarballs");
 const installRoot = join(tempRoot, "install");
 
@@ -54,8 +54,8 @@ async function smokeInstalledBinary() {
     env: {
       ...process.env,
       PATH: `${join(installRoot, "node_modules", ".bin")}${delimiter}${process.env.PATH ?? ""}`,
-      MCPSKILL_RUNTIME_ROOT: join(tempRoot, "runtime"),
-      MCPSKILL_WORKSPACE_ROOT: installRoot
+      MC_DEVELOPING_MCP_RUNTIME_ROOT: join(tempRoot, "runtime"),
+      MC_DEVELOPING_MCP_WORKSPACE_ROOT: installRoot
     },
     stdio: ["pipe", "pipe", "pipe"]
   });
@@ -85,7 +85,7 @@ async function smokeInstalledBinary() {
     params: {
       protocolVersion: "2024-11-05",
       capabilities: {},
-      clientInfo: { name: "mcpskill-install-smoke", version: "0.0.0" }
+      clientInfo: { name: "mc-developing-mcp-install-smoke", version: "0.0.0" }
     }
   })}\n`);
   await waitFor(() => responses.some((response) => response.id === 1), {

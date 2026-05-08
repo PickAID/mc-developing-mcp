@@ -1,4 +1,4 @@
-import type { DatapackFileEntry } from "@mcpskill/datapack-adapter";
+import type { DatapackFileEntry } from "minecraft-developing-mcp-datapack-adapter";
 
 import {
   createLineRangeEvidence,

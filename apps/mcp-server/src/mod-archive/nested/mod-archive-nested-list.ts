@@ -1,7 +1,7 @@
 import {
   listNestedArchiveContent,
   type ArchiveContentDomain
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type { McpServerEvidenceExecutorResult } from "../../request/execution/request-handler.js";
 

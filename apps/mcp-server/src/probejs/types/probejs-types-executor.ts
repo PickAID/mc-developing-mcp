@@ -13,13 +13,13 @@ import {
   type KubeJsLanguageServiceCache,
   type KubeJsLanguageServiceProject,
   type KubeJsScriptScope
-} from "@mcpskill/kubejs-language-service";
+} from "minecraft-developing-mcp-kubejs-language-service";
 import {
   type KubeJsSemanticResourceEntry,
   type KubeJsSemanticResourceKind,
   type KubeJsTypeSemanticSummary,
   type KubeJsUnknownResource
-} from "@mcpskill/kubejs-types-adapter";
+} from "minecraft-developing-mcp-kubejs-types-adapter";
 
 import type {
   McpServerEvidenceExecutorInput,

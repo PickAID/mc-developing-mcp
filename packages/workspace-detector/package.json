@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/workspace-detector",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-workspace-detector",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,7 +18,7 @@
     "test": "vitest run --root ../.. packages/workspace-detector/src/detect.test.ts"
   },
   "dependencies": {
-    "@mcpskill/shared-types": "workspace:*"
+    "minecraft-developing-mcp-shared-types": "workspace:*"
   },
   "author": "m1hono",
   "license": "PolyForm-Noncommercial-1.0.0",

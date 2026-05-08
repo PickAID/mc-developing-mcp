@@ -7,12 +7,12 @@ import {
   buildLocalSourcePackageRecipeExecutor,
   buildVanillaResourcePackArchiveRecipe,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 import type {
   ManagedRuntimeLayout,
   SourcePackageConfirmation,
   SourcePackageCoordinate
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { executeMcpServerGeneratedVanillaResourcePackage } from "./source-bundle-generated-vanilla-resource.js";
 

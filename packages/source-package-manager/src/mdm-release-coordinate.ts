@@ -3,7 +3,7 @@ import type {
   SourcePackageCoordinate,
   SourcePackageNamespace,
   SourcePackageVariant
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export interface MdmReleaseSourcePackageLike {
   packageId: string;

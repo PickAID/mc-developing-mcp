@@ -1,12 +1,12 @@
 import {
   discoverDeclaredDependencyBinaryArchives,
   type GradleSourceArchiveCandidate
-} from "@mcpskill/gradle-adapter";
+} from "minecraft-developing-mcp-gradle-adapter";
 import {
   extractJavaClassReferences,
   findArchiveSetClassOwners,
   type ArchiveClassOwnerMatch
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type { GradleSourceArchiveDiscoveryOptions } from "./gradle-source-archive-lookup.js";
 

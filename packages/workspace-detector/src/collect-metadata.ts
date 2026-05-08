@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 
-import type { Loader } from "@mcpskill/shared-types";
+import type { Loader } from "minecraft-developing-mcp-shared-types";
 
 import type { WorkspaceScan } from "./filesystem.js";
 import type { CollectedRuntimeFact } from "./runtime.js";

@@ -2,12 +2,12 @@ import type {
   McpServerBootstrap,
   McpServerRequestContext,
   WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 import {
   buildHarnessBriefFromSnapshot,
   buildHarnessSnapshot,
   buildHarnessTaskBriefFromSnapshot
-} from "@mcpskill/agent-harness/internal";
+} from "minecraft-developing-mcp-agent-harness/internal";
 
 export function buildMcpServerRequestContext(
   bootstrap: Pick<McpServerBootstrap, "workspaceContext">,

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type {
   MdmResourcePackageStatus,
   MdmResourceStatusEntry
-} from "@mcpskill/resource-registry";
+} from "minecraft-developing-mcp-resource-registry";
 
 import type { MdmResourceStatusContext } from "./mdm-resource-status.js";
 

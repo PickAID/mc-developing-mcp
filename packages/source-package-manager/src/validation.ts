@@ -1,7 +1,7 @@
 import type {
   SourcePackageCoordinate,
   SourcePackageManifest
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { readSourcePackageManifest } from "./manifest.js";
 

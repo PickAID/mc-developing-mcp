@@ -4,13 +4,13 @@ import { tmpdir } from "node:os";
 
 import { describe, expect, it } from "vitest";
 
-import { buildSourceIndex } from "@mcpskill/source-index";
+import { buildSourceIndex } from "minecraft-developing-mcp-source-index";
 import {
   buildLocalSourcePackageRecipeExecutor,
   buildVanillaSourcePackCopyRecipe,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
-import type { SourcePackageConfirmation } from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-source-package-manager";
+import type { SourcePackageConfirmation } from "minecraft-developing-mcp-shared-types";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../../request/evidence/evidence-plan.js";

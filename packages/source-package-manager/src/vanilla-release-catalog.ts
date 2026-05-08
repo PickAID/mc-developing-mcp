@@ -1,4 +1,4 @@
-import type { SourcePackageCoordinate } from "@mcpskill/shared-types";
+import type { SourcePackageCoordinate } from "minecraft-developing-mcp-shared-types";
 
 import {
   buildVanillaAssetsCoordinate,

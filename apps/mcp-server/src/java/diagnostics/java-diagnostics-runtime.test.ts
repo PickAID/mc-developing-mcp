@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
-import type { JdtlsServiceProfile } from "@mcpskill/java-jdtls-adapter";
+import type { JdtlsServiceProfile } from "minecraft-developing-mcp-java-jdtls-adapter";
 
 import { createMcpJavaDiagnosticsRuntime } from "./java-diagnostics-runtime.js";
 

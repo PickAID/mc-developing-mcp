@@ -1,6 +1,6 @@
 {
-  "name": "@mcpskill/datapack-adapter",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp-datapack-adapter",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

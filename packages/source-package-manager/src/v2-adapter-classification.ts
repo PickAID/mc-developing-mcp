@@ -4,12 +4,12 @@ import type {
   PackageManifestV2,
   PackageMappingV2,
   QueryAdapterV2
-} from "@mcpskill/package-registry";
+} from "minecraft-developing-mcp-package-registry";
 import type {
   SourcePackageArtifactType,
   SourcePackageManifest,
   SourcePackageNamespace
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import type { SourcePackageRecipe, SourcePackageRecipeStep } from "./contracts.js";
 

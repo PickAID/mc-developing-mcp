@@ -1,7 +1,7 @@
 import type {
   AgentRuntimeHarnessSnapshot,
   CurrentRuntime
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export function createTaskRouteSnapshot(
   overrides: Partial<AgentRuntimeHarnessSnapshot> = {}

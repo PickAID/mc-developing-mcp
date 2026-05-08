@@ -1,7 +1,7 @@
 import type {
   SourcePackageCoordinate,
   SourcePackageVariant
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import type {
   SourcePackageRecipe,

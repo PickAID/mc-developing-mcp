@@ -1,4 +1,4 @@
-import type { WorkspaceDescriptor, WorkspaceKind } from "@mcpskill/shared-types";
+import type { WorkspaceDescriptor, WorkspaceKind } from "minecraft-developing-mcp-shared-types";
 
 import {
   collectHintFacts,

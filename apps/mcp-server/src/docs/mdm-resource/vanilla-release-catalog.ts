@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { MinecraftReleaseCatalog } from "@mcpskill/source-package-manager";
+import type { MinecraftReleaseCatalog } from "minecraft-developing-mcp-source-package-manager";
 
 import type { MdmResourceStatusContext } from "./mdm-resource-status.js";
 

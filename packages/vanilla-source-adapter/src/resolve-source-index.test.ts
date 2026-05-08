@@ -4,16 +4,16 @@ import { tmpdir } from "node:os";
 
 import { describe, expect, it } from "vitest";
 
-import { buildSourceIndex } from "@mcpskill/source-index";
+import { buildSourceIndex } from "minecraft-developing-mcp-source-index";
 import type {
   CurrentRuntime,
   ManagedRuntimeLayout,
   SourcePackageConfirmation
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 import {
   buildVanillaSourcePackCopyRecipe,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import { resolveVanillaSource } from "./resolve.js";
 

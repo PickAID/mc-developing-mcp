@@ -3,8 +3,8 @@ import type {
   SourcePackageCoordinate,
   SourcePackageId,
   SourcePackageManifest
-} from "@mcpskill/shared-types";
-import type { ArchiveContentDomain } from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-shared-types";
+import type { ArchiveContentDomain } from "minecraft-developing-mcp-jar-source-adapter";
 
 export type SourcePackageRecipeStep =
   | {

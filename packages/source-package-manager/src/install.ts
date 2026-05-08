@@ -3,7 +3,7 @@ import type {
   SourcePackageCoordinate,
   SourcePackageEnsureResult,
   SourcePackageInstallState
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { readSourcePackageConfirmation } from "./confirmation.js";
 import type {

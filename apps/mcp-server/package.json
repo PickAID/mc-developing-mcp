@@ -1,9 +1,8 @@
 {
-  "name": "@mcpskill/mcp-server",
-  "version": "0.1.0-next.1",
+  "name": "minecraft-developing-mcp",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -12,35 +11,18 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
   "scripts": {
     "clean:dist": "rm -rf dist tsconfig.tsbuildinfo",
-    "build": "pnpm run clean:dist && tsc -b",
+    "build": "pnpm run clean:dist && tsc -b . && node ../../scripts/build-mcp-server-bundle.mjs",
     "smoke:real-workspace": "tsx src/smoke/real-workspace/real-workspace-smoke.ts",
     "test": "pnpm run clean:dist && tsc -b . && vitest run --root ../.. \"$PWD/src\""
   },
   "dependencies": {
-    "@mcpskill/agent-harness": "workspace:*",
-    "@mcpskill/datapack-adapter": "workspace:*",
-    "@mcpskill/docs-retrieval": "workspace:*",
-    "@mcpskill/external-mod-resolver": "workspace:*",
-    "@mcpskill/gradle-adapter": "workspace:*",
-    "@mcpskill/jar-source-adapter": "workspace:*",
-    "@mcpskill/java-jdtls-adapter": "workspace:*",
-    "@mcpskill/kubejs-language-service": "workspace:*",
-    "@mcpskill/kubejs-types-adapter": "workspace:*",
-    "@mcpskill/resource-registry": "workspace:*",
-    "@mcpskill/runtime-manager": "workspace:*",
-    "@mcpskill/service-profile": "workspace:*",
-    "@mcpskill/shared-types": "workspace:*",
-    "@mcpskill/source-index": "workspace:*",
-    "@mcpskill/source-package-manager": "workspace:*",
-    "@mcpskill/vanilla-source-adapter": "workspace:*",
-    "@mcpskill/workspace-detector": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "typescript": "^5.8.3",
     "zod": "^4.3.6"
   },
   "author": "m1hono",

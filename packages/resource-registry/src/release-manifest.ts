@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import type {
   PackageCapabilityV2,
   PackageReleaseV2
-} from "@mcpskill/package-registry";
+} from "minecraft-developing-mcp-package-registry";
 
 import type {
   MdmResourcePackageMetadata,

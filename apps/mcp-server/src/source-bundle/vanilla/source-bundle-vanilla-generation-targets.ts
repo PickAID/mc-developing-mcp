@@ -1,7 +1,7 @@
 import {
   planVanillaReleaseGenerationFromCatalog,
   type VanillaGeneratedTargetKind
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import type { MdmVanillaReleaseCatalogContext } from "../../docs/mdm-resource/vanilla-release-catalog.js";
 import type {

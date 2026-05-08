@@ -2,7 +2,7 @@ import {
   listDatapackFiles,
   type DatapackFileEntry,
   type DatapackSearchMatch
-} from "@mcpskill/datapack-adapter";
+} from "minecraft-developing-mcp-datapack-adapter";
 
 const DATAPACK_BUDGET = {
   maxFiles: 512,

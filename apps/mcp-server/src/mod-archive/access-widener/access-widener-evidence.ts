@@ -2,7 +2,7 @@ import {
   listArchiveContent,
   readArchiveContentFile,
   type ArchiveContentCache
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import {
   parseAccessWidenerTargets,

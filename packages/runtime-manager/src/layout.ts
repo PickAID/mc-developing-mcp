@@ -1,6 +1,6 @@
 import { join, normalize } from "node:path";
 
-import type { ManagedRuntimeLayout } from "@mcpskill/shared-types";
+import type { ManagedRuntimeLayout } from "minecraft-developing-mcp-shared-types";
 
 export function resolveManagedRuntimeLayout(
   runtimeRoot: string

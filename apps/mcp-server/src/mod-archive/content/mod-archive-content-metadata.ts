@@ -1,7 +1,7 @@
 import {
   readModArchiveMetadata,
   type ModArchiveMetadata
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 export async function attachArchiveMetadata<T extends { sourceArchive: string }>(
   matches: T[]

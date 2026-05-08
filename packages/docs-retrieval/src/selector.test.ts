@@ -5,8 +5,8 @@ import type {
   DocsPackageManifest,
   McpServerRequestPlan,
   WorkspaceKind
-} from "@mcpskill/shared-types";
-import { buildPackageRegistry } from "@mcpskill/package-registry";
+} from "minecraft-developing-mcp-shared-types";
+import { buildPackageRegistry } from "minecraft-developing-mcp-package-registry";
 
 import {
   buildBuiltinDocsRegistry,
@@ -206,7 +206,7 @@ function createRequestPlan(input: {
       requestText: input.requestText,
       workspaceContext: {
         workspaceRoot: "/tmp/workspace",
-        detectorPackage: "@mcpskill/workspace-detector",
+        detectorPackage: "minecraft-developing-mcp-workspace-detector",
         descriptor: {
           root: "/tmp/workspace",
           kind: input.workspaceKind,

@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { buildSourceIndex } from "@mcpskill/source-index";
+import { buildSourceIndex } from "minecraft-developing-mcp-source-index";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { lookupMixinTargetVerification } from "../content/mod-archive-content-owners.js";

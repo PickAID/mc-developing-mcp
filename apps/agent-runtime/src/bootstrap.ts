@@ -3,16 +3,16 @@ import type {
   AgentRuntimeBootstrapOptions,
   WorkspaceBootstrapContext,
   WorkspaceBootstrapInput
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 import {
   buildHarnessBriefFromSnapshot,
   buildHarnessSnapshot
-} from "@mcpskill/agent-harness/internal";
-import { createDefaultRuntimePolicy } from "@mcpskill/runtime-manager";
+} from "minecraft-developing-mcp-agent-harness/internal";
+import { createDefaultRuntimePolicy } from "minecraft-developing-mcp-runtime-manager";
 import {
   detectWorkspace,
   WORKSPACE_DETECTOR_PACKAGE
-} from "@mcpskill/workspace-detector";
+} from "minecraft-developing-mcp-workspace-detector";
 
 export function buildAgentRuntimeBootstrap(
   runtimeRoot: string
@@ -48,7 +48,7 @@ function createBaseBootstrap(runtimeRoot: string): AgentRuntimeBootstrap {
   return {
     appId: "agent-runtime",
     runtimePolicy: createDefaultRuntimePolicy(runtimeRoot),
-    harnessPackage: "@mcpskill/agent-harness",
+    harnessPackage: "minecraft-developing-mcp-agent-harness",
     traceEnabled: true
   };
 }

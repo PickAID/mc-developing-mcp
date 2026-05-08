@@ -2,7 +2,7 @@ import {
   normalizeArchivePath,
   readZipCentralDirectory,
   readZipEntryContent
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type {
   MappingIndexProvider,

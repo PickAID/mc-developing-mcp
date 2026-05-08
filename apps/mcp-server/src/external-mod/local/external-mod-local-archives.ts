@@ -6,7 +6,7 @@ import {
   type ModArchiveCandidate,
   type ModArchiveMetadata,
   type ModArchiveSource
-} from "@mcpskill/jar-source-adapter";
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import type { McpServerExternalModResolutionRequest } from "../resolution/external-mod-resolution-request.js";
 import {

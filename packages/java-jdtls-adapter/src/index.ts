@@ -1,4 +1,4 @@
-export const JAVA_JDTLS_ADAPTER_PACKAGE = "@mcpskill/java-jdtls-adapter";
+export const JAVA_JDTLS_ADAPTER_PACKAGE = "minecraft-developing-mcp-java-jdtls-adapter";
 
 export { buildJdtlsServiceProfile } from "./profile.js";
 export {

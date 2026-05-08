@@ -8,13 +8,13 @@ import type {
   CurrentRuntime,
   ManagedRuntimeLayout,
   SourcePackageConfirmation
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 import {
   buildFileQueuedSourceAcquisitionJobRunner,
   buildLocalSourcePackageRecipeExecutor,
   buildVanillaSourcePackCopyRecipe,
   writeSourcePackageConfirmation
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 
 import { isVanillaSourceRequest } from "./request.js";
 import { resolveVanillaSource } from "./resolve.js";

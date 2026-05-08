@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { buildSourceIndex } from "@mcpskill/source-index";
+import { buildSourceIndex } from "minecraft-developing-mcp-source-index";
 import { buildMcpServerContextQueryExecutor } from "./context-query-executor.js";
 import type { McpServerEvidenceExecutorInput } from "../../request/execution/request-handler.js";
 

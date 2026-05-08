@@ -2,7 +2,7 @@ import type {
   AgentRuntimeDefaultRoutePlan,
   AgentRuntimeRouteStep,
   WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import {
   detectHarnessScenario,

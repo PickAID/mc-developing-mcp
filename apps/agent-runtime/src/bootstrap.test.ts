@@ -18,7 +18,7 @@ describe("buildAgentRuntimeBootstrap", () => {
     const bootstrap = buildAgentRuntimeBootstrap("/tmp/mcpskill-runtime");
 
     expect(bootstrap.appId).toBe("agent-runtime");
-    expect(bootstrap.harnessPackage).toBe("@mcpskill/agent-harness");
+    expect(bootstrap.harnessPackage).toBe("minecraft-developing-mcp-agent-harness");
     expect(bootstrap.traceEnabled).toBe(true);
     expect(bootstrap.runtimePolicy.runtimeRoot).toBe("/tmp/mcpskill-runtime");
     expect(bootstrap.runtimePolicy.allowSystemFallback).toBe(false);
@@ -40,7 +40,7 @@ describe("buildAgentRuntimeBootstrap", () => {
 
     expect(bootstrap.workspaceContext).toMatchObject({
       workspaceRoot,
-      detectorPackage: "@mcpskill/workspace-detector",
+      detectorPackage: "minecraft-developing-mcp-workspace-detector",
       descriptor: {
         kind: "java-mod",
         hasGradle: true,

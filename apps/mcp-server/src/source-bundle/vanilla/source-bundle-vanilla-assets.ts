@@ -1,4 +1,4 @@
-import { buildVanillaResourcePackCoordinate } from "@mcpskill/source-package-manager";
+import { buildVanillaResourcePackCoordinate } from "minecraft-developing-mcp-source-package-manager";
 
 import type {
   McpServerEvidenceExecutorInput,

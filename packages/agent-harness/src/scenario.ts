@@ -1,7 +1,7 @@
 import type {
   WorkspaceBootstrapContext,
   WorkspaceDescriptor
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export type HarnessWorkspaceScenario =
   | "java-mod-workspace"

@@ -11,7 +11,7 @@ import {
   type DatapackSearchMatch,
   type DatapackSkippedFile,
   type resolveDatapackVersionProfile
-} from "@mcpskill/datapack-adapter";
+} from "minecraft-developing-mcp-datapack-adapter";
 
 import { findResourceLocationEntryMatches } from "../resource-pack/source-bundle-resource-location-matches.js";
 import {

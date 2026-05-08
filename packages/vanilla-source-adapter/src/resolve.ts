@@ -13,12 +13,12 @@ import {
   type SourcePackageRecipeExecutor,
   type SourcePackageRecipeProvider,
   type SourcePackageRecipeRegistry
-} from "@mcpskill/source-package-manager";
+} from "minecraft-developing-mcp-source-package-manager";
 import type {
   CurrentRuntime,
   ManagedRuntimeLayout,
   VanillaSourceResolveStatus
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 import { tryResolveIndexedReferences } from "./indexed-references.js";
 import {

@@ -1,7 +1,7 @@
 import type {
     AgentRuntimeAuthoringPolicy,
     WorkspaceBootstrapContext
-} from "@mcpskill/shared-types";
+} from "minecraft-developing-mcp-shared-types";
 
 export function buildHarnessAuthoringPolicy(
     workspaceContext?: WorkspaceBootstrapContext

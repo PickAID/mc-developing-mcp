@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExternalModResolverResult } from "@mcpskill/external-mod-resolver";
+import type { ExternalModResolverResult } from "minecraft-developing-mcp-external-mod-resolver";
 
 import { buildMcpServerBootstrap } from "../../core/bootstrap/bootstrap.js";
 import { buildMcpServerEvidencePlan } from "../../request/evidence/evidence-plan.js";

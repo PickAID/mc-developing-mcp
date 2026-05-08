@@ -32,7 +32,7 @@ export interface WorkspaceBootstrapInput {
 }
 
 export interface WorkspaceBootstrapContext extends WorkspaceBootstrapInput {
-  detectorPackage: "@mcpskill/workspace-detector";
+  detectorPackage: "minecraft-developing-mcp-workspace-detector";
   descriptor: WorkspaceDescriptor;
 }
 
@@ -201,7 +201,7 @@ export interface McpServerBootstrapOptions {
 export interface AgentRuntimeBootstrap {
   appId: "agent-runtime";
   runtimePolicy: ManagedRuntimePolicy;
-  harnessPackage: "@mcpskill/agent-harness";
+  harnessPackage: "minecraft-developing-mcp-agent-harness";
   traceEnabled: true;
   workspaceContext?: WorkspaceBootstrapContext;
   defaultRoutePlan?: AgentRuntimeDefaultRoutePlan;
