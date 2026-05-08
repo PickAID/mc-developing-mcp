@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { readdir, stat } from "node:fs/promises";
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { LspDiagnosticRegistry } from "@mcpskill/java-jdtls-adapter";
@@ -193,6 +194,13 @@ async function executeMcpDevelopTool(
     }
 
     const mdmDocs = await loadMdmDocsResourcesFromStatus(mdmResources);
+    const sourceIndexDatabasePaths =
+      await resolveMcpDevelopSourceIndexDatabasePaths({
+        runtimeRoot,
+        mdmSourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
+          (artifact) => artifact.artifactPath
+        )
+      });
     const mdmPackageRecommendations = buildMdmPackageRecommendations({
       requestText: input.requestText,
       mdmResources,
@@ -210,9 +218,7 @@ async function executeMcpDevelopTool(
         includeDefaultGradleUserHome: false,
         env,
         mdmResources,
-        sourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
-          (artifact) => artifact.artifactPath
-        )
+        sourceIndexDatabasePaths
       });
     const javaDiagnosticsPreparation = options.lspDiagnostics
       ? undefined
@@ -227,16 +233,12 @@ async function executeMcpDevelopTool(
       javaDiagnosticsPreparation,
       sourceBundle: {
         vanillaReleaseCatalog,
-        sourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
-          (artifact) => artifact.artifactPath
-        )
+        sourceIndexDatabasePaths
       },
       contextQuery: {
         docsRecords: mdmDocs.records,
         docsSqliteArtifacts: mdmDocs.sqliteArtifacts,
-        sourceIndexDatabasePaths: mdmDocs.sourceIndexArtifacts.map(
-          (artifact) => artifact.artifactPath
-        ),
+        sourceIndexDatabasePaths,
         sourceAcquisitionWorkItemHandlers:
           createMcpServerSourceAcquisitionWorkItemHandlers({
             requestText: input.requestText,
@@ -390,6 +392,60 @@ function shouldRefreshMdmResourceStatus(
     mdmReleaseInstall?.status === "downloaded" ||
     mdmReleaseInstall?.status === "ready"
   );
+}
+
+async function resolveMcpDevelopSourceIndexDatabasePaths(input: {
+  runtimeRoot: string;
+  mdmSourceIndexDatabasePaths: string[];
+}): Promise<string[]> {
+  const databases = [...input.mdmSourceIndexDatabasePaths];
+  const queue = [input.runtimeRoot];
+
+  while (queue.length > 0 && databases.length < 32) {
+    const current = queue.shift();
+    if (!current) {
+      break;
+    }
+
+    for (const entry of await readDirectoryIfPresent(current)) {
+      const path = join(current, entry.name);
+
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules" && entry.name !== ".git") {
+          queue.push(path);
+        }
+        continue;
+      }
+
+      if (entry.isFile() && entry.name === "source-index.sqlite") {
+        databases.push(path);
+      }
+    }
+  }
+
+  return (await uniqueExistingFiles(databases)).slice(0, 32);
+}
+
+async function readDirectoryIfPresent(directory: string) {
+  try {
+    return await readdir(directory, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+}
+
+async function uniqueExistingFiles(paths: string[]): Promise<string[]> {
+  const existing: string[] = [];
+  for (const path of [...new Set(paths)].sort()) {
+    try {
+      if ((await stat(path)).isFile()) {
+        existing.push(path);
+      }
+    } catch {
+      // Ignore stale optional indexes; executors still handle unreadable paths defensively.
+    }
+  }
+  return existing;
 }
 
 function formatToolError(error: unknown): string {

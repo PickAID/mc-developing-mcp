@@ -207,6 +207,12 @@ Implemented:
   top-level `javaMembers` without a path, invalid member kinds, and malformed
   `sourceChunks` without content or chunk ids are rejected by
   `tools/validate.mjs` instead of failing later during SQLite materialization.
+- Source-index corpus producer UX now has a dedicated `mdm-sources` CLI/API:
+  `tools/create-source-index-package.mjs`. It turns a normalized local or
+  user-confirmed source-index payload into a v2 `source_index_sqlite` package,
+  validates the package target against Minecraft version, loader, and mappings,
+  optionally syncs registry metadata, and can be built into a verified SQLite
+  release artifact. This does not fetch or commit Minecraft source.
 - Release builder cleans stale output before writing `release-out`.
 - Release package metadata mapping is split out of the release builder, keeping
   `tools/build-local-release.mjs` below the 500-line project limit after the
@@ -303,9 +309,10 @@ Not done:
 - Loader-specific profile coverage beyond the first curated matrix and broader
   API-specific profile variants beyond the current source/datapack/resourcepack
   loader set.
-- Larger real source-index corpus generation and live release acceptance. The
-  schema path is aligned, but broad source-index datasets still need controlled
-  generation from allowed local/user-confirmed inputs.
+- Larger real source-index corpus coverage and live release acceptance. The
+  producer path is now explicit for normalized allowed inputs, but broad
+  datasets still need controlled generation from local/user-confirmed source
+  roots and policy-approved payloads.
 - Broader KubeJS corpus beyond the initial 1.20.1 guidance package and dynamic
   MCP selection that deeply reads installed guidance payloads.
 - Source acquisition workspace-route execution parity is now covered for the
@@ -393,13 +400,15 @@ MCP datapack/resourcepack release split smoke: resource-registry test passed 10 
 mdm-sources release artifact split smoke: node --test tests/release-artifact-split.test.mjs passed 1 test; node --test tests/*.test.mjs passed 43 tests; node tools/validate.mjs returned packageCount 429 errorCount 0; fixture release emitted four independent artifacts for docs sqlite, source-index sqlite, datapack json, and resourcepack json plus manifest/summary, with no cross-type payload/table mixing; touched test file stayed under 500 lines
 mdm-sources loader datapack/resourcepack profiles: sync-repository now generates 18 loader datapack and 18 loader resourcepack metadata-only packages for Forge/NeoForge/Fabric/Quilt across the first curated loader matrix; node --test tests/sync-repository.test.mjs passed 1 test; node --test tests/*.test.mjs passed 43 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; touched source/test files stayed under 500 lines
 MCP loader datapack/resourcepack recommendations: request/workspace loader now prefers matching loader-specific datapack/resourcepack profiles, filters other loader profiles, and falls back to vanilla profiles when loader packages are absent; source signal matching no longer treats resourcepack as source evidence; focused mcp-server recommendation tests passed 4 files / 15 tests and mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
+mdm-sources source-index package producer: create-source-index-package.mjs now creates v2 source_index_sqlite packages from normalized local/user-confirmed payload JSON, rejects target mismatches, syncs registry metadata by default, and builds into install-verified SQLite release artifacts. node --test tests/create-source-index-package.test.mjs tests/build-local-release-source-index.test.mjs passed 3 tests; node --test tests/*.test.mjs passed 45 tests; node tools/validate.mjs returned packageCount 465 errorCount 0; touched source/test files stayed under 500 lines
+MCP runtime-local source-index discovery: mc_develop now discovers existing runtimeRoot source-index.sqlite databases, merges them with installed MDM source_index_sqlite artifacts, and feeds them into service-profile, context.query, and source.bundle without adding public tools or downloads. Focused mcp-server source-index tests passed 3 files / 10 tests and mcp-server TypeScript build passed; touched source/test files stayed under 500 lines
 ```
 
 ## Completion Estimate
 
-- MCP core capability: 99.85%.
-- MDM resource/package delivery: 97.8%.
-- Overall project deliverability: 98.2%.
+- MCP core capability: 99.9%.
+- MDM resource/package delivery: 98.0%.
+- Overall project deliverability: 98.4%.
 
 The next large slice should focus on source-channel package coverage and corpus
 growth:
