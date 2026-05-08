@@ -18,7 +18,7 @@
     "test": "tsc -b . && vitest run --root ../.. packages/java-jdtls-adapter/src/profile.test.ts packages/java-jdtls-adapter/src/json-rpc-client.test.ts packages/java-jdtls-adapter/src/jdtls-session.test.ts packages/java-jdtls-adapter/src/process-session.test.ts packages/java-jdtls-adapter/src/diagnostic-registry.test.ts packages/java-jdtls-adapter/src/file-version-tracker.test.ts packages/java-jdtls-adapter/src/restart-policy.test.ts packages/java-jdtls-adapter/src/jdtls-manager.test.ts packages/java-jdtls-adapter/src/resilient-jdtls-manager.test.ts"
   },
   "author": "m1hono",
-  "license": "UNLICENSED",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PickAID/mc-developing-mcp.git",

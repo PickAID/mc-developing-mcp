@@ -18,7 +18,7 @@
     "test": "tsc -b . && vitest run --root ../.. packages/gradle-adapter/src/source-archives.test.ts packages/gradle-adapter/src/build-dependencies.test.ts packages/gradle-adapter/src/build-repositories.test.ts packages/gradle-adapter/src/dependency-source-archives.test.ts packages/gradle-adapter/src/dependency-binary-archives.test.ts"
   },
   "author": "m1hono",
-  "license": "UNLICENSED",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PickAID/mc-developing-mcp.git",

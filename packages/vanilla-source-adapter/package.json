@@ -23,7 +23,7 @@
     "@mcpskill/source-package-manager": "workspace:*"
   },
   "author": "m1hono",
-  "license": "UNLICENSED",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PickAID/mc-developing-mcp.git",
