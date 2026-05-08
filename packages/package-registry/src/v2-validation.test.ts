@@ -50,6 +50,40 @@ describe("parsePackageManifestV2", () => {
     );
   });
 
+  it("accepts public external library packages", () => {
+    const externalLibraryPackage = {
+      ...publicSqliteDocsPackage,
+      identity: {
+        ...publicSqliteDocsPackage.identity,
+        packageId: "ftb-quests-archive-index",
+        displayName: "FTB Quests Archive Index"
+      },
+      artifact: {
+        kind: "mod_archive_index",
+        format: "json",
+        schemaId: "mdm.external-library.archive-index",
+        schemaVersion: 1,
+        entrypoint: "archive-index.json"
+      },
+      capabilities: ["mod_archive_owner_lookup"],
+      query: {
+        adapter: "archive_content",
+        capabilities: ["mod_archive_owner_lookup"],
+        defaultLimit: 8,
+        maxLimit: 50,
+        preferredFallbacks: []
+      },
+      release: {
+        channel: "external-libraries",
+        family: "public-mod-libraries"
+      }
+    } as const;
+
+    expect(parsePackageManifestV2(externalLibraryPackage)).toEqual(
+      externalLibraryPackage
+    );
+  });
+
   it("rejects private packages marked committable or uploadable", () => {
     expect(() =>
       parsePackageManifestV2({

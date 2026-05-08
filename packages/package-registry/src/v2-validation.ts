@@ -96,7 +96,8 @@ const RELEASE_CHANNELS = [
   "mappings",
   "datapack",
   "resourcepack",
-  "accelerators"
+  "accelerators",
+  "external-libraries"
 ] as const;
 
 export function parsePackageManifestV2(input: unknown): PackageManifestV2 {

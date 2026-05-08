@@ -46,6 +46,14 @@ describe("mdm-sources local release smoke", () => {
       "--channel",
       "mappings",
       "--channel",
+      "sources",
+      "--bundle-channel",
+      "datapack",
+      "--bundle-channel",
+      "resourcepack",
+      "--bundle-channel",
+      "mappings",
+      "--bundle-channel",
       "sources"
     ], { cwd: copiedRoot });
 
@@ -63,6 +71,12 @@ describe("mdm-sources local release smoke", () => {
       resourcepack: expect.any(Number),
       sources: expect.any(Number)
     });
+    expect(manifest.bundles?.map((bundle) => bundle.bundleName).sort()).toEqual([
+      "datapack.mdm-bundle",
+      "mappings.mdm-bundle",
+      "resourcepack.mdm-bundle",
+      "sources.mdm-bundle"
+    ]);
     expect(packages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

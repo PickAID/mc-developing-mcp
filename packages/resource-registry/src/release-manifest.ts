@@ -23,6 +23,7 @@ export interface MdmReleaseManifestPackage {
   required: boolean;
   format: string;
   artifactName: string;
+  bundleRef?: MdmReleaseManifestBundleRef;
   sha256: string;
   sizeBytes: number;
   metadata?: MdmResourcePackageMetadata;
@@ -31,11 +32,28 @@ export interface MdmReleaseManifestPackage {
   capabilities?: PackageCapabilityV2[];
 }
 
+export interface MdmReleaseManifestBundleRef {
+  bundleName: string;
+  memberName: string;
+  sha256: string;
+  sizeBytes: number;
+}
+
+export interface MdmReleaseManifestBundle {
+  bundleName: string;
+  releaseChannel: PackageReleaseV2["channel"];
+  artifactName: string;
+  packageCount: number;
+  sha256: string;
+  sizeBytes: number;
+}
+
 export interface MdmReleaseManifest {
   source: string;
   schemaVersion: number;
   generatedAt: string;
   packages: MdmReleaseManifestPackage[];
+  bundles?: MdmReleaseManifestBundle[];
 }
 
 export interface MdmReleaseFetchResponse {
@@ -81,7 +99,8 @@ export function readMdmReleaseManifest(
     source,
     schemaVersion: schemaVersionField(value),
     generatedAt: stringField(value, "generatedAt"),
-    packages: value.packages.map(readReleasePackage)
+    packages: value.packages.map(readReleasePackage),
+    bundles: optionalArray(value.bundles, "bundles").map(readReleaseBundle)
   };
 }
 
@@ -96,13 +115,22 @@ export function findMdmReleasePackage(
 
 export function resolveMdmReleaseArtifactUrl(
   manifestUrl: string,
-  resourcePackage: Pick<MdmReleaseManifestPackage, "artifactName">
+  artifact: Pick<MdmReleaseManifestPackage, "artifactName">
 ): string {
   try {
-    return new URL(resourcePackage.artifactName, manifestUrl).toString();
+    return new URL(artifact.artifactName, manifestUrl).toString();
   } catch {
-    return join(dirname(manifestUrl), resourcePackage.artifactName);
+    return join(dirname(manifestUrl), artifact.artifactName);
   }
+}
+
+export function findMdmReleaseBundle(
+  manifest: MdmReleaseManifest,
+  bundleName: string
+): MdmReleaseManifestBundle | undefined {
+  return (manifest.bundles ?? []).find((bundle) => {
+    return bundle.bundleName === bundleName;
+  });
 }
 
 export function toMdmResourceRegistryFromReleaseManifest(
@@ -167,6 +195,8 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
   const format = stringField(value, "format");
   const artifactType = stringField(value, "artifactType");
   const variant = stringField(value, "variant");
+  const bundleRef = optionalBundleRef(value.bundleRef);
+  const artifactName = bundleRef?.memberName ?? artifactNameField(value);
 
   return {
     packageId,
@@ -176,7 +206,8 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
     variant,
     required,
     format,
-    artifactName: artifactNameField(value),
+    artifactName,
+    bundleRef,
     sha256: sha256Field(value),
     sizeBytes: nonNegativeIntegerField(value, "sizeBytes"),
     metadata: resolveMdmResourcePackageMetadata(value.metadata, {
@@ -191,6 +222,21 @@ function readReleasePackage(value: unknown): MdmReleaseManifestPackage {
     releaseChannel: releaseChannelField(value.releaseChannel),
     releaseFamily: stringField(value, "releaseFamily"),
     capabilities: capabilitiesField(value.capabilities)
+  };
+}
+
+function readReleaseBundle(value: unknown): MdmReleaseManifestBundle {
+  if (!isRecord(value)) {
+    throw new Error("mdm release bundle must be an object.");
+  }
+
+  return {
+    bundleName: stringField(value, "bundleName"),
+    releaseChannel: releaseChannelField(value.releaseChannel),
+    artifactName: artifactNameField(value),
+    packageCount: positiveIntegerField(value, "packageCount"),
+    sha256: sha256Field(value),
+    sizeBytes: nonNegativeIntegerField(value, "sizeBytes")
   };
 }
 
@@ -254,13 +300,54 @@ function nonNegativeIntegerField(
   return value;
 }
 
-function artifactNameField(record: Record<string, unknown>): string {
-  const artifactName = stringField(record, "artifactName");
-  if (artifactName.includes("/") || artifactName.includes("\\")) {
-    throw new Error("mdm release package field artifactName must be a file name.");
+function positiveIntegerField(
+  record: Record<string, unknown>,
+  field: string
+): number {
+  const value = nonNegativeIntegerField(record, field);
+  if (value < 1) {
+    throw new Error(
+      `mdm release package field ${field} must be a positive integer.`
+    );
   }
 
-  return artifactName;
+  return value;
+}
+
+function artifactNameField(record: Record<string, unknown>): string {
+  const artifactName = stringField(record, "artifactName");
+  return fileNameValue(artifactName, "artifactName");
+}
+
+function bundleMemberNameField(record: Record<string, unknown>): string {
+  const memberName = stringField(record, "memberName");
+  return fileNameValue(memberName, "bundleRef.memberName");
+}
+
+function fileNameValue(value: string, field: string): string {
+  if (value.includes("/") || value.includes("\\")) {
+    throw new Error(`mdm release package field ${field} must be a file name.`);
+  }
+
+  return value;
+}
+
+function optionalBundleRef(
+  value: unknown
+): MdmReleaseManifestBundleRef | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!isRecord(value)) {
+    throw new Error("mdm release package field bundleRef must be an object.");
+  }
+
+  return {
+    bundleName: stringField(value, "bundleName"),
+    memberName: bundleMemberNameField(value),
+    sha256: sha256Field(value),
+    sizeBytes: nonNegativeIntegerField(value, "sizeBytes")
+  };
 }
 
 function sha256Field(record: Record<string, unknown>): string {
@@ -291,6 +378,17 @@ function optionalString(value: unknown, field: string): string | undefined {
   return stringValue(value, field);
 }
 
+function optionalArray(value: unknown, field: string): unknown[] {
+  if (value === undefined) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    throw new Error(`mdm release package field ${field} must be an array.`);
+  }
+
+  return value;
+}
+
 function optionalReleaseChannel(
   value: unknown
 ): PackageReleaseV2["channel"] | undefined {
@@ -304,7 +402,8 @@ function optionalReleaseChannel(
     "mappings",
     "datapack",
     "resourcepack",
-    "accelerators"
+    "accelerators",
+    "external-libraries"
   ];
   if (
     typeof value !== "string" ||

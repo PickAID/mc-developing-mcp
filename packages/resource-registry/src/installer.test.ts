@@ -77,6 +77,82 @@ describe("ensureMdmReleasePackageCached", () => {
     });
   });
 
+  it("downloads bundle assets and caches the requested package member", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-install-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const body = JSON.stringify({ ok: true });
+    const bundleBody = bundleBodyFor(body);
+
+    const result = await ensureMdmReleasePackageCached({
+      manifest: bundledFixtureManifest(body, bundleBody),
+      packageId: "core-docs-required",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      now: () => "2026-04-29T00:00:00.000Z",
+      fetcher: async (url) => {
+        expect(url).toBe(
+          "https://example.test/releases/download/mdm-resources-v0.1.0/required.mdm-bundle.json"
+        );
+        return okResponse(bundleBody);
+      }
+    });
+
+    expect(result).toMatchObject({
+      status: "downloaded",
+      packageId: "core-docs-required",
+      artifactUrl:
+        "https://example.test/releases/download/mdm-resources-v0.1.0/required.mdm-bundle.json"
+    });
+    expect(result.state).toMatchObject({
+      packageId: "core-docs-required",
+      artifactName: "core-docs-required-0.1.0.mdm-resource.json",
+      sha256: sha256(body)
+    });
+    await expect(readFile(result.state?.artifactPath ?? "", "utf-8")).resolves.toBe(
+      body
+    );
+    await expect(
+      readCachedResourceState(cacheLayout, "core-docs-required")
+    ).resolves.toMatchObject({
+      packageId: "core-docs-required",
+      artifactName: "core-docs-required-0.1.0.mdm-resource.json",
+      sha256: sha256(body)
+    });
+  });
+
+  it("reports ready for package members cached from bundles", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-install-"));
+    const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
+    const body = JSON.stringify({ ok: true });
+    const bundleBody = bundleBodyFor(body);
+    const manifest = bundledFixtureManifest(body, bundleBody);
+
+    await ensureMdmReleasePackageCached({
+      manifest,
+      packageId: "core-docs-required",
+      cacheLayout,
+      downloadPolicy: "allowed",
+      fetcher: async () => okResponse(bundleBody)
+    });
+    const result = await ensureMdmReleasePackageCached({
+      manifest,
+      packageId: "core-docs-required",
+      cacheLayout,
+      fetcher: async () => {
+        throw new Error("ready cache should not fetch");
+      }
+    });
+
+    expect(result).toMatchObject({
+      status: "ready",
+      packageId: "core-docs-required",
+      state: {
+        artifactName: "core-docs-required-0.1.0.mdm-resource.json",
+        sha256: sha256(body)
+      }
+    });
+  });
+
   it("does not write cache state when the downloaded checksum is invalid", async () => {
     const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-install-"));
     const cacheLayout = resolveMdmResourceCacheLayout(runtimeRoot);
@@ -210,6 +286,55 @@ function fixtureManifest(body: string): MdmReleaseManifest {
       }
     ]
   };
+}
+
+function bundledFixtureManifest(
+  body: string,
+  bundleBody: string
+): MdmReleaseManifest {
+  return {
+    ...fixtureManifest(body),
+    packages: [
+      {
+        ...fixtureManifest(body).packages[0],
+        bundleRef: {
+          bundleName: "required.mdm-bundle",
+          memberName: "core-docs-required-0.1.0.mdm-resource.json",
+          sha256: sha256(body),
+          sizeBytes: Buffer.byteLength(body)
+        }
+      }
+    ],
+    bundles: [
+      {
+        bundleName: "required.mdm-bundle",
+        releaseChannel: "required",
+        artifactName: "required.mdm-bundle.json",
+        packageCount: 1,
+        sha256: sha256(bundleBody),
+        sizeBytes: Buffer.byteLength(bundleBody)
+      }
+    ]
+  };
+}
+
+function bundleBodyFor(body: string): string {
+  return JSON.stringify({
+    schemaVersion: 1,
+    bundleName: "required.mdm-bundle",
+    releaseChannel: "required",
+    packageCount: 1,
+    members: [
+      {
+        packageId: "core-docs-required",
+        memberName: "core-docs-required-0.1.0.mdm-resource.json",
+        format: "json",
+        sha256: sha256(body),
+        sizeBytes: Buffer.byteLength(body),
+        contentBase64: Buffer.from(body).toString("base64")
+      }
+    ]
+  });
 }
 
 function sqliteManifest(

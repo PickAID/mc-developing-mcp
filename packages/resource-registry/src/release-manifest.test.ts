@@ -66,6 +66,58 @@ describe("mdm release manifest", () => {
     );
   });
 
+  it("accepts package bundleRef entries and bundle artifacts", () => {
+    const manifest = readMdmReleaseManifest({
+      ...fixtureManifest(),
+      packages: [
+        {
+          ...fixtureManifest().packages[0],
+          artifactName: undefined,
+          bundleRef: {
+            bundleName: "required.mdm-bundle",
+            memberName: "core-docs-required-0.1.0.mdm-resource.json",
+            sha256:
+              "613fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
+            sizeBytes: 1201
+          }
+        }
+      ].map(removeUndefinedValues),
+      bundles: [
+        {
+          bundleName: "required.mdm-bundle",
+          releaseChannel: "required",
+          artifactName: "required.mdm-bundle.json",
+          packageCount: 1,
+          sha256:
+            "f13fe56a573fbe1eee45c930941b0de48e091ecf9111e38ec17ddfd15ecc5477",
+          sizeBytes: 2048
+        }
+      ]
+    });
+
+    expect(manifest.packages[0]).toMatchObject({
+      packageId: "core-docs-required",
+      artifactName: "core-docs-required-0.1.0.mdm-resource.json",
+      bundleRef: {
+        bundleName: "required.mdm-bundle",
+        memberName: "core-docs-required-0.1.0.mdm-resource.json"
+      }
+    });
+    expect(manifest.bundles?.[0]).toMatchObject({
+      bundleName: "required.mdm-bundle",
+      artifactName: "required.mdm-bundle.json"
+    });
+    expect(toMdmResourceRegistryFromReleaseManifest(manifest).packages[0])
+      .toMatchObject({
+        currentRelease: {
+          artifactName: "core-docs-required-0.1.0.mdm-resource.json"
+        },
+        detail: {
+          sourcePath: "release:core-docs-required-0.1.0.mdm-resource.json"
+        }
+      });
+  });
+
   it("rejects malformed release package entries", async () => {
     const root = await mkdtemp(join(tmpdir(), "mcpskill-mdm-release-"));
     const manifestPath = join(root, "mdm-release-manifest.json");
@@ -262,4 +314,10 @@ function sourceIndexReleasePackage() {
     releaseFamily: "vanilla-source-index",
     capabilities: ["source_lookup", "source_chunk_search", "java_symbol_lookup"] as const
   };
+}
+
+function removeUndefinedValues<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, nested]) => nested !== undefined)
+  ) as T;
 }

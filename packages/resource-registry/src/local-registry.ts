@@ -189,7 +189,8 @@ function optionalReleaseChannel(
     "mappings",
     "datapack",
     "resourcepack",
-    "accelerators"
+    "accelerators",
+    "external-libraries"
   ];
   if (!allowed.includes(channel as PackageReleaseV2["channel"])) {
     throw new Error(`mdm registry releaseChannel ${channel} is invalid.`);

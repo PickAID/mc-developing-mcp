@@ -9,9 +9,11 @@ import {
   type MdmResourceCacheState
 } from "./cache.js";
 import {
+  findMdmReleaseBundle,
   findMdmReleasePackage,
   resolveMdmReleaseArtifactUrl,
   type MdmReleaseManifest,
+  type MdmReleaseManifestBundle,
   type MdmReleaseManifestPackage
 } from "./release-manifest.js";
 import { validateMdmSqliteArtifact } from "./sqlite-artifact-validation.js";
@@ -78,9 +80,20 @@ export async function ensureMdmReleasePackageCached(
     };
   }
 
+  const bundle = resourcePackage.bundleRef
+    ? findMdmReleaseBundle(input.manifest, resourcePackage.bundleRef.bundleName)
+    : undefined;
+  if (resourcePackage.bundleRef && !bundle) {
+    return {
+      status: "not_found",
+      packageId: resourcePackage.packageId,
+      message: `MDM release package ${resourcePackage.packageId} references missing bundle ${resourcePackage.bundleRef.bundleName}.`
+    };
+  }
+  const releaseArtifact = bundle ?? resourcePackage;
   const artifactUrl = resolveMdmReleaseArtifactUrl(
     input.manifest.source,
-    resourcePackage
+    releaseArtifact
   );
 
   if ((input.downloadPolicy ?? "disabled") !== "allowed") {
@@ -96,6 +109,7 @@ export async function ensureMdmReleasePackageCached(
   return downloadAndCacheArtifact({
     cacheLayout: input.cacheLayout,
     resourcePackage,
+    bundle,
     artifactUrl,
     fetcher: input.fetcher ?? defaultFetch,
     now: input.now ?? (() => new Date().toISOString())
@@ -118,6 +132,7 @@ async function readReadyCacheState(
 async function downloadAndCacheArtifact(input: {
   cacheLayout: MdmResourceCacheLayout;
   resourcePackage: MdmReleaseManifestPackage;
+  bundle?: MdmReleaseManifestBundle;
   artifactUrl: string;
   fetcher: MdmArtifactFetch;
   now: () => string;
@@ -132,7 +147,38 @@ async function downloadAndCacheArtifact(input: {
     };
   }
 
-  const bytes = toBuffer(await response.arrayBuffer());
+  const downloadedBytes = toBuffer(await response.arrayBuffer());
+  if (input.bundle) {
+    const actualBundleSha256 = hashBytes(downloadedBytes);
+    if (actualBundleSha256 !== input.bundle.sha256) {
+      return {
+        status: "invalid_checksum",
+        packageId: input.resourcePackage.packageId,
+        artifactUrl: input.artifactUrl,
+        expectedSha256: input.bundle.sha256,
+        actualSha256: actualBundleSha256,
+        message: `Downloaded MDM release bundle ${input.bundle.bundleName} failed checksum validation.`
+      };
+    }
+  }
+
+  let bytes = downloadedBytes;
+  if (input.bundle) {
+    try {
+      bytes = readBundledPackageBytes({
+        bundleBytes: downloadedBytes,
+        bundle: input.bundle,
+        resourcePackage: input.resourcePackage
+      });
+    } catch (error) {
+      return {
+        status: "invalid_artifact",
+        packageId: input.resourcePackage.packageId,
+        artifactUrl: input.artifactUrl,
+        message: error instanceof Error ? error.message : "Invalid MDM release bundle."
+      };
+    }
+  }
   const actualSha256 = hashBytes(bytes);
   if (actualSha256 !== input.resourcePackage.sha256) {
     return {
@@ -189,6 +235,53 @@ async function downloadAndCacheArtifact(input: {
   };
 }
 
+function readBundledPackageBytes(input: {
+  bundleBytes: Buffer;
+  bundle: MdmReleaseManifestBundle;
+  resourcePackage: MdmReleaseManifestPackage;
+}): Buffer {
+  const bundleDocument = JSON.parse(input.bundleBytes.toString("utf-8")) as {
+    members?: unknown;
+  };
+  if (!Array.isArray(bundleDocument.members)) {
+    throw new Error(`MDM release bundle ${input.bundle.bundleName} members must be an array.`);
+  }
+
+  const member = bundleDocument.members.find((candidate) => {
+    return isRecord(candidate) &&
+      candidate.packageId === input.resourcePackage.packageId &&
+      candidate.memberName === input.resourcePackage.bundleRef?.memberName;
+  });
+  if (!isRecord(member)) {
+    throw new Error(
+      `MDM release package ${input.resourcePackage.packageId} was not found in bundle ${input.bundle.bundleName}.`
+    );
+  }
+
+  const contentBase64 = stringField(member, "contentBase64");
+  const bytes = Buffer.from(contentBase64, "base64");
+  const memberSha256 = stringField(member, "sha256");
+  const memberSizeBytes = numberField(member, "sizeBytes");
+  if (
+    memberSha256 !== input.resourcePackage.bundleRef?.sha256 ||
+    memberSha256 !== input.resourcePackage.sha256
+  ) {
+    throw new Error(
+      `MDM release package ${input.resourcePackage.packageId} bundled member sha256 does not match manifest.`
+    );
+  }
+  if (
+    memberSizeBytes !== input.resourcePackage.bundleRef.sizeBytes ||
+    memberSizeBytes !== input.resourcePackage.sizeBytes
+  ) {
+    throw new Error(
+      `MDM release package ${input.resourcePackage.packageId} bundled member size does not match manifest.`
+    );
+  }
+
+  return bytes;
+}
+
 async function defaultFetch(url: string): Promise<MdmArtifactFetchResponse> {
   return fetch(url);
 }
@@ -203,4 +296,26 @@ function hashBytes(bytes: Buffer): string {
 
 function toBuffer(value: ArrayBuffer | Buffer): Buffer {
   return Buffer.isBuffer(value) ? value : Buffer.from(value);
+}
+
+function stringField(record: Record<string, unknown>, field: string): string {
+  const value = record[field];
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`MDM release bundle field ${field} must be a non-empty string.`);
+  }
+
+  return value;
+}
+
+function numberField(record: Record<string, unknown>, field: string): number {
+  const value = record[field];
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new Error(`MDM release bundle field ${field} must be a non-negative integer.`);
+  }
+
+  return value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

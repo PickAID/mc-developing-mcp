@@ -146,7 +146,7 @@ export interface PackageDependencyV2 {
 }
 
 export interface PackageReleaseV2 {
-  channel: "required" | "docs" | "sources" | "mappings" | "datapack" | "resourcepack" | "accelerators";
+  channel: "required" | "docs" | "sources" | "mappings" | "datapack" | "resourcepack" | "accelerators" | "external-libraries";
   family: string;
 }
 
