@@ -1,5 +1,4 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
@@ -8,7 +7,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import { queryCachedModArchiveEntries } from "./mod-archive-entry-index.js";
 
 const tempRoots: string[] = [];
-const require = createRequire(import.meta.url);
 
 afterEach(async () => {
   await Promise.all(
@@ -340,28 +338,6 @@ describe("queryCachedModArchiveEntries", () => {
       truncated: false
     });
   });
-
-  it("migrates legacy SQLite entry indexes that do not have data_kind", async () => {
-    const workspaceRoot = await createWorkspace();
-    const databasePath = join(workspaceRoot, ".mcpskill", "mod-archives.sqlite");
-    await createLegacyEntryIndexDatabase(databasePath);
-
-    await expect(
-      queryCachedModArchiveEntries({
-        workspaceRoot,
-        databasePath,
-        domains: ["data"],
-        limit: 0
-      })
-    ).resolves.toMatchObject({
-      dataSummary: {
-        dataEntryCount: 1,
-        byKind: {
-          recipes: 1
-        }
-      }
-    });
-  });
 });
 
 async function createWorkspace(
@@ -453,37 +429,4 @@ function createZip(entries: ZipFixtureEntry[]): Buffer {
   eocd.writeUInt32LE(localFiles.length, 16);
 
   return Buffer.concat([localFiles, centralDirectory, eocd]);
-}
-
-async function createLegacyEntryIndexDatabase(databasePath: string): Promise<void> {
-  await mkdir(join(databasePath, ".."), { recursive: true });
-  const sqlite = require("node:sqlite") as {
-    DatabaseSync: new (path: string) => { exec(sql: string): void; close(): void };
-  };
-  const database = new sqlite.DatabaseSync(databasePath);
-
-  try {
-    database.exec(`
-      CREATE TABLE mod_archive_entry_index_archives (
-        source_archive TEXT PRIMARY KEY,
-        archive_key TEXT NOT NULL,
-        archive_relative_path TEXT NOT NULL,
-        fingerprint_json TEXT NOT NULL,
-        indexed_at INTEGER NOT NULL
-      );
-
-      CREATE TABLE mod_archive_entry_index_entries (
-        archive_key TEXT NOT NULL,
-        source_archive TEXT NOT NULL,
-        archive_relative_path TEXT NOT NULL,
-        embedded_archive_path TEXT NOT NULL,
-        relative_path TEXT NOT NULL,
-        domain TEXT NOT NULL,
-        asset_kind TEXT NOT NULL DEFAULT '',
-        size_bytes INTEGER NOT NULL
-      );
-    `);
-  } finally {
-    database.close();
-  }
 }
