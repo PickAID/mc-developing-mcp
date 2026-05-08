@@ -24,7 +24,7 @@ describe("mc_develop remote mdm-sources release acceptance", () => {
     const workspaceRoot = await createWorkspaceRoot(tempRoot);
     const registry = createCapturingRegistry();
     const manifestUrl =
-      "https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.1.0/mdm-release-manifest.json";
+      "https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json";
     const manifestFetchUrls: string[] = [];
     const artifactFetchUrls: string[] = [];
 
@@ -115,6 +115,97 @@ describe("mc_develop remote mdm-sources release acceptance", () => {
               "mdm.sqlite-index-role"
             ])
           })
+        }
+      }
+    });
+  }, 20_000);
+
+  it("installs a bundled datapack member from a GitHub Release shaped manifest URL", async () => {
+    const mdmSourcesRoot = await findMdmSourcesRoot();
+    if (!mdmSourcesRoot) {
+      return;
+    }
+
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-remote-mdm-bundle-"));
+    const copiedMdmSourcesRoot = join(tempRoot, "mdm-sources");
+    const releaseOut = join(tempRoot, "release-out");
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+    const manifestUrl =
+      "https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json";
+    const manifestFetchUrls: string[] = [];
+    const artifactFetchUrls: string[] = [];
+
+    await cp(mdmSourcesRoot, copiedMdmSourcesRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${mdmSourcesRoot}/.git`)
+    });
+    await execFileAsync("node", [
+      "tools/build-local-release.mjs",
+      "--out",
+      releaseOut,
+      "--channel",
+      "datapack",
+      "--bundle-channel",
+      "datapack"
+    ], { cwd: copiedMdmSourcesRoot });
+
+    const manifestText = await readFile(
+      join(releaseOut, "mdm-release-manifest.json"),
+      "utf-8"
+    );
+    const bundleUrl = new URL("datapack.mdm-bundle.json", manifestUrl).toString();
+    const bundleBytes = await readFile(join(releaseOut, "datapack.mdm-bundle.json"));
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: copiedMdmSourcesRoot,
+        PATH: ""
+      },
+      mdmReleaseManifestFetch: async (url) => {
+        manifestFetchUrls.push(url);
+
+        return {
+          ok: true,
+          status: 200,
+          text: async () => manifestText
+        };
+      },
+      mdmArtifactFetch: async (url) => {
+        artifactFetchUrls.push(url);
+
+        return {
+          ok: url === bundleUrl,
+          status: url === bundleUrl ? 200 : 404,
+          arrayBuffer: async () => bundleBytes
+        };
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Install a bundled datapack package from a remote MDM release.",
+      runtimeRoot,
+      workspaceRoot,
+      mdmReleaseInstall: {
+        manifestUrl,
+        packageId: "minecraft-1.20.1-vanilla-datapack-profile",
+        downloadPolicy: "allowed"
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(manifestFetchUrls).toEqual([manifestUrl]);
+    expect(artifactFetchUrls).toEqual([bundleUrl]);
+    expect(result.structuredContent).toMatchObject({
+      mdmReleaseInstall: {
+        status: "downloaded",
+        packageId: "minecraft-1.20.1-vanilla-datapack-profile",
+        artifactUrl: bundleUrl,
+        downloadPolicy: "allowed",
+        state: {
+          artifactName:
+            "minecraft-1.20.1-vanilla-datapack-profile-0.1.0.mdm-resource.json"
         }
       }
     });

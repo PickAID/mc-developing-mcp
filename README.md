@@ -4,6 +4,14 @@ TypeScript MCP support for Minecraft Java, KubeJS, datapack, resource pack, Grad
 
 The public MCP surface is intentionally small. Users normally run the `mc-developing-mcp` stdio binary and call the `mc_develop` tool; the server decides which evidence routes to use internally.
 
+Optional offline MDM resources are distributed separately from the npm package. The current public bundled resource release is:
+
+```txt
+https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json
+```
+
+The MCP does not download that release by default. Pass it explicitly through `mc_develop` `mdmReleaseInstall.manifestUrl` with `downloadPolicy: "allowed"` when you want to cache a package such as `core-docs-search-sqlite`, `minecraft-1.20.1-vanilla-datapack-profile`, `minecraft-1.20.1-vanilla-resourcepack-profile`, `minecraft-1.20.1-yarn-mapping-profile`, or `minecraft-1.20.1-vanilla-source-profile`.
+
 ## npm release preparation
 
 This repository publishes a small package graph instead of a single bundled server package. The MCP server imports internal `@mcpskill/*` libraries at runtime, so every package in the runtime dependency closure must be publishable before `@mcpskill/mcp-server` is uploaded.

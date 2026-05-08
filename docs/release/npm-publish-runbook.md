@@ -13,6 +13,11 @@ The MCP server is not a single self-contained tarball. `@mcpskill/mcp-server` im
 - Confirm the npm account has publish rights for the `@mcpskill` scope.
 - Prepare npm 2FA/OTP if the account requires it.
 - Confirm no private runtime cache, generated source cache, API key, or user modpack content is staged.
+- Confirm the companion MDM resources release is available and verified. The current bundled release is `mdm-resources-v0.2.0`:
+
+```txt
+https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json
+```
 
 ## Required Verification
 
@@ -30,6 +35,13 @@ git diff --check
 ```
 
 The Java diagnostics file may have unrelated local formatting edits during development. Do not include unrelated local edits in the release commit.
+
+Also verify the companion MDM resources release before publishing the MCP package:
+
+```sh
+node ../mdm-sources/tools/verify-live-release.mjs \
+  https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json
+```
 
 ## Versioning
 
@@ -84,6 +96,8 @@ Verify user-facing startup:
 ```sh
 npx -y --package @mcpskill/mcp-server mc-developing-mcp
 ```
+
+Verify explicit bundled MDM resource installation through `mc_develop` using the `mdm-resources-v0.2.0` manifest URL. The MCP must not require a default remote download; users provide `manifestUrl` or `manifestPath` and set `downloadPolicy` to `allowed`.
 
 For MCP clients, configure:
 
