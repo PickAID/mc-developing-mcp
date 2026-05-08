@@ -41,6 +41,60 @@ by the runtime environment.
 The public repository is therefore a seed and profile repository, not a dump of
 every useful artifact.
 
+## Release Asset Shape
+
+The current fine-grained release shape, where every package is uploaded as a
+separate GitHub Release asset, is valid for correctness but not the long-term
+UX target. It proves that package metadata, checksums, and install verification
+work, but hundreds of small assets make GitHub Releases hard to inspect and
+make upload retries noisier than necessary.
+
+The target release shape is channel bundles:
+
+- `mdm-release-manifest.json`
+- `mdm-release-summary.json`
+- `core.mdm-bundle`
+- `docs.mdm-bundle`
+- `datapack.mdm-bundle`
+- `resourcepack.mdm-bundle`
+- `mappings.mdm-bundle`
+- `sources.mdm-bundle`
+- `external-libraries.mdm-bundle`
+- optional accelerator bundles, only when explicitly enabled
+
+The release manifest remains the public contract. It must map each package id
+to either a standalone artifact or a bundle member. A bundle member records:
+
+- `bundleName`
+- package id and package version
+- release channel and family
+- byte range or embedded member path
+- size and sha256
+- query adapter and capabilities
+- public/private policy flags
+
+MCP must still resolve by package id. Externally, GitHub Release assets are
+coarse and human-manageable. Internally, package identity and hash validation
+remain fine-grained. This means GitHub Release UX improves without forcing the
+agent to install a monolithic all-channel corpus.
+
+Bundle download policy is channel-aware:
+
+- `required` and small `docs` bundles may be installed eagerly.
+- `datapack` and `resourcepack` bundles are installed only for matching data or
+  asset/client-visual tasks.
+- `mappings` is installed only for source, stack trace, migration, or remapping
+  tasks.
+- `sources` contains acquisition profiles and public source indexes only; it
+  must not contain Minecraft source text.
+- `external-libraries` is optional and can be preinstalled for faster first-run
+  modding evidence, but it must never include private user workspace data.
+
+If a bundle grows too large, it should be split by stable public axes rather
+than by every individual package. Examples: `datapack-vanilla`,
+`datapack-loader`, `resourcepack-vanilla`, `external-libraries-ftb`,
+`external-libraries-api`, or version ranges such as `vanilla-1.20-1.21`.
+
 ## Required Package Families
 
 - `required`: minimal package policy, offline behavior, and resource status
@@ -58,6 +112,9 @@ every useful artifact.
   resource-pack design evidence distilled into generic standards.
 - `accelerators`: optional search indexes or embeddings, never mandatory and
   never the only retrieval path.
+- `external-libraries`: curated public evidence for common libraries and
+  content/API mods that agents frequently need during first-run modding
+  assistance.
 
 ## Public/Private Boundary
 
@@ -66,6 +123,8 @@ Allowed in `mdm-sources`:
 - Public JSON, JSONL, SQLite, or zipped curated profiles.
 - Public source acquisition profiles that describe local generation and cache
   policy without bundling source code.
+- Public library metadata and source indexes for dependencies whose license and
+  distribution channel allow redistribution or indexing.
 - Legal mapping explanations and acquisition instructions.
 - Small reproducible package manifests and schema records.
 - Generic MCP guidance that does not reveal private modpack content.
@@ -78,6 +137,9 @@ Forbidden in `mdm-sources`:
 - Private mod inventories, recipes, registries, or snippets extracted from a
   user's instance.
 - Generated embeddings over user-private content.
+- Third-party source code, jars, or decompiled output unless the package
+  records a verified redistribution basis and the release policy allows that
+  exact artifact form.
 
 ## Source and Mapping Split Rules
 
@@ -96,6 +158,70 @@ When MCP sees a stack trace, jar class, Gradle dependency, or source path, it
 must report both observed namespace evidence and mapped/explained namespace
 evidence when available.
 
+## External Library Bundles
+
+External library bundles are allowed and desirable, but they are not the same as
+Minecraft source distribution. Their purpose is to reduce first-run friction for
+common public dependencies that agents repeatedly need to identify: APIs,
+library mods, content mods with public metadata, loader integrations, and
+multi-loader project layouts.
+
+The public bundle may contain:
+
+- Maven coordinates, module names, loader support, Minecraft version ranges,
+  and repository URLs.
+- Modrinth project ids, CurseForge project ids, Maven repository metadata, and
+  known artifact classifiers such as `sources`.
+- Public API surface summaries and symbol indexes derived from permitted
+  source jars or public source repositories.
+- Gradle pattern profiles: Architectury/Loom/ForgeGradle/NeoForge/Fabric
+  structure, source sets, subprojects, repository declarations, and mapping
+  strategy.
+- Resource/data capability summaries: whether the library commonly contributes
+  registries, tags, recipes, GUI assets, blockstates, models, renderer hooks, or
+  KubeJS/ProbeJS-visible APIs.
+- License/provenance metadata and a `redistributionBasis` field explaining why
+  the artifact form is allowed.
+
+The public bundle must not contain:
+
+- User-local jar indexes copied from a private modpack.
+- Private ProbeJS generated declarations.
+- Decompiled code from a jar unless redistribution is explicitly allowed.
+- Minecraft original or remapped source code.
+- Full copied source trees when a compact source index or public repository
+  pointer is enough.
+
+For external libraries, the preferred artifact ladder is:
+
+1. Public metadata/profile only.
+2. Public source index without full source text.
+3. Public source snippets only when license permits and the snippet is small and
+   necessary for API proof.
+4. Full source archive only for libraries with explicit redistribution
+   permission and a clear need.
+5. Local runtime-derived indexes for everything else.
+
+The MCP runtime must merge external-library bundles with workspace evidence in
+this order:
+
+1. Local workspace and Gradle dependency graph.
+2. Local source jars and jars from the actual modpack.
+3. Runtime-private jar/source indexes.
+4. External-library public bundle.
+5. Remote Modrinth, CurseForge, Maven, or GitHub providers when configured.
+
+This prevents public bundles from overriding the actual project while still
+giving the agent a strong fallback when a workspace references common external
+code that is not checked into the project.
+
+The `MC/external/FTB-Quests` case is a representative shape for bundle design:
+multi-loader modules (`common`, `fabric`, `neoforge`), Architectury/Loom,
+Parchment layered mappings, custom Maven repositories, `sourcesJar`, and
+CurseForge/Modrinth publication metadata. A bundle for a project like this
+should capture the structure and public dependency facts, not copy local source
+contents blindly.
+
 ## Release Channels
 
 Releases must be split by channel:
@@ -107,6 +233,7 @@ Releases must be split by channel:
 - `datapack`
 - `resourcepack`
 - `accelerators`
+- `external-libraries`
 
 The builder must support selecting only the channels needed for a workspace.
 Agents should not install monolithic all-channel releases by default.
@@ -117,6 +244,9 @@ The default install policy is:
 - Install `datapack` only for datapack/resource registry tasks.
 - Install `resourcepack` only for asset/client visual tasks.
 - Install `mappings` only for source, stack trace, migration, or remapping tasks.
+- Install `external-libraries` only when local Gradle, jar, crash, or request
+  evidence references a common public dependency or when the user opts into a
+  warm first-run cache.
 - Install `accelerators` only with explicit user consent.
 
 ## Validation Gate
@@ -282,3 +412,7 @@ The system is not complete until these exist:
   selector.
 - Live GitHub Release acceptance run.
 - GitHub Release provenance/signing and retention policy.
+- Channel bundle release format replacing hundreds of standalone GitHub Release
+  assets.
+- Curated external-library bundles for common public libraries and content/API
+  mods, with verified redistribution metadata and local-runtime fallback.
