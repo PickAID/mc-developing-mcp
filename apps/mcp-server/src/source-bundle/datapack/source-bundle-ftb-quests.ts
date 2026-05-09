@@ -18,6 +18,10 @@ import {
   buildFtbQuestsDecisionTrace,
   type FtbQuestsDecisionTrace
 } from "./source-bundle-ftb-quests-trace.js";
+import {
+  summarizeFtbQuestsContent,
+  type FtbQuestsContentSummary
+} from "./source-bundle-ftb-quests-content.js";
 
 const FTB_QUESTS_ROOTS = [
   join("config", "ftbquests", "quests"),
@@ -96,6 +100,7 @@ export interface FtbQuestsSummary {
   };
   decisionTrace: FtbQuestsDecisionTrace;
   logSignals?: FtbQuestsLogSignals;
+  contentSummary?: FtbQuestsContentSummary;
   topPaths: string[];
   truncated: boolean;
 }
@@ -146,6 +151,10 @@ export async function summarizeFtbQuestsFiles(
     workspaceRoot,
     localSettings.path
   );
+  const contentSummary = await summarizeFtbQuestsContent({
+    workspaceRoot,
+    paths: uniquePaths
+  });
 
   if (uniquePaths.length === 0) {
     return undefined;
@@ -187,6 +196,7 @@ export async function summarizeFtbQuestsFiles(
       hasSettingsProposal: logSignals?.settingsProposal !== undefined
     }),
     ...(logSignals ? { logSignals } : {}),
+    ...(contentSummary ? { contentSummary } : {}),
     topPaths: uniquePaths.slice(0, MAX_LISTED_PATHS),
     truncated: uniquePaths.length > MAX_LISTED_PATHS || paths.length >= MAX_FILES
   };

@@ -311,6 +311,47 @@ describe("source.bundle FTB Quests evidence", () => {
       }
     });
   });
+
+  it("extracts compact quest task reward and item reference evidence", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-ftb-quests-content-");
+
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "chapters", "start.snbt"),
+      [
+        "{",
+        '  id: "start",',
+        '  quests: [{ id: "gather",',
+        '    tasks: [{ id: "oak_log_task", type: "item", item: "minecraft:oak_log" }],',
+        '    rewards: [{ id: "coin_reward", type: "item", item: "ftbquests:lootcrate" }]',
+        "  }]",
+        "}"
+      ].join("\n")
+    );
+
+    await expect(
+      executeMcpServerDatapackFiles(
+        createInput(workspaceRoot, "Inspect FTB Quests tasks and item references.")
+      )
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        ftbQuestsSummary: {
+          contentSummary: {
+            source: "ftb_quests_compact_content",
+            scannedFileCount: 1,
+            questCount: 1,
+            taskCount: 1,
+            rewardCount: 1,
+            typeRefs: ["item"],
+            itemRefs: ["ftbquests:lootcrate", "minecraft:oak_log"],
+            topQuestIds: ["gather"],
+            topTaskIds: ["oak_log_task"],
+            topRewardIds: ["coin_reward"]
+          }
+        }
+      }
+    });
+  });
 });
 
 function createInput(
