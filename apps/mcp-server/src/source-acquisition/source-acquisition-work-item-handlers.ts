@@ -26,6 +26,7 @@ import {
   executeMcpServerMappingIndexWorkItem,
   type MappingIndexProvider
 } from "./mapping/source-acquisition-mapping-index.js";
+import { resolveModArchiveInventoryDatabasePath } from "../mod-archive/content/mod-archive-inventory.js";
 import { executeMcpServerVanillaGenerationWorkItem } from "./source-acquisition-vanilla-generation.js";
 
 export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
@@ -42,6 +43,7 @@ export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
   curseForgeFetch?: ResolveCurseForgeModInput["fetch"];
   curseForgeApiBaseUrl?: string;
   mappingIndexProvider?: MappingIndexProvider;
+  localJarMode?: "inspect" | "prewarm_entry_index";
 }
 
 export function createMcpServerSourceAcquisitionWorkItemHandlers(
@@ -61,7 +63,9 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
 
       return await indexJarWorkItem({
         runtimeRoot: options.runtimeRoot,
-        sourceArchive: item.sourceArchive
+        sourceArchive: item.sourceArchive,
+        workspaceRoot: item.workspaceRoot,
+        mode: options.localJarMode ?? "inspect"
       });
     },
     vanillaGeneration: async (item) => {
@@ -173,23 +177,36 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
 
 async function indexJarWorkItem(input: {
   runtimeRoot: string;
-  sourceArchive: string;
+  sourceArchive?: string;
+  workspaceRoot?: string;
+  mode: "inspect" | "prewarm_entry_index";
 }): Promise<SourceAcquisitionWorkItemHandlerResult> {
-  const workspaceRoot = await ensureRuntimeJarWorkspace(input);
+  const workspaceRoot = input.workspaceRoot ?? await ensureRuntimeJarWorkspace(input);
   const result = await queryCachedModArchiveEntries({
     workspaceRoot,
-    databasePath: join(
-      input.runtimeRoot,
-      "source-acquisition",
-      "jar-entry-index.sqlite"
-    ),
-    limit: 8
+    databasePath: resolveModArchiveInventoryDatabasePath(input.runtimeRoot),
+    limit: input.mode === "prewarm_entry_index" ? 0 : 8
   });
+  if (input.mode === "prewarm_entry_index") {
+    return {
+      summary: `Prewarmed ${result.entryCount} jar entr${result.entryCount === 1 ? "y" : "ies"} in the shared mod archive SQLite cache.`,
+      payload: {
+        source: "source_acquisition_jar_index",
+        mode: "prewarm_entry_index",
+        archiveCount: result.archiveCount,
+        entryCount: result.entryCount,
+        truncated: result.truncated,
+        cache: result.cache,
+        tokenPolicy: "counts_only"
+      }
+    };
+  }
 
   return {
     summary: `Indexed ${result.entryCount} jar entr${result.entryCount === 1 ? "y" : "ies"}.`,
     payload: {
       source: "source_acquisition_jar_index",
+      mode: "inspect",
       archiveCount: result.archiveCount,
       entryCount: result.entryCount,
       truncated: result.truncated,
@@ -207,8 +224,12 @@ async function indexJarWorkItem(input: {
 
 async function ensureRuntimeJarWorkspace(input: {
   runtimeRoot: string;
-  sourceArchive: string;
+  sourceArchive?: string;
 }): Promise<string> {
+  if (!input.sourceArchive) {
+    throw new Error("jar_index requires either workspaceRoot or sourceArchive.");
+  }
+
   const sourceArchive = normalize(resolve(input.sourceArchive));
   const archiveKey = createHash("sha256").update(sourceArchive).digest("hex");
   const workspaceRoot = join(

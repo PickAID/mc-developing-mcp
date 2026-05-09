@@ -6,7 +6,8 @@ import type {
 export type SourceAcquisitionWorkItem =
   | {
       kind: "jar_index";
-      sourceArchive: string;
+      sourceArchive?: string;
+      workspaceRoot?: string;
       cacheScope: "private_runtime";
     }
   | {
@@ -48,7 +49,11 @@ export function buildSourceAcquisitionWorkItems(
 ): SourceAcquisitionWorkItem[] {
   switch (input.route.artifactStrategy) {
     case "index_binary_jar":
-      return buildJarIndexWorkItems(input.paths);
+      return buildJarIndexWorkItems({
+        origin: input.route.origin,
+        paths: input.paths,
+        workspaceRoot: input.workspaceRoot
+      });
     case "generate_vanilla_source_or_assets":
       return buildVanillaGenerationWorkItem(input.minecraftVersion);
     case "resolve_remote_jar_metadata":
@@ -63,10 +68,22 @@ export function buildSourceAcquisitionWorkItems(
   }
 }
 
-function buildJarIndexWorkItems(
-  paths?: string[]
-): SourceAcquisitionWorkItem[] {
-  return (paths ?? []).map((sourceArchive) => ({
+function buildJarIndexWorkItems(input: {
+  origin: SourceAcquisitionRoute["origin"];
+  paths?: string[];
+  workspaceRoot?: string;
+}): SourceAcquisitionWorkItem[] {
+  if (input.origin === "local_jar" && input.workspaceRoot) {
+    return [
+      {
+        kind: "jar_index",
+        workspaceRoot: input.workspaceRoot,
+        cacheScope: "private_runtime"
+      }
+    ];
+  }
+
+  return (input.paths ?? []).map((sourceArchive) => ({
     kind: "jar_index",
     sourceArchive,
     cacheScope: "private_runtime"

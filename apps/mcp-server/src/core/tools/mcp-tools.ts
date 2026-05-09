@@ -294,6 +294,7 @@ async function executeMcpDevelopTool(
             runtimeRoot,
             remoteMetadataPolicy:
               input.preparationPolicy?.remoteMetadataPolicy ?? "disabled",
+            localJarMode: input.preparationPolicy?.localJarMode ?? "inspect",
             modrinthFetch: options.modrinthFetch,
             modrinthApiBaseUrl: options.modrinthApiBaseUrl,
             curseForgeFetch: options.curseForgeFetch,

@@ -172,9 +172,16 @@ describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
             status: "completed",
             payload: {
               source: "source_acquisition_jar_index",
+              mode: "inspect",
               archiveCount: 1,
               entryCount: 3,
               cache: {
+                databasePath: join(
+                  runtimeRoot,
+                  "caches",
+                  "mod-archives",
+                  "mod-archive-inventory.sqlite"
+                ),
                 archiveHits: 0,
                 archiveMisses: 1,
                 elapsedMs: expect.any(Number)
@@ -191,10 +198,89 @@ describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
       expect(second.executions[0]).toMatchObject({
         status: "completed",
         payload: {
+          mode: "inspect",
           cache: {
             archiveHits: 1,
             archiveMisses: 0,
             elapsedMs: expect.any(Number)
+          }
+        }
+      });
+    } finally {
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("prewarms user jar work items into the shared mod archive inventory cache", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-jar-prewarm-"));
+    const runtimeRoot = join(tempRoot, "runtime");
+    const sourceArchive = join(tempRoot, "mods", "content.jar");
+    await mkdir(join(tempRoot, "mods"), { recursive: true });
+    await writeFile(
+      sourceArchive,
+      createZip([
+        "data/demo/recipe/gear.json",
+        "assets/demo/models/item/gear.json",
+        "com/example/Gear.class"
+      ])
+    );
+
+    try {
+      const prewarmHandlers = createMcpServerSourceAcquisitionWorkItemHandlers({
+        requestText: "Prewarm local jar cache.",
+        runtimeRoot,
+        localJarMode: "prewarm_entry_index"
+      });
+      const inspectHandlers = createMcpServerSourceAcquisitionWorkItemHandlers({
+        requestText: "Inspect local jar cache.",
+        runtimeRoot
+      });
+      const workItems: SourceAcquisitionWorkItem[] = [
+        {
+          kind: "jar_index",
+          sourceArchive,
+          cacheScope: "private_runtime"
+        }
+      ];
+      const prewarm = await runSourceAcquisitionWorkItems({
+        workItems,
+        handlers: prewarmHandlers
+      });
+      const inspect = await runSourceAcquisitionWorkItems({
+        workItems,
+        handlers: inspectHandlers
+      });
+
+      expect(prewarm.executions[0]).toMatchObject({
+        status: "completed",
+        payload: {
+          source: "source_acquisition_jar_index",
+          mode: "prewarm_entry_index",
+          archiveCount: 1,
+          entryCount: 3,
+          tokenPolicy: "counts_only",
+          cache: {
+            databasePath: join(
+              runtimeRoot,
+              "caches",
+              "mod-archives",
+              "mod-archive-inventory.sqlite"
+            ),
+            archiveHits: 0,
+            archiveMisses: 1
+          }
+        }
+      });
+      expect(JSON.stringify(prewarm.executions[0].payload)).not.toContain(
+        "sampleEntries"
+      );
+      expect(inspect.executions[0]).toMatchObject({
+        status: "completed",
+        payload: {
+          mode: "inspect",
+          cache: {
+            archiveHits: 1,
+            archiveMisses: 0
           }
         }
       });

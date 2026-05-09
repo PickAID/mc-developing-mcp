@@ -4,7 +4,7 @@ import { buildSourceAcquisitionWorkItems } from "./source-acquisition-hand-off.j
 import type { SourceAcquisitionRoute } from "./source-acquisition-plan.js";
 
 describe("buildSourceAcquisitionWorkItems", () => {
-  it("turns a local jar route into jar index work items", () => {
+  it("turns a user jar route into per-archive jar index work items", () => {
     const workItems = buildSourceAcquisitionWorkItems({
       route: routeFixture({
         origin: "user_jar",
@@ -18,6 +18,26 @@ describe("buildSourceAcquisitionWorkItems", () => {
       {
         kind: "jar_index",
         sourceArchive: "/packs/libs/example.jar",
+        cacheScope: "private_runtime"
+      }
+    ]);
+  });
+
+  it("turns a local jar route into one workspace-level jar index work item", () => {
+    const workItems = buildSourceAcquisitionWorkItems({
+      route: routeFixture({
+        origin: "local_jar",
+        artifactStrategy: "index_binary_jar",
+        cacheMode: "runtime_artifact_cache"
+      }),
+      paths: ["/packs/mods/a.jar", "/packs/mods/b.jar"],
+      workspaceRoot: "/packs"
+    });
+
+    expect(workItems).toEqual([
+      {
+        kind: "jar_index",
+        workspaceRoot: "/packs",
         cacheScope: "private_runtime"
       }
     ]);

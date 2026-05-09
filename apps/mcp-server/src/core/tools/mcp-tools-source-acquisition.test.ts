@@ -392,6 +392,81 @@ describe("mc_develop source acquisition acceptance", () => {
     ]);
   });
 
+  it("honors explicit local jar prewarm mode with compact shared-cache evidence", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-prewarm-runtime-");
+    const workspaceRoot = await createModpackWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const prewarm = await registry.calls[0].handler({
+      requestText:
+        "后台预热这个整合包的本地 mod jar 索引，之后用于 crash 和资源 owner 查询。",
+      runtimeRoot,
+      workspaceRoot,
+      preparationRoutes: ["local_jar"],
+      preparationPolicy: { localJarMode: "prewarm_entry_index" }
+    });
+    const inspect = await registry.calls[0].handler({
+      requestText: "Inspect the local jar evidence after prewarm.",
+      runtimeRoot,
+      workspaceRoot,
+      preparationRoutes: ["local_jar"]
+    });
+
+    expect(prewarm.isError).toBeUndefined();
+    expect(prewarm.structuredContent).toMatchObject({
+      selectedEvidence: expect.objectContaining({
+        routeStep: "source_acquisition_plan",
+        payload: expect.objectContaining({
+          workItemExecutions: expect.arrayContaining([
+            expect.objectContaining({
+              kind: "jar_index",
+              status: "completed",
+              payload: expect.objectContaining({
+                source: "source_acquisition_jar_index",
+                mode: "prewarm_entry_index",
+                tokenPolicy: "counts_only",
+                archiveCount: 1,
+                entryCount: 3,
+                cache: expect.objectContaining({
+                  databasePath: join(
+                    runtimeRoot,
+                    "caches",
+                    "mod-archives",
+                    "mod-archive-inventory.sqlite"
+                  ),
+                  archiveMisses: 1
+                })
+              })
+            })
+          ])
+        })
+      })
+    });
+    expect(JSON.stringify(prewarm.structuredContent)).not.toContain(
+      "sampleEntries"
+    );
+    expect(inspect.structuredContent).toMatchObject({
+      selectedEvidence: expect.objectContaining({
+        payload: expect.objectContaining({
+          workItemExecutions: expect.arrayContaining([
+            expect.objectContaining({
+              kind: "jar_index",
+              payload: expect.objectContaining({
+                mode: "inspect",
+                cache: expect.objectContaining({
+                  archiveHits: 1,
+                  archiveMisses: 0
+                })
+              })
+            })
+          ])
+        })
+      })
+    });
+  });
+
 });
 
 async function createModpackWorkspace(): Promise<string> {
