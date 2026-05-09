@@ -402,6 +402,44 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("keeps project Java symbol questions on source-side evidence before resource files", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a Java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasGradle: true,
+            hasJavaSource: true,
+            hasDatapack: true,
+            hasResourcePack: true,
+            datapackRootCount: 3,
+            resourcePackRootCount: 3
+          }
+        }),
+        "Inspect dev.ftb.mods.ftbquests.item.QuestBookItem and explain where it is implemented in this Gradle workspace."
+      )
+    ).toEqual({
+      intent: {
+        id: "workspace_default",
+        confidence: "low",
+        reasons: ["request text does not match a specialized harness intent"]
+      },
+      reasons: [
+        "request targets a Java project symbol and should stay on source-side evidence before docs",
+        "fall back to the default workspace route when no specialized intent is detected"
+      ],
+      steps: ["workspace_source", "docs_lookup"],
+      preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
+    });
+  });
+
   it("routes libs-heavy Java mod workspaces through local jar evidence before docs", () => {
     expect(
       buildHarnessTaskRoute(

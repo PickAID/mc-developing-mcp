@@ -36,6 +36,23 @@ describe("detectHarnessScenario", () => {
     expect(detected.reasons).toContain("workspace descriptor reports a Java mod workspace");
   });
 
+  it("keeps explicit Java mod workspaces ahead of embedded datapack resources", () => {
+    const detected = detectHarnessScenario(
+      createWorkspaceContext({
+        kind: "java-mod",
+        hasGradle: true,
+        hasJavaSource: true,
+        hasDatapack: true,
+        hasResourcePack: true
+      })
+    );
+
+    expect(detected).toMatchObject({
+      scenario: "java-mod-workspace",
+      defaultRoutingScenario: "project_symbol"
+    });
+  });
+
   it("classifies a KubeJS workspace ahead of generic project routing", () => {
     const detected = detectHarnessScenario(
       createWorkspaceContext({

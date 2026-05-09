@@ -90,6 +90,38 @@ describe("source.bundle workspace source execution", () => {
     });
   });
 
+  it("prioritizes requested Java classes ahead of broad Gradle workspace context", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createJavaModWorkspace();
+    await writeText(join(workspaceRoot, "common", "build.gradle"), "plugins { id 'java' }\n");
+    await writeText(join(workspaceRoot, "fabric", "build.gradle"), "plugins { id 'java' }\n");
+    await writeText(join(workspaceRoot, "neoforge", "build.gradle"), "plugins { id 'java' }\n");
+    const input = await createWorkspaceSourceInput(
+      runtimeRoot,
+      workspaceRoot,
+      "Inspect com.example.project.LocalCaller and explain where it is implemented in this Gradle workspace."
+    );
+    const executor = buildMcpServerSourceBundleExecutor({
+      runtimeRoot,
+      executeRecipe: async () => {
+        throw new Error("vanilla recipe should not run");
+      }
+    });
+
+    const result = await executor(input);
+
+    expect(result?.payload).toMatchObject({
+      source: "workspace_source",
+      mode: "local_files"
+    });
+    expect(result?.payload.references[0]).toMatchObject({
+      relativePath: "src/main/java/com/example/project/LocalCaller.java",
+      kind: "java",
+      symbol: "com.example.project.LocalCaller",
+      content: expect.stringContaining("class LocalCaller")
+    });
+  });
+
   it("reads local Java source for requested source file paths", async () => {
     const runtimeRoot = await createTempRoot("mcpskill-runtime-");
     const workspaceRoot = await createJavaModWorkspace();

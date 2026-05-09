@@ -239,6 +239,41 @@ describe("detectWorkspace", () => {
     expect(detected.reasons).toContain("detected runtime mod jars");
   });
 
+  it("detects Java source roots in Gradle multi-project workspaces", async () => {
+    const root = createTempRoot("gradle-multiproject");
+
+    mkdirSync(join(root, "common", "src", "main", "java", "example"), {
+      recursive: true
+    });
+    mkdirSync(join(root, "neoforge", "src", "main", "java", "example"), {
+      recursive: true
+    });
+    mkdirSync(join(root, "build"), { recursive: true });
+    mkdirSync(join(root, "build", "src", "main", "java", "generated"), {
+      recursive: true
+    });
+    writeFileSync(join(root, "settings.gradle"), 'include "common", "neoforge"');
+    writeFileSync(join(root, "build.gradle"), 'plugins { id "java" }');
+    writeFileSync(join(root, "common", "build.gradle"), 'plugins { id "java" }');
+    writeFileSync(join(root, "neoforge", "build.gradle"), 'plugins { id "java" }');
+
+    const detected = await detectWorkspace(root);
+
+    expect(detected.kind).toBe("java-mod");
+    expect(detected.hasJavaSource).toBe(true);
+    expect(detected.javaSourceRoots).toEqual([
+      join(root, "common", "src", "main", "java"),
+      join(root, "neoforge", "src", "main", "java")
+    ]);
+    expect(detected.buildFiles).toEqual([
+      join(root, "build.gradle"),
+      join(root, "settings.gradle"),
+      join(root, "common", "build.gradle"),
+      join(root, "neoforge", "build.gradle")
+    ]);
+    expect(detected.reasons).toContain("detected Java source roots");
+  });
+
   it("ignores non-directory log paths during best-effort log discovery", async () => {
     const root = createTempRoot("log-scan");
 

@@ -79,6 +79,14 @@ function detectFromDescriptor(
     };
   }
 
+  if (descriptor.kind === "java-mod") {
+    return {
+      scenario: "java-mod-workspace",
+      reasons: ["workspace descriptor reports a Java mod workspace"],
+      defaultRoutingScenario: "project_symbol"
+    };
+  }
+
   if (descriptor.hasDatapack) {
     return {
       scenario: "datapack-workspace",

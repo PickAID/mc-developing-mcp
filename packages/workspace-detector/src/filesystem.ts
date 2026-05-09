@@ -65,16 +65,47 @@ const MOD_ARCHIVE_ROOT_CANDIDATES = [
   "run/client/mods"
 ] as const;
 
+const MODULE_ROOT_IGNORED_NAMES = new Set([
+  ".git",
+  ".gradle",
+  ".idea",
+  "build",
+  "gradle",
+  "logs",
+  "mods",
+  "node_modules",
+  "run"
+]);
+
 export async function scanWorkspace(root: string): Promise<WorkspaceScan> {
   const normalizedRoot = normalize(resolve(root));
-  const buildFiles = await findExistingFiles(normalizedRoot, BUILD_FILE_CANDIDATES);
-  const javaSourceRoots = await findExistingDirectories(
-    normalizedRoot,
-    JAVA_SOURCE_CANDIDATES
+  const moduleRoots = await findWorkspaceModuleRoots(normalizedRoot);
+  const buildFiles = uniquePaths(
+    (
+      await Promise.all(
+        moduleRoots.map((moduleRoot) =>
+          findExistingFiles(moduleRoot, BUILD_FILE_CANDIDATES)
+        )
+      )
+    ).flat()
   );
-  const resourceRoots = await findExistingDirectories(
-    normalizedRoot,
-    RESOURCE_ROOT_CANDIDATES
+  const javaSourceRoots = uniquePaths(
+    (
+      await Promise.all(
+        moduleRoots.map((moduleRoot) =>
+          findExistingDirectories(moduleRoot, JAVA_SOURCE_CANDIDATES)
+        )
+      )
+    ).flat()
+  );
+  const resourceRoots = uniquePaths(
+    (
+      await Promise.all(
+        moduleRoots.map((moduleRoot) =>
+          findExistingDirectories(moduleRoot, RESOURCE_ROOT_CANDIDATES)
+        )
+      )
+    ).flat()
   );
   const probeRoots = await findExistingDirectories(normalizedRoot, PROBE_CANDIDATES);
   const hasKubeJS = await pathIsDirectory(join(normalizedRoot, "kubejs"));
@@ -103,6 +134,44 @@ export async function scanWorkspace(root: string): Promise<WorkspaceScan> {
     resourcePackRoots,
     logPaths
   };
+}
+
+async function findWorkspaceModuleRoots(root: string): Promise<string[]> {
+  const roots = [root];
+
+  try {
+    const entries = await readdir(root, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || MODULE_ROOT_IGNORED_NAMES.has(entry.name)) {
+        continue;
+      }
+
+      const candidate = join(root, entry.name);
+      if (await isWorkspaceModuleRoot(candidate)) {
+        roots.push(candidate);
+      }
+    }
+  } catch (error) {
+    if (!isSkippablePathError(error)) {
+      throw error;
+    }
+  }
+
+  return uniquePaths(roots);
+}
+
+async function isWorkspaceModuleRoot(root: string): Promise<boolean> {
+  const [buildFiles, javaSourceRoots, resourceRoots] = await Promise.all([
+    findExistingFiles(root, BUILD_FILE_CANDIDATES),
+    findExistingDirectories(root, JAVA_SOURCE_CANDIDATES),
+    findExistingDirectories(root, RESOURCE_ROOT_CANDIDATES)
+  ]);
+
+  return (
+    buildFiles.length > 0 ||
+    javaSourceRoots.length > 0 ||
+    resourceRoots.length > 0
+  );
 }
 
 async function findRuntimeModArchives(root: string): Promise<string[]> {

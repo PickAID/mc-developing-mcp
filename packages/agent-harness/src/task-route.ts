@@ -13,6 +13,10 @@ export function buildHarnessTaskRoute(
 ): AgentRuntimeTaskRoute {
   const intent = detectHarnessTaskIntent(snapshot, requestText);
   const vanillaSourceRequest = mentionsVanillaSourceRequest(requestText);
+  const projectJavaSymbolRequest = mentionsProjectJavaSymbolRequest(
+    snapshot,
+    requestText
+  );
   const modArchiveInventoryRequest = mentionsModArchiveInventoryRequest(requestText);
 
   switch (intent.id) {
@@ -135,14 +139,21 @@ export function buildHarnessTaskRoute(
                 "request targets net.minecraft vanilla source and should stay on source-side evidence before docs"
               ]
             : []),
+          ...(projectJavaSymbolRequest
+            ? [
+                "request targets a Java project symbol and should stay on source-side evidence before docs"
+              ]
+            : []),
           ...(modArchiveInventoryRequest
             ? ["request explicitly asks for mod archive inventory"]
             : []),
           "fall back to the default workspace route when no specialized intent is detected"
         ],
-        steps: modArchiveInventoryRequest
-          ? withExplicitModArchiveContent(snapshot.routePlan.steps)
-          : [...snapshot.routePlan.steps],
+        steps: projectJavaSymbolRequest
+          ? buildProjectJavaSymbolSteps(snapshot)
+          : modArchiveInventoryRequest
+            ? withExplicitModArchiveContent(snapshot.routePlan.steps)
+            : [...snapshot.routePlan.steps],
         preferredTools: modArchiveInventoryRequest
           ? ["context.query", "workspace.analyze"]
           : deriveDefaultTools(snapshot)
@@ -310,6 +321,35 @@ function mentionsVanillaSourceRequest(requestText?: string): boolean {
   }
 
   return /\bnet\.minecraft(?:\.[A-Za-z_][A-Za-z0-9_]*)+\b/.test(requestText);
+}
+
+function mentionsProjectJavaSymbolRequest(
+  snapshot: AgentRuntimeHarnessSnapshot,
+  requestText?: string
+): boolean {
+  if (!requestText || !(snapshot.facts.hasJavaSource || snapshot.facts.hasGradle)) {
+    return false;
+  }
+  if (mentionsVanillaSourceRequest(requestText)) {
+    return false;
+  }
+
+  return (
+    /\b(?:[a-z_][A-Za-z0-9_]*\.){2,}[A-Z][A-Za-z0-9_]*\b/.test(
+      requestText
+    ) ||
+    /\b(?:inspect|open|find|where|implementation|implemented|class|method|symbol|查看|查找|实现|类|方法)\b[\s\S]{0,80}\b[A-Z][A-Za-z0-9_]*(?:Item|Block|Entity|Screen|Renderer|Menu|Model|Registry|Handler|Manager|Event|Mixin|Compat)\b/u.test(
+      requestText
+    )
+  );
+}
+
+function buildProjectJavaSymbolSteps(
+  snapshot: AgentRuntimeHarnessSnapshot
+): AgentRuntimeTaskRouteStep[] {
+  return snapshot.facts.hasModArchives
+    ? ["workspace_source", "mod_archive_content", "docs_lookup"]
+    : ["workspace_source", "docs_lookup"];
 }
 
 function mentionsModArchiveInventoryRequest(requestText?: string): boolean {

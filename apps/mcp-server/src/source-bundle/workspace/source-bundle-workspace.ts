@@ -43,16 +43,24 @@ export async function resolveMcpServerWorkspaceSource(
     return undefined;
   }
 
-  const references = [
-    ...(await readRequestedBuildFiles(workspaceContext.descriptor.root, {
-      buildFiles: workspaceContext.descriptor.buildFiles,
-      requestText
-    })),
-    ...(await readRequestedJavaSources(workspaceContext.descriptor.root, {
+  const javaReferences = await readRequestedJavaSources(
+    workspaceContext.descriptor.root,
+    {
       javaSourceRoots: workspaceContext.descriptor.javaSourceRoots,
       requestText
-    }))
-  ].slice(0, MAX_REFERENCES);
+    }
+  );
+  const buildReferences = await readRequestedBuildFiles(
+    workspaceContext.descriptor.root,
+    {
+      buildFiles: workspaceContext.descriptor.buildFiles,
+      requestText
+    }
+  );
+  const references = [...javaReferences, ...buildReferences].slice(
+    0,
+    MAX_REFERENCES
+  );
 
   if (references.length === 0) {
     return undefined;
