@@ -263,6 +263,39 @@ describe("executeMcpServerRequest", () => {
     );
   });
 
+  it("selects log context as fallback when crash follow-up evidence misses", async () => {
+    const runtimeRoot = await createTempRoot("mcpskill-runtime-");
+    const workspaceRoot = await createCrashModpackWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+
+    const result = await executeMcpServerRequest({
+      bootstrap,
+      requestText: "The server crashes on startup; inspect latest.log.",
+      executors: {
+        "context.query": () => ({
+          matched: false,
+          summary: "No context query evidence matched the crash context."
+        }),
+        "source.bundle": () => ({
+          matched: false,
+          summary: "No source evidence matched the crash context."
+        })
+      }
+    });
+
+    expect(result.selectedEvidence).toMatchObject({
+      candidateId: "candidate-1-log_files",
+      routeStep: "log_files",
+      status: "context",
+      summary: "Extracted 1 actionable crash class reference(s) from 1 log file(s)."
+    });
+    expect(result.trace.selectedCandidateId).toBe("candidate-1-log_files");
+    expect(result.trace.fallbackUsed).toBe(true);
+  });
+
   it("keeps Java diagnostics runtime unavailability in the evidence chain", async () => {
     const runtimeRoot = await createTempRoot("mcpskill-runtime-");
     const workspaceRoot = await createJavaWorkspace();

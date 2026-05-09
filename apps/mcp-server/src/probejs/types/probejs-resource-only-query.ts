@@ -45,7 +45,13 @@ const PROBE_RESOURCE_ONLY_ACTION_TERMS = [
   "search",
   "show",
   "summarize",
-  "summary"
+  "summary",
+  "列出",
+  "查看",
+  "检查",
+  "总结",
+  "汇总",
+  "可用"
 ];
 
 const PROBE_RESOURCE_ONLY_TERMS = [

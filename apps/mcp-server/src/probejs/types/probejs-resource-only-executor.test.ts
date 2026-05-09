@@ -187,6 +187,32 @@ describe("ProbeJS resource-only summaries", () => {
     });
   });
 
+  it("summarizes Chinese ProbeJS overview requests without an explicit symbol", async () => {
+    const workspaceRoot = await createProbeResourceWorkspace();
+    const input = await createProbeJsExecutorInput(
+      workspaceRoot,
+      "在这个整合包中优先使用 ProbeJS/KubeJS evidence，列出现有 kubejs 脚本入口、可用 registry/type 线索。"
+    );
+    const executor = createMcpServerProbeJsTypesExecutor();
+
+    await expect(executor(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "probejs_resources",
+        queryMode: "resource_summary",
+        probeResources: {
+          summary: {
+            counts: {
+              item: 2,
+              registry: 2,
+              snippet: 1
+            }
+          }
+        }
+      }
+    });
+  });
+
   it("filters resource-only summaries by explicit IDs", async () => {
     const workspaceRoot = await createProbeResourceWorkspace();
     const input = await createProbeJsExecutorInput(

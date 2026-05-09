@@ -126,6 +126,21 @@ describe("parseExternalModRequest", () => {
     });
   });
 
+  it("does not treat crash resource locations as Maven coordinates", () => {
+    expect(
+      parseExternalModRequest(
+        [
+          "The modpack crashes during datapack loading.",
+          "Crash log resource references: ftbquests:object_started, ftbquests:object_completed"
+        ].join("\n"),
+        { loader: "forge", minecraftVersion: "1.20.1" }
+      )
+    ).not.toMatchObject({
+      platform: "maven",
+      coordinate: expect.any(String)
+    });
+  });
+
   it("extracts crash loader dependency details with runtime defaults", () => {
     expect(
       parseExternalModRequest(

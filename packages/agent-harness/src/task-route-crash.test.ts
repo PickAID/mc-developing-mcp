@@ -83,4 +83,41 @@ describe("buildHarnessTaskRoute crash triage", () => {
       preferredTools: ["workspace.analyze", "context.query", "source.bundle"]
     });
   });
+
+  it("keeps OpenGL and resource crash report requests on log-first crash triage", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "modpack",
+          routePlan: {
+            scenario: "modpack-workspace",
+            reasons: ["workspace descriptor reports a modpack workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasKubeJS: true,
+            hasProbeJS: true,
+            hasModArchives: true,
+            hasResourcePack: true,
+            logPathCount: 5
+          }
+        }),
+        "诊断 crash-reports/crash-2026-04-04_03.28.58-fml.txt，使用本地 mod jar 与 crash report evidence 找出根因，说明 acceleratedrendering / OpenGL 版本要求。"
+      )
+    ).toMatchObject({
+      intent: {
+        id: "crash_triage",
+        confidence: "high"
+      },
+      steps: [
+        "log_files",
+        "mod_archive_content",
+        "external_mod_resolution",
+        "workspace_source",
+        "docs_lookup"
+      ]
+    });
+  });
 });

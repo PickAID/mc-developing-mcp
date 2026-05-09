@@ -60,6 +60,30 @@ describe("executeMcpServerExternalModResolution", () => {
     });
   });
 
+  it("skips crash resource context without loader dependency evidence", async () => {
+    const input = await createExecutorInput(
+      [
+        "The modpack crashes during loading.",
+        "Crash log resource references: ftbquests:object_started, ftbquests:object_completed"
+      ].join("\n")
+    );
+
+    await expect(
+      executeMcpServerExternalModResolution(input, {
+        modrinthResolver: async () => {
+          throw new Error("Crash resource IDs must not trigger remote lookup.");
+        },
+        mavenResolver: async () => {
+          throw new Error("Crash resource IDs must not trigger Maven lookup.");
+        }
+      })
+    ).resolves.toEqual({
+      matched: false,
+      summary:
+        "Crash context did not contain a loader dependency or explicit external mod request."
+    });
+  });
+
   it("returns CurseForge credential guidance as actionable resolver evidence", async () => {
     const input = await createExecutorInput(
       "Find the CurseMaven coordinate for JEI forge 1.20.1."

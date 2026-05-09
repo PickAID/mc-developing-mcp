@@ -113,12 +113,15 @@ export function buildRequestResult(
   executions: McpServerRequestExecution[],
   selectedEvidence?: McpServerRequestExecution
 ): McpServerRequestExecutorResult {
+  const effectiveSelectedEvidence =
+    selectedEvidence ?? executions.find((execution) => execution.status === "context");
+
   return {
     appId: "mcp-server",
     requestPlan: evidencePlan.requestPlan,
     evidencePlan,
     executions,
-    selectedEvidence,
+    selectedEvidence: effectiveSelectedEvidence,
     trace: {
       routeSteps: [...evidencePlan.trace.routeSteps],
       candidateIds: [...evidencePlan.trace.candidateIds],
@@ -138,11 +141,14 @@ export function buildRequestResult(
         .filter((execution) => execution.docsSelection !== undefined)
         .map((execution) => execution.candidateId),
       selectedDocsPackageIds:
-        selectedEvidence?.docsSelection?.selections.map(
+        effectiveSelectedEvidence?.docsSelection?.selections.map(
           (selection) => selection.packageId
         ) ?? [],
-      selectedCandidateId: selectedEvidence?.candidateId,
-      fallbackUsed: selectedEvidence?.status === "fallback"
+      selectedCandidateId: effectiveSelectedEvidence?.candidateId,
+      fallbackUsed:
+        effectiveSelectedEvidence?.status === "fallback" ||
+        (selectedEvidence === undefined &&
+          effectiveSelectedEvidence?.status === "context")
     }
   };
 }

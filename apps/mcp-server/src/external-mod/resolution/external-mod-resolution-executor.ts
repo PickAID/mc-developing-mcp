@@ -66,8 +66,9 @@ export async function executeMcpServerExternalModResolution(
   input: McpServerEvidenceExecutorInput,
   options: McpServerExternalModResolutionOptions = {}
 ): Promise<McpServerEvidenceExecutorResult> {
+  const requestText = input.requestPlan.requestText ?? input.candidate.queryHint ?? "";
   const request = parseExternalModRequest(
-    input.requestPlan.requestText ?? input.candidate.queryHint ?? "",
+    requestText,
     input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
   );
   const localResult = await resolveLocalModArchiveEvidence({
@@ -113,6 +114,14 @@ export async function executeMcpServerExternalModResolution(
   const missing = collectMissingConstraints(request);
 
   if (missing.length > 0) {
+    if (isNonDependencyCrashContext(requestText, request)) {
+      return {
+        matched: false,
+        summary:
+          "Crash context did not contain a loader dependency or explicit external mod request."
+      };
+    }
+
     return {
       matched: true,
       summary: `External mod resolution needs ${missing.join(", ")}.`,
@@ -149,6 +158,22 @@ export async function executeMcpServerExternalModResolution(
       result
     }
   };
+}
+
+function isNonDependencyCrashContext(
+  requestText: string,
+  request: ReturnType<typeof parseExternalModRequest>
+): boolean {
+  return (
+    /\bCrash log (?:resource|class|mixin target|resource path) references:/u.test(
+      requestText
+    ) &&
+    !/\bCrash log loader (?:mod ids|dependency):/u.test(requestText) &&
+    !request.loaderDependency &&
+    !/\b(?:cursemaven|curse\.maven|maven|coordinate|coordinates)\b/iu.test(
+      requestText
+    )
+  );
 }
 
 async function resolveByPlatform(

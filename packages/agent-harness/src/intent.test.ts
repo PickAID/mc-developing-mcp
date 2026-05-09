@@ -44,6 +44,28 @@ describe("detectHarnessTaskIntent", () => {
     });
   });
 
+  it("keeps resource or OpenGL crash reports on crash triage before client visual routing", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "modpack",
+          facts: {
+            ...createFacts(),
+            hasKubeJS: true,
+            hasProbeJS: true,
+            hasModArchives: true,
+            hasResourcePack: true,
+            logPathCount: 5
+          }
+        }),
+        "诊断 crash-reports/crash-2026-04-04_03.28.58-fml.txt，使用本地 mod jar 与 crash report evidence 找出根因，说明 acceleratedrendering / OpenGL 版本要求。"
+      )
+    ).toMatchObject({
+      id: "crash_triage",
+      confidence: "high"
+    });
+  });
+
   it("detects KubeJS authoring requests from script and recipe wording", () => {
     expect(
       detectHarnessTaskIntentFromSnapshot(

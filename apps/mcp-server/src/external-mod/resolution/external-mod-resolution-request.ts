@@ -385,8 +385,32 @@ function extractMavenCoordinate(requestText: string): string | undefined {
   if (!match?.[1] || !match[2]) {
     return undefined;
   }
+  if (
+    !match[3] &&
+    looksLikeMinecraftResourceLocation(match[1], match[2]) &&
+    !mentionsExplicitMavenCoordinateContext(requestText)
+  ) {
+    return undefined;
+  }
 
   return match[3] ? `${match[1]}:${match[2]}:${match[3]}` : `${match[1]}:${match[2]}`;
+}
+
+function looksLikeMinecraftResourceLocation(
+  namespace: string,
+  path: string
+): boolean {
+  return (
+    !namespace.includes(".") &&
+    /^[a-z0-9_.-]+$/u.test(namespace) &&
+    /^[a-z0-9_./-]+$/u.test(path)
+  );
+}
+
+function mentionsExplicitMavenCoordinateContext(requestText: string): boolean {
+  return /\b(?:maven|coordinate|coordinates|dependency|dependencies|implementation|modimplementation|modcompileonly|modruntimeonly|modlocalruntime|compileonly|runtimeonly|fg\.deobf)\b/iu.test(
+    requestText
+  );
 }
 
 function extractRepositoryUrls(requestText: string): string[] {

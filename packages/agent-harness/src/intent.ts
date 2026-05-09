@@ -258,21 +258,6 @@ export function detectHarnessTaskIntent(
     mentionsVanillaGenerationTargetRequest(normalized);
 
   if (
-    clientVisualResourceRequest &&
-    !vanillaGeneratedResourcePackRequest &&
-    hasClientVisualResourceEvidence(snapshot)
-  ) {
-    return {
-      id: "client_visual_resources",
-      confidence: "high",
-      reasons: [
-        "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
-        "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
-      ]
-    };
-  }
-
-  if (
     matchesAny(normalized, HOTAI_PATCH_WORKFLOW_KEYWORDS) &&
     hasHotaiPatchWorkflowEvidence(snapshot)
   ) {
@@ -304,6 +289,21 @@ export function detectHarnessTaskIntent(
       reasons: [
         "request text mentions crash or log-triage keywords",
         "workspace snapshot exposes log files for crash triage"
+      ]
+    };
+  }
+
+  if (
+    clientVisualResourceRequest &&
+    !vanillaGeneratedResourcePackRequest &&
+    hasClientVisualResourceEvidence(snapshot)
+  ) {
+    return {
+      id: "client_visual_resources",
+      confidence: "high",
+      reasons: [
+        "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
+        "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
       ]
     };
   }
@@ -444,6 +444,9 @@ function matchesWorkspacePreparationIntent(
   if (!matchesAny(requestText, WORKSPACE_PREPARATION_KEYWORDS)) {
     return false;
   }
+  if (mentionsOnlyClientLifecycleSetup(requestText)) {
+    return false;
+  }
   if (mentionsDocsLookupIntent(requestText) && !mentionsExplicitPreparationAction(requestText)) {
     return false;
   }
@@ -469,6 +472,16 @@ function mentionsModArchiveInventoryRequest(requestText: string): boolean {
 function mentionsDocsLookupIntent(requestText: string): boolean {
   return /docs?|documentation|guide|guidance|reference|explain|文档|说明|参考/u.test(
     requestText
+  );
+}
+
+function mentionsOnlyClientLifecycleSetup(requestText: string): boolean {
+  return (
+    (/\bclient\s+(?:init|initializer|setup)\b/u.test(requestText) ||
+      /客户端初始化/u.test(requestText)) &&
+    !/\b(?:prepare|preparation|initialize|initialise|bootstrap|prewarm|cache|caches|bundle|bundles|source cache|dependency sources?)\b|准备|初始化|预热|缓存|打包/u.test(
+      requestText.replace(/客户端初始化/gu, "客户端生命周期")
+    )
   );
 }
 
