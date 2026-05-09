@@ -4,6 +4,7 @@ import { readdir, stat } from "node:fs/promises";
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { LspDiagnosticRegistry } from "minecraft-developing-mcp-java-jdtls-adapter";
+import type { SourceAcquisitionOrigin } from "minecraft-developing-mcp-source-package-manager";
 import type {
   MdmArtifactFetch,
   MdmReleaseFetch
@@ -25,12 +26,9 @@ import {
   buildMdmResourceStatusContext,
   type MdmResourceStatusContext
 } from "../../docs/mdm-resource/mdm-resource-status.js";
+import { buildMcpServerRequestContextWithServiceProfile } from "../../request/planning/service-profile-context.js";
 import {
-  buildMcpServerRequestContextWithServiceProfile
-} from "../../request/planning/service-profile-context.js";
-import {
-  installMdmReleasePackage,
-  type McpMdmReleaseInstallResult
+  installMdmReleasePackage, type McpMdmReleaseInstallResult
 } from "../../docs/mdm-resource/mdm-release-install.js";
 import {
   loadMdmDocsResourcesFromStatus,
@@ -41,9 +39,14 @@ import {
   buildMdmPackageRecommendations,
   type MdmPackageRecommendations
 } from "../../docs/mdm-resource/mdm-package-recommendations.js";
-import { createMcpServerSourceAcquisitionWorkItemHandlers } from "../../source-acquisition/source-acquisition-work-item-handlers.js";
+import {
+  createMcpServerSourceAcquisitionWorkItemHandlers,
+  type McpServerSourceAcquisitionWorkItemHandlerOptions
+} from "../../source-acquisition/source-acquisition-work-item-handlers.js";
 import type { MappingIndexProvider } from "../../source-acquisition/mapping/source-acquisition-mapping-index.js";
 import { resolveMappingIndexProvider } from "./mcp-tools-mapping-provider.js";
+import { buildMcpDevelopToolDescription } from "./mcp-tool-description.js";
+import { shouldPrepareJavaDiagnostics } from "./mcp-java-diagnostics-trigger.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -68,6 +71,31 @@ const mdmReleaseInstallSchema = z
     message: "Provide exactly one of mdmReleaseInstall.manifestUrl or manifestPath."
   });
 
+const preparationRouteOriginSchema = z.enum([
+  "workspace_gradle",
+  "workspace_probejs",
+  "runtime_cache",
+  "local_jar",
+  "user_jar",
+  "official",
+  "modrinth",
+  "curseforge",
+  "github"
+]);
+
+const preparationRoutesSchema = z
+  .array(preparationRouteOriginSchema)
+  .min(1)
+  .max(8)
+  .describe("Optional explicit source acquisition origins to plan. Defaults to progressive auto-discovery.");
+
+const preparationPolicySchema = z.object({
+  remoteMetadataPolicy: z
+    .enum(["disabled", "enabled"])
+    .optional()
+    .describe("Defaults to disabled; enabled runs explicit remote metadata work items when enough constraints and credentials are available.")
+});
+
 const mcpDevelopInputSchema = z.object({
   requestText: z
     .string()
@@ -87,7 +115,13 @@ const mcpDevelopInputSchema = z.object({
     .describe("Optional PrismLauncher root when the workspace is a Prism instance."),
   mdmReleaseInstall: mdmReleaseInstallSchema
     .optional()
-    .describe("Optional explicit MDM Release artifact cache request.")
+    .describe("Optional explicit MDM Release artifact cache request."),
+  preparationRoutes: preparationRoutesSchema
+    .optional()
+    .describe("Optional explicit progressive source acquisition route selection."),
+  preparationPolicy: preparationPolicySchema
+    .optional()
+    .describe("Optional execution policy for preparation routes. Defaults are conservative and network-safe.")
 });
 
 export const mcpDevelopInputShape = mcpDevelopInputSchema.shape;
@@ -126,6 +160,11 @@ export interface McpToolRuntimeOptions {
   mdmReleaseNow?: () => string;
   mappingIndexProvider?: MappingIndexProvider;
   mappingIndexFetch?: (url: URL) => Promise<Response>;
+  modrinthFetch?: McpServerSourceAcquisitionWorkItemHandlerOptions["modrinthFetch"];
+  modrinthApiBaseUrl?: string;
+  curseForgeFetch?: McpServerSourceAcquisitionWorkItemHandlerOptions["curseForgeFetch"];
+  curseForgeApiBaseUrl?: string;
+  curseForgeApiKey?: string;
 }
 
 export function registerMcpServerTools(
@@ -242,11 +281,20 @@ async function executeMcpDevelopTool(
         docsRecords: mdmDocs.records,
         docsSqliteArtifacts: mdmDocs.sqliteArtifacts,
         sourceIndexDatabasePaths,
+        sourceAcquisitionRouteOrigins: input.preparationRoutes as
+          | SourceAcquisitionOrigin[]
+          | undefined,
         sourceAcquisitionWorkItemHandlers:
           createMcpServerSourceAcquisitionWorkItemHandlers({
             requestText: input.requestText,
             runtimeRoot,
-            remoteMetadataPolicy: "disabled",
+            remoteMetadataPolicy:
+              input.preparationPolicy?.remoteMetadataPolicy ?? "disabled",
+            modrinthFetch: options.modrinthFetch,
+            modrinthApiBaseUrl: options.modrinthApiBaseUrl,
+            curseForgeFetch: options.curseForgeFetch,
+            curseForgeApiBaseUrl: options.curseForgeApiBaseUrl,
+            curseForgeApiKey: options.curseForgeApiKey ?? env.CURSEFORGE_API_KEY,
             mappingIndexProvider: resolveMappingIndexProvider({
               options,
               env
@@ -362,22 +410,6 @@ function formatMcpDevelopResultText(
   }
 
   return lines.join("\n");
-}
-
-function buildMcpDevelopToolDescription(): string {
-  return [
-    "Use before guessing Minecraft modding code, KubeJS scripts, datapack JSON, Gradle dependencies, or modpack crash causes.",
-    "This single progressive tool detects the workspace, applies the harness route, and chooses local evidence before optional docs.",
-    "It treats KubeJS as Minecraft scripting instead of generic JavaScript, checks ProbeJS/d.ts context when available, and can inspect Gradle files, Java sources, datapack data/assets, logs, and mod JAR contents.",
-    "It can cache MDM Release artifacts only when mdmReleaseInstall.downloadPolicy is explicitly allowed; otherwise it returns a confirmation requirement.",
-    "Return value includes a compact text summary plus structured route/evidence data for follow-up reasoning."
-  ].join(" ");
-}
-
-function shouldPrepareJavaDiagnostics(requestText: string): boolean {
-  return /(?:compile error|compilation error|cannot resolve|cannot be resolved|unresolved symbol|unresolved import|missing symbol|diagnostic|diagnostics|javac|type mismatch|method undefined|编译|诊断|找不到符号|无法解析)/i.test(
-    requestText
-  );
 }
 
 function toStructuredContent(

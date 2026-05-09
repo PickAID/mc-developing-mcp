@@ -9,6 +9,10 @@ import {
   createMcpJavaDiagnosticsRuntime,
   type McpJavaDiagnosticsRuntime
 } from "../../java/diagnostics/java-diagnostics-runtime.js";
+import {
+  MCP_SERVER_NAME,
+  MCP_SERVER_VERSION
+} from "../metadata/server-metadata.js";
 
 export interface McpSkillServerOptions extends McpToolRuntimeOptions {
   name?: string;
@@ -24,8 +28,8 @@ export function createMcpSkillServer(
       env: options.env as NodeJS.ProcessEnv | undefined
     });
   const server = new McpServer({
-    name: options.name ?? "mc-developing-mcp",
-    version: options.version ?? "0.1.0"
+    name: options.name ?? MCP_SERVER_NAME,
+    version: options.version ?? MCP_SERVER_VERSION
   });
 
   registerMcpServerTools(

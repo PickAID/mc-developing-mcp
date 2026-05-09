@@ -132,6 +132,33 @@ describe("stdio MCP subprocess", () => {
     await connectWithStderr(client, transport, stderr);
 
     try {
+      const recommendation = await withCapturedStderr(
+        client.callTool({
+          name: MC_DEVELOP_TOOL_NAME,
+          arguments: {
+            requestText:
+              "Find sqlite index role docs for offline MDM package queries."
+          }
+        }),
+        stderr
+      );
+      const installAction = extractMdmInstallAction(
+        recommendation,
+        "core-docs-search-sqlite"
+      );
+
+      expect(installAction).toMatchObject({
+        kind: "mdm_release_install",
+        safety: "requires_user_confirmation",
+        packageId: "core-docs-search-sqlite",
+        inputPatch: {
+          mdmReleaseInstall: {
+            packageId: "core-docs-search-sqlite",
+            downloadPolicy: "disabled"
+          }
+        }
+      });
+
       const result = await withCapturedStderr(
         client.callTool({
           name: MC_DEVELOP_TOOL_NAME,
@@ -139,8 +166,7 @@ describe("stdio MCP subprocess", () => {
             requestText:
               "Find sqlite index role docs for offline MDM package queries.",
             mdmReleaseInstall: {
-              manifestPath: join(releaseOut, "mdm-release-manifest.json"),
-              packageId: "core-docs-search-sqlite",
+              ...installAction.inputPatch.mdmReleaseInstall,
               downloadPolicy: "allowed"
             }
           }
@@ -153,18 +179,20 @@ describe("stdio MCP subprocess", () => {
           status: "downloaded",
           packageId: "core-docs-search-sqlite"
         },
-        selectedEvidence: {
-          routeStep: "docs_lookup",
-          payload: {
-            hits: expect.arrayContaining([
-              expect.objectContaining({
-                entryId: "mdm.sqlite-index-role",
-                packageId: "core-docs-search-sqlite",
-                source: "sqlite"
-              })
-            ])
-          }
-        }
+        executions: expect.arrayContaining([
+          expect.objectContaining({
+            routeStep: "docs_lookup",
+            payload: expect.objectContaining({
+              hits: expect.arrayContaining([
+                expect.objectContaining({
+                  entryId: "mdm.sqlite-index-role",
+                  packageId: "core-docs-search-sqlite",
+                  source: "sqlite"
+                })
+              ])
+            })
+          })
+        ])
       });
     } finally {
       await client.close();
@@ -221,6 +249,33 @@ function extractText(result: Awaited<ReturnType<Client["callTool"]>>): string {
     .filter((item) => item.type === "text")
     .map((item) => item.text)
     .join("\n");
+}
+
+function extractMdmInstallAction(
+  result: Awaited<ReturnType<Client["callTool"]>>,
+  packageId: string
+): MdmInstallAction {
+  const structuredContent = result.structuredContent as
+    | { resourceActions?: { actions?: unknown[] } }
+    | undefined;
+  const action = structuredContent?.resourceActions?.actions?.find(
+    (entry): entry is MdmInstallAction =>
+      isRecord(entry) &&
+      entry.kind === "mdm_release_install" &&
+      entry.packageId === packageId &&
+      isRecord(entry.inputPatch) &&
+      isRecord(entry.inputPatch.mdmReleaseInstall)
+  );
+
+  if (!action) {
+    throw new Error(`Missing MDM install action for ${packageId}.`);
+  }
+
+  return action;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 async function createCrashModpackWorkspace(): Promise<string> {
@@ -349,4 +404,18 @@ interface ZipFixtureEntry {
   name: string;
   content: string | Buffer;
   compressionMethod: 0 | 8;
+}
+
+interface MdmInstallAction {
+  kind: "mdm_release_install";
+  safety: "requires_user_confirmation";
+  packageId: string;
+  inputPatch: {
+    mdmReleaseInstall: {
+      manifestPath?: string;
+      manifestUrl?: string;
+      packageId: string;
+      downloadPolicy: "disabled" | "allowed";
+    };
+  };
 }

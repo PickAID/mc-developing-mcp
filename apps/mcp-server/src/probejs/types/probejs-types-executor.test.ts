@@ -111,6 +111,19 @@ describe("createMcpServerProbeJsTypesExecutor", () => {
       matched: true,
       payload: {
         probeResources: {
+          capabilityUsage: {
+            capability: "probejs_resource_summary",
+            resourceUseCases: expect.arrayContaining([
+              expect.objectContaining({
+                sourceKind: "class",
+                useFor: expect.arrayContaining(["resolve Java class names"])
+              }),
+              expect.objectContaining({
+                sourceKind: "tag",
+                kubeJsContexts: expect.arrayContaining(["recipe ingredients"])
+              })
+            ])
+          },
           entries: {
             item: [
               {

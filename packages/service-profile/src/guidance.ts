@@ -59,7 +59,12 @@ export function formatServiceProfilePrompt(profile: MinecraftServiceProfile): st
   return [
     `Workspace kind: ${profile.workspaceKind}`,
     `Runtime: ${profile.runtime?.minecraftVersion ?? "unknown"} / ${profile.runtime?.loader ?? "unknown"}`,
-    `Gradle: ${profile.capabilities.gradle.status}, source archives=${profile.capabilities.gradle.sourceArchiveCount}`,
+    [
+      `Gradle: ${profile.capabilities.gradle.status}`,
+      `source archives=${profile.capabilities.gradle.sourceArchiveCount}`,
+      `declared source archives=${profile.capabilities.gradle.declaredDependencySourceArchiveCount}`,
+      `binary archives=${profile.capabilities.gradle.declaredDependencyBinaryArchiveCount}`
+    ].join(", "),
     `Java LSP: ${profile.capabilities.javaLsp.status}, implemented=${formatImplementedLspOperations(profile)}`,
     `ProbeJS types: ${profile.capabilities.kubejsTypes.status}, files=${profile.capabilities.kubejsTypes.fileCount}`,
     `Datapack: ${profile.capabilities.datapack.status}, data=${profile.capabilities.datapack.fileCount}, namespaces=${profile.capabilities.datapack.namespaces.join(",") || "none"}`,

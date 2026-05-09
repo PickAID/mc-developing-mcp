@@ -47,6 +47,7 @@ export function buildHarnessTaskBriefFromSnapshot(
       buildTaskRoutePolicy(taskRoute),
       buildTaskToolPolicy(taskRoute),
       buildTaskEvidencePolicy(taskRoute),
+      ...buildWorkspacePreparationPolicies(taskRoute),
       ...buildTaskDomainPolicies(taskRoute)
     ]
   };
@@ -131,4 +132,20 @@ function buildTaskDomainPolicies(
   }
 
   return [];
+}
+
+function buildWorkspacePreparationPolicies(
+  taskBriefRoute: AgentRuntimeTaskBrief["taskRoute"]
+): AgentRuntimePromptFragment[] {
+  if (taskBriefRoute.intent.id !== "workspace_preparation") {
+    return [];
+  }
+
+  return [
+    {
+      id: "task_workspace_preparation_policy",
+      text:
+        "Workspace preparation policy: treat prepare/init/cache/bundle requests as capability discovery, not literal jar keyword searches. Report ready routes, missing prerequisites, routes needing user confirmation or API keys, and concrete next actions. Prefer local ProbeJS, Gradle files/cache, mod jars/JarJar, datapack/assets, and workspace source; use remote Modrinth/CurseForge/GitHub only when local evidence cannot answer or the user asks to acquire external sources."
+    }
+  ];
 }

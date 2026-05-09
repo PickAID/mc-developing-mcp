@@ -420,6 +420,7 @@ function fingerprintFile(
 function compactProbeResources(summary: KubeJsTypeSemanticSummary) {
   return {
     summary: summary.summary,
+    capabilityUsage: summary.capabilityUsage,
     entries: compactEntryGroups(summary.entries),
     unknownResources: compactUnknownResources(summary.unknownResources)
   };

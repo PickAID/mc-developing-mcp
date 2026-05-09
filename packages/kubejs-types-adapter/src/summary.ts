@@ -70,6 +70,7 @@ export async function summarizeKubeJsTypeResources(
   return {
     workspaceRoot: discovery.workspaceRoot,
     entries,
+    capabilityUsage: buildCapabilityUsage(entries),
     unknownResources,
     summary: {
       counts: countEntries(entries),
@@ -81,6 +82,59 @@ export async function summarizeKubeJsTypeResources(
     }
   };
 }
+
+function buildCapabilityUsage(
+  entries: Record<KubeJsSemanticResourceKind, KubeJsSemanticResourceEntry[]>
+) {
+  return {
+    capability: "probejs_resource_summary" as const,
+    resourceUseCases: SEMANTIC_RESOURCE_USE_CASES.filter(
+      (useCase) => entries[useCase.sourceKind].length > 0
+    )
+  };
+}
+
+const SEMANTIC_RESOURCE_USE_CASES: Array<{
+  sourceKind: KubeJsSemanticResourceKind;
+  useFor: string[];
+  kubeJsContexts: string[];
+}> = [
+  {
+    sourceKind: "item",
+    useFor: ["validate item ids", "build recipe inputs and outputs"],
+    kubeJsContexts: ["ServerEvents.recipes", "Item.of", "Ingredient.of"]
+  },
+  {
+    sourceKind: "tag",
+    useFor: ["validate tag ids", "select item groups for recipes or logic"],
+    kubeJsContexts: ["recipe ingredients", "event filters", "datapack tags"]
+  },
+  {
+    sourceKind: "fluid",
+    useFor: ["validate fluid ids", "map fluids to buckets or fluid recipes"],
+    kubeJsContexts: ["fluid ingredients", "machine recipes", "fluid events"]
+  },
+  {
+    sourceKind: "registry",
+    useFor: ["confirm registry keys", "choose the right registry namespace"],
+    kubeJsContexts: ["StartupEvents.registry", "registry lookups"]
+  },
+  {
+    sourceKind: "snippet",
+    useFor: ["discover KubeJS event entrypoints", "reuse generated DSL shapes"],
+    kubeJsContexts: ["server_scripts", "startup_scripts", "client_scripts"]
+  },
+  {
+    sourceKind: "class",
+    useFor: ["resolve Java class names", "cross-check native API types"],
+    kubeJsContexts: ["Java.loadClass", "NativeEvents", "typed callbacks"]
+  },
+  {
+    sourceKind: "language_key",
+    useFor: ["check translation keys", "match display names to ids"],
+    kubeJsContexts: ["lang generation", "tooltip logic", "UI text"]
+  }
+];
 
 function pushEntries(
   entries: Record<KubeJsSemanticResourceKind, KubeJsSemanticResourceEntry[]>,

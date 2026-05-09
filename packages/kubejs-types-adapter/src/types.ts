@@ -129,6 +129,17 @@ export interface KubeJsUnknownResource {
   preview: string;
 }
 
+export interface KubeJsResourceUseCase {
+  sourceKind: KubeJsSemanticResourceKind;
+  useFor: string[];
+  kubeJsContexts: string[];
+}
+
+export interface KubeJsProbeResourceCapabilityUsage {
+  capability: "probejs_resource_summary";
+  resourceUseCases: KubeJsResourceUseCase[];
+}
+
 export interface SummarizeKubeJsTypeResourcesOptions {
   workspaceRoot: string;
   includeUnknownResources?: boolean;
@@ -145,6 +156,7 @@ export interface SummarizeKubeJsTypeResourcesOptions {
 export interface KubeJsTypeSemanticSummary {
   workspaceRoot: string;
   entries: Record<KubeJsSemanticResourceKind, KubeJsSemanticResourceEntry[]>;
+  capabilityUsage: KubeJsProbeResourceCapabilityUsage;
   unknownResources: KubeJsUnknownResource[];
   summary: {
     counts: Record<KubeJsSemanticResourceKind, number>;

@@ -29,7 +29,11 @@ export interface GradleServiceCapability {
   status: ServiceCapabilityStatus;
   buildFileCount: number;
   sourceArchiveCount: number;
+  declaredDependencySourceArchiveCount: number;
+  declaredDependencyBinaryArchiveCount: number;
   sourceArchives: string[];
+  declaredDependencySourceArchives: string[];
+  declaredDependencyBinaryArchives: string[];
 }
 
 export interface KubeJsTypesServiceCapability {

@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
+import { MCP_SERVER_VERSION } from "./server-metadata.js";
+
 describe("minecraft-developing-mcp package metadata", () => {
   it("publishes a stdio binary for local MCP clients", async () => {
     const packageJson = JSON.parse(
@@ -11,6 +13,7 @@ describe("minecraft-developing-mcp package metadata", () => {
       dependencies?: Record<string, string>;
       scripts?: Record<string, string>;
       types?: string;
+      version?: string;
     };
 
     expect(packageJson.bin).toEqual({
@@ -22,5 +25,6 @@ describe("minecraft-developing-mcp package metadata", () => {
     );
     expect(packageJson.scripts?.test).toContain("tsc -b .");
     expect(packageJson.scripts?.test).toContain('"$PWD/src"');
+    expect(MCP_SERVER_VERSION).toBe(packageJson.version);
   });
 });

@@ -56,6 +56,19 @@ describe("ProbeJS resource-only summaries", () => {
               snippet: 1
             }
           },
+          capabilityUsage: {
+            capability: "probejs_resource_summary",
+            resourceUseCases: expect.arrayContaining([
+              expect.objectContaining({
+                sourceKind: "item",
+                useFor: expect.arrayContaining(["validate item ids"])
+              }),
+              expect.objectContaining({
+                sourceKind: "snippet",
+                kubeJsContexts: expect.arrayContaining(["server_scripts"])
+              })
+            ])
+          },
           unknownResources: []
         }
       }

@@ -16,6 +16,15 @@ export function buildHarnessTaskRoute(
   const modArchiveInventoryRequest = mentionsModArchiveInventoryRequest(requestText);
 
   switch (intent.id) {
+    case "workspace_preparation":
+      return {
+        intent,
+        reasons: [
+          "workspace preparation should report available, missing, and confirm-required evidence routes before searching jar contents"
+        ],
+        steps: buildWorkspacePreparationSteps(snapshot),
+        preferredTools: ["source.bundle", "workspace.analyze", "context.query"]
+      };
     case "external_mod_resolution":
       return {
         intent,
@@ -130,6 +139,36 @@ export function buildHarnessTaskRoute(
           : deriveDefaultTools(snapshot)
       };
   }
+}
+
+function buildWorkspacePreparationSteps(
+  snapshot: AgentRuntimeHarnessSnapshot
+): AgentRuntimeTaskRouteStep[] {
+  const steps: AgentRuntimeTaskRouteStep[] = ["source_acquisition_plan"];
+
+  if (snapshot.facts.hasProbeJS || snapshot.facts.hasKubeJS) {
+    steps.push("probejs_types");
+  }
+
+  if (snapshot.facts.hasGradle || snapshot.facts.hasJavaSource) {
+    steps.push("workspace_source", "java_diagnostics");
+  }
+
+  if (
+    snapshot.facts.hasDatapack ||
+    snapshot.facts.hasResourcePack ||
+    snapshot.facts.datapackRootCount > 0 ||
+    snapshot.facts.resourcePackRootCount > 0
+  ) {
+    steps.push("datapack_files");
+  }
+
+  if (snapshot.facts.hasModArchives) {
+    steps.push("mod_archive_content", "external_mod_resolution");
+  }
+
+  steps.push("docs_lookup");
+  return [...new Set(steps)];
 }
 
 function withModArchiveContent(

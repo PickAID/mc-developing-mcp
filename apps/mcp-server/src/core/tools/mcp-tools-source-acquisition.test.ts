@@ -35,6 +35,12 @@ describe("mc_develop source acquisition acceptance", () => {
 
     expect(result.isError).toBeUndefined();
     expect(result.structuredContent).toMatchObject({
+      workspacePreparation: expect.objectContaining({
+        source: "source_acquisition_plan",
+        capabilityMap: expect.objectContaining({
+          mode: "progressive_discovery"
+        })
+      }),
       executions: expect.arrayContaining([
         expect.objectContaining({
           routeStep: "source_acquisition_plan",
@@ -344,6 +350,48 @@ describe("mc_develop source acquisition acceptance", () => {
     });
   });
 
+  it("honors explicit preparation route origins without auto-adding remote providers", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-explicit-routes-runtime-");
+    const workspaceRoot = await createModpackWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Prepare source acquisition routes for this modpack. Do not infer remote providers.",
+      runtimeRoot,
+      workspaceRoot,
+      preparationRoutes: ["runtime_cache", "local_jar"]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: expect.objectContaining({
+        routeStep: "source_acquisition_plan",
+        payload: expect.objectContaining({
+          routes: [
+            expect.objectContaining({ origin: "runtime_cache" }),
+            expect.objectContaining({ origin: "local_jar" })
+          ],
+          capabilityGuidance: expect.objectContaining({
+            capabilityMap: expect.objectContaining({
+              routeCapabilities: [
+                expect.objectContaining({ origin: "runtime_cache" }),
+                expect.objectContaining({ origin: "local_jar" })
+              ]
+            })
+          })
+        })
+      })
+    });
+    const selected = (result.structuredContent as any).selectedEvidence;
+    expect(selected.payload.routes.map((route: any) => route.origin)).toEqual([
+      "runtime_cache",
+      "local_jar"
+    ]);
+  });
+
 });
 
 async function createModpackWorkspace(): Promise<string> {
@@ -440,11 +488,7 @@ function createZipWithContents(entries: Array<{ name: string; content: string }>
 
 interface CapturingRegistry {
   calls: RegisteredToolCall[];
-  registerTool: (
-    name: string,
-    config: unknown,
-    handler: McpToolHandler
-  ) => void;
+  registerTool: (name: string, config: unknown, handler: McpToolHandler) => void;
 }
 
 interface RegisteredToolCall {

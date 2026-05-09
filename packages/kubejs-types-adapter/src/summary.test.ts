@@ -96,6 +96,19 @@ describe("summarizeKubeJsTypeResources", () => {
       },
       truncated: true
     });
+    expect(result.capabilityUsage.resourceUseCases).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourceKind: "item",
+          useFor: expect.arrayContaining(["validate item ids"]),
+          kubeJsContexts: expect.arrayContaining(["ServerEvents.recipes"])
+        }),
+        expect.objectContaining({
+          sourceKind: "snippet",
+          useFor: expect.arrayContaining(["discover KubeJS event entrypoints"])
+        })
+      ])
+    );
   });
 
   it("parses large ProbeJS snippet JSON without falling back to raw lines", async () => {

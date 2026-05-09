@@ -67,6 +67,8 @@ function formatFragmentTitle(id: AgentRuntimePromptFragmentId): string {
       return "Task Tool Policy";
     case "task_evidence_policy":
       return "Task Evidence Policy";
+    case "task_workspace_preparation_policy":
+      return "Task Workspace Preparation Policy";
     case "task_client_visual_capability_policy":
       return "Task Client Visual Capability Policy";
     case "task_kubejs_scripting_policy":

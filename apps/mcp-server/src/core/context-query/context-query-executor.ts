@@ -8,6 +8,7 @@ import {
   type ResolveCurseForgeModInput
 } from "minecraft-developing-mcp-external-mod-resolver";
 import type { SourceAcquisitionWorkItemRunnerHandlers } from "minecraft-developing-mcp-source-package-manager";
+import type { SourceAcquisitionOrigin } from "minecraft-developing-mcp-source-package-manager";
 import { readGradleMavenRepositories } from "minecraft-developing-mcp-gradle-adapter";
 
 import { executeMcpServerDocsLookup } from "../../docs/lookup/docs-lookup-executor.js";
@@ -38,6 +39,7 @@ export interface McpServerContextQueryExecutorOptions {
   externalModCurseForgeFetch?: ResolveCurseForgeModInput["fetch"];
   externalModCurseForgeApiBaseUrl?: string;
   sourceAcquisitionWorkItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
+  sourceAcquisitionRouteOrigins?: SourceAcquisitionOrigin[];
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
@@ -84,7 +86,8 @@ export function buildMcpServerContextQueryExecutor(
       case "source_acquisition_plan":
         return executeMcpServerSourceAcquisitionPlan(input, {
           workItemHandlers: options.sourceAcquisitionWorkItemHandlers,
-          sourceIndexDatabasePaths: options.sourceIndexDatabasePaths
+          sourceIndexDatabasePaths: options.sourceIndexDatabasePaths,
+          routeOrigins: options.sourceAcquisitionRouteOrigins
         });
       default:
         return (

@@ -6,11 +6,15 @@ import {
   buildSourceAcquisitionWorkItems,
   planSourceAcquisition,
   runSourceAcquisitionWorkItems,
+  type SourceAcquisitionOrigin,
+  type SourceAcquisitionRoute,
+  type SourceAcquisitionRemoteSource,
   type SourceAcquisitionWorkItem,
-  type SourceAcquisitionWorkItemRunnerHandlers,
-  type SourceAcquisitionRoute
+  type SourceAcquisitionWorkItemRunnerHandlers
 } from "minecraft-developing-mcp-source-package-manager";
 import {
+  discoverDeclaredDependencyBinaryArchives,
+  discoverDeclaredDependencySourceArchives,
   readGradleDeclaredDependencies,
   readGradleMavenRepositories
 } from "minecraft-developing-mcp-gradle-adapter";
@@ -20,10 +24,15 @@ import type {
   McpServerEvidenceExecutorResult
 } from "../request/execution/request-handler.js";
 import { executeMcpServerProbeJsTypes } from "../probejs/types/probejs-types-executor.js";
+import {
+  buildSourceAcquisitionCapabilityGuidance,
+  buildSourceAcquisitionPlanSummary
+} from "./source-acquisition-capability-map.js";
 
 export interface McpServerSourceAcquisitionPlanExecutorOptions {
   workItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
   sourceIndexDatabasePaths?: string[];
+  routeOrigins?: SourceAcquisitionOrigin[];
 }
 
 export async function executeMcpServerSourceAcquisitionPlan(
@@ -51,7 +60,7 @@ export async function executeMcpServerSourceAcquisitionPlan(
       minecraftVersion,
       loader: descriptor?.currentRuntime.loader,
       localJarPaths: descriptor?.modArchivePaths,
-      remoteSources: inferRemoteSources(requestText)
+      remoteSources: resolveRemoteSources(requestText, options.routeOrigins)
     },
     workspace: {
       available: descriptor !== undefined,
@@ -63,7 +72,8 @@ export async function executeMcpServerSourceAcquisitionPlan(
       curseforgeCredentials: false
     }
   });
-  const workItems = plan.routes.flatMap((route) =>
+  const routes = filterRoutesByOrigin(plan.routes, options.routeOrigins);
+  const workItems = routes.flatMap((route) =>
     buildSourceAcquisitionWorkItems({
       route,
       paths: routePaths(route, descriptor?.modArchivePaths),
@@ -88,14 +98,22 @@ export async function executeMcpServerSourceAcquisitionPlan(
     databasePaths: options.sourceIndexDatabasePaths ?? [],
     minecraftVersion
   });
+  const capabilityGuidance = buildSourceAcquisitionCapabilityGuidance({
+    executorInput: input,
+    routes
+  });
 
   return {
     matched: true,
-    summary: `Planned ${plan.routes.length} source acquisition routes.`,
+    summary: buildSourceAcquisitionPlanSummary({
+      routeCount: routes.length,
+      capabilityGuidance
+    }),
     payload: {
       source: "source_acquisition_plan",
       requiresWorkspace: plan.requiresWorkspace,
-      routes: plan.routes.map((route) => ({
+      capabilityGuidance,
+      routes: routes.map((route) => ({
         origin: route.origin,
         artifactStrategy: route.artifactStrategy,
         cacheMode: route.cacheMode,
@@ -113,6 +131,40 @@ export async function executeMcpServerSourceAcquisitionPlan(
   };
 }
 
+function resolveRemoteSources(
+  requestText: string,
+  routeOrigins: SourceAcquisitionOrigin[] | undefined
+): SourceAcquisitionRemoteSource[] {
+  if (!routeOrigins) {
+    return inferRemoteSources(requestText);
+  }
+
+  return routeOrigins.filter(isRemoteSource);
+}
+
+function filterRoutesByOrigin(
+  routes: SourceAcquisitionRoute[],
+  routeOrigins: SourceAcquisitionOrigin[] | undefined
+): SourceAcquisitionRoute[] {
+  if (!routeOrigins) {
+    return routes;
+  }
+
+  const allowed = new Set(routeOrigins);
+  return routes.filter((route) => allowed.has(route.origin));
+}
+
+function isRemoteSource(
+  origin: SourceAcquisitionOrigin
+): origin is SourceAcquisitionRemoteSource {
+  return (
+    origin === "official" ||
+    origin === "modrinth" ||
+    origin === "curseforge" ||
+    origin === "github"
+  );
+}
+
 function defaultWorkspaceWorkItemHandlers(
   input: McpServerEvidenceExecutorInput
 ): SourceAcquisitionWorkItemRunnerHandlers {
@@ -122,16 +174,48 @@ function defaultWorkspaceWorkItemHandlers(
         readGradleDeclaredDependencies({ workspaceRoot: item.workspaceRoot }),
         readGradleMavenRepositories({ workspaceRoot: item.workspaceRoot })
       ]);
+      const [sourceArchives, binaryArchives] = await Promise.all([
+        discoverDeclaredDependencySourceArchives({
+          workspaceRoot: item.workspaceRoot,
+          dependencies,
+          includeDefaultGradleUserHome: false,
+          maxResults: 20
+        }),
+        discoverDeclaredDependencyBinaryArchives({
+          workspaceRoot: item.workspaceRoot,
+          dependencies,
+          includeDefaultGradleUserHome: false,
+          maxResults: 20
+        })
+      ]);
 
       return {
-        summary: `Read ${dependencies.length} Gradle dependencies and ${repositories.length} repositories from workspace.`,
+        summary: `Read ${dependencies.length} Gradle dependencies, ${repositories.length} repositories, ${sourceArchives.length} source archives, and ${binaryArchives.length} binary archives from workspace.`,
         payload: {
           source: "workspace_gradle",
           workspaceRoot: item.workspaceRoot,
           dependencyCount: dependencies.length,
           repositoryCount: repositories.length,
+          declaredDependencySourceArchiveCount: sourceArchives.length,
+          declaredDependencyBinaryArchiveCount: binaryArchives.length,
           dependencies: dependencies.slice(0, 20),
-          repositories: repositories.slice(0, 10)
+          repositories: repositories.slice(0, 10),
+          declaredDependencySourceArchives: sourceArchives
+            .slice(0, 10)
+            .map((archive) => ({
+              archivePath: archive.archivePath,
+              source: archive.source,
+              confidence: archive.confidence,
+              reason: archive.reason
+            })),
+          declaredDependencyBinaryArchives: binaryArchives
+            .slice(0, 10)
+            .map((archive) => ({
+              archivePath: archive.archivePath,
+              source: archive.source,
+              confidence: archive.confidence,
+              reason: archive.reason
+            }))
         }
       };
     },

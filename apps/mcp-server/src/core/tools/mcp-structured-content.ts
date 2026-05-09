@@ -3,7 +3,9 @@ import type { MdmResourceStatusContext } from "../../docs/mdm-resource/mdm-resou
 import type { McpMdmReleaseInstallResult } from "../../docs/mdm-resource/mdm-release-install.js";
 import type { MdmDocsResourceSummary } from "../../docs/mdm-docs/mdm-docs-records.js";
 import type { MdmPackageRecommendations } from "../../docs/mdm-resource/mdm-package-recommendations.js";
-import type { AgentRuntimePromptFragmentId } from "minecraft-developing-mcp-shared-types";
+import { buildMcpResourceActions } from "./mcp-resource-actions.js";
+import { buildMcpPromptGuidance } from "./mcp-prompt-guidance.js";
+import { buildWorkspacePreparationWorkflow } from "./mcp-workspace-preparation-workflow.js";
 
 type RequiredBudgetOptions = Required<
   Omit<
@@ -20,14 +22,6 @@ const DEFAULT_BUDGET: RequiredBudgetOptions = {
   maxStringLength: 4000,
   maxDepth: 8
 };
-
-const EXPOSED_PROMPT_GUIDANCE_IDS = new Set<AgentRuntimePromptFragmentId>([
-  "kubejs_authoring_policy",
-  "service_profile",
-  "task_evidence_policy",
-  "task_client_visual_capability_policy",
-  "task_kubejs_scripting_policy"
-]);
 
 export interface McpDevelopStructuredContentOptions {
   maxArrayItems?: number;
@@ -61,7 +55,12 @@ export function buildMcpDevelopStructuredContent(
       facts: snapshot.facts
     },
     trace: result.trace,
-    promptGuidance: buildPromptGuidance(result, budget),
+    workspacePreparation: buildWorkspacePreparation(result, budget),
+    promptGuidance: buildMcpPromptGuidance(
+      result.requestPlan,
+      budget,
+      compactPayload
+    ),
     budget: {
       payloadPolicy: "bounded",
       maxArrayItems: budget.maxArrayItems,
@@ -84,30 +83,70 @@ export function buildMcpDevelopStructuredContent(
       : undefined,
     mdmPackageRecommendations: options.mdmPackageRecommendations
       ? compactPayload(options.mdmPackageRecommendations, budget).value
-      : undefined
+      : undefined,
+    resourceActions: buildMcpResourceActions(
+      options.mdmPackageRecommendations,
+      budget,
+      compactPayload
+    )
   };
 
   return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
 }
 
-function buildPromptGuidance(
+function buildWorkspacePreparation(
   result: McpServerRequestExecutorResult,
   budget: RequiredBudgetOptions
 ) {
-  const activeFragmentIds = result.requestPlan.trace.selectedPromptFragmentIds;
-  const exposedFragments =
-    result.requestPlan.requestContext.taskBrief.promptFragments
-      .filter((fragment) => EXPOSED_PROMPT_GUIDANCE_IDS.has(fragment.id))
-      .map((fragment) => ({
-        id: fragment.id,
-        text: fragment.text
-      }));
+  const execution = result.executions.find(
+    (item) => item.routeStep === "source_acquisition_plan" && item.payload
+  );
+  const payload = execution?.payload;
+  if (!isRecord(payload) || payload.source !== "source_acquisition_plan") {
+    return undefined;
+  }
 
-  return {
-    policy: "bounded_active_prompt_fragments",
-    activeFragmentIds,
-    exposedFragments: compactPayload(exposedFragments, budget).value
+  const capabilityGuidance = isRecord(payload.capabilityGuidance)
+    ? payload.capabilityGuidance
+    : undefined;
+
+  const capabilityMapPayload = compactPayload(
+    capabilityGuidance?.capabilityMap,
+    budget
+  );
+  const topLevel = {
+    source: payload.source,
+    candidateId: execution?.candidateId,
+    status: resolveWorkspacePreparationStatus(payload),
+    requiresWorkspace: payload.requiresWorkspace,
+    capabilityGuidance: {
+      statusLines: capabilityGuidance?.statusLines,
+      nextActions: capabilityGuidance?.nextActions
+    },
+    capabilityMap: capabilityMapPayload.value,
+    workflow: buildWorkspacePreparationWorkflow(payload, capabilityGuidance),
+    budget: capabilityMapPayload.stats.truncated
+      ? capabilityMapPayload.stats
+      : undefined
   };
+
+  return compactPayload(topLevel, budget).value;
+}
+
+function resolveWorkspacePreparationStatus(
+  payload: Record<string, unknown>
+): "ready" | "partial" | "blocked" | "no_workspace" {
+  if (payload.requiresWorkspace === true) {
+    return "no_workspace";
+  }
+  if (payload.workItemExecutionStatus === "partial") {
+    return "partial";
+  }
+  if (payload.workItemExecutionStatus === "completed") {
+    return "ready";
+  }
+
+  return "ready";
 }
 
 function normalizeBudget(
@@ -242,6 +281,10 @@ function summarizeDepthLimitedValue(value: object): string {
   }
 
   return `[Object depth limit: ${Object.keys(value).length} keys]`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 interface PayloadBudgetStats {

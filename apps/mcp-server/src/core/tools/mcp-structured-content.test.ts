@@ -135,6 +135,166 @@ describe("buildMcpDevelopStructuredContent", () => {
       }
     });
   });
+
+  it("promotes source acquisition capability guidance to top-level workspace preparation", () => {
+    const content = buildMcpDevelopStructuredContent(
+      createExecutorResult({
+        candidateId: "candidate-1-source_acquisition_plan",
+        routeStep: "source_acquisition_plan",
+        summary: "Planned 2 source acquisition routes.",
+        payload: {
+          source: "source_acquisition_plan",
+          requiresWorkspace: false,
+          capabilityGuidance: {
+            nextActions: ["populate Gradle dependency caches"],
+            capabilityMap: {
+              mode: "progressive_discovery",
+              recommendedRouteOrder: ["runtime_cache", "local_jar"],
+              routeCapabilities: [
+                {
+                  origin: "runtime_cache",
+                  status: "ready",
+                  useFor: ["offline packages", "SQLite indexes"]
+                },
+                {
+                  origin: "local_jar",
+                  status: "ready",
+                  useFor: ["local mod classes"],
+                  nextAction: "inspect cached jar entries"
+                }
+              ]
+            }
+          },
+          routes: [
+            { origin: "runtime_cache", artifactStrategy: "query_cached_packages_and_indexes" },
+            { origin: "local_jar", artifactStrategy: "index_binary_jar" }
+          ],
+          workItems: [
+            {
+              kind: "jar_index",
+              sourceArchive: "/private/mods/demo.jar",
+              cacheScope: "private_runtime"
+            }
+          ],
+          sourceIndexPreview: {
+            query: "ItemStack",
+            searchedDatabaseCount: 1,
+            matches: [{ symbol: "net.minecraft.world.item.ItemStack" }]
+          },
+          workItemExecutionStatus: "partial",
+          workItemExecutions: [
+            {
+              kind: "jar_index",
+              status: "completed",
+              summary: "Indexed local jar.",
+              payload: {
+                rawLargePayloadShouldNotBeCopied: "x".repeat(100)
+              }
+            }
+          ]
+        }
+      })
+    );
+
+    expect(content.workspacePreparation).toMatchObject({
+      source: "source_acquisition_plan",
+      status: "partial",
+      candidateId: "candidate-1-source_acquisition_plan",
+      requiresWorkspace: false,
+      capabilityGuidance: {
+        nextActions: ["populate Gradle dependency caches"]
+      },
+      capabilityMap: {
+        mode: "progressive_discovery",
+        recommendedRouteOrder: ["runtime_cache", "local_jar"]
+      },
+      workflow: {
+        model: "catalog_inspect_execute",
+        catalog: {
+          routeCount: 2,
+          recommendedRouteOrder: ["runtime_cache", "local_jar"],
+          readyOrigins: ["runtime_cache", "local_jar"]
+        },
+        inspect: expect.arrayContaining([
+          expect.objectContaining({
+            origin: "local_jar",
+            detailLocation: "executions[].payload.workItemExecutions",
+            workItemKinds: ["jar_index"],
+            useFor: ["local mod classes"]
+          }),
+          expect.objectContaining({
+            origin: "runtime_cache",
+            detailLocation: "executions[].payload.sourceIndexPreview"
+          })
+        ]),
+        execute: expect.arrayContaining([
+          expect.objectContaining({
+            id: "prepare_local_jar",
+            origin: "local_jar",
+            safety: "local_read_only",
+            inputPatch: { preparationRoutes: ["local_jar"] }
+          }),
+          expect.objectContaining({
+            id: "inspect_source_index_preview",
+            origin: "runtime_cache",
+            safety: "read_only"
+          }),
+          expect.objectContaining({
+            id: "inspect_runtime_cache_evidence",
+            origin: "runtime_cache",
+            safety: "read_only",
+            inputPatch: { preparationRoutes: ["runtime_cache"] }
+          })
+        ])
+      }
+    });
+    expect(JSON.stringify(content.workspacePreparation)).not.toContain(
+      "rawLargePayloadShouldNotBeCopied"
+    );
+  });
+
+  it("exposes MDM package install recommendations as confirmation-gated resource actions", () => {
+    const content = buildMcpDevelopStructuredContent(createExecutorResult(), {
+      mdmPackageRecommendations: {
+        policy: "recommend_before_download",
+        status: "available",
+        message: "MDM packages are recommendations only.",
+        suggestions: [
+          {
+            packageId: "minecraft-1.20.1-source-index",
+            status: "missing_optional",
+            priority: "high",
+            matchedSignals: ["sources"],
+            reason: "Matched source index request.",
+            mdmReleaseInstall: {
+              packageId: "minecraft-1.20.1-source-index",
+              downloadPolicy: "disabled",
+              manifestPath: "/repo/mdm-release-manifest.json"
+            }
+          }
+        ]
+      }
+    });
+
+    expect(content.resourceActions).toMatchObject({
+      policy: "recommend_before_download",
+      executeWithDownloadOnlyAfterUserConfirmation: true,
+      actions: [
+        {
+          id: "install_mdm_minecraft-1.20.1-source-index",
+          kind: "mdm_release_install",
+          safety: "requires_user_confirmation",
+          packageId: "minecraft-1.20.1-source-index",
+          inputPatch: {
+            mdmReleaseInstall: {
+              packageId: "minecraft-1.20.1-source-index",
+              downloadPolicy: "disabled"
+            }
+          }
+        }
+      ]
+    });
+  });
 });
 
 function createExecutorResult(
@@ -235,6 +395,11 @@ function createExecutorResult(
       }
       ,
       trace: {
+        taskIntent: {
+          id: "kubejs_authoring",
+          confidence: "high",
+          reasons: []
+        },
         selectedPromptFragmentIds: [
           "workspace_summary",
           "task_evidence_policy",

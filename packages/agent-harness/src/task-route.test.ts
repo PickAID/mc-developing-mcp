@@ -144,6 +144,113 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes workspace preparation requests through acquisition planning before jar search", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "modpack",
+          routePlan: {
+            scenario: "modpack-workspace",
+            reasons: ["workspace descriptor reports a modpack workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasKubeJS: true,
+            hasProbeJS: true,
+            hasModArchives: true,
+            hasDatapack: true,
+            hasResourcePack: true
+          }
+        }),
+        "Prepare useful bundles so the agent can later inspect dependency source and external mod code."
+      )
+    ).toEqual({
+      intent: {
+        id: "workspace_preparation",
+        confidence: "high",
+        reasons: [
+          "request text asks to prepare, initialize, cache, bundle, or index workspace evidence",
+          "workspace snapshot exposes local evidence routes that can be prepared progressively"
+        ]
+      },
+      reasons: [
+        "workspace preparation should report available, missing, and confirm-required evidence routes before searching jar contents"
+      ],
+      steps: [
+        "source_acquisition_plan",
+        "probejs_types",
+        "datapack_files",
+        "mod_archive_content",
+        "external_mod_resolution",
+        "docs_lookup"
+      ],
+      preferredTools: ["source.bundle", "workspace.analyze", "context.query"]
+    });
+  });
+
+  it("routes Chinese cache initialization requests through acquisition planning", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasGradle: true,
+            hasJavaSource: true
+          }
+        }),
+        "初始化缓存，让 agent 后续查看依赖源码。"
+      )
+    ).toMatchObject({
+      intent: {
+        id: "workspace_preparation",
+        confidence: "high"
+      },
+      steps: [
+        "source_acquisition_plan",
+        "workspace_source",
+        "java_diagnostics",
+        "docs_lookup"
+      ],
+      preferredTools: ["source.bundle", "workspace.analyze", "context.query"]
+    });
+  });
+
+  it("does not treat docs lookup requests as workspace preparation just because they mention indexes", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "kubejs-workspace",
+          routePlan: {
+            scenario: "kubejs-workspace",
+            reasons: ["workspace descriptor reports a KubeJS workspace"],
+            defaultRoutingScenario: "kubejs_script",
+            steps: ["probejs_types", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasKubeJS: true
+          }
+        }),
+        "Find sqlite index role docs for offline MDM package queries."
+      )
+    ).toMatchObject({
+      intent: {
+        id: "workspace_default",
+        confidence: "low"
+      },
+      steps: ["probejs_types", "docs_lookup"]
+    });
+  });
+
   it("routes explicit mod archive inventory requests even before archives exist", () => {
     expect(
       buildHarnessTaskRoute(

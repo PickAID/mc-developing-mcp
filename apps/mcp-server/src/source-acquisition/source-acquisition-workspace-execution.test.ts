@@ -23,9 +23,56 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
         "}"
       ].join("\n")
     );
+    await mkdir(
+      join(
+        workspaceRoot,
+        ".gradle",
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "net.neoforged",
+        "neoforge",
+        "21.1.1",
+        "abc"
+      ),
+      { recursive: true }
+    );
+    await writeFile(
+      join(
+        workspaceRoot,
+        ".gradle",
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "net.neoforged",
+        "neoforge",
+        "21.1.1",
+        "abc",
+        "neoforge-21.1.1-sources.jar"
+      ),
+      "source jar placeholder"
+    );
+    await writeFile(
+      join(
+        workspaceRoot,
+        ".gradle",
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "net.neoforged",
+        "neoforge",
+        "21.1.1",
+        "abc",
+        "neoforge-21.1.1.jar"
+      ),
+      "binary jar placeholder"
+    );
 
     const result = await executeMcpServerSourceAcquisitionPlan(
-      inputFixture(workspaceRoot)
+      inputFixture(workspaceRoot, {
+        serviceProfile:
+          "Gradle: ready, source archives=1, declared source archives=1, binary archives=1"
+      })
     );
     const payload = result.payload as {
       routes: unknown[];
@@ -40,7 +87,27 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
     expect(result).toMatchObject({
       matched: true,
       payload: {
-        source: "source_acquisition_plan"
+        source: "source_acquisition_plan",
+        capabilityGuidance: expect.objectContaining({
+          capabilityMap: expect.objectContaining({
+            mode: "progressive_discovery",
+            routeCapabilities: expect.arrayContaining([
+              expect.objectContaining({
+                origin: "workspace_gradle",
+                status: "ready",
+                artifactStrategy: "read_declared_dependencies",
+                sourceLookup: expect.objectContaining({
+                  sourceArchiveCount: 1,
+                  declaredDependencySourceArchiveCount: 1,
+                  declaredDependencyBinaryArchiveCount: 1,
+                  supportsDirectSourceRead: true,
+                  supportsBinaryOwnerLookup: true,
+                  status: "ready"
+                })
+              })
+            ])
+          })
+        })
       }
     });
     expect(payload.routes).toEqual(
@@ -78,6 +145,20 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
                 notation: "net.neoforged:neoforge:21.1.1",
                 sourceFile: "build.gradle"
               }
+            ],
+            declaredDependencySourceArchiveCount: 1,
+            declaredDependencyBinaryArchiveCount: 1,
+            declaredDependencySourceArchives: [
+              expect.objectContaining({
+                archivePath: expect.stringContaining(
+                  "neoforge-21.1.1-sources.jar"
+                )
+              })
+            ],
+            declaredDependencyBinaryArchives: [
+              expect.objectContaining({
+                archivePath: expect.stringContaining("neoforge-21.1.1.jar")
+              })
             ]
           })
         })
@@ -138,6 +219,41 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
       ])
     );
   });
+
+  it("filters routes when explicit preparation origins are provided", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-routes-"));
+
+    await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+    await writeFile(join(workspaceRoot, "mods", "demo.jar"), "not a real jar");
+    await writeFile(join(workspaceRoot, "build.gradle"), "plugins { id 'java' }\n");
+
+    const result = await executeMcpServerSourceAcquisitionPlan(
+      inputFixture(workspaceRoot, {
+        requestText: "Prepare only runtime cache and Modrinth routes."
+      }),
+      {
+        routeOrigins: ["runtime_cache", "modrinth"]
+      }
+    );
+    const payload = result.payload as {
+      routes: Array<{ origin: string }>;
+      capabilityGuidance: {
+        capabilityMap: {
+          routeCapabilities: Array<{ origin: string }>;
+        };
+      };
+    };
+
+    expect(payload.routes.map((route) => route.origin)).toEqual([
+      "runtime_cache",
+      "modrinth"
+    ]);
+    expect(
+      payload.capabilityGuidance.capabilityMap.routeCapabilities.map(
+        (route) => route.origin
+      )
+    ).toEqual(["runtime_cache", "modrinth"]);
+  });
 });
 
 function inputFixture(
@@ -146,6 +262,7 @@ function inputFixture(
     hasKubeJS?: boolean;
     hasProbeJS?: boolean;
     requestText?: string;
+    serviceProfile?: string;
   } = {}
 ): McpServerEvidenceExecutorInput {
   const requestText =
@@ -185,6 +302,7 @@ function requestPlanFixture(
     hasKubeJS?: boolean;
     hasProbeJS?: boolean;
     requestText?: string;
+    serviceProfile?: string;
   } = {}
 ): McpServerEvidenceExecutorInput["requestPlan"] {
   const requestText =
@@ -222,7 +340,17 @@ function requestPlanFixture(
             evidence: []
           }
         }
-      }
+      },
+      taskBrief: input.serviceProfile
+        ? {
+            promptFragments: [
+              {
+                id: "service_profile",
+                text: input.serviceProfile
+              }
+            ]
+          }
+        : undefined
     },
     toolGuidance: {
       availableTools: ["context.query"],

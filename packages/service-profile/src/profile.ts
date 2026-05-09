@@ -1,7 +1,11 @@
 import { resolve } from "node:path";
 
 import { discoverDatapackContent, listDatapackFiles } from "minecraft-developing-mcp-datapack-adapter";
-import { discoverGradleSourceArchives } from "minecraft-developing-mcp-gradle-adapter";
+import {
+  discoverDeclaredDependencyBinaryArchives,
+  discoverDeclaredDependencySourceArchives,
+  discoverGradleSourceArchives
+} from "minecraft-developing-mcp-gradle-adapter";
 import { discoverModArchives } from "minecraft-developing-mcp-jar-source-adapter";
 import { buildJdtlsServiceProfile } from "minecraft-developing-mcp-java-jdtls-adapter";
 import { discoverKubeJsTypeResources } from "minecraft-developing-mcp-kubejs-types-adapter";
@@ -29,6 +33,8 @@ export async function buildMinecraftServiceProfile(
   const [
     descriptor,
     sourceArchives,
+    declaredDependencySourceArchives,
+    declaredDependencyBinaryArchives,
     javaLsp,
     kubejsTypes,
     resourceCapabilities,
@@ -42,6 +48,18 @@ export async function buildMinecraftServiceProfile(
       includeDefaultGradleUserHome: options.includeDefaultGradleUserHome,
       maxResults: 16,
       maxVisitedEntries: 4_000
+    }),
+    discoverDeclaredDependencySourceArchives({
+      workspaceRoot,
+      gradleUserHome: options.gradleUserHome,
+      includeDefaultGradleUserHome: options.includeDefaultGradleUserHome,
+      maxResults: 16
+    }),
+    discoverDeclaredDependencyBinaryArchives({
+      workspaceRoot,
+      gradleUserHome: options.gradleUserHome,
+      includeDefaultGradleUserHome: options.includeDefaultGradleUserHome,
+      maxResults: 16
     }),
     buildJdtlsServiceProfile({
       workspaceRoot,
@@ -76,7 +94,17 @@ export async function buildMinecraftServiceProfile(
         status: descriptor.hasGradle ? "ready" : "not_found",
         buildFileCount: descriptor.buildFiles.length,
         sourceArchiveCount: sourceArchives.length,
-        sourceArchives: sourceArchives.map((candidate) => candidate.archivePath)
+        declaredDependencySourceArchiveCount:
+          declaredDependencySourceArchives.length,
+        declaredDependencyBinaryArchiveCount:
+          declaredDependencyBinaryArchives.length,
+        sourceArchives: sourceArchives.map((candidate) => candidate.archivePath),
+        declaredDependencySourceArchives: declaredDependencySourceArchives.map(
+          (candidate) => candidate.archivePath
+        ),
+        declaredDependencyBinaryArchives: declaredDependencyBinaryArchives.map(
+          (candidate) => candidate.archivePath
+        )
       },
       javaLsp,
       kubejsTypes: {

@@ -31,10 +31,10 @@ The goal is not to replace the coding agent. The goal is to make the agent stop 
 
 ## Installation
 
-Current prerelease install:
+Stable install:
 
 ```sh
-npm install -g minecraft-developing-mcp@next
+npm install -g minecraft-developing-mcp
 ```
 
 Run the server:
@@ -50,7 +50,7 @@ For MCP clients, prefer `npx` so the project stays easy to update:
   "mcpServers": {
     "minecraft-developing": {
       "command": "npx",
-      "args": ["-y", "--package", "minecraft-developing-mcp@next", "mc-developing-mcp"]
+      "args": ["-y", "--package", "minecraft-developing-mcp@latest", "mc-developing-mcp"]
     }
   }
 }
@@ -118,6 +118,13 @@ Example:
 }
 ```
 
+Recommended progressive flow:
+
+1. Ask `mc_develop` for the task without `mdmReleaseInstall`.
+2. Inspect `structuredContent.resourceActions.actions`.
+3. If the suggested package is appropriate, call `mc_develop` again with that action's `inputPatch.mdmReleaseInstall`, changing `downloadPolicy` from `disabled` to `allowed` only after user confirmation.
+4. The next result can reuse the installed docs/source index artifacts from the local runtime cache.
+
 Common resource package types:
 
 
@@ -130,7 +137,7 @@ Common resource package types:
 | Source profile/index  | `minecraft-1.20.1-vanilla-source-profile`       |
 
 
-Downloaded artifacts are verified and stored in the local runtime cache. Private modpack caches, generated Minecraft source, ProbeJS outputs, and user jar-derived indexes should not be committed to this repository.
+Downloaded artifacts are verified and stored in the local runtime cache. Vanilla datapack/resource-pack data is generated from Mojang distribution metadata on demand. Private modpack caches, generated Minecraft source, ProbeJS outputs, local jar indexes, and user jar-derived bundles should not be committed to this repository.
 
 ## Configuration
 
@@ -147,7 +154,7 @@ Environment variables:
 | `SHADERTOY_APP_KEY`                | Optional ShaderToy API key. Without it, use browser-based fallback and compact summaries. |
 
 
-Legacy `MCPSKILL_*` environment variables are still accepted for prerelease compatibility, but new setup should use the `MC_DEVELOPING_MCP_*` names.
+Legacy `MCPSKILL_*` environment variables may still be accepted by older prerelease builds. New setup should use the `MC_DEVELOPING_MCP_*` names.
 
 ## Developer Setup
 
@@ -172,7 +179,7 @@ pnpm publish:install-smoke
 pnpm publish:release-check
 ```
 
-The publish dry-run and install smoke are important. They verify that workspace dependencies are rewritten to concrete npm versions and that the installed `mc-developing-mcp` binary can initialize and expose `mc_develop`.
+The publish dry-run and install smoke are important. They verify that the public package does not expose internal workspace dependencies and that the installed `mc-developing-mcp` binary can initialize and expose `mc_develop`.
 
 ## Architecture
 
@@ -181,11 +188,10 @@ This is a TypeScript monorepo.
 ```txt
 apps/mcp-server/          Public stdio MCP server package.
 apps/agent-runtime/       Private runtime app for local experiments.
-packages/*                Internal libraries for workspace detection, Gradle, jars, KubeJS, docs, resources, source acquisition, and harness logic.
+packages/*                Internal libraries bundled into the public server package.
 docs/architecture/        Runtime and routing design notes.
 docs/specs/               Package/resource/source acquisition specs.
 docs/standards/           KubeJS and client visual standards.
-docs/reviews/             Verification reports with command output.
 scripts/                  Publish guards, pack dry-run, and install smoke scripts.
 ```
 
@@ -205,7 +211,7 @@ The binary remains:
 mc-developing-mcp
 ```
 
-The earlier scoped prerelease should be treated as a transitional package name, not the recommended public install path.
+Older scoped prerelease packages are not the recommended public install path. Use the unscoped stable package above.
 
 ## License
 

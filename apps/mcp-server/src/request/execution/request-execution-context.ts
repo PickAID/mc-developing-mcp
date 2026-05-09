@@ -73,10 +73,19 @@ export function shouldUseAsContext(
   }
 
   if (candidate.routeStep === "source_acquisition_plan") {
-    return true;
+    return (
+      evidencePlan.requestPlan.trace.taskIntent.id !== "workspace_preparation" ||
+      mentionsDocsLookup(evidencePlan.requestPlan.requestText)
+    );
   }
 
   return false;
+}
+
+function mentionsDocsLookup(requestText: string | undefined): boolean {
+  return /docs?|documentation|guide|guidance|reference|explain|文档|说明|参考/u.test(
+    requestText ?? ""
+  );
 }
 
 export function rememberContext(

@@ -5,7 +5,7 @@ MCP stdio server for Minecraft development assistance.
 ## Usage
 
 ```sh
-npx -y --package minecraft-developing-mcp@next mc-developing-mcp
+npx -y --package minecraft-developing-mcp@latest mc-developing-mcp
 ```
 
 For MCP client configuration, use the same command shape:
@@ -13,7 +13,7 @@ For MCP client configuration, use the same command shape:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "--package", "minecraft-developing-mcp@next", "mc-developing-mcp"]
+  "args": ["-y", "--package", "minecraft-developing-mcp@latest", "mc-developing-mcp"]
 }
 ```
 
@@ -31,6 +31,8 @@ Optional MDM resource packages are installed only when requested. To consume the
   }
 }
 ```
+
+For normal use, first call `mc_develop` without `mdmReleaseInstall` and inspect `structuredContent.resourceActions.actions`. If a suggested action is appropriate, call again with its `inputPatch.mdmReleaseInstall` and change `downloadPolicy` from `disabled` to `allowed` after user confirmation. Installed artifacts are reused from the local runtime cache on later calls.
 
 The `mdm-resources-v0.2.0` release uses channel bundles for datapack, resourcepack, mappings, and source-profile packages. The MCP downloads the bundle asset, verifies it, extracts the requested package member, and stores only the package artifact in the local runtime cache.
 

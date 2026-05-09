@@ -180,6 +180,38 @@ const EXTERNAL_MOD_KEYWORDS = [
   "依赖坐标"
 ];
 
+const WORKSPACE_PREPARATION_KEYWORDS = [
+  "prepare",
+  "preparation",
+  "initialize",
+  "initialise",
+  "init",
+  "setup",
+  "bootstrap",
+  "cache",
+  "caches",
+  "bundle",
+  "bundles",
+  "index",
+  "source cache",
+  "dependency source",
+  "dependency sources",
+  "external mod code",
+  "inspect later",
+  "use later",
+  "准备",
+  "初始化",
+  "缓存",
+  "打包",
+  "索引",
+  "源码缓存",
+  "依赖源码",
+  "外部模组源码",
+  "外部mod源码",
+  "之后能看",
+  "后续查看"
+];
+
 export function detectHarnessTaskIntent(
   snapshot: AgentRuntimeHarnessSnapshot,
   requestText?: string
@@ -193,13 +225,32 @@ export function detectHarnessTaskIntent(
   }
 
   const normalized = requestText.toLowerCase();
+  const datapackRequest =
+    matchesAny(normalized, DATAPACK_KEYWORDS) || mentionsDataPath(normalized);
+  const resourcePackRequest =
+    matchesAny(normalized, RESOURCE_PACK_KEYWORDS) ||
+    mentionsAssetsPath(normalized);
+  const clientVisualResourceRequest =
+    matchesAny(normalized, CLIENT_VISUAL_RESOURCE_KEYWORDS) ||
+    (resourcePackRequest && mentionsClientVisualResourceContext(normalized));
+  const vanillaGeneratedDatapackRequest =
+    datapackRequest && mentionsVanillaGeneratedDatapackRequest(normalized);
+  const vanillaGeneratedResourcePackRequest =
+    resourcePackRequest && mentionsVanillaGeneratedResourcePackRequest(normalized);
+  const vanillaGenerationTargetRequest =
+    mentionsVanillaGenerationTargetRequest(normalized);
 
-  if (matchesAny(normalized, EXTERNAL_MOD_KEYWORDS)) {
+  if (
+    clientVisualResourceRequest &&
+    !vanillaGeneratedResourcePackRequest &&
+    hasClientVisualResourceEvidence(snapshot)
+  ) {
     return {
-      id: "external_mod_resolution",
+      id: "client_visual_resources",
       confidence: "high",
       reasons: [
-        "request text mentions external mod acquisition or Maven coordinate keywords"
+        "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
+        "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
       ]
     };
   }
@@ -229,21 +280,6 @@ export function detectHarnessTaskIntent(
     };
   }
 
-  const datapackRequest =
-    matchesAny(normalized, DATAPACK_KEYWORDS) || mentionsDataPath(normalized);
-  const resourcePackRequest =
-    matchesAny(normalized, RESOURCE_PACK_KEYWORDS) ||
-    mentionsAssetsPath(normalized);
-  const clientVisualResourceRequest =
-    matchesAny(normalized, CLIENT_VISUAL_RESOURCE_KEYWORDS) ||
-    (resourcePackRequest && mentionsClientVisualResourceContext(normalized));
-  const vanillaGeneratedDatapackRequest =
-    datapackRequest && mentionsVanillaGeneratedDatapackRequest(normalized);
-  const vanillaGeneratedResourcePackRequest =
-    resourcePackRequest && mentionsVanillaGeneratedResourcePackRequest(normalized);
-  const vanillaGenerationTargetRequest =
-    mentionsVanillaGenerationTargetRequest(normalized);
-
   if (vanillaGenerationTargetRequest) {
     return {
       id: "datapack_lookup",
@@ -255,17 +291,23 @@ export function detectHarnessTaskIntent(
     };
   }
 
-  if (
-    clientVisualResourceRequest &&
-    !vanillaGeneratedResourcePackRequest &&
-    hasClientVisualResourceEvidence(snapshot)
-  ) {
+  if (matchesWorkspacePreparationIntent(normalized, snapshot)) {
     return {
-      id: "client_visual_resources",
+      id: "workspace_preparation",
       confidence: "high",
       reasons: [
-        "request text mentions client visual, rendering, model, blockstate, asset, or registry wiring keywords",
-        "workspace snapshot exposes source, asset/datapack, or mod archive evidence"
+        "request text asks to prepare, initialize, cache, bundle, or index workspace evidence",
+        "workspace snapshot exposes local evidence routes that can be prepared progressively"
+      ]
+    };
+  }
+
+  if (matchesAny(normalized, EXTERNAL_MOD_KEYWORDS)) {
+    return {
+      id: "external_mod_resolution",
+      confidence: "high",
+      reasons: [
+        "request text mentions external mod acquisition or Maven coordinate keywords"
       ]
     };
   }
@@ -346,6 +388,40 @@ export function detectHarnessTaskIntentFromSnapshot(
 
 function matchesAny(requestText: string, keywords: string[]): boolean {
   return keywords.some((keyword) => requestText.includes(keyword));
+}
+
+function matchesWorkspacePreparationIntent(
+  requestText: string,
+  snapshot: AgentRuntimeHarnessSnapshot
+): boolean {
+  if (!matchesAny(requestText, WORKSPACE_PREPARATION_KEYWORDS)) {
+    return false;
+  }
+  if (mentionsDocsLookupIntent(requestText) && !mentionsExplicitPreparationAction(requestText)) {
+    return false;
+  }
+
+  return (
+    snapshot.facts.hasGradle ||
+    snapshot.facts.hasJavaSource ||
+    snapshot.facts.hasKubeJS ||
+    snapshot.facts.hasProbeJS ||
+    snapshot.facts.hasModArchives ||
+    snapshot.facts.hasDatapack ||
+    snapshot.facts.hasResourcePack
+  );
+}
+
+function mentionsDocsLookupIntent(requestText: string): boolean {
+  return /docs?|documentation|guide|guidance|reference|explain|文档|说明|参考/u.test(
+    requestText
+  );
+}
+
+function mentionsExplicitPreparationAction(requestText: string): boolean {
+  return /prepare|preparation|initialize|initialise|\binit\b|setup|bootstrap|cache|caches|bundle|bundles|准备|初始化|缓存|打包/u.test(
+    requestText
+  );
 }
 
 function mentionsDataPath(requestText: string): boolean {
