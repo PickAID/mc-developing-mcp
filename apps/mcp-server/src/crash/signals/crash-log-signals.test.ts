@@ -48,4 +48,17 @@ describe("parseCrashSignals", () => {
       }
     ]);
   });
+
+  it("extracts Forge crash section and tainted mod ids for local jar lookup", () => {
+    const signals = parseCrashSignals(
+      [
+        "// Embeddium instance tainted by mods: [oculus, acceleratedrendering]",
+        "-- MOD acceleratedrendering --",
+        "Failure message: Accelerated Rendering is missing a feature it requires to run",
+        ""
+      ].join("\n")
+    );
+
+    expect(signals.loaderModIds).toEqual(["acceleratedrendering", "oculus"]);
+  });
 });

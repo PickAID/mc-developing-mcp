@@ -18,6 +18,7 @@ import {
 import { collectSourceIndexMemberEvidence } from "../../source-bundle/shared/source-index-member-evidence.js";
 import {
   CLASS_OWNER_IGNORED_PACKAGE_PREFIXES,
+  DEFAULT_MAX_CLASS_OWNER_ARCHIVES,
   DEFAULT_MAX_ARCHIVES,
   DEFAULT_MAX_MATCHES
 } from "./mod-archive-content-constants.js";
@@ -78,6 +79,76 @@ export async function lookupLoaderDependencyOwner(input: {
       truncated: ownerResult.truncated
     }
   };
+}
+
+export async function lookupCrashMentionedModOwner(input: {
+  workspaceRoot: string;
+  requestText?: string;
+  cache?: ArchiveContentCache;
+}): Promise<McpServerEvidenceExecutorResult | undefined> {
+  if (!input.requestText) {
+    return undefined;
+  }
+
+  const modIds = extractCrashLoaderModQueries(input.requestText);
+  if (modIds.length === 0) {
+    return undefined;
+  }
+
+  const ownerResult = await findModArchiveInventoryMetadataOwners({
+    workspaceRoot: input.workspaceRoot,
+    modIds,
+    maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES,
+    cache: input.cache
+  });
+  const owner = ownerResult.matches[0];
+  const matchedModIds = new Set(ownerResult.matches.map((match) => match.modId));
+  const missingModIds = modIds.filter((modId) => !matchedModIds.has(modId));
+
+  return {
+    matched: true,
+    summary: summarizeCrashMentionedModOwners(
+      ownerResult.matches.length,
+      missingModIds
+    ),
+    payload: {
+      source: "mod_archive_content",
+      mode: "loader_mod_owner",
+      modId: modIds[0],
+      owner,
+      requestedModIds: ownerResult.requestedModIds,
+      missingModIds,
+      owners: ownerResult.matches,
+      searchedArchives: ownerResult.searchedArchives,
+      truncated: ownerResult.truncated
+    }
+  };
+}
+
+function summarizeCrashMentionedModOwners(
+  ownerCount: number,
+  missingModIds: string[]
+): string {
+  if (ownerCount === 0) {
+    return `Crash-mentioned mod ids were not found in local mod archive metadata: ${missingModIds.join(", ")}.`;
+  }
+  if (missingModIds.length === 0) {
+    return `Located ${ownerCount} crash-mentioned mod owner(s) in local archives.`;
+  }
+
+  return `Located ${ownerCount} crash-mentioned mod owner(s); missing local metadata for ${missingModIds.join(", ")}.`;
+}
+
+function extractCrashLoaderModQueries(requestText: string): string[] {
+  const match = requestText.match(
+    /^Crash log loader mod ids:\s*([A-Za-z0-9_.-]+(?:\s*,\s*[A-Za-z0-9_.-]+)*)/im
+  );
+  const modIds = match?.[1]
+    ?.split(",")
+    .map((modId) => modId.trim().toLowerCase())
+    .filter((modId) => modId.length > 0);
+
+  return modIds ? [...new Set(modIds)] : [];
 }
 
 export async function lookupMixinTargetVerification(input: {
@@ -173,14 +244,14 @@ export async function lookupClassOwners(input: {
         workspaceRoot: input.workspaceRoot,
         databasePath: input.databasePath,
         classNames: requestedClasses,
-        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES,
         maxMatches: DEFAULT_MAX_MATCHES,
         refresh: input.refresh
       })
     : await findArchiveSetClassOwners({
         sourceArchives: input.archivePaths,
         classNames: requestedClasses,
-        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES,
         maxMatches: DEFAULT_MAX_MATCHES,
         cache: input.cache
       });
@@ -190,7 +261,7 @@ export async function lookupClassOwners(input: {
     : await findArchiveSetClassOwners({
         sourceArchives: input.archivePaths,
         classNames: requestedClasses,
-        maxArchives: DEFAULT_MAX_ARCHIVES,
+        maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES,
         maxMatches: DEFAULT_MAX_MATCHES,
         cache: input.cache
       });

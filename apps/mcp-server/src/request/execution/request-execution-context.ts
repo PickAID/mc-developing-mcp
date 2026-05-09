@@ -251,18 +251,28 @@ function extractResourcePaths(payload: unknown): string[] {
 function extractLoaderModIds(payload: unknown): string[] {
   const signals = extractWorkspaceAnalyzeSignals(payload);
 
-  if (!signals || !Array.isArray(signals.loaderModReferences)) {
+  if (!signals) {
     return [];
+  }
+  if (!Array.isArray(signals.loaderModReferences)) {
+    return Array.isArray(signals.loaderModIds)
+      ? signals.loaderModIds.filter(isNonEmptyString)
+      : [];
   }
 
   return unique(
-    signals.loaderModReferences
-      .map((reference) =>
-        isRecord(reference) && typeof reference.modId === "string"
-          ? reference.modId
-          : undefined
-      )
-      .filter((value): value is string => value !== undefined && value.length > 0)
+    [
+      ...(Array.isArray(signals.loaderModIds)
+        ? signals.loaderModIds.filter(isNonEmptyString)
+        : []),
+      ...signals.loaderModReferences
+        .map((reference) =>
+          isRecord(reference) && typeof reference.modId === "string"
+            ? reference.modId
+            : undefined
+        )
+        .filter(isNonEmptyString)
+    ]
   );
 }
 
@@ -442,4 +452,8 @@ function unique<T>(values: T[]): T[] {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
 }

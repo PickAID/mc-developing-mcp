@@ -24,6 +24,7 @@ export interface CrashSignals {
   classReferences: string[];
   actionableClassReferences: string[];
   mixinTargetClassReferences: string[];
+  loaderModIds: string[];
   loaderModReferences: CrashLoaderModReference[];
   stackFrames: CrashStackFrame[];
 }
@@ -47,6 +48,7 @@ export function parseCrashSignals(content: string): CrashSignals {
   const exceptionClasses = unique(extractExceptionClasses(content));
   const resourceLocations = unique(extractResourceLocations(content));
   const resourcePaths = unique(extractResourcePaths(content));
+  const loaderModIds = unique(extractCrashMentionedModIds(content));
   const loaderModReferences = uniqueLoaderModReferences(
     extractLoaderModReferences(content)
   );
@@ -72,6 +74,7 @@ export function parseCrashSignals(content: string): CrashSignals {
     classReferences,
     actionableClassReferences,
     mixinTargetClassReferences,
+    loaderModIds,
     loaderModReferences,
     stackFrames: stackFrames.filter((frame) => isActionableClass(frame.className))
   };
@@ -83,6 +86,7 @@ export function countCrashSignals(signals: CrashSignals): number {
     signals.classReferences.length +
     signals.resourceLocations.length +
     signals.resourcePaths.length +
+    signals.loaderModIds.length +
     signals.loaderModReferences.length
   );
 }
@@ -104,6 +108,7 @@ export function mergeCrashSignals(signals: CrashSignals[]): CrashSignals {
       signals.flatMap((entry) => entry.resourceLocations)
     ),
     resourcePaths: unique(signals.flatMap((entry) => entry.resourcePaths)),
+    loaderModIds: unique(signals.flatMap((entry) => entry.loaderModIds)),
     loaderModReferences: uniqueLoaderModReferences(
       signals.flatMap((entry) => entry.loaderModReferences)
     ),
@@ -122,6 +127,7 @@ export function formatCrashSignalSummary(
     signals.actionableClassReferences.length > 0 &&
     signals.resourceLocations.length === 0 &&
     signals.resourcePaths.length === 0 &&
+    signals.loaderModIds.length === 0 &&
     signals.loaderModReferences.length === 0
   ) {
     return `Extracted ${signals.actionableClassReferences.length} actionable crash class reference(s) from ${logCount} log file(s).`;
@@ -139,6 +145,7 @@ export function formatCrashSignalSummary(
     signals.actionableClassReferences.length +
     signals.resourceLocations.length +
     signals.resourcePaths.length +
+    signals.loaderModIds.length +
     signals.loaderModReferences.length;
 
   return `Extracted ${signalCount} actionable crash signal(s) from ${logCount} log file(s).`;
@@ -182,6 +189,32 @@ function extractLoaderModReferences(content: string): CrashLoaderModReference[] 
     ...extractFabricLoaderModReferences(content),
     ...extractForgeLoaderModReferences(content)
   ].filter((reference) => !IGNORED_LOADER_MOD_IDS.has(reference.modId));
+}
+
+function extractCrashMentionedModIds(content: string): string[] {
+  return unique([
+    ...extractForgeCrashSectionModIds(content),
+    ...extractTaintedModIds(content)
+  ]).filter((modId) => !IGNORED_LOADER_MOD_IDS.has(modId));
+}
+
+function extractForgeCrashSectionModIds(content: string): string[] {
+  const matches = content.matchAll(/^-- MOD ([A-Za-z0-9_.-]+) --$/gim);
+
+  return [...matches]
+    .map((match) => normalizeModId(match[1]))
+    .filter((value): value is string => value !== undefined);
+}
+
+function extractTaintedModIds(content: string): string[] {
+  const matches = content.matchAll(/\btainted by mods:\s*\[([^\]]+)\]/gi);
+
+  return [...matches].flatMap((match) =>
+    (match[1] ?? "")
+      .split(",")
+      .map((value) => normalizeModId(value))
+      .filter((value): value is string => value !== undefined)
+  );
 }
 
 function extractFabricLoaderModReferences(

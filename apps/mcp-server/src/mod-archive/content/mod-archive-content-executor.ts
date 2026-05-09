@@ -42,7 +42,8 @@ import {
   isModArchivePreDecompileAnalysisRequest
 } from "./mod-archive-content-query.js";
 import {
-  DEFAULT_MAX_ARCHIVES
+  DEFAULT_MAX_ARCHIVES,
+  DEFAULT_MAX_CLASS_OWNER_ARCHIVES
 } from "./mod-archive-content-constants.js";
 import {
   buildEmptyPayload,
@@ -51,6 +52,7 @@ import {
 import { searchQueries } from "./mod-archive-content-search.js";
 import { attachArchiveMetadata } from "./mod-archive-content-metadata.js";
 import {
+  lookupCrashMentionedModOwner,
   lookupClassOwners,
   lookupLoaderDependencyOwner,
   lookupMixinTargetVerification
@@ -103,7 +105,7 @@ export async function executeMcpServerModArchiveContent(
 
   const archives = await discoverModArchives({
     workspaceRoot,
-    maxArchives: DEFAULT_MAX_ARCHIVES
+    maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES
   });
   const requestText = input.candidate.queryHint ?? input.requestPlan.requestText;
   const queries = extractModArchiveQueries(requestText);
@@ -132,6 +134,15 @@ export async function executeMcpServerModArchiveContent(
   });
   if (loaderDependencyOwnerResult) {
     return loaderDependencyOwnerResult;
+  }
+
+  const crashMentionedModOwnerResult = await lookupCrashMentionedModOwner({
+    workspaceRoot,
+    requestText,
+    cache: options.cache
+  });
+  if (crashMentionedModOwnerResult) {
+    return crashMentionedModOwnerResult;
   }
 
   const selectedArchive = selectArchive(archives.archives, requestText);

@@ -175,10 +175,34 @@ function isFileUriInsideWorkspace(uri: string, workspaceRoot: string): boolean {
 function collectLogPaths(input: McpServerEvidenceExecutorInput): string[] {
   const descriptor =
     input.requestPlan.requestContext.workspaceContext?.descriptor;
-  return unique([
+  const knownLogPaths = unique([
     ...(descriptor?.logPaths ?? []),
     ...input.candidate.pathHints.filter((path) => !path.includes(":"))
   ]);
+  const requestedHints = extractRequestedLogPathHints(input.requestPlan.requestText);
+  const requestedLogPaths = knownLogPaths.filter((path) =>
+    requestedHints.some((hint) => normalizePath(path).endsWith(hint))
+  );
+
+  return unique([...requestedLogPaths, ...knownLogPaths]);
+}
+
+function extractRequestedLogPathHints(requestText?: string): string[] {
+  if (!requestText) {
+    return [];
+  }
+
+  const matches = requestText.matchAll(
+    /\b(?:logs|crash-reports)\/[^\s"'`“”‘’，,;；]+/g
+  );
+
+  return unique(
+    [...matches].map((match) => normalizePath(match[0]).replace(/[).。]+$/g, ""))
+  );
+}
+
+function normalizePath(path: string): string {
+  return path.replaceAll("\\", "/");
 }
 
 async function analyzeLogFile(path: string): Promise<AnalyzedLogFile> {

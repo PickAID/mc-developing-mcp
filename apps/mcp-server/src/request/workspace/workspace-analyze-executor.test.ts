@@ -81,6 +81,48 @@ describe("executeMcpServerWorkspaceAnalyze", () => {
     });
   });
 
+  it("prioritizes explicitly requested crash report paths before log budget trimming", async () => {
+    const workspaceRoot = await createCrashWorkspace("old latest log\n");
+    await writeText(join(workspaceRoot, "logs", "debug.log"), "old debug log\n");
+    await writeText(
+      join(workspaceRoot, "crash-reports", "crash-2026-04-04_02.59.00-fml.txt"),
+      "old crash one\n"
+    );
+    await writeText(
+      join(workspaceRoot, "crash-reports", "crash-2026-04-04_03.20.04-fml.txt"),
+      "old crash two\n"
+    );
+    await writeText(
+      join(workspaceRoot, "crash-reports", "crash-2026-04-04_03.28.58-fml.txt"),
+      [
+        "java.lang.RuntimeException: real target",
+        "\tat com.example.target.TargetCrash.tick(TargetCrash.java:42)",
+        ""
+      ].join("\n")
+    );
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "诊断 crash-reports/crash-2026-04-04_03.28.58-fml.txt 并找出本地 jar 证据。"
+    );
+
+    const result = await executeMcpServerWorkspaceAnalyze(input);
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "workspace_analyze",
+        mode: "log_files",
+        signals: {
+          actionableClassReferences: ["com.example.target.TargetCrash"]
+        }
+      }
+    });
+    const payload = result.payload as { logFiles: Array<{ path: string }> };
+    expect(payload.logFiles[0]?.path).toContain(
+      "crash-reports/crash-2026-04-04_03.28.58-fml.txt"
+    );
+  });
+
   it("extracts missing class names from class loading exceptions", async () => {
     const workspaceRoot = await createCrashWorkspace(
       [
