@@ -72,8 +72,8 @@ function buildExecutableNextActions(
   routeCapabilities: Array<Record<string, unknown>>,
   sourceIndexPreview: Record<string, unknown> | undefined
 ) {
-  const routeActions = routeCapabilities
-    .map((route) => routeAction(route))
+  const executableRouteActions = routeCapabilities
+    .flatMap((route) => routeActions(route))
     .filter((action) => action !== undefined);
   const sourceIndexAction = sourceIndexPreview
     ? {
@@ -85,7 +85,20 @@ function buildExecutableNextActions(
       }
     : undefined;
 
-  return [...routeActions, ...(sourceIndexAction ? [sourceIndexAction] : [])];
+  return [
+    ...executableRouteActions,
+    ...(sourceIndexAction ? [sourceIndexAction] : [])
+  ];
+}
+
+function routeActions(route: Record<string, unknown>) {
+  const primaryAction = routeAction(route);
+  const backgroundAction = backgroundPrewarmAction(route);
+
+  return [
+    ...(primaryAction ? [primaryAction] : []),
+    ...(backgroundAction ? [backgroundAction] : [])
+  ];
 }
 
 function routeAction(route: Record<string, unknown>) {
@@ -135,6 +148,26 @@ function routeAction(route: Record<string, unknown>) {
   }
 
   return undefined;
+}
+
+function backgroundPrewarmAction(route: Record<string, unknown>) {
+  const origin = String(route.origin);
+
+  if (origin !== "local_jar" || route.status !== "ready") {
+    return undefined;
+  }
+
+  return {
+    id: "prewarm_local_jar_entry_index",
+    origin,
+    safety: "local_background_cache",
+    reason:
+      "Local mod jars are available; run this during idle time to build the private SQLite entry index for faster crash triage and class/resource owner lookup.",
+    inputPatch: {
+      preparationRoutes: ["local_jar"],
+      preparationPolicy: { localJarMode: "prewarm_entry_index" }
+    }
+  };
 }
 
 function isLocalInspectableOrigin(origin: string): boolean {

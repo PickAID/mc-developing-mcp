@@ -176,7 +176,8 @@ describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
               entryCount: 3,
               cache: {
                 archiveHits: 0,
-                archiveMisses: 1
+                archiveMisses: 1,
+                elapsedMs: expect.any(Number)
               },
               domainCounts: {
                 assets: 1,
@@ -192,7 +193,8 @@ describe("createMcpServerSourceAcquisitionWorkItemHandlers", () => {
         payload: {
           cache: {
             archiveHits: 1,
-            archiveMisses: 0
+            archiveMisses: 0,
+            elapsedMs: expect.any(Number)
           }
         }
       });

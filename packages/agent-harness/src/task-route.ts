@@ -95,6 +95,15 @@ export function buildHarnessTaskRoute(
         steps: buildClientVisualResourceSteps(snapshot),
         preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
       };
+    case "hotai_patch_workflow":
+      return {
+        intent,
+        reasons: [
+          "Hotai patch planning should prove the target class and available data-driven alternatives before bytecode patching"
+        ],
+        steps: buildHotaiPatchWorkflowSteps(snapshot),
+        preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+      };
     case "datapack_lookup":
       return {
         intent,
@@ -139,6 +148,33 @@ export function buildHarnessTaskRoute(
           : deriveDefaultTools(snapshot)
       };
   }
+}
+
+function buildHotaiPatchWorkflowSteps(
+  snapshot: AgentRuntimeHarnessSnapshot
+): AgentRuntimeTaskRouteStep[] {
+  const steps: AgentRuntimeTaskRouteStep[] = [];
+
+  if (snapshot.facts.hasJavaSource || snapshot.facts.hasGradle) {
+    steps.push("workspace_source");
+  }
+  if (snapshot.facts.hasModArchives) {
+    steps.push("mod_archive_content");
+  }
+  if (snapshot.facts.hasProbeJS || snapshot.facts.hasKubeJS) {
+    steps.push("probejs_types");
+  }
+  if (
+    snapshot.facts.hasDatapack ||
+    snapshot.facts.hasResourcePack ||
+    snapshot.facts.datapackRootCount > 0 ||
+    snapshot.facts.resourcePackRootCount > 0
+  ) {
+    steps.push("datapack_files");
+  }
+
+  steps.push("docs_lookup");
+  return [...new Set(steps)];
 }
 
 function buildWorkspacePreparationSteps(

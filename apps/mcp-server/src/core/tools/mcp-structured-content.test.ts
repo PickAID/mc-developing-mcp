@@ -235,6 +235,15 @@ describe("buildMcpDevelopStructuredContent", () => {
             inputPatch: { preparationRoutes: ["local_jar"] }
           }),
           expect.objectContaining({
+            id: "prewarm_local_jar_entry_index",
+            origin: "local_jar",
+            safety: "local_background_cache",
+            inputPatch: {
+              preparationRoutes: ["local_jar"],
+              preparationPolicy: { localJarMode: "prewarm_entry_index" }
+            }
+          }),
+          expect.objectContaining({
             id: "inspect_source_index_preview",
             origin: "runtime_cache",
             safety: "read_only"

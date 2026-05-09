@@ -71,6 +71,8 @@ function formatFragmentTitle(id: AgentRuntimePromptFragmentId): string {
       return "Task Workspace Preparation Policy";
     case "task_client_visual_capability_policy":
       return "Task Client Visual Capability Policy";
+    case "task_hotai_patch_workflow_policy":
+      return "Task Hotai Patch Workflow Policy";
     case "task_kubejs_scripting_policy":
       return "Task KubeJS Scripting Policy";
   }

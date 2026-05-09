@@ -130,6 +130,7 @@ export type AgentRuntimeTaskIntentId =
   | "external_mod_resolution"
   | "java_diagnostics"
   | "client_visual_resources"
+  | "hotai_patch_workflow"
   | "kubejs_authoring"
   | "datapack_lookup"
   | "resource_pack_lookup";
@@ -158,6 +159,7 @@ export type AgentRuntimePromptFragmentId =
   | "task_evidence_policy"
   | "task_workspace_preparation_policy"
   | "task_client_visual_capability_policy"
+  | "task_hotai_patch_workflow_policy"
   | "task_kubejs_scripting_policy";
 
 export interface AgentRuntimePromptFragment {

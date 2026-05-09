@@ -49,6 +49,7 @@ export interface ModArchiveEntryIndexCacheMetadata {
   archiveMisses: number;
   archiveStale: number;
   archiveRefreshes: number;
+  elapsedMs?: number;
 }
 
 export interface QueryCachedModArchiveEntriesResult {
@@ -92,6 +93,7 @@ export async function queryCachedModArchiveEntries(input: {
   limit?: number;
   refresh?: boolean;
 }): Promise<QueryCachedModArchiveEntriesResult> {
+  const startedAt = Date.now();
   const databasePath = normalize(resolve(input.databasePath));
   const workspaceRoot = normalize(resolve(input.workspaceRoot));
   const discovered = await discoverModArchives({
@@ -115,7 +117,8 @@ export async function queryCachedModArchiveEntries(input: {
     archiveHits: 0,
     archiveMisses: 0,
     archiveStale: 0,
-    archiveRefreshes: 0
+    archiveRefreshes: 0,
+    elapsedMs: 0
   };
 
   await mkdir(dirname(databasePath), { recursive: true });
@@ -143,6 +146,8 @@ export async function queryCachedModArchiveEntries(input: {
       limit: normalizeLimit(input.limit)
     });
 
+    cacheMetadata.elapsedMs = Date.now() - startedAt;
+
     return {
       entries: query.entries,
       archiveCount: indexedArchives.length,
@@ -153,6 +158,7 @@ export async function queryCachedModArchiveEntries(input: {
       cache: cacheMetadata
     };
   } finally {
+    cacheMetadata.elapsedMs = Date.now() - startedAt;
     database.close();
   }
 }

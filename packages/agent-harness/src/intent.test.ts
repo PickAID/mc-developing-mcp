@@ -263,6 +263,74 @@ describe("detectHarnessTaskIntent", () => {
     });
   });
 
+  it("detects explicit Hotai patch workflow requests from Hotai-specific wording", () => {
+    for (const requestText of [
+      "Use Hotai badiff patches for com.example.Target in hotai/before_mixin.",
+      "Create a class patch for com.example.Target with bytecode patch evidence.",
+      "用绷带补丁处理 com.example.Target 的 badiff。"
+    ]) {
+      expect(
+        detectHarnessTaskIntent(
+          createSnapshot({
+            workspaceKind: "modpack",
+            facts: {
+              ...createFacts(),
+              hasModArchives: true,
+              hasGradle: true
+            }
+          }),
+          requestText
+        )
+      ).toMatchObject({
+        id: "hotai_patch_workflow",
+        confidence: "high"
+      });
+    }
+  });
+
+  it("does not detect Hotai from generic mixin avoidance or resource patch wording", () => {
+    for (const requestText of [
+      "Customize this modpack while avoiding heavy mixins.",
+      "Patch the resource pack texture and model JSON.",
+      "The crash log has a mixin error; find the cause.",
+      "添加绷带物品的 KubeJS 配方和材质。"
+    ]) {
+      expect(
+        detectHarnessTaskIntent(
+          createSnapshot({
+            workspaceKind: "modpack",
+            facts: {
+              ...createFacts(),
+              hasModArchives: true,
+              hasResourcePack: true
+            }
+          }),
+          requestText
+        )
+      ).not.toMatchObject({
+        id: "hotai_patch_workflow"
+      });
+    }
+  });
+
+  it("keeps explicit Hotai preparation requests on the Hotai patch workflow", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "modpack",
+          facts: {
+            ...createFacts(),
+            hasModArchives: true
+          }
+        }),
+        "Prepare Hotai badiff evidence for com.example.Target before patching."
+      )
+    ).toMatchObject({
+      id: "hotai_patch_workflow",
+      confidence: "high"
+    });
+  });
+
   it("detects external mod Maven coordinate requests", () => {
     expect(
       detectHarnessTaskIntent(

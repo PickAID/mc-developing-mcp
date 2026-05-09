@@ -131,6 +131,22 @@ function buildTaskDomainPolicies(
     ];
   }
 
+  if (taskBriefRoute.intent.id === "hotai_patch_workflow") {
+    return [
+      {
+        id: "task_hotai_patch_workflow_policy",
+        text:
+          "Hotai patch workflow policy: treat Hotai/badiff/class patches as an explicit class-only bytecode patch workflow, not as a generic modpack customization request or resource replacement route. First prove the target owner from workspace source, Gradle/cache evidence, local mod jars, JarJar, mappings, or source bundles. Check data-driven alternatives first: KubeJS, datapack, resource-pack, config, tags, recipes, loot, registries, assets, lang, existing extension APIs, and addon routes. Do not use Hotai to replace resources or other coremods. Use Mixin-last guidance only after the Hotai workflow is already selected: do not propose Mixin or bytecode changes without exact class/member evidence, mapping/version proof, phase awareness such as hotai/before_mixin when relevant, and a rollback-safe patch boundary."
+      },
+      ...(taskBriefRoute.steps.includes("probejs_types")
+        ? [{
+            id: "task_kubejs_scripting_policy" as const,
+            text: KUBEJS_SCRIPTING_POLICY_TEXT
+          }]
+        : [])
+    ];
+  }
+
   return [];
 }
 

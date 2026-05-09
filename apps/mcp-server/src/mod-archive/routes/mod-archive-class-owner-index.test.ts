@@ -42,7 +42,8 @@ describe("persistent mod archive class owner index", () => {
         cache: {
           entryIndex: {
             archiveHits: 0,
-            archiveMisses: 1
+            archiveMisses: 1,
+            elapsedMs: expect.any(Number)
           }
         }
       }
@@ -53,7 +54,53 @@ describe("persistent mod archive class owner index", () => {
         cache: {
           entryIndex: {
             archiveHits: 1,
-            archiveMisses: 0
+            archiveMisses: 0,
+            elapsedMs: expect.any(Number)
+          }
+        }
+      }
+    });
+  });
+
+  it("reports cache and elapsed metrics when crash triage scans many mod jars", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-many-"));
+    const workspaceRoot = await createWorkspaceWithManyMods(18);
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestText =
+      "The crash report mentions com.example.problem.CrashHandler; find the mod jar owner.";
+
+    const first = await executeMcpServerRequest({ bootstrap, requestText });
+    const second = await executeMcpServerRequest({ bootstrap, requestText });
+
+    expect(first.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "class_owner",
+        searchedArchives: 18,
+        cache: {
+          entryIndex: {
+            archiveHits: 0,
+            archiveMisses: 18,
+            archiveFingerprintCount: 18,
+            elapsedMs: expect.any(Number)
+          }
+        }
+      }
+    });
+    expect(second.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "class_owner",
+        searchedArchives: 18,
+        cache: {
+          entryIndex: {
+            archiveHits: 18,
+            archiveMisses: 0,
+            archiveFingerprintCount: 18,
+            elapsedMs: expect.any(Number)
           }
         }
       }
@@ -69,6 +116,25 @@ async function createWorkspace(): Promise<string> {
     join(workspaceRoot, "mods", "problem-mod.jar"),
     createZip(["com/example/problem/CrashHandler.class"])
   );
+  return workspaceRoot;
+}
+
+async function createWorkspaceWithManyMods(count: number): Promise<string> {
+  const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-mcp-many-index-"));
+  tempRoots.push(workspaceRoot);
+  await mkdir(join(workspaceRoot, "mods"), { recursive: true });
+
+  for (let index = 0; index < count; index += 1) {
+    const targetEntry =
+      index === count - 1
+        ? "com/example/problem/CrashHandler.class"
+        : `com/example/filler/Unused${index}.class`;
+    await writeFile(
+      join(workspaceRoot, "mods", `content-${index}.jar`),
+      createZip([targetEntry])
+    );
+  }
+
   return workspaceRoot;
 }
 

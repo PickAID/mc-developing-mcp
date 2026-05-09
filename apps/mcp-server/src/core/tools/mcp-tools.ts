@@ -93,7 +93,11 @@ const preparationPolicySchema = z.object({
   remoteMetadataPolicy: z
     .enum(["disabled", "enabled"])
     .optional()
-    .describe("Defaults to disabled; enabled runs explicit remote metadata work items when enough constraints and credentials are available.")
+    .describe("Defaults to disabled; enabled runs explicit remote metadata work items when enough constraints and credentials are available."),
+  localJarMode: z
+    .enum(["inspect", "prewarm_entry_index"])
+    .optional()
+    .describe("Optional local jar execution intent. prewarm_entry_index builds the private SQLite entry index for later class/resource owner lookup.")
 });
 
 const mcpDevelopInputSchema = z.object({

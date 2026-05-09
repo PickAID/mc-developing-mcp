@@ -212,6 +212,21 @@ const WORKSPACE_PREPARATION_KEYWORDS = [
   "后续查看"
 ];
 
+const HOTAI_PATCH_WORKFLOW_KEYWORDS = [
+  "hotai",
+  "badiff",
+  ".badiff",
+  "bytecode patch",
+  "bytecode patches",
+  "class patch",
+  "class patches",
+  "hotai/before_mixin",
+  "before_mixin",
+  "创可贴补丁",
+  "创可贴式补丁",
+  "绷带补丁"
+];
+
 export function detectHarnessTaskIntent(
   snapshot: AgentRuntimeHarnessSnapshot,
   requestText?: string
@@ -287,6 +302,20 @@ export function detectHarnessTaskIntent(
       reasons: [
         "request text asks for official vanilla local generation targets",
         "vanilla generation targets are exposed through source.bundle without downloading artifacts"
+      ]
+    };
+  }
+
+  if (
+    matchesAny(normalized, HOTAI_PATCH_WORKFLOW_KEYWORDS) &&
+    hasHotaiPatchWorkflowEvidence(snapshot)
+  ) {
+    return {
+      id: "hotai_patch_workflow",
+      confidence: "high",
+      reasons: [
+        "request text mentions Hotai, badiff, bytecode patch, class patch, or Hotai patch layout keywords",
+        "workspace snapshot exposes patch target evidence routes"
       ]
     };
   }
@@ -377,6 +406,16 @@ export function detectHarnessTaskIntent(
     confidence: "low",
     reasons: ["request text does not match a specialized harness intent"]
   };
+}
+
+function hasHotaiPatchWorkflowEvidence(
+  snapshot: AgentRuntimeHarnessSnapshot
+): boolean {
+  return (
+    snapshot.facts.hasModArchives ||
+    snapshot.facts.hasGradle ||
+    snapshot.facts.hasJavaSource
+  );
 }
 
 export function detectHarnessTaskIntentFromSnapshot(

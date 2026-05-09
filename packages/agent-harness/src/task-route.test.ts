@@ -88,6 +88,80 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes explicit Hotai badiff patch requests through source and jar evidence first", () => {
+    expect(
+      buildHarnessTaskRouteFromSnapshot(
+        createTaskRouteSnapshot({
+          workspaceKind: "modpack",
+          routePlan: {
+            scenario: "modpack-workspace",
+            reasons: ["workspace descriptor reports a modpack workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasKubeJS: true,
+            hasProbeJS: true,
+            hasDatapack: true,
+            hasResourcePack: true,
+            hasGradle: true,
+            hasModArchives: true
+          }
+        }),
+        "Use Hotai badiff patches for com.example.content.Target before_mixin in this pack."
+      )
+    ).toEqual({
+      intent: {
+        id: "hotai_patch_workflow",
+        confidence: "high",
+        reasons: [
+          "request text mentions Hotai, badiff, bytecode patch, class patch, or Hotai patch layout keywords",
+          "workspace snapshot exposes patch target evidence routes"
+        ]
+      },
+      reasons: [
+        "Hotai patch planning should prove the target class and available data-driven alternatives before bytecode patching"
+      ],
+      steps: [
+        "workspace_source",
+        "mod_archive_content",
+        "probejs_types",
+        "datapack_files",
+        "docs_lookup"
+      ],
+      preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+    });
+  });
+
+  it("does not route generic avoid-mixin requests to the Hotai patch workflow", () => {
+    expect(
+      buildHarnessTaskRouteFromSnapshot(
+        createTaskRouteSnapshot({
+          workspaceKind: "modpack",
+          routePlan: {
+            scenario: "modpack-workspace",
+            reasons: ["workspace descriptor reports a modpack workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["workspace_source", "mod_archive_content", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasKubeJS: true,
+            hasProbeJS: true,
+            hasModArchives: true
+          }
+        }),
+        "I want to customize this modpack while avoiding heavy mixins."
+      )
+    ).toMatchObject({
+      intent: {
+        id: "workspace_default",
+        confidence: "low"
+      }
+    });
+  });
+
   it("falls back to the workspace default route when no strong intent is present", () => {
     expect(
       buildHarnessTaskRoute(

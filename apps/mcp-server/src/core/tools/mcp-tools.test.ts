@@ -306,6 +306,54 @@ describe("registerMcpServerTools", () => {
       ]
     });
   });
+
+  it("injects Hotai patch workflow guidance through the high-level tool", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-hotai-runtime-");
+    const workspaceRoot = await createHotaiModpackWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Use Hotai badiff patches for com.example.problem.CrashHandler in hotai/before_mixin.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      promptGuidance: {
+        activeFragmentIds: expect.arrayContaining([
+          "task_intent_summary",
+          "task_hotai_patch_workflow_policy"
+        ]),
+        exposedFragments: expect.arrayContaining([
+          expect.objectContaining({
+            id: "task_hotai_patch_workflow_policy",
+            text: expect.stringContaining("class-only bytecode patch workflow")
+          })
+        ])
+      },
+      trace: {
+        routeSteps: ["mod_archive_content", "docs_lookup"],
+        selectedCandidateId: "candidate-1-mod_archive_content"
+      },
+      selectedEvidence: {
+        payload: {
+          source: "mod_archive_content",
+          mode: "class_owner",
+          requestedClasses: ["com.example.problem.CrashHandler"],
+          matches: [
+            expect.objectContaining({
+              archiveRelativePath: "mods/problem-mod.jar",
+              binaryName: "com.example.problem.CrashHandler"
+            })
+          ]
+        }
+      }
+    });
+  });
 });
 
 function createCapturingRegistry(): CapturingRegistry {
@@ -330,6 +378,23 @@ async function createCrashModpackWorkspace(): Promise<string> {
       ""
     ].join("\n")
   );
+  await writeBinary(
+    join(workspaceRoot, "mods", "problem-mod.jar"),
+    createZip([
+      {
+        name: "com/example/problem/CrashHandler.class",
+        content: Buffer.from([0xca, 0xfe, 0xba, 0xbe]),
+        compressionMethod: 0
+      }
+    ])
+  );
+
+  return workspaceRoot;
+}
+
+async function createHotaiModpackWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-mcp-hotai-pack-");
+
   await writeBinary(
     join(workspaceRoot, "mods", "problem-mod.jar"),
     createZip([

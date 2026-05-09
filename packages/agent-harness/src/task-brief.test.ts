@@ -272,6 +272,55 @@ describe("buildHarnessTaskBrief", () => {
       ])
     );
   });
+
+  it("builds a Hotai patch workflow task brief without using mixin-last wording as the trigger", () => {
+    const brief = buildHarnessTaskBriefFromBootstrap({
+      workspaceContext: createWorkspaceContext({
+        kind: "modpack",
+        hasKubeJS: true,
+        hasProbeJS: true,
+        hasDatapack: true,
+        hasModArchives: true,
+        datapackRoots: ["/tmp/workspace/kubejs/data"],
+        modArchivePaths: ["/tmp/workspace/mods/content.jar"]
+      }),
+      requestText:
+        "Use Hotai badiff patches for com.example.content.Target in hotai/before_mixin."
+    });
+
+    expect(brief).toMatchObject({
+      intent: {
+        id: "hotai_patch_workflow",
+        confidence: "high"
+      },
+      taskRoute: {
+        steps: [
+          "mod_archive_content",
+          "probejs_types",
+          "datapack_files",
+          "docs_lookup"
+        ],
+        preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+      }
+    });
+
+    expect(brief.promptFragments).toEqual(
+      expect.arrayContaining([
+        {
+          id: "task_hotai_patch_workflow_policy",
+          text: expect.stringContaining("Hotai/badiff/class patches")
+        },
+        {
+          id: "task_hotai_patch_workflow_policy",
+          text: expect.stringContaining("Do not use Hotai to replace resources or other coremods")
+        },
+        {
+          id: "task_hotai_patch_workflow_policy",
+          text: expect.stringContaining("Use Mixin-last guidance only after the Hotai workflow is already selected")
+        }
+      ])
+    );
+  });
 });
 
 function createWorkspaceContext(
