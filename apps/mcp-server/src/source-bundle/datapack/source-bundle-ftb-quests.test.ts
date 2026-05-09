@@ -98,7 +98,15 @@ describe("source.bundle FTB Quests evidence", () => {
                 category: "chapter",
                 paths: ["chapters"]
               }
-            ])
+            ]),
+            evolutionGuidance: {
+              policy: "grow_schema_from_verified_workspace_evidence",
+              workspaceSettingsPath: ".mc-developing-mcp/settings.json",
+              evidenceSignals: expect.arrayContaining([
+                "ftb_quests_load_errors",
+                "user_reported_success_or_failure"
+              ])
+            }
           },
           topPaths: [
             "config/ftbquests/quests/addon_bridge/custom.snbt",
@@ -201,6 +209,13 @@ describe("source.bundle FTB Quests evidence", () => {
           },
           schemaProfile: {
             schemaResolution: "workspace_overrides_builtin_fallback",
+            evolutionGuidance: {
+              policy: "grow_schema_from_verified_workspace_evidence",
+              priority: "workspace_schema_over_builtin_fallback",
+              recommendedActions: expect.arrayContaining([
+                "preserve verified reusable categories in workspace settings"
+              ])
+            },
             localExtensions: [
               {
                 id: "pack.chapter_variant",

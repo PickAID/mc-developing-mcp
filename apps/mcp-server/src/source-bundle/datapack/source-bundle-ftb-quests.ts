@@ -71,6 +71,7 @@ export interface FtbQuestsSummary {
   byCategory: Partial<Record<FtbQuestsCategory, number>>;
   schemaProfile: typeof FTB_QUESTS_SCHEMA_PROFILE & {
     schemaResolution: "builtin_fallback" | "workspace_overrides_builtin_fallback";
+    evolutionGuidance: FtbQuestsSchemaEvolutionGuidance;
     fallbackExtensions: WorkspaceLocalSchemaExtension[];
     localExtensions?: WorkspaceLocalSchemaExtension[];
   };
@@ -82,6 +83,14 @@ export interface FtbQuestsSummary {
   };
   topPaths: string[];
   truncated: boolean;
+}
+
+interface FtbQuestsSchemaEvolutionGuidance {
+  policy: "grow_schema_from_verified_workspace_evidence";
+  priority: "workspace_schema_over_builtin_fallback";
+  workspaceSettingsPath: WorkspaceLocalSettingsPath;
+  evidenceSignals: string[];
+  recommendedActions: string[];
 }
 
 export async function summarizeFtbQuestsFiles(
@@ -126,6 +135,7 @@ export async function summarizeFtbQuestsFiles(
         localSchemaExtensions.length > 0
           ? "workspace_overrides_builtin_fallback"
           : "builtin_fallback",
+      evolutionGuidance: buildSchemaEvolutionGuidance(localSettings.path),
       fallbackExtensions: BUILTIN_FTB_QUESTS_SCHEMA_EXTENSIONS,
       ...(localSchemaExtensions.length > 0
         ? { localExtensions: localSchemaExtensions }
@@ -143,6 +153,28 @@ export async function summarizeFtbQuestsFiles(
       : {}),
     topPaths: uniquePaths.slice(0, MAX_LISTED_PATHS),
     truncated: uniquePaths.length > MAX_LISTED_PATHS || paths.length >= MAX_FILES
+  };
+}
+
+function buildSchemaEvolutionGuidance(
+  settingsPath: WorkspaceLocalSettingsPath
+): FtbQuestsSchemaEvolutionGuidance {
+  return {
+    policy: "grow_schema_from_verified_workspace_evidence",
+    priority: "workspace_schema_over_builtin_fallback",
+    workspaceSettingsPath: settingsPath,
+    evidenceSignals: [
+      "ftb_quests_load_errors",
+      "unknown_snbt_directories",
+      "repeated_addon_specific_paths",
+      "user_reported_success_or_failure"
+    ],
+    recommendedActions: [
+      "treat builtin schema as fallback only",
+      "inspect FTB load errors before changing schema",
+      "ask whether generated or edited quest files worked in-game",
+      "preserve verified reusable categories in workspace settings"
+    ]
   };
 }
 
