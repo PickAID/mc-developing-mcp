@@ -105,6 +105,42 @@ describe("detectHarnessTaskIntent", () => {
     });
   });
 
+  it("detects ProbeJS resource discovery from resource words without explicit KubeJS naming", () => {
+    expect(
+      detectHarnessTaskIntentFromSnapshot(
+        createSnapshot({
+          workspaceKind: "modpack",
+          facts: {
+            ...createFacts(),
+            hasProbeJS: true
+          }
+        }),
+        "List ProbeJS items, registries, tags, fluids, and resources for this pack."
+      )
+    ).toMatchObject({
+      id: "kubejs_authoring",
+      confidence: "high"
+    });
+  });
+
+  it("detects Chinese ProbeJS resource discovery for KubeJS evidence", () => {
+    expect(
+      detectHarnessTaskIntentFromSnapshot(
+        createSnapshot({
+          workspaceKind: "modpack",
+          facts: {
+            ...createFacts(),
+            hasProbeJS: true
+          }
+        }),
+        "列出 ProbeJS 物品、注册表、配方、标签和流体资源。"
+      )
+    ).toMatchObject({
+      id: "kubejs_authoring",
+      confidence: "high"
+    });
+  });
+
   it("detects datapack lookup requests from worldgen and pack keywords", () => {
     expect(
       detectHarnessTaskIntent(

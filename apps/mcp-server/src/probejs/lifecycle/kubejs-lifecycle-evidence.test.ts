@@ -116,6 +116,76 @@ describe("buildKubeJsLifecycleEvidence", () => {
       }
     });
   });
+
+  it("reports KubeJS script quality issues without treating scripts as generic JS", async () => {
+    const workspaceRoot = await createWorkspace({
+      scriptContent: [
+        "import { helper } from './helper.js';",
+        "const cache = {};",
+        "console.log('debug recipe');",
+        "ForgeEvents.onEvent('net.minecraftforge.event.TickEvent', event => {});",
+        "ServerEvents.recipes(event => {",
+        "  const nestedRecipeState = {};",
+        "});",
+        "String('console.log and ForgeEvents.onEvent');",
+        "ServerEvents.recipes(event => {}); // console.log('ignored')",
+        ""
+      ].join("\n")
+    });
+    const selectedScriptFile = join(
+      workspaceRoot,
+      "kubejs",
+      "server_scripts",
+      "main.js"
+    );
+
+    await expect(
+      buildKubeJsLifecycleEvidence({
+        workspaceRoot,
+        requestText: "lint KubeJS server_scripts console debug and lifecycle scope.",
+        selectedScriptFile,
+        selectedScope: "server",
+        declarationFiles: [await declarationFile(workspaceRoot)],
+        scriptFiles: [selectedScriptFile]
+      })
+    ).resolves.toMatchObject({
+      scriptQualityEvidence: {
+        fileCount: 1,
+        scannedFileCount: 1,
+        issueCount: 4,
+        severityCounts: {
+          error: 1,
+          warning: 2,
+          info: 1
+        },
+        issues: [
+          {
+            kind: "generic_js_module_pattern",
+            severity: "warning",
+            file: "kubejs/server_scripts/main.js",
+            line: 1,
+            scope: "server"
+          },
+          {
+            kind: "top_level_state_declaration",
+            severity: "info",
+            line: 2
+          },
+          {
+            kind: "persistent_console_output",
+            severity: "warning",
+            line: 3
+          },
+          {
+            kind: "lifecycle_scope_mismatch",
+            severity: "error",
+            line: 4
+          }
+        ],
+        truncated: false
+      }
+    });
+  });
 });
 
 async function createWorkspace(options: {

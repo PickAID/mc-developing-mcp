@@ -361,7 +361,7 @@ function mentionsSourceAcquisitionRequest(requestText?: string): boolean {
   }
 
   const normalized = requestText.toLowerCase();
-  return /(?:source|sources|源码|jar|cache|cached|offline|workspace|工作区|缓存|离线|本地)/.test(
+  return /(?:source|sources|源码|jar|cache|cached|offline|workspace|bundle|bundles|prewarm|prepare|index|indexes|工作区|缓存|离线|本地|打包|预热|准备|索引)/.test(
     normalized
   );
 }

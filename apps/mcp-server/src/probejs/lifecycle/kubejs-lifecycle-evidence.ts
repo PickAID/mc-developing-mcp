@@ -28,6 +28,7 @@ async function buildKubeJsLifecycleEvidenceAsync(
     input.declarationFiles
   );
   const globalState = await inspectGlobalStateUsages(input);
+  const scriptQuality = await inspectScriptQuality(input);
 
   return {
     lifecycleEvidence: {
@@ -41,7 +42,8 @@ async function buildKubeJsLifecycleEvidenceAsync(
       forgeModEvents: eventSymbolEvidence("ForgeModEvents", input, declarationSymbols),
       nativeEvents: eventSymbolEvidence("NativeEvents", input, declarationSymbols)
     },
-    globalStateEvidence: globalState
+    globalStateEvidence: globalState,
+    scriptQualityEvidence: scriptQuality
   };
 }
 
@@ -113,6 +115,199 @@ async function inspectGlobalStateUsages(input: KubeJsLifecycleEvidenceInput) {
       "Treat global/Global as lifecycle-sensitive shared state; require ownership evidence before mutating existing keys."
     ]
   };
+}
+
+async function inspectScriptQuality(input: KubeJsLifecycleEvidenceInput) {
+  const issues: KubeJsScriptQualityIssue[] = [];
+  const scannedFiles = input.scriptFiles.slice(0, 200);
+
+  for (const file of scannedFiles) {
+    const text = await readLimitedText(file, 64_000);
+    const scope = inferScopeFromPath(file, input.workspaceRoot);
+    issues.push(...extractScriptQualityIssues(input.workspaceRoot, file, scope, text));
+  }
+
+  return {
+    fileCount: input.scriptFiles.length,
+    scannedFileCount: scannedFiles.length,
+    issueCount: issues.length,
+    severityCounts: countIssueSeverities(issues),
+    issues: issues.slice(0, 60),
+    truncated: issues.length > 60 || scannedFiles.length < input.scriptFiles.length,
+    warnings: [
+      "Treat KubeJS as lifecycle-scoped Minecraft scripting, not a generic JS project; keep debug output temporary and evidence-gated."
+    ]
+  };
+}
+
+interface KubeJsScriptQualityIssue {
+  kind:
+    | "generic_js_module_pattern"
+    | "persistent_console_output"
+    | "lifecycle_scope_mismatch"
+    | "top_level_state_declaration";
+  severity: "info" | "warning" | "error";
+  file: string;
+  line: number;
+  scope: KubeJsScriptScope;
+  message: string;
+  excerpt: string;
+}
+
+function extractScriptQualityIssues(
+  workspaceRoot: string,
+  filePath: string,
+  scope: KubeJsScriptScope,
+  text: string
+): KubeJsScriptQualityIssue[] {
+  const issues: KubeJsScriptQualityIssue[] = [];
+  let blockDepth = 0;
+
+  for (const [index, line] of text.split(/\r?\n/).entries()) {
+    const trimmed = line.trim();
+    issues.push(...inspectScriptLine({
+      line,
+      lineNumber: index + 1,
+      file: relativePath(workspaceRoot, filePath),
+      scope,
+      topLevel: blockDepth === 0
+    }));
+    blockDepth = Math.max(0, blockDepth + braceDelta(line));
+  }
+
+  return issues;
+}
+
+function inspectScriptLine(input: {
+  line: string;
+  lineNumber: number;
+  file: string;
+  scope: KubeJsScriptScope;
+  topLevel: boolean;
+}): KubeJsScriptQualityIssue[] {
+  const trimmed = input.line.trim();
+  if (!trimmed || trimmed.startsWith("//")) {
+    return [];
+  }
+  const code = stripLineComment(stripStringLiterals(trimmed));
+
+  return [
+    ...modulePatternIssue(input, code, trimmed),
+    ...consoleOutputIssue(input, code, trimmed),
+    ...lifecycleScopeIssue(input, code, trimmed),
+    ...topLevelStateIssue(input, code, trimmed, input.topLevel)
+  ];
+}
+
+function modulePatternIssue(
+  input: { lineNumber: number; file: string; scope: KubeJsScriptScope },
+  code: string,
+  trimmed: string
+): KubeJsScriptQualityIssue[] {
+  if (!/\b(?:import|export)\b|require\s*\(|module\.exports/.test(code)) {
+    return [];
+  }
+
+  return [buildIssue(input, {
+    kind: "generic_js_module_pattern",
+    severity: "warning",
+    message: "KubeJS scripts are not ordinary bundled JS modules; prove loader support before using import/export/require/module.exports.",
+    excerpt: trimmed
+  })];
+}
+
+function consoleOutputIssue(
+  input: { lineNumber: number; file: string; scope: KubeJsScriptScope },
+  code: string,
+  trimmed: string
+): KubeJsScriptQualityIssue[] {
+  if (!/\bconsole\.(?:log|warn|error|debug|info)\s*\(/.test(code)) {
+    return [];
+  }
+
+  return [buildIssue(input, {
+    kind: "persistent_console_output",
+    severity: "warning",
+    message: "Persistent console.* output should be removed or gated before committed KubeJS scripts.",
+    excerpt: trimmed
+  })];
+}
+
+function lifecycleScopeIssue(
+  input: { lineNumber: number; file: string; scope: KubeJsScriptScope },
+  code: string,
+  trimmed: string
+): KubeJsScriptQualityIssue[] {
+  if (input.scope !== "startup" && /\b(?:StartupEvents|ForgeEvents|ForgeModEvents)\./.test(code)) {
+    return [buildIssue(input, {
+      kind: "lifecycle_scope_mismatch",
+      severity: "error",
+      message: "Startup-only KubeJS surfaces must be proven before use from server/client/shared scripts.",
+      excerpt: trimmed
+    })];
+  }
+  if (input.scope === "startup" && /\bServerEvents\./.test(code)) {
+    return [buildIssue(input, {
+      kind: "lifecycle_scope_mismatch",
+      severity: "warning",
+      message: "ServerEvents are reloadable server-script surfaces; verify lifecycle before using them from startup_scripts.",
+      excerpt: trimmed
+    })];
+  }
+
+  return [];
+}
+
+function topLevelStateIssue(
+  input: { lineNumber: number; file: string; scope: KubeJsScriptScope },
+  code: string,
+  trimmed: string,
+  topLevel: boolean
+): KubeJsScriptQualityIssue[] {
+  if (!topLevel || !/^(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=/.test(code)) {
+    return [];
+  }
+
+  return [buildIssue(input, {
+    kind: "top_level_state_declaration",
+    severity: "info",
+    message: "Review top-level state declarations for lifecycle ownership instead of treating KubeJS like a generic JS app.",
+    excerpt: trimmed
+  })];
+}
+
+function buildIssue(
+  input: { lineNumber: number; file: string; scope: KubeJsScriptScope },
+  details: Pick<KubeJsScriptQualityIssue, "kind" | "severity" | "message" | "excerpt">
+): KubeJsScriptQualityIssue {
+  return {
+    ...details,
+    file: input.file,
+    line: input.lineNumber,
+    scope: input.scope
+  };
+}
+
+function countIssueSeverities(issues: KubeJsScriptQualityIssue[]) {
+  return {
+    error: issues.filter((issue) => issue.severity === "error").length,
+    warning: issues.filter((issue) => issue.severity === "warning").length,
+    info: issues.filter((issue) => issue.severity === "info").length
+  };
+}
+
+function braceDelta(line: string): number {
+  const withoutStrings = stripStringLiterals(line);
+  return (withoutStrings.match(/{/g)?.length ?? 0) -
+    (withoutStrings.match(/}/g)?.length ?? 0);
+}
+
+function stripStringLiterals(line: string): string {
+  return line.replace(/(["'`])(?:\\.|(?!\1).)*\1/g, "\"\"");
+}
+
+function stripLineComment(line: string): string {
+  return line.replace(/\/\/.*$/, "");
 }
 
 function extractGlobalUsages(

@@ -350,7 +350,7 @@ async function resolveResourceOnlyLifecycleEvidence(
 }
 
 function mentionsKubeJsLifecycleEvidence(requestText: string): boolean {
-  return /\b(?:ForgeEvents|ForgeModEvents|NativeEvents|global|Global|startup_scripts|server_scripts|client_scripts)\b/i
+  return /\b(?:ForgeEvents|ForgeModEvents|NativeEvents|global|Global|startup_scripts|server_scripts|client_scripts|console|debugger|debug|lint|import|export|require|module\.exports|生命周期|作用域|调试|日志|误用)\b/i
     .test(requestText);
 }
 

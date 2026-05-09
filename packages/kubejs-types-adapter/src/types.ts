@@ -4,6 +4,7 @@ export type KubeJsTypeSourceKind =
   | "dts"
   | "snippet"
   | "item"
+  | "recipe"
   | "registry"
   | "other";
 
@@ -82,6 +83,7 @@ export type KubeJsSemanticResourceKind =
   | "language_key"
   | "snippet"
   | "item"
+  | "recipe"
   | "registry"
   | "fluid"
   | "tag";

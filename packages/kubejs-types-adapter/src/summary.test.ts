@@ -41,6 +41,10 @@ describe("summarizeKubeJsTypeResources", () => {
       ["minecraft:stone", "minecraft:dirt", "minecraft:oak_log"].join("\n")
     );
     await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "recipes", "minecraft.txt"),
+      ["minecraft:crafting_shaped", "minecraft:smelting"].join("\n")
+    );
+    await writeText(
       join(workspaceRoot, "kubejs", "probejs", "registries", "blocks.txt"),
       "minecraft:block\n"
     );
@@ -83,15 +87,31 @@ describe("summarizeKubeJsTypeResources", () => {
         value: "minecraft:block"
       })
     ]);
+    expect(result.entries.recipe).toEqual([
+      expect.objectContaining({
+        confidence: 0.75,
+        extractorId: "probejs-line-list-v1",
+        lineNumber: 1,
+        name: "minecraft:crafting_shaped",
+        sourceFormat: "text-line-list",
+        value: "minecraft:crafting_shaped"
+      }),
+      expect.objectContaining({
+        lineNumber: 2,
+        name: "minecraft:smelting"
+      })
+    ]);
     expect(result.summary).toMatchObject({
       counts: {
         snippet: 2,
         item: 2,
+        recipe: 2,
         registry: 1
       },
       totalCounts: {
         snippet: 2,
         item: 3,
+        recipe: 2,
         registry: 1
       },
       truncated: true
@@ -106,6 +126,10 @@ describe("summarizeKubeJsTypeResources", () => {
         expect.objectContaining({
           sourceKind: "snippet",
           useFor: expect.arrayContaining(["discover KubeJS event entrypoints"])
+        }),
+        expect.objectContaining({
+          sourceKind: "recipe",
+          useFor: expect.arrayContaining(["validate recipe ids"])
         })
       ])
     );

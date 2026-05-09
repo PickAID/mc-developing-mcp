@@ -44,6 +44,7 @@ describe("ProbeJS resource-only summaries", () => {
               tag: 2,
               language_key: 1,
               class: 2,
+              recipe: 2,
               snippet: 1
             },
             totalCounts: {
@@ -53,6 +54,7 @@ describe("ProbeJS resource-only summaries", () => {
               tag: 2,
               language_key: 1,
               class: 2,
+              recipe: 2,
               snippet: 1
             }
           },
@@ -66,6 +68,10 @@ describe("ProbeJS resource-only summaries", () => {
               expect.objectContaining({
                 sourceKind: "snippet",
                 kubeJsContexts: expect.arrayContaining(["server_scripts"])
+              }),
+              expect.objectContaining({
+                sourceKind: "recipe",
+                useFor: expect.arrayContaining(["validate recipe ids"])
               })
             ])
           },
@@ -88,6 +94,15 @@ describe("ProbeJS resource-only summaries", () => {
         expect.objectContaining({
           name: "Food Eaten",
           value: "ItemEvents.foodEaten"
+        })
+      ])
+    );
+    expect(payload.probeResources.entries.recipe).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "minecraft:crafting_shaped",
+          value: "minecraft:crafting_shaped",
+          file: "kubejs/probejs/recipes/minecraft.txt"
         })
       ])
     );
@@ -156,6 +171,7 @@ describe("ProbeJS resource-only summaries", () => {
             counts: {
               item: 2,
               registry: 2,
+              recipe: 2,
               snippet: 1
             }
           }
@@ -208,6 +224,78 @@ describe("ProbeJS resource-only summaries", () => {
               snippet: 1
             }
           }
+        }
+      }
+    });
+  });
+
+  it("summarizes Chinese ProbeJS resource requests with localized resource terms", async () => {
+    const workspaceRoot = await createProbeResourceWorkspace();
+    const input = await createProbeJsExecutorInput(
+      workspaceRoot,
+      "列出 ProbeJS 物品、注册表、配方、标签、流体和资源。"
+    );
+    const executor = createMcpServerProbeJsTypesExecutor();
+
+    await expect(executor(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "probejs_resources",
+        queryMode: "resource_summary",
+        probeResources: {
+          summary: {
+            counts: {
+              item: 2,
+              recipe: 2,
+              registry: 2,
+              fluid: 2,
+              tag: 2
+            }
+          }
+        }
+      }
+    });
+  });
+
+  it("includes script quality evidence for KubeJS lint and debug cleanup requests", async () => {
+    const workspaceRoot = await createProbeResourceWorkspace({
+      serverScriptContent: [
+        "import helper from './helper.js';",
+        "console.log('debug recipe');",
+        "ForgeEvents.onEvent('net.minecraftforge.event.TickEvent', event => {});",
+        ""
+      ].join("\n")
+    });
+    const input = await createProbeJsExecutorInput(
+      workspaceRoot,
+      "检查 KubeJS server_scripts 的 lint、console 调试日志和生命周期作用域误用，并列出 ProbeJS evidence。"
+    );
+    const executor = createMcpServerProbeJsTypesExecutor();
+
+    await expect(executor(input)).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        source: "probejs_resources",
+        queryMode: "resource_summary",
+        scriptQualityEvidence: {
+          issueCount: 3,
+          severityCounts: {
+            error: 1,
+            warning: 2
+          },
+          issues: expect.arrayContaining([
+            expect.objectContaining({
+              kind: "generic_js_module_pattern",
+              file: "kubejs/server_scripts/main.js"
+            }),
+            expect.objectContaining({
+              kind: "persistent_console_output"
+            }),
+            expect.objectContaining({
+              kind: "lifecycle_scope_mismatch",
+              severity: "error"
+            })
+          ])
         }
       }
     });
@@ -277,13 +365,16 @@ async function createProbeJsExecutorInput(
   };
 }
 
-async function createProbeResourceWorkspace(): Promise<string> {
+async function createProbeResourceWorkspace(options: {
+  serverScriptContent?: string;
+} = {}): Promise<string> {
   const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-kjs-resource-"));
   tempRoots.push(workspaceRoot);
 
   await writeText(
     join(workspaceRoot, "kubejs", "server_scripts", "main.js"),
-    "ServerEvents.recipes(event => { Global.recipeOwner(event); });\n"
+    options.serverScriptContent ??
+      "ServerEvents.recipes(event => { Global.recipeOwner(event); });\n"
   );
   await writeText(
     join(workspaceRoot, "kubejs", "startup_scripts", "main.js"),
@@ -350,6 +441,10 @@ async function createProbeResourceWorkspace(): Promise<string> {
   await writeText(
     join(workspaceRoot, "kubejs", "probejs", "items", "minecraft.txt"),
     "minecraft:stone\nminecraft:dirt\n"
+  );
+  await writeText(
+    join(workspaceRoot, "kubejs", "probejs", "recipes", "minecraft.txt"),
+    "minecraft:crafting_shaped\nminecraft:smelting\n"
   );
   await writeText(
     join(workspaceRoot, "kubejs", "probejs", "registries", "blocks.txt"),

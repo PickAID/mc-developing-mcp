@@ -46,6 +46,10 @@ describe("discoverKubeJsTypeResources", () => {
       "minecraft:stone\n"
     );
     await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "recipes", "minecraft.txt"),
+      "minecraft:crafting_shaped\n"
+    );
+    await writeText(
       join(workspaceRoot, "kubejs", "probejs", "registries", "blocks.txt"),
       "minecraft:block\n"
     );
@@ -76,6 +80,10 @@ describe("discoverKubeJsTypeResources", () => {
           sourceKind: "item"
         }),
         expect.objectContaining({
+          relativePath: "kubejs/probejs/recipes/minecraft.txt",
+          sourceKind: "recipe"
+        }),
+        expect.objectContaining({
           relativePath: "kubejs/probejs/registries/blocks.txt",
           sourceKind: "registry"
         })
@@ -83,11 +91,12 @@ describe("discoverKubeJsTypeResources", () => {
     );
     expect(result.summary).toMatchObject({
       rootCount: 1,
-      fileCount: 4,
+      fileCount: 5,
       bySourceKind: {
         dts: 1,
         item: 1,
         other: 0,
+        recipe: 1,
         registry: 1,
         snippet: 1
       }

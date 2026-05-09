@@ -105,6 +105,11 @@ const SEMANTIC_RESOURCE_USE_CASES: Array<{
     kubeJsContexts: ["ServerEvents.recipes", "Item.of", "Ingredient.of"]
   },
   {
+    sourceKind: "recipe",
+    useFor: ["validate recipe ids", "select recipe serializers or recipe types"],
+    kubeJsContexts: ["ServerEvents.recipes", "event.custom", "event.remove"]
+  },
+  {
     sourceKind: "tag",
     useFor: ["validate tag ids", "select item groups for recipes or logic"],
     kubeJsContexts: ["recipe ingredients", "event filters", "datapack tags"]

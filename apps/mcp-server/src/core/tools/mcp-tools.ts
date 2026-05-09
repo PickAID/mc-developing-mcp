@@ -454,8 +454,8 @@ function hasLocalJarPrewarmIntent(requestText: string): boolean {
   const normalizedText = requestText.toLowerCase();
 
   return (
-    /\b(?:prewarm|warm\s+up)\b/.test(normalizedText) ||
-    /预热/.test(requestText)
+    /\b(?:prewarm|warm\s+up|index|indexes)\b/.test(normalizedText) ||
+    /预热|索引|缓存索引/.test(requestText)
   );
 }
 

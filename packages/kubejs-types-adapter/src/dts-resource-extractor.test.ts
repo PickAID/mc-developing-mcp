@@ -26,6 +26,7 @@ describe("ProbeJS declaration resource extraction", () => {
         "  | \"kubejs:copper_coin\";",
         "declare type ProbeFluidIds = \"minecraft:water\";",
         "declare type ProbeItemTags = \"#forge:ingots/iron\";",
+        "declare type ProbeRecipeIds = \"minecraft:crafting_shaped\";",
         "declare type ProbeRegistries = \"minecraft:block\";",
         "declare type GenericIds = \"demo:not_indexed\";",
         ""
@@ -74,10 +75,18 @@ describe("ProbeJS declaration resource extraction", () => {
         value: "minecraft:block"
       })
     ]);
+    expect(result.entries.recipe).toEqual([
+      expect.objectContaining({
+        name: "minecraft:crafting_shaped",
+        sourceFormat: "probe-dts-resource-literal",
+        value: "minecraft:crafting_shaped"
+      })
+    ]);
     expect(result.summary).toMatchObject({
       counts: {
         fluid: 1,
         item: 2,
+        recipe: 1,
         registry: 1,
         tag: 1
       },

@@ -6,6 +6,7 @@ import type {
 const SEMANTIC_KINDS: KubeJsSemanticResourceKind[] = [
   "snippet",
   "item",
+  "recipe",
   "registry",
   "fluid",
   "tag",
@@ -20,6 +21,7 @@ export function createEmptySemanticEntries(): Record<
   return {
     snippet: [],
     item: [],
+    recipe: [],
     registry: [],
     fluid: [],
     tag: [],

@@ -26,6 +26,10 @@ describe("summarizeKubeJsTypeResources query filtering", () => {
       { id: "minecraft:stone", localized: "Stone" },
       { id: "minecraft:diamond_sword", localized: "Diamond Sword" }
     ]));
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "recipes", "minecraft.txt"),
+      ["minecraft:crafting_shaped", "minecraft:smelting"].join("\n")
+    );
     await writeText(join(workspaceRoot, ".vscode", "probe.class-definitions.json"), JSON.stringify({
       definitions: {
         typeClassName: {
@@ -45,7 +49,7 @@ describe("summarizeKubeJsTypeResources query filtering", () => {
       workspaceRoot,
       includeUnknownResources: false,
       maxEntriesPerKind: 5,
-      resourceQueries: ["ItemEvents.foodEaten", "diamond sword", "ItemStack"]
+      resourceQueries: ["ItemEvents.foodEaten", "diamond sword", "ItemStack", "smelting"]
     });
 
     expect(result.entries.snippet.map((entry) => entry.name)).toEqual(["Food Eaten"]);
@@ -54,6 +58,9 @@ describe("summarizeKubeJsTypeResources query filtering", () => {
     ]);
     expect(result.entries.class.map((entry) => entry.name)).toEqual([
       "net.minecraft.world.item.ItemStack"
+    ]);
+    expect(result.entries.recipe.map((entry) => entry.name)).toEqual([
+      "minecraft:smelting"
     ]);
     expect(result.entries.registry).toEqual([]);
     expect(result.unknownResources).toEqual([]);

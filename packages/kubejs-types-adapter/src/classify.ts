@@ -18,6 +18,9 @@ export function classifyKubeJsTypeResource(relativePath: string): KubeJsTypeSour
   if (segments.includes("items")) {
     return "item";
   }
+  if (segments.includes("recipes")) {
+    return "recipe";
+  }
   if (segments.includes("registries")) {
     return "registry";
   }

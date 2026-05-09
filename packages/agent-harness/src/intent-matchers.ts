@@ -20,6 +20,7 @@ export const CRASH_KEYWORDS = [
 export const KUBEJS_KEYWORDS = [
   "kubejs",
   "kjs",
+  "probejs",
   "server_scripts",
   "startup_scripts",
   "client_scripts",

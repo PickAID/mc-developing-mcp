@@ -27,6 +27,23 @@ describe("buildMcpServerEvidencePlan source acquisition", () => {
       queryHint: requestText
     });
   });
+
+  it("adds source acquisition planning for bundle and index wording", () => {
+    const requestText =
+      "Bundle and index this external mod source so it can be used offline later.";
+    const result = buildMcpServerEvidencePlan(
+      requestPlanFixture({
+        requestText,
+        routeSteps: ["external_mod_resolution", "docs_lookup"]
+      })
+    );
+
+    expect(result.candidates.map((candidate) => candidate.routeStep)).toEqual([
+      "source_acquisition_plan",
+      "external_mod_resolution",
+      "docs_lookup"
+    ]);
+  });
 });
 
 function requestPlanFixture(input: {

@@ -56,6 +56,9 @@ function inferResourceKind(
   if (normalized.includes("registry") || normalized.includes("registries")) {
     return "registry";
   }
+  if (normalized.includes("recipe") || normalized.includes("recipes")) {
+    return "recipe";
+  }
   if (normalized.includes("item") || normalized.includes("ingredient")) {
     return "item";
   }

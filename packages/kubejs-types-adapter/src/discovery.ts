@@ -140,6 +140,7 @@ function buildSummary(
     dts: 0,
     item: 0,
     other: 0,
+    recipe: 0,
     registry: 0,
     snippet: 0
   };
