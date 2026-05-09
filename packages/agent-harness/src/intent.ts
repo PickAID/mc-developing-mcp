@@ -188,6 +188,7 @@ const WORKSPACE_PREPARATION_KEYWORDS = [
   "init",
   "setup",
   "bootstrap",
+  "prewarm",
   "cache",
   "caches",
   "bundle",
@@ -201,6 +202,7 @@ const WORKSPACE_PREPARATION_KEYWORDS = [
   "use later",
   "准备",
   "初始化",
+  "预热",
   "缓存",
   "打包",
   "索引",
@@ -270,6 +272,31 @@ export function detectHarnessTaskIntent(
     };
   }
 
+  if (
+    matchesAny(normalized, HOTAI_PATCH_WORKFLOW_KEYWORDS) &&
+    hasHotaiPatchWorkflowEvidence(snapshot)
+  ) {
+    return {
+      id: "hotai_patch_workflow",
+      confidence: "high",
+      reasons: [
+        "request text mentions Hotai, badiff, bytecode patch, class patch, or Hotai patch layout keywords",
+        "workspace snapshot exposes patch target evidence routes"
+      ]
+    };
+  }
+
+  if (matchesWorkspacePreparationIntent(normalized, snapshot)) {
+    return {
+      id: "workspace_preparation",
+      confidence: "high",
+      reasons: [
+        "request text asks to prepare, initialize, cache, bundle, or index workspace evidence",
+        "workspace snapshot exposes local evidence routes that can be prepared progressively"
+      ]
+    };
+  }
+
   if (matchesAny(normalized, CRASH_KEYWORDS) && snapshot.facts.logPathCount > 0) {
     return {
       id: "crash_triage",
@@ -302,31 +329,6 @@ export function detectHarnessTaskIntent(
       reasons: [
         "request text asks for official vanilla local generation targets",
         "vanilla generation targets are exposed through source.bundle without downloading artifacts"
-      ]
-    };
-  }
-
-  if (
-    matchesAny(normalized, HOTAI_PATCH_WORKFLOW_KEYWORDS) &&
-    hasHotaiPatchWorkflowEvidence(snapshot)
-  ) {
-    return {
-      id: "hotai_patch_workflow",
-      confidence: "high",
-      reasons: [
-        "request text mentions Hotai, badiff, bytecode patch, class patch, or Hotai patch layout keywords",
-        "workspace snapshot exposes patch target evidence routes"
-      ]
-    };
-  }
-
-  if (matchesWorkspacePreparationIntent(normalized, snapshot)) {
-    return {
-      id: "workspace_preparation",
-      confidence: "high",
-      reasons: [
-        "request text asks to prepare, initialize, cache, bundle, or index workspace evidence",
-        "workspace snapshot exposes local evidence routes that can be prepared progressively"
       ]
     };
   }
@@ -433,7 +435,10 @@ function matchesWorkspacePreparationIntent(
   requestText: string,
   snapshot: AgentRuntimeHarnessSnapshot
 ): boolean {
-  if (mentionsModArchiveInventoryRequest(requestText)) {
+  if (
+    mentionsModArchiveInventoryRequest(requestText) &&
+    !mentionsPrewarmAction(requestText)
+  ) {
     return false;
   }
   if (!matchesAny(requestText, WORKSPACE_PREPARATION_KEYWORDS)) {
@@ -468,9 +473,13 @@ function mentionsDocsLookupIntent(requestText: string): boolean {
 }
 
 function mentionsExplicitPreparationAction(requestText: string): boolean {
-  return /prepare|preparation|initialize|initialise|\binit\b|setup|bootstrap|cache|caches|bundle|bundles|准备|初始化|缓存|打包/u.test(
+  return /prepare|preparation|initialize|initialise|\binit\b|setup|bootstrap|prewarm|cache|caches|bundle|bundles|准备|初始化|预热|缓存|打包/u.test(
     requestText
   );
+}
+
+function mentionsPrewarmAction(requestText: string): boolean {
+  return /\bprewarm\b|预热/u.test(requestText);
 }
 
 function mentionsDataPath(requestText: string): boolean {

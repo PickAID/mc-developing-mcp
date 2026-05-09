@@ -345,6 +345,47 @@ describe("detectHarnessTaskIntent", () => {
       ]
     });
   });
+
+  it("prioritizes explicit preparation over future crash-triage wording", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "modpack",
+          facts: {
+            ...createFacts(),
+            hasModArchives: true,
+            logPathCount: 1
+          }
+        }),
+        "Prepare local jar cache indexes so later crash triage can inspect all mod jars quickly."
+      )
+    ).toEqual({
+      id: "workspace_preparation",
+      confidence: "high",
+      reasons: [
+        "request text asks to prepare, initialize, cache, bundle, or index workspace evidence",
+        "workspace snapshot exposes local evidence routes that can be prepared progressively"
+      ]
+    });
+  });
+
+  it("detects prewarm requests as workspace preparation", () => {
+    expect(
+      detectHarnessTaskIntent(
+        createSnapshot({
+          workspaceKind: "modpack",
+          facts: {
+            ...createFacts(),
+            hasModArchives: true
+          }
+        }),
+        "Prewarm local jar entry index for this modpack."
+      )
+    ).toMatchObject({
+      id: "workspace_preparation",
+      confidence: "high"
+    });
+  });
 });
 
 function createSnapshot(
