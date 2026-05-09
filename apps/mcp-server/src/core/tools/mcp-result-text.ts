@@ -30,6 +30,10 @@ export function formatMcpDevelopResultText(
   if (javaDiagnostics) {
     lines.push(`Java diagnostics: ${javaDiagnostics}`);
   }
+  const kubeJsQuality = formatKubeJsQuality(result);
+  if (kubeJsQuality) {
+    lines.push(`KubeJS quality: ${kubeJsQuality}`);
+  }
   const resourceActions = formatResourceActions(mdmPackageRecommendations);
   if (resourceActions) {
     lines.push(`Resource actions: ${resourceActions}`);
@@ -41,6 +45,49 @@ export function formatMcpDevelopResultText(
   }
 
   return lines.join("\n");
+}
+
+function formatKubeJsQuality(
+  result: McpServerRequestExecutorResult
+): string | undefined {
+  const quality = result.executions
+    .map((execution) => recordValue(execution.payload))
+    .map((payload) => recordValue(payload?.scriptQualityEvidence))
+    .find((candidate) => candidate !== undefined);
+
+  if (!quality) {
+    return undefined;
+  }
+
+  const issueCount = numberValue(quality.issueCount);
+  const severities = recordValue(quality.severityCounts);
+  const errors = numberValue(severities?.error) ?? 0;
+  const warnings = numberValue(severities?.warning) ?? 0;
+  const firstIssue = arrayOfRecords(quality.issues)[0];
+  const issueLocation = formatKubeJsIssueLocation(firstIssue);
+  const counts =
+    issueCount !== undefined
+      ? `issues=${issueCount}, errors=${errors}, warnings=${warnings}`
+      : undefined;
+
+  return [counts, issueLocation].filter(Boolean).join("; ") || undefined;
+}
+
+function formatKubeJsIssueLocation(
+  issue: Record<string, unknown> | undefined
+): string | undefined {
+  if (!issue) {
+    return undefined;
+  }
+
+  const file = stringValue(issue.file);
+  const line = numberValue(issue.line);
+  const kind = stringValue(issue.kind);
+  if (!file || line === undefined || !kind) {
+    return undefined;
+  }
+
+  return `${file}:${line} ${kind}`;
 }
 
 function formatJavaDiagnostics(

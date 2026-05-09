@@ -11,9 +11,45 @@ describe("formatMcpDevelopResultText", () => {
       "Java diagnostics: src/main/java/example/Broken.java:12:5 RegistryObject cannot be resolved to a type"
     );
   });
+
+  it("summarizes KubeJS script quality evidence in plain text", () => {
+    const text = formatMcpDevelopResultText(
+      createResult({
+        candidateId: "candidate-1-probejs_types",
+        routeStep: "probejs_types",
+        provenance: "probejs",
+        preferredTool: "context.query",
+        queryHint: "KubeJS console lifecycle",
+        summary: "Resolved KubeJS ProbeJS context.",
+        payload: {
+          source: "kubejs_language_service",
+          scriptQualityEvidence: {
+            issueCount: 2,
+            severityCounts: { error: 1, warning: 1 },
+            issues: [
+              {
+                kind: "persistent_console_output",
+                severity: "warning",
+                file: "kubejs/server_scripts/main.js",
+                line: 3,
+                message:
+                  "Persistent console.* output should be removed or gated before committed KubeJS scripts."
+              }
+            ]
+          }
+        }
+      })
+    );
+
+    expect(text).toContain(
+      "KubeJS quality: issues=2, errors=1, warnings=1; kubejs/server_scripts/main.js:3 persistent_console_output"
+    );
+  });
 });
 
-function createResult(): McpServerRequestExecutorResult {
+function createResult(
+  execution: Partial<McpServerRequestExecutorResult["executions"][number]> = {}
+): McpServerRequestExecutorResult {
   return {
     appId: "mcp-server",
     requestPlan: { requestText: "Fix compile error" },
@@ -50,7 +86,8 @@ function createResult(): McpServerRequestExecutorResult {
               ]
             }
           ]
-        }
+        },
+        ...execution
       }
     ],
     selectedEvidence: undefined,
