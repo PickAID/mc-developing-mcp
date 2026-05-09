@@ -102,6 +102,10 @@ describe("client visual task routes", () => {
         }),
         expect.objectContaining({
           id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("clientVisualEvidence.visualVerifier")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
           text: expect.stringContaining("shader or post-processing chain")
         }),
         expect.objectContaining({

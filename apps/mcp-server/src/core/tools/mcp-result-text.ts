@@ -38,6 +38,10 @@ export function formatMcpDevelopResultText(
   if (kubeJsQuality) {
     lines.push(`KubeJS quality: ${kubeJsQuality}`);
   }
+  const clientVisualVerifier = formatClientVisualVerifier(result);
+  if (clientVisualVerifier) {
+    lines.push(`Client visual verifier: ${clientVisualVerifier}`);
+  }
   const resourceActions = formatResourceActions(mdmPackageRecommendations);
   if (resourceActions) {
     lines.push(`Resource actions: ${resourceActions}`);
@@ -49,6 +53,42 @@ export function formatMcpDevelopResultText(
   }
 
   return lines.join("\n");
+}
+
+function formatClientVisualVerifier(
+  result: McpServerRequestExecutorResult
+): string | undefined {
+  const verifier = result.executions
+    .map((execution) => recordValue(execution.payload))
+    .map((payload) => recordValue(recordValue(payload?.clientVisualEvidence)?.visualVerifier))
+    .find((candidate) => candidate !== undefined);
+  if (!verifier) {
+    return undefined;
+  }
+
+  const overall = stringValue(verifier.overall);
+  const checks = recordValue(verifier.checks);
+  const missing = checks
+    ? Object.entries(checks)
+        .filter(([, check]) => stringValue(recordValue(check)?.status) === "missing")
+        .map(([name]) => name)
+        .slice(0, 4)
+    : [];
+  const risky = checks
+    ? Object.entries(checks)
+        .filter(([, check]) => stringValue(recordValue(check)?.status) === "risky")
+        .map(([name]) => name)
+        .slice(0, 4)
+    : [];
+  const next = arrayOfStrings(verifier.nextProofSteps)[0];
+  const parts = [
+    overall ? `overall=${overall}` : undefined,
+    missing.length > 0 ? `missing=${missing.join(",")}` : undefined,
+    risky.length > 0 ? `risky=${risky.join(",")}` : undefined,
+    next ? `next=${next}` : undefined
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join("; ") : undefined;
 }
 
 function formatKubeJsQuality(
@@ -359,6 +399,12 @@ function compactCounts(
 
 function arrayOfRecords(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function arrayOfStrings(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
 }
 
 function recordValue(value: unknown): Record<string, unknown> | undefined {

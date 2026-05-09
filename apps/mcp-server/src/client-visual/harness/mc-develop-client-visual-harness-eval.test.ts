@@ -62,11 +62,15 @@ describe("mc_develop client visual harness eval", () => {
         }),
         expect.objectContaining({
           id: "task_client_visual_capability_policy",
-          text: expect.stringContaining("loader/version-specific renderer")
+          text: expect.stringContaining("next proof step before generating implementation code")
         }),
         expect.objectContaining({
           id: "task_client_visual_capability_policy",
           text: expect.stringContaining("clientVisualEvidence.apiProof")
+        }),
+        expect.objectContaining({
+          id: "task_client_visual_capability_policy",
+          text: expect.stringContaining("clientVisualEvidence.visualVerifier")
         })
       ])
     );

@@ -117,6 +117,37 @@ describe("formatMcpDevelopResultText", () => {
       "Workspace next actions: 3 available; prepare_local_jar, prewarm_local_jar_entry_index, inspect_runtime_cache_evidence"
     );
   });
+
+  it("summarizes client visual verifier status in plain text", () => {
+    const text = formatMcpDevelopResultText(createResult({
+      candidateId: "candidate-1-datapack_files",
+      routeStep: "datapack_files",
+      preferredTool: "source.bundle",
+      summary: "Found client visual assets.",
+      payload: {
+        source: "datapack_files",
+        clientVisualEvidence: {
+          visualVerifier: {
+            tokenPolicy: "compact_client_visual_verifier",
+            overall: "missing",
+            checks: {
+              registry: { status: "proven" },
+              client_init: { status: "proven" },
+              resource_reload_or_dynamic_texture: { status: "missing" },
+              api_version: { status: "proven" }
+            },
+            nextProofSteps: [
+              "prove reload/cache lifecycle before generating dynamic textures or resources"
+            ]
+          }
+        }
+      }
+    }));
+
+    expect(text).toContain(
+      "Client visual verifier: overall=missing; missing=resource_reload_or_dynamic_texture; next=prove reload/cache lifecycle before generating dynamic textures or resources"
+    );
+  });
 });
 
 function createResult(

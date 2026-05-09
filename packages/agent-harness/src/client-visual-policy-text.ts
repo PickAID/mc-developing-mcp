@@ -9,7 +9,7 @@ export const CLIENT_VISUAL_CAPABILITY_POLICY_TEXT = [
   "When a major version changes client APIs, search by role-equivalent evidence instead of hard-coding old GUI, rendering, or shader class names from memory.",
   "For rendered mutable state, require a server-authoritative state source plus client sync/interpolation boundary; do not let screen or renderer mutate authoritative state directly.",
   "For KubeJS client visual work, treat client_scripts as the client surface, keep startup/server scopes separate, and prefer ProbeJS/d.ts evidence over generic JavaScript patterns.",
-  "Use clientVisualEvidence.apiProof when present, then verify loader/version-specific renderer, screen, model-layer, texture, and resource-reload APIs before naming methods or events.",
+  "Use clientVisualEvidence.visualVerifier and clientVisualEvidence.apiProof when present; if visualVerifier reports missing or risky links, answer with the next proof step before generating implementation code.",
   "Report missing API proof instead of mixing Forge, NeoForge, Fabric, or KubeJS patterns.",
   "If any link is missing, report the missing registry, client binding, renderer/screen, sync, reload, or asset evidence instead of inventing generic code."
 ].join(" ");
