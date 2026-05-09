@@ -71,6 +71,52 @@ describe("formatMcpDevelopResultText", () => {
       "Resource actions: [local-generation] generate_local_minecraft_1.20.1_source_pack, [mdm-install] install_mdm_minecraft-1.20.1-vanilla-source-profile (requires confirmation)"
     );
   });
+
+  it("summarizes workspace preparation next actions in plain text", () => {
+    const text = formatMcpDevelopResultText(createResult({
+      candidateId: "candidate-1-source_acquisition_plan",
+      routeStep: "source_acquisition_plan",
+      preferredTool: "context.query",
+      summary: "Planned source acquisition routes.",
+      payload: {
+        source: "source_acquisition_plan",
+        capabilityGuidance: {
+          capabilityMap: {
+            mode: "progressive_discovery",
+            routeCapabilities: [
+              {
+                origin: "runtime_cache",
+                status: "ready",
+                useFor: ["offline packages"]
+              },
+              {
+                origin: "local_jar",
+                status: "ready",
+                useFor: ["local mod classes"],
+                nextAction: "inspect cached jar entries"
+              }
+            ]
+          }
+        },
+        routes: [{ origin: "runtime_cache" }, { origin: "local_jar" }],
+        workItems: [{ kind: "jar_index" }],
+        workItemExecutions: [
+          {
+            kind: "jar_index",
+            payload: {
+              source: "source_acquisition_jar_index",
+              archiveCount: 2,
+              entryCount: 10
+            }
+          }
+        ]
+      }
+    }));
+
+    expect(text).toContain(
+      "Workspace next actions: 3 available; prepare_local_jar, prewarm_local_jar_entry_index, inspect_runtime_cache_evidence"
+    );
+  });
 });
 
 function createResult(

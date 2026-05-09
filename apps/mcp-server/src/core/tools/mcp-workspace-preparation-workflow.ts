@@ -31,8 +31,47 @@ export function buildWorkspacePreparationWorkflow(
         }))
     },
     inspect: buildInspectTargets(routeCapabilities, workItems, sourceIndexPreview),
-    execute: buildExecutableNextActions(routeCapabilities, sourceIndexPreview)
+    execute: buildExecutableNextActions(routeCapabilities, sourceIndexPreview),
+    decisionRules: [
+      "Prefer inspect actions when a route is ready and local evidence can answer the task.",
+      "Run local_background_cache actions during idle time before broad crash triage or class/resource owner lookup.",
+      "Use network or generation actions only after user confirmation, credentials, or explicit policy is present."
+    ],
+    nextCallPatterns: buildNextCallPatterns(routeCapabilities, sourceIndexPreview)
   };
+}
+
+function buildNextCallPatterns(
+  routeCapabilities: Array<Record<string, unknown>>,
+  sourceIndexPreview: Record<string, unknown> | undefined
+) {
+  return buildExecutableNextActions(routeCapabilities, sourceIndexPreview)
+    .slice(0, 8)
+    .map((action) => ({
+      when: actionWhen(String(action.id), String(action.safety)),
+      call: "mc_develop",
+      inputPatch: action.inputPatch
+    }));
+}
+
+function actionWhen(id: string, safety: string): string {
+  if (id === "inspect_source_index_preview") {
+    return "Need more evidence already present in the runtime cache.";
+  }
+  if (id === "prewarm_local_jar_entry_index") {
+    return "Crash triage or broad class/resource owner lookup will scan many local mod jars.";
+  }
+  if (safety === "requires_credentials") {
+    return "Remote CurseForge metadata is needed and the API key is configured.";
+  }
+  if (safety === "network_metadata") {
+    return "Local evidence is insufficient and public remote metadata is allowed.";
+  }
+  if (safety === "requires_user_confirmation") {
+    return "Official generation or downloads are needed and the user has confirmed.";
+  }
+
+  return "Need more evidence from this ready local route.";
 }
 
 function buildInspectTargets(

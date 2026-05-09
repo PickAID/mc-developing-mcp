@@ -297,6 +297,24 @@ describe("buildMcpDevelopStructuredContent", () => {
             safety: "read_only",
             inputPatch: { preparationRoutes: ["runtime_cache"] }
           })
+        ]),
+        decisionRules: expect.arrayContaining([
+          expect.stringContaining("Prefer inspect actions"),
+          expect.stringContaining("Run local_background_cache")
+        ]),
+        nextCallPatterns: expect.arrayContaining([
+          expect.objectContaining({
+            when: expect.stringContaining("Need more evidence"),
+            call: "mc_develop",
+            inputPatch: { preparationRoutes: ["runtime_cache"] }
+          }),
+          expect.objectContaining({
+            when: expect.stringContaining("Crash triage"),
+            inputPatch: {
+              preparationRoutes: ["local_jar"],
+              preparationPolicy: { localJarMode: "prewarm_entry_index" }
+            }
+          })
         ])
       },
       evidenceSummary: {

@@ -26,6 +26,10 @@ export function formatMcpDevelopResultText(
   if (workspacePreparation) {
     lines.push(`Workspace preparation: ${workspacePreparation}`);
   }
+  const workspaceNextActions = formatWorkspaceNextActions(result);
+  if (workspaceNextActions) {
+    lines.push(`Workspace next actions: ${workspaceNextActions}`);
+  }
   const javaDiagnostics = formatJavaDiagnostics(result);
   if (javaDiagnostics) {
     lines.push(`Java diagnostics: ${javaDiagnostics}`);
@@ -161,6 +165,93 @@ function formatWorkspacePreparation(
   ].filter((part): part is string => part !== undefined);
 
   return parts.length > 0 ? parts.join("; ") : undefined;
+}
+
+function formatWorkspaceNextActions(
+  result: McpServerRequestExecutorResult
+): string | undefined {
+  const execution = result.executions.find(
+    (item) => item.routeStep === "source_acquisition_plan"
+  );
+  const payload = recordValue(execution?.payload);
+  if (!payload || payload.source !== "source_acquisition_plan") {
+    return undefined;
+  }
+
+  const routeCapabilities = arrayOfRecords(
+    recordValue(recordValue(payload.capabilityGuidance)?.capabilityMap)
+      ?.routeCapabilities
+  );
+  const hasSourceIndexPreview = recordValue(payload.sourceIndexPreview) !== undefined;
+  const actions = [
+    ...routeCapabilities.flatMap(workspaceRouteActionIds),
+    ...(hasSourceIndexPreview ? ["inspect_source_index_preview"] : [])
+  ];
+  const uniqueActions = [...new Set(actions)]
+    .sort((left, right) => actionPriority(left) - actionPriority(right))
+    .slice(0, 4);
+
+  return uniqueActions.length > 0
+    ? `${uniqueActions.length} available; ${uniqueActions.join(", ")}`
+    : undefined;
+}
+
+function actionPriority(actionId: string): number {
+  if (actionId.startsWith("prepare_")) {
+    return 10;
+  }
+  if (actionId === "prewarm_local_jar_entry_index") {
+    return 20;
+  }
+  if (actionId.startsWith("enable_") || actionId.startsWith("confirm_")) {
+    return 30;
+  }
+  if (actionId.startsWith("inspect_")) {
+    return 40;
+  }
+
+  return 50;
+}
+
+function workspaceRouteActionIds(route: Record<string, unknown>): string[] {
+  const origin = stringValue(route.origin);
+  if (!origin) {
+    return [];
+  }
+
+  const ids: string[] = [];
+  const nextAction = stringValue(route.nextAction);
+  if (nextAction || route.status === "ready") {
+    ids.push(routeActionId(origin, nextAction !== undefined));
+  }
+  if (origin === "local_jar" && route.status === "ready") {
+    ids.push("prewarm_local_jar_entry_index");
+  }
+
+  return ids;
+}
+
+function routeActionId(origin: string, hasNextAction: boolean): string {
+  if (origin === "modrinth" || origin === "curseforge" || origin === "github") {
+    return `enable_${origin}_metadata`;
+  }
+  if (origin === "official") {
+    return "confirm_vanilla_generation";
+  }
+  if (hasNextAction) {
+    return `prepare_${origin}`;
+  }
+  if (
+    origin === "workspace_gradle" ||
+    origin === "workspace_probejs" ||
+    origin === "runtime_cache" ||
+    origin === "local_jar" ||
+    origin === "user_jar"
+  ) {
+    return `inspect_${origin}_evidence`;
+  }
+
+  return `prepare_${origin}`;
 }
 
 function formatGradle(workItems: Array<Record<string, unknown>>) {
