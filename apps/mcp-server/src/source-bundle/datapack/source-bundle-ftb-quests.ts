@@ -3,7 +3,8 @@ import { extname, join, relative, sep } from "node:path";
 
 import {
   readWorkspaceLocalSettings,
-  type WorkspaceLocalSchemaExtension
+  type WorkspaceLocalSchemaExtension,
+  type WorkspaceLocalSettingsPath
 } from "../../workspace/local-settings.js";
 
 const FTB_QUESTS_ROOTS = [
@@ -54,7 +55,7 @@ export interface FtbQuestsSummary {
   localSettings?: {
     source: "workspace_local_settings";
     applied: boolean;
-    path: ".mcpskill/settings.json";
+    path: WorkspaceLocalSettingsPath;
     schemaExtensionCount: number;
   };
   topPaths: string[];

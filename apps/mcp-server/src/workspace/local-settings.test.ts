@@ -15,11 +15,11 @@ afterEach(async () => {
 });
 
 describe("workspace local settings", () => {
-  it("normalizes reusable local schema extensions from .mcpskill/settings.json", async () => {
+  it("normalizes reusable local schema extensions from .mc-developing-mcp/settings.json", async () => {
     const workspaceRoot = await createTempRoot("mcpskill-local-settings-");
 
     await writeText(
-      join(workspaceRoot, ".mcpskill", "settings.json"),
+      join(workspaceRoot, ".mc-developing-mcp", "settings.json"),
       JSON.stringify({
         ftbQuests: {
           schemaExtensions: [
@@ -40,13 +40,84 @@ describe("workspace local settings", () => {
 
     await expect(readWorkspaceLocalSettings(workspaceRoot)).resolves.toMatchObject({
       source: "workspace_local_settings",
-      path: ".mcpskill/settings.json",
+      path: ".mc-developing-mcp/settings.json",
       ftbQuests: {
         schemaExtensions: [
           {
             id: "addon.bridge",
             category: "addon_bridge",
             paths: ["addon_bridge", "addon_bridge/deep"]
+          }
+        ]
+      }
+    });
+  });
+
+  it("falls back to legacy .mcpskill settings when the new settings path is absent", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-local-settings-legacy-");
+
+    await writeText(
+      join(workspaceRoot, ".mcpskill", "settings.json"),
+      JSON.stringify({
+        ftbQuests: {
+          schemaExtensions: [
+            {
+              id: "legacy_bridge",
+              category: "legacy_bridge",
+              paths: ["legacy_bridge"]
+            }
+          ]
+        }
+      })
+    );
+
+    await expect(readWorkspaceLocalSettings(workspaceRoot)).resolves.toMatchObject({
+      source: "workspace_local_settings",
+      path: ".mcpskill/settings.json",
+      ftbQuests: {
+        schemaExtensions: [
+          {
+            id: "legacy_bridge",
+            category: "legacy_bridge",
+            paths: ["legacy_bridge"]
+          }
+        ]
+      }
+    });
+  });
+
+  it("prefers new settings over legacy settings when both exist", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-local-settings-prefer-");
+
+    await writeText(
+      join(workspaceRoot, ".mcpskill", "settings.json"),
+      JSON.stringify({
+        ftbQuests: {
+          schemaExtensions: [
+            { id: "legacy", category: "legacy", paths: ["legacy"] }
+          ]
+        }
+      })
+    );
+    await writeText(
+      join(workspaceRoot, ".mc-developing-mcp", "settings.json"),
+      JSON.stringify({
+        ftbQuests: {
+          schemaExtensions: [
+            { id: "modern", category: "modern", paths: ["modern"] }
+          ]
+        }
+      })
+    );
+
+    await expect(readWorkspaceLocalSettings(workspaceRoot)).resolves.toMatchObject({
+      path: ".mc-developing-mcp/settings.json",
+      ftbQuests: {
+        schemaExtensions: [
+          {
+            id: "modern",
+            category: "modern",
+            paths: ["modern"]
           }
         ]
       }

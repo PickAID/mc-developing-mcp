@@ -9,37 +9,77 @@ export interface WorkspaceLocalSchemaExtension {
 
 export interface WorkspaceLocalSettings {
   source: "workspace_local_settings";
-  path: ".mcpskill/settings.json";
+  path: WorkspaceLocalSettingsPath;
   ftbQuests: {
     schemaExtensions: WorkspaceLocalSchemaExtension[];
   };
 }
 
+export type WorkspaceLocalSettingsPath =
+  | ".mc-developing-mcp/settings.json"
+  | ".mcpskill/settings.json";
+
+const primarySettingsPath = ".mc-developing-mcp/settings.json" as const;
+const legacySettingsPath = ".mcpskill/settings.json" as const;
+
 export async function readWorkspaceLocalSettings(
   workspaceRoot: string
 ): Promise<WorkspaceLocalSettings> {
+  const primary = await tryReadWorkspaceLocalSettings(
+    workspaceRoot,
+    primarySettingsPath
+  );
+  if (primary !== undefined) {
+    return primary;
+  }
+
+  const legacy = await tryReadWorkspaceLocalSettings(
+    workspaceRoot,
+    legacySettingsPath
+  );
+  if (legacy !== undefined) {
+    return legacy;
+  }
+
+  return buildWorkspaceLocalSettings(primarySettingsPath, undefined);
+}
+
+async function tryReadWorkspaceLocalSettings(
+  workspaceRoot: string,
+  settingsPath: WorkspaceLocalSettingsPath
+): Promise<WorkspaceLocalSettings | undefined> {
   try {
-    const raw = await readFile(resolveWorkspaceLocalSettingsPath(workspaceRoot), "utf-8");
+    const raw = await readFile(
+      resolveWorkspaceLocalSettingsPath(workspaceRoot, settingsPath),
+      "utf-8"
+    );
     const parsed = JSON.parse(raw) as {
       ftbQuests?: { schemaExtensions?: unknown };
     };
 
-    return buildWorkspaceLocalSettings(parsed.ftbQuests?.schemaExtensions);
+    return buildWorkspaceLocalSettings(
+      settingsPath,
+      parsed.ftbQuests?.schemaExtensions
+    );
   } catch {
-    return buildWorkspaceLocalSettings(undefined);
+    return undefined;
   }
 }
 
-function resolveWorkspaceLocalSettingsPath(workspaceRoot: string): string {
-  return join(workspaceRoot, ".mcpskill", "settings.json");
+function resolveWorkspaceLocalSettingsPath(
+  workspaceRoot: string,
+  settingsPath: WorkspaceLocalSettingsPath
+): string {
+  return join(workspaceRoot, ...settingsPath.split("/"));
 }
 
 function buildWorkspaceLocalSettings(
+  settingsPath: WorkspaceLocalSettingsPath,
   ftbQuestsSchemaExtensions: unknown
 ): WorkspaceLocalSettings {
   return {
     source: "workspace_local_settings",
-    path: ".mcpskill/settings.json",
+    path: settingsPath,
     ftbQuests: {
       schemaExtensions: parseLocalSchemaExtensions(ftbQuestsSchemaExtensions)
     }

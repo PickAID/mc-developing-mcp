@@ -114,7 +114,7 @@ describe("source.bundle FTB Quests evidence", () => {
       "{ }\n"
     );
     await writeText(
-      join(workspaceRoot, ".mcpskill", "settings.json"),
+      join(workspaceRoot, ".mc-developing-mcp", "settings.json"),
       JSON.stringify({
         ftbQuests: {
           schemaExtensions: [
@@ -142,7 +142,7 @@ describe("source.bundle FTB Quests evidence", () => {
           localSettings: {
             source: "workspace_local_settings",
             applied: true,
-            path: ".mcpskill/settings.json",
+            path: ".mc-developing-mcp/settings.json",
             schemaExtensionCount: 1
           },
           schemaProfile: {
