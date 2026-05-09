@@ -91,7 +91,14 @@ describe("source.bundle FTB Quests evidence", () => {
               "quest_links",
               "images"
             ],
-            extensionPolicy: "preserve_unknown_snbt_categories"
+            extensionPolicy: "preserve_unknown_snbt_categories",
+            fallbackExtensions: expect.arrayContaining([
+              {
+                id: "builtin.chapter_files",
+                category: "chapter",
+                paths: ["chapters"]
+              }
+            ])
           },
           topPaths: [
             "config/ftbquests/quests/addon_bridge/custom.snbt",
@@ -151,6 +158,54 @@ describe("source.bundle FTB Quests evidence", () => {
                 id: "addon_bridge",
                 category: "addon_bridge",
                 paths: ["addon_bridge"]
+              }
+            ]
+          }
+        }
+      }
+    });
+  });
+
+  it("lets workspace schema override built-in fallback categories", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-ftb-quests-override-");
+
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "chapters", "start.snbt"),
+      "{ }\n"
+    );
+    await writeText(
+      join(workspaceRoot, ".mc-developing-mcp", "settings.json"),
+      JSON.stringify({
+        ftbQuests: {
+          schemaExtensions: [
+            {
+              id: "pack.chapter_variant",
+              category: "pack_chapter_variant",
+              paths: ["chapters"]
+            }
+          ]
+        }
+      })
+    );
+
+    await expect(
+      executeMcpServerDatapackFiles(
+        createInput(workspaceRoot, "Inspect FTB Quests chapter schema.")
+      )
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        ftbQuestsSummary: {
+          byCategory: {
+            pack_chapter_variant: 1
+          },
+          schemaProfile: {
+            schemaResolution: "workspace_overrides_builtin_fallback",
+            localExtensions: [
+              {
+                id: "pack.chapter_variant",
+                category: "pack_chapter_variant",
+                paths: ["chapters"]
               }
             ]
           }

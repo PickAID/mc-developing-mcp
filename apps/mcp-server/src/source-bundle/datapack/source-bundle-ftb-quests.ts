@@ -31,6 +31,26 @@ const FTB_QUESTS_SCHEMA_PROFILE = {
   extensionPolicy: "preserve_unknown_snbt_categories"
 } as const;
 
+const BUILTIN_FTB_QUESTS_SCHEMA_EXTENSIONS: WorkspaceLocalSchemaExtension[] = [
+  {
+    id: "builtin.file_settings",
+    category: "file_settings",
+    paths: ["data.snbt"]
+  },
+  {
+    id: "builtin.chapter_groups",
+    category: "chapter_groups",
+    paths: ["chapter_groups.snbt"]
+  },
+  { id: "builtin.chapter_files", category: "chapter", paths: ["chapters"] },
+  {
+    id: "builtin.reward_tables",
+    category: "reward_table",
+    paths: ["reward_tables"]
+  },
+  { id: "builtin.translations", category: "translation", paths: ["lang"] }
+];
+
 type FtbQuestsCategory =
   | "addon_or_unknown"
   | "chapter"
@@ -50,6 +70,8 @@ export interface FtbQuestsSummary {
   byFormat: Record<string, number>;
   byCategory: Partial<Record<FtbQuestsCategory, number>>;
   schemaProfile: typeof FTB_QUESTS_SCHEMA_PROFILE & {
+    schemaResolution: "builtin_fallback" | "workspace_overrides_builtin_fallback";
+    fallbackExtensions: WorkspaceLocalSchemaExtension[];
     localExtensions?: WorkspaceLocalSchemaExtension[];
   };
   localSettings?: {
@@ -78,7 +100,11 @@ export async function summarizeFtbQuestsFiles(
   }
 
   const localSettings = await readWorkspaceLocalSettings(workspaceRoot);
-  const schemaExtensions = localSettings.ftbQuests.schemaExtensions;
+  const localSchemaExtensions = localSettings.ftbQuests.schemaExtensions;
+  const schemaExtensions = [
+    ...localSchemaExtensions,
+    ...BUILTIN_FTB_QUESTS_SCHEMA_EXTENSIONS
+  ];
   const uniquePaths = [...new Set(paths)].sort();
 
   if (uniquePaths.length === 0) {
@@ -96,17 +122,22 @@ export async function summarizeFtbQuestsFiles(
     byCategory: countCategories(uniquePaths, schemaExtensions),
     schemaProfile: {
       ...FTB_QUESTS_SCHEMA_PROFILE,
-      ...(schemaExtensions.length > 0
-        ? { localExtensions: schemaExtensions }
+      schemaResolution:
+        localSchemaExtensions.length > 0
+          ? "workspace_overrides_builtin_fallback"
+          : "builtin_fallback",
+      fallbackExtensions: BUILTIN_FTB_QUESTS_SCHEMA_EXTENSIONS,
+      ...(localSchemaExtensions.length > 0
+        ? { localExtensions: localSchemaExtensions }
         : {})
     },
-    ...(schemaExtensions.length > 0
+    ...(localSchemaExtensions.length > 0
       ? {
           localSettings: {
             source: localSettings.source,
             applied: true,
             path: localSettings.path,
-            schemaExtensionCount: schemaExtensions.length
+            schemaExtensionCount: localSchemaExtensions.length
           }
         }
       : {}),
@@ -218,22 +249,6 @@ function classifyQuestPath(
 
   if (localMatch) {
     return localMatch.category;
-  }
-
-  if (rootRelativePath === "data.snbt") {
-    return "file_settings";
-  }
-  if (rootRelativePath === "chapter_groups.snbt") {
-    return "chapter_groups";
-  }
-  if (segments[0] === "chapters") {
-    return "chapter";
-  }
-  if (segments[0] === "reward_tables") {
-    return "reward_table";
-  }
-  if (segments[0] === "lang") {
-    return "translation";
   }
 
   return "addon_or_unknown";
