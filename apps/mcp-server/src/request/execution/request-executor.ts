@@ -44,6 +44,7 @@ import {
   rememberContext,
   shouldUseAsContext
 } from "./request-execution-context.js";
+import { shouldContinueWorkspacePreparationCandidate } from "./request-execution-selection.js";
 
 export type {
   McpServerRequestExecution,
@@ -168,6 +169,17 @@ async function executeEvidencePlanWithContext(input: {
       }
 
       selectedEvidence = buildSelectedExecution(candidate, result, docsSelection);
+      if (
+        shouldContinueWorkspacePreparationCandidate(
+          candidate,
+          input.evidencePlan
+        )
+      ) {
+        rememberContext(result.payload, context);
+        executions.push(buildContextExecution(candidate, result, docsSelection));
+        continue;
+      }
+
       executions.push(selectedEvidence);
       break;
     } catch (error) {

@@ -156,7 +156,8 @@ function formatWorkspacePreparation(
     formatGradle(workItems),
     formatProbeJs(workItems),
     formatLocalJar(workItems),
-    formatSourceIndex(payload?.sourceIndexPreview)
+    formatSourceIndex(payload?.sourceIndexPreview),
+    formatFtbQuests(result)
   ].filter((part): part is string => part !== undefined);
 
   return parts.length > 0 ? parts.join("; ") : undefined;
@@ -180,17 +181,27 @@ function formatProbeJs(workItems: Array<Record<string, unknown>>) {
   const payload = workItemPayload(workItems, "workspace_probejs_types");
   const resources = recordValue(payload?.probeResources);
   const summary = recordValue(resources?.summary);
-  const counts = recordValue(summary?.totalCounts ?? summary?.counts);
+  const counts = recordValue(summary?.counts);
+  const totalCounts = recordValue(summary?.totalCounts);
   const itemCount = counts?.item;
   const recipeCount = counts?.recipe;
+  const totalItemCount = totalCounts?.item;
+  const totalRecipeCount = totalCounts?.recipe;
 
-  if (typeof itemCount !== "number" && typeof recipeCount !== "number") {
+  if (
+    typeof itemCount !== "number" &&
+    typeof recipeCount !== "number" &&
+    typeof totalItemCount !== "number" &&
+    typeof totalRecipeCount !== "number"
+  ) {
     return undefined;
   }
 
   return compactCounts("probejs", [
-    ["items", itemCount],
-    ["recipes", recipeCount]
+    ["item matches", itemCount],
+    ["recipe matches", recipeCount],
+    ["total items", totalItemCount],
+    ["total recipes", totalRecipeCount]
   ]);
 }
 
@@ -216,6 +227,23 @@ function formatSourceIndex(value: unknown) {
   return compactCounts("source index", [
     ["databases", preview.searchedDatabaseCount],
     ["matches", matches.length]
+  ]);
+}
+
+function formatFtbQuests(result: McpServerRequestExecutorResult) {
+  const execution = result.executions.find(
+    (candidate) => candidate.routeStep === "datapack_files"
+  );
+  const payload = recordValue(execution?.payload);
+  const summary = recordValue(payload?.ftbQuestsSummary);
+  if (!summary) {
+    return undefined;
+  }
+
+  const logSignals = recordValue(summary.logSignals);
+  return compactCounts("ftb quests", [
+    ["files", summary.fileCount],
+    ["log errors", logSignals?.ftbQuestsErrorCount]
   ]);
 }
 

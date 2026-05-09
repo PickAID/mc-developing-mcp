@@ -240,7 +240,8 @@ async function hasDatapackOrResourceContent(root: string): Promise<boolean> {
   return (
     (await pathIsFile(join(root, "pack.mcmeta"))) ||
     (await pathIsDirectory(join(root, "data"))) ||
-    (await pathIsDirectory(join(root, "assets")))
+    (await pathIsDirectory(join(root, "assets"))) ||
+    (await pathIsDirectory(join(root, "config", "ftbquests", "quests")))
   );
 }
 

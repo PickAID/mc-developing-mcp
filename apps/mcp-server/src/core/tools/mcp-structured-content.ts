@@ -125,7 +125,10 @@ function buildWorkspacePreparation(
     },
     capabilityMap: capabilityMapPayload.value,
     workflow: buildWorkspacePreparationWorkflow(payload, capabilityGuidance),
-    evidenceSummary: buildWorkspacePreparationEvidenceSummary(payload),
+    evidenceSummary: buildWorkspacePreparationEvidenceSummary(
+      payload,
+      result.executions
+    ),
     budget: capabilityMapPayload.stats.truncated
       ? capabilityMapPayload.stats
       : undefined
@@ -135,7 +138,8 @@ function buildWorkspacePreparation(
 }
 
 function buildWorkspacePreparationEvidenceSummary(
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  executions: McpServerRequestExecutorResult["executions"]
 ) {
   const workItemExecutions = arrayOfRecords(payload.workItemExecutions);
   const summary = {
@@ -143,7 +147,8 @@ function buildWorkspacePreparationEvidenceSummary(
     probejs: summarizeProbeJsExecution(workItemExecutions),
     localJar: summarizeJarExecution(workItemExecutions),
     sourceIndex: summarizeSourceIndexPreview(payload.sourceIndexPreview),
-    javaDiagnostics: summarizeJavaDiagnosticsExecution(workItemExecutions)
+    javaDiagnostics: summarizeJavaDiagnosticsExecution(workItemExecutions),
+    ftbQuests: summarizeFtbQuestsExecution(executions)
   };
 
   return Object.fromEntries(
@@ -249,6 +254,35 @@ function summarizeJavaDiagnosticsExecution(
     totalDiagnostics: numberValue(execution.totalDiagnostics),
     firstLocation: formatDiagnosticLocation(firstFile, firstDiagnostic),
     firstMessage
+  };
+}
+
+function summarizeFtbQuestsExecution(
+  executions: McpServerRequestExecutorResult["executions"]
+) {
+  const execution = executions.find((item) => item.routeStep === "datapack_files");
+  const payload = isRecord(execution?.payload) ? execution.payload : undefined;
+  const summary = isRecord(payload?.ftbQuestsSummary)
+    ? payload.ftbQuestsSummary
+    : undefined;
+  const logSignals = isRecord(summary?.logSignals) ? summary.logSignals : undefined;
+  const proposal = isRecord(logSignals?.settingsProposal)
+    ? logSignals.settingsProposal
+    : undefined;
+  if (!summary) {
+    return undefined;
+  }
+
+  return {
+    fileCount: numberValue(summary.fileCount),
+    schemaSource: isRecord(summary.schemaProfile)
+      ? summary.schemaProfile.sourceEvidence
+      : undefined,
+    logErrorCount: numberValue(logSignals?.ftbQuestsErrorCount),
+    settingsProposalTargetPath: proposal?.targetPath,
+    nextAction: isRecord(summary.decisionTrace)
+      ? summary.decisionTrace.nextAction
+      : undefined
   };
 }
 

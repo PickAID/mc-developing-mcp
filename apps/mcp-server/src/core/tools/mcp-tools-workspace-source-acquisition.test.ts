@@ -37,7 +37,33 @@ describe("mc_develop workspace source acquisition acceptance", () => {
       MC_DEVELOP_TOOL_NAME
     ]);
     expect(result.isError).toBeUndefined();
+    expect(result.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining("Workspace preparation: gradle dependencies=1")
+    });
+    expect(result.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining("probejs item matches=1")
+    });
+    expect(result.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining("total items=1")
+    });
     expect(result.structuredContent).toMatchObject({
+      workspacePreparation: {
+        status: "ready",
+        evidenceSummary: {
+          gradle: {
+            dependencyCount: 1,
+            repositoryCount: 2
+          },
+          probejs: {
+            totalCounts: {
+              item: 1
+            }
+          }
+        }
+      },
       executions: expect.arrayContaining([
         expect.objectContaining({
           routeStep: "source_acquisition_plan",
@@ -71,6 +97,69 @@ describe("mc_develop workspace source acquisition acceptance", () => {
                 })
               })
             ])
+          })
+        })
+      ])
+    });
+  });
+
+  it("keeps FTB Quests evidence visible during broad workspace preparation", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-ftb-prep-runtime-");
+    const workspaceRoot = await createWorkspace();
+
+    await mkdir(join(workspaceRoot, "config", "ftbquests", "quests", "chapters"), {
+      recursive: true
+    });
+    await writeFile(
+      join(workspaceRoot, "config", "ftbquests", "quests", "chapters", "start.snbt"),
+      "{ id: 'start', quests: [] }\n"
+    );
+    await mkdir(join(workspaceRoot, "logs"), { recursive: true });
+    await writeFile(
+      join(workspaceRoot, "logs", "latest.log"),
+      [
+        "[Server thread/ERROR] [ftbquests/]: Failed to load FTB Quests file config/ftbquests/quests/chapters/start.snbt",
+        "java.lang.IllegalArgumentException: Unknown task type hotai:flight_task"
+      ].join("\n")
+    );
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "帮我初始化这个整合包，让后续崩溃排查、KubeJS、FTB quests 和依赖源码都能少浪费 token。",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining("ftb quests files=1")
+    });
+    expect(result.structuredContent).toMatchObject({
+      workspacePreparation: {
+        evidenceSummary: {
+          ftbQuests: {
+            fileCount: 1,
+            logErrorCount: 1,
+            nextAction: expect.stringContaining(".mc-developing-mcp/settings.json")
+          }
+        }
+      },
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "source_acquisition_plan",
+          status: "context"
+        }),
+        expect.objectContaining({
+          routeStep: "datapack_files",
+          status: "context",
+          payload: expect.objectContaining({
+            ftbQuestsSummary: expect.objectContaining({
+              fileCount: 1
+            })
           })
         })
       ])
