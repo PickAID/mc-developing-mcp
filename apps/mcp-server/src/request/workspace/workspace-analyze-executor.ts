@@ -70,7 +70,8 @@ async function executeWorkspaceAnalyze(
     signals.actionableClassReferences.length > 0 ||
     signals.resourceLocations.length > 0 ||
     signals.resourcePaths.length > 0 ||
-    signals.loaderModReferences.length > 0;
+    signals.loaderModReferences.length > 0 ||
+    signals.ftbQuestsErrors.length > 0;
 
   return {
     matched,

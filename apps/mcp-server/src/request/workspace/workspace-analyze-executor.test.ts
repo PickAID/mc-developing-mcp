@@ -191,6 +191,38 @@ describe("executeMcpServerWorkspaceAnalyze", () => {
     });
   });
 
+  it("treats FTB Quests load errors as actionable schema evidence", async () => {
+    const workspaceRoot = await createCrashWorkspace(
+      [
+        "[Server thread/ERROR] [ftbquests/]: Failed to load FTB Quests file config/ftbquests/quests/addon_bridge/custom.snbt",
+        "java.lang.IllegalArgumentException: Unknown task type hotai:flight_task",
+        ""
+      ].join("\n")
+    );
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "FTB Quests reports a quest loading error; inspect latest.log."
+    );
+
+    await expect(executeMcpServerWorkspaceAnalyze(input)).resolves.toMatchObject({
+      matched: true,
+      summary: "Extracted 1 actionable FTB Quests schema signal(s) from 1 log file(s).",
+      payload: {
+        source: "workspace_analyze",
+        mode: "log_files",
+        signals: {
+          ftbQuestsErrors: [
+            {
+              kind: "load_error",
+              path: "config/ftbquests/quests/addon_bridge/custom.snbt",
+              message: "Unknown task type hotai:flight_task"
+            }
+          ]
+        }
+      }
+    });
+  });
+
   it("drains pending Java LSP diagnostics into compact workspace evidence", async () => {
     const workspaceRoot = await createCrashWorkspace("not a crash log\n");
     const registry = createLspDiagnosticRegistry();

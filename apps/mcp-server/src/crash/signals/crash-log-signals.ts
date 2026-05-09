@@ -26,6 +26,7 @@ export interface CrashSignals {
   mixinTargetClassReferences: string[];
   loaderModIds: string[];
   loaderModReferences: CrashLoaderModReference[];
+  ftbQuestsErrors: CrashFtbQuestsError[];
   stackFrames: CrashStackFrame[];
 }
 
@@ -44,6 +45,12 @@ export interface CrashLoaderModReference {
   kind: "missing_dependency" | "incompatible_dependency";
 }
 
+export interface CrashFtbQuestsError {
+  kind: "load_error";
+  path: string;
+  message?: string;
+}
+
 export function parseCrashSignals(content: string): CrashSignals {
   const exceptionClasses = unique(extractExceptionClasses(content));
   const resourceLocations = unique(extractResourceLocations(content));
@@ -52,6 +59,7 @@ export function parseCrashSignals(content: string): CrashSignals {
   const loaderModReferences = uniqueLoaderModReferences(
     extractLoaderModReferences(content)
   );
+  const ftbQuestsErrors = uniqueFtbQuestsErrors(extractFtbQuestsErrors(content));
   const stackFrames = content
     .split(/\r?\n/)
     .map(parseStackFrame)
@@ -76,6 +84,7 @@ export function parseCrashSignals(content: string): CrashSignals {
     mixinTargetClassReferences,
     loaderModIds,
     loaderModReferences,
+    ftbQuestsErrors,
     stackFrames: stackFrames.filter((frame) => isActionableClass(frame.className))
   };
 }
@@ -87,7 +96,8 @@ export function countCrashSignals(signals: CrashSignals): number {
     signals.resourceLocations.length +
     signals.resourcePaths.length +
     signals.loaderModIds.length +
-    signals.loaderModReferences.length
+    signals.loaderModReferences.length +
+    signals.ftbQuestsErrors.length
   );
 }
 
@@ -111,6 +121,9 @@ export function mergeCrashSignals(signals: CrashSignals[]): CrashSignals {
     loaderModIds: unique(signals.flatMap((entry) => entry.loaderModIds)),
     loaderModReferences: uniqueLoaderModReferences(
       signals.flatMap((entry) => entry.loaderModReferences)
+    ),
+    ftbQuestsErrors: uniqueFtbQuestsErrors(
+      signals.flatMap((entry) => entry.ftbQuestsErrors)
     ),
     classReferences,
     actionableClassReferences: classReferences.filter(isActionableClass),
@@ -140,13 +153,22 @@ export function formatCrashSignalSummary(
   ) {
     return `Extracted ${signals.loaderModReferences.length} actionable crash loader mod reference(s) from ${logCount} log file(s).`;
   }
+  if (
+    signals.ftbQuestsErrors.length > 0 &&
+    signals.actionableClassReferences.length === 0 &&
+    signals.loaderModReferences.length === 0 &&
+    signals.loaderModIds.length === 0
+  ) {
+    return `Extracted ${signals.ftbQuestsErrors.length} actionable FTB Quests schema signal(s) from ${logCount} log file(s).`;
+  }
 
   const signalCount =
     signals.actionableClassReferences.length +
     signals.resourceLocations.length +
     signals.resourcePaths.length +
     signals.loaderModIds.length +
-    signals.loaderModReferences.length;
+    signals.loaderModReferences.length +
+    signals.ftbQuestsErrors.length;
 
   return `Extracted ${signalCount} actionable crash signal(s) from ${logCount} log file(s).`;
 }
@@ -269,6 +291,47 @@ function extractForgeLoaderModReferences(
   });
 }
 
+function extractFtbQuestsErrors(content: string): CrashFtbQuestsError[] {
+  const lines = content.split(/\r?\n/);
+  const errors: CrashFtbQuestsError[] = [];
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index] ?? "";
+    const pathMatch = line.match(
+      /\b(config\/ftbquests\/quests\/[^\s"'`]+\.snbt)\b/i
+    );
+
+    if (!pathMatch || !line.toLowerCase().includes("ftbquests")) {
+      continue;
+    }
+
+    errors.push({
+      kind: "load_error",
+      path: pathMatch[1],
+      message: extractFtbQuestsErrorMessage(lines, index)
+    });
+  }
+
+  return errors;
+}
+
+function extractFtbQuestsErrorMessage(
+  lines: string[],
+  pathLineIndex: number
+): string | undefined {
+  for (const line of lines.slice(pathLineIndex + 1, pathLineIndex + 5)) {
+    const message = line.match(
+      /(?:IllegalArgumentException|RuntimeException|JsonParseException|SNBTException):\s*(.+)$/i
+    )?.[1]?.trim();
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return undefined;
+}
+
 function extractResourceLocations(content: string): string[] {
   const matches = content.matchAll(
     /#?\b([a-z0-9_.-]+:[a-z0-9_./-]+)\b/g
@@ -355,6 +418,22 @@ function uniqueLoaderModReferences(
       value.actualVersion ?? "",
       value.kind
     ].join("\0");
+
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function uniqueFtbQuestsErrors(
+  values: CrashFtbQuestsError[]
+): CrashFtbQuestsError[] {
+  const seen = new Set<string>();
+
+  return values.filter((value) => {
+    const key = [value.kind, value.path, value.message ?? ""].join("\0");
 
     if (seen.has(key)) {
       return false;

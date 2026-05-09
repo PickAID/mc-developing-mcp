@@ -61,4 +61,22 @@ describe("parseCrashSignals", () => {
 
     expect(signals.loaderModIds).toEqual(["acceleratedrendering", "oculus"]);
   });
+
+  it("extracts FTB Quests load errors for schema evolution evidence", () => {
+    const signals = parseCrashSignals(
+      [
+        "[Server thread/ERROR] [ftbquests/]: Failed to load FTB Quests file config/ftbquests/quests/addon_bridge/custom.snbt",
+        "java.lang.IllegalArgumentException: Unknown task type hotai:flight_task",
+        ""
+      ].join("\n")
+    );
+
+    expect(signals.ftbQuestsErrors).toEqual([
+      {
+        kind: "load_error",
+        path: "config/ftbquests/quests/addon_bridge/custom.snbt",
+        message: "Unknown task type hotai:flight_task"
+      }
+    ]);
+  });
 });
