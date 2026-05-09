@@ -6,6 +6,7 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "./request-handler.js";
+import { extractFtbQuestsErrorSummaries } from "./request-execution-ftb-context.js";
 
 export interface RequestExecutionContext {
   classReferences: string[];
@@ -14,6 +15,7 @@ export interface RequestExecutionContext {
   resourcePaths: string[];
   loaderModIds: string[];
   loaderDependencySummaries: string[];
+  ftbQuestsErrorSummaries: string[];
   javaDiagnostics: string[];
   javaSourcePaths: string[];
 }
@@ -26,6 +28,7 @@ export function createRequestExecutionContext(): RequestExecutionContext {
     resourcePaths: [],
     loaderModIds: [],
     loaderDependencySummaries: [],
+    ftbQuestsErrorSummaries: [],
     javaDiagnostics: [],
     javaSourcePaths: []
   };
@@ -116,6 +119,10 @@ export function rememberContext(
     ...context.loaderDependencySummaries,
     ...extractLoaderDependencySummaries(payload)
   ]);
+  context.ftbQuestsErrorSummaries = unique([
+    ...context.ftbQuestsErrorSummaries,
+    ...extractFtbQuestsErrorSummaries(payload)
+  ]);
   context.javaDiagnostics = unique([
     ...context.javaDiagnostics,
     ...extractJavaDiagnosticSummaries(payload)
@@ -178,6 +185,11 @@ function buildContextTexts(context: RequestExecutionContext): string[] {
     ...context.loaderDependencySummaries.map(
       (summary) => `Crash log loader dependency: ${summary}`
     ),
+    ...(context.ftbQuestsErrorSummaries.length > 0
+      ? [
+          `Crash log FTB Quests schema errors: ${context.ftbQuestsErrorSummaries.join("; ")}`
+        ]
+      : []),
     ...(context.javaDiagnostics.length > 0
       ? [`Java diagnostics: ${context.javaDiagnostics.join("; ")}`]
       : []),
@@ -193,7 +205,8 @@ function extractCrashLogContextQueries(payload: unknown): string[] {
     ...extractMixinTargetClassReferences(payload),
     ...extractResourceLocations(payload),
     ...extractResourcePaths(payload),
-    ...extractLoaderModIds(payload)
+    ...extractLoaderModIds(payload),
+    ...extractFtbQuestsErrorSummaries(payload)
   ];
 }
 

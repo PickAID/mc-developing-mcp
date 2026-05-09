@@ -1,6 +1,10 @@
-import { readdir, stat } from "node:fs/promises";
+import { open, readdir, stat } from "node:fs/promises";
 import { extname, join, relative, sep } from "node:path";
 
+import {
+  parseCrashSignals,
+  type CrashFtbQuestsError
+} from "../../crash/signals/crash-log-signals.js";
 import {
   readWorkspaceLocalSettings,
   type WorkspaceLocalSchemaExtension,
@@ -14,6 +18,7 @@ const FTB_QUESTS_ROOTS = [
 const SUPPORTED_FORMATS = new Set([".snbt"]);
 const MAX_FILES = 128;
 const MAX_LISTED_PATHS = 24;
+const MAX_LOG_BYTES = 64 * 1024;
 
 const FTB_QUESTS_SCHEMA_PROFILE = {
   sourceEvidence: "ftb_quests_source",
@@ -81,6 +86,7 @@ export interface FtbQuestsSummary {
     path: WorkspaceLocalSettingsPath;
     schemaExtensionCount: number;
   };
+  logSignals?: FtbQuestsLogSignals;
   topPaths: string[];
   truncated: boolean;
 }
@@ -91,6 +97,17 @@ interface FtbQuestsSchemaEvolutionGuidance {
   workspaceSettingsPath: WorkspaceLocalSettingsPath;
   evidenceSignals: string[];
   recommendedActions: string[];
+}
+
+interface FtbQuestsLogSignals {
+  source: "workspace_logs";
+  ftbQuestsErrorCount: number;
+  errors: CrashFtbQuestsError[];
+  suggestedSchemaExtensions: FtbQuestsSuggestedSchemaExtension[];
+}
+
+interface FtbQuestsSuggestedSchemaExtension extends WorkspaceLocalSchemaExtension {
+  confidence: "needs_user_verification";
 }
 
 export async function summarizeFtbQuestsFiles(
@@ -115,6 +132,7 @@ export async function summarizeFtbQuestsFiles(
     ...BUILTIN_FTB_QUESTS_SCHEMA_EXTENSIONS
   ];
   const uniquePaths = [...new Set(paths)].sort();
+  const logSignals = await summarizeFtbQuestsLogSignals(workspaceRoot);
 
   if (uniquePaths.length === 0) {
     return undefined;
@@ -151,9 +169,76 @@ export async function summarizeFtbQuestsFiles(
           }
         }
       : {}),
+    ...(logSignals ? { logSignals } : {}),
     topPaths: uniquePaths.slice(0, MAX_LISTED_PATHS),
     truncated: uniquePaths.length > MAX_LISTED_PATHS || paths.length >= MAX_FILES
   };
+}
+
+async function summarizeFtbQuestsLogSignals(
+  workspaceRoot: string
+): Promise<FtbQuestsLogSignals | undefined> {
+  const logs = await Promise.all(
+    [join(workspaceRoot, "logs", "latest.log"), join(workspaceRoot, "logs", "debug.log")]
+      .map(readLogTailIfPresent)
+  );
+  const errors = logs.flatMap((content) =>
+    content ? parseCrashSignals(content).ftbQuestsErrors : []
+  );
+  const uniqueErrors = uniqueFtbQuestsErrors(errors);
+
+  if (uniqueErrors.length === 0) {
+    return undefined;
+  }
+
+  return {
+    source: "workspace_logs",
+    ftbQuestsErrorCount: uniqueErrors.length,
+    errors: uniqueErrors,
+    suggestedSchemaExtensions: suggestSchemaExtensions(uniqueErrors)
+  };
+}
+
+async function readLogTailIfPresent(path: string): Promise<string | undefined> {
+  try {
+    const details = await stat(path);
+    const readBytes = Math.min(details.size, MAX_LOG_BYTES);
+    const offset = Math.max(0, details.size - readBytes);
+    const handle = await open(path, "r");
+
+    try {
+      const buffer = Buffer.alloc(readBytes);
+      await handle.read(buffer, 0, readBytes, offset);
+      return buffer.toString("utf-8");
+    } finally {
+      await handle.close();
+    }
+  } catch {
+    return undefined;
+  }
+}
+
+function suggestSchemaExtensions(
+  errors: CrashFtbQuestsError[]
+): FtbQuestsSuggestedSchemaExtension[] {
+  return unique(
+    errors.flatMap((error) => {
+      const rootRelativePath = error.path.split("config/ftbquests/quests/").at(1);
+      const firstSegment = rootRelativePath?.split("/")[0];
+
+      if (!firstSegment || firstSegment.endsWith(".snbt")) {
+        return [];
+      }
+
+      return [{
+        id: `observed.${firstSegment}`,
+        category: firstSegment,
+        paths: [firstSegment],
+        confidence: "needs_user_verification" as const
+      }];
+    }),
+    (entry) => entry.id
+  );
 }
 
 function buildSchemaEvolutionGuidance(
@@ -288,6 +373,28 @@ function classifyQuestPath(
 
 function pathStartsWith(path: string, prefix: string): boolean {
   return path === prefix || path.startsWith(`${prefix}/`);
+}
+
+function uniqueFtbQuestsErrors(
+  values: CrashFtbQuestsError[]
+): CrashFtbQuestsError[] {
+  return unique(values, (value) =>
+    [value.kind, value.path, value.message ?? ""].join("\0")
+  );
+}
+
+function unique<T>(values: T[], keyOf: (value: T) => string): T[] {
+  const seen = new Set<string>();
+
+  return values.filter((value) => {
+    const key = keyOf(value);
+
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function toPosixPath(path: string): string {

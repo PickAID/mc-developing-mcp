@@ -228,6 +228,59 @@ describe("source.bundle FTB Quests evidence", () => {
       }
     });
   });
+
+  it("summarizes FTB Quests log errors as schema evolution evidence", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-ftb-quests-log-");
+
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "addon_bridge", "custom.snbt"),
+      "{ }\n"
+    );
+    await writeText(
+      join(workspaceRoot, "logs", "latest.log"),
+      [
+        "[Server thread/ERROR] [ftbquests/]: Failed to load FTB Quests file config/ftbquests/quests/addon_bridge/custom.snbt",
+        "java.lang.IllegalArgumentException: Unknown task type hotai:flight_task",
+        ""
+      ].join("\n")
+    );
+
+    await expect(
+      executeMcpServerDatapackFiles(
+        createInput(workspaceRoot, "Inspect FTB Quests load error evidence.")
+      )
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        ftbQuestsSummary: {
+          logSignals: {
+            source: "workspace_logs",
+            ftbQuestsErrorCount: 1,
+            errors: [
+              {
+                kind: "load_error",
+                path: "config/ftbquests/quests/addon_bridge/custom.snbt",
+                message: "Unknown task type hotai:flight_task"
+              }
+            ],
+            suggestedSchemaExtensions: [
+              {
+                id: "observed.addon_bridge",
+                category: "addon_bridge",
+                paths: ["addon_bridge"],
+                confidence: "needs_user_verification"
+              }
+            ]
+          },
+          schemaProfile: {
+            evolutionGuidance: {
+              evidenceSignals: expect.arrayContaining(["ftb_quests_load_errors"])
+            }
+          }
+        }
+      }
+    });
+  });
 });
 
 function createInput(
