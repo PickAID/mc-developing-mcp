@@ -1,4 +1,4 @@
-import { readdir, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { extname, join, relative, sep } from "node:path";
 
 const FTB_QUESTS_ROOTS = [
@@ -31,7 +31,18 @@ type FtbQuestsCategory =
   | "chapter_groups"
   | "file_settings"
   | "reward_table"
-  | "translation";
+  | "translation"
+  | string;
+
+interface LocalSchemaExtension {
+  id: string;
+  category: string;
+  paths: string[];
+}
+
+interface FtbQuestsLocalSettings {
+  schemaExtensions: LocalSchemaExtension[];
+}
 
 export interface FtbQuestsSummary {
   source: "ftb_quests_files";
@@ -42,7 +53,15 @@ export interface FtbQuestsSummary {
   rewardTableFileCount: number;
   byFormat: Record<string, number>;
   byCategory: Partial<Record<FtbQuestsCategory, number>>;
-  schemaProfile: typeof FTB_QUESTS_SCHEMA_PROFILE;
+  schemaProfile: typeof FTB_QUESTS_SCHEMA_PROFILE & {
+    localExtensions?: LocalSchemaExtension[];
+  };
+  localSettings?: {
+    source: "workspace_local_settings";
+    applied: boolean;
+    path: ".mcpskill/settings.json";
+    schemaExtensionCount: number;
+  };
   topPaths: string[];
   truncated: boolean;
 }
@@ -62,6 +81,7 @@ export async function summarizeFtbQuestsFiles(
     await collectQuestPaths(root, workspaceRoot, paths);
   }
 
+  const localSettings = await readFtbQuestsLocalSettings(workspaceRoot);
   const uniquePaths = [...new Set(paths)].sort();
 
   if (uniquePaths.length === 0) {
@@ -76,8 +96,23 @@ export async function summarizeFtbQuestsFiles(
     chapterFileCount: countPathSegment(uniquePaths, "chapters"),
     rewardTableFileCount: countPathSegment(uniquePaths, "reward_tables"),
     byFormat: countFormats(uniquePaths),
-    byCategory: countCategories(uniquePaths),
-    schemaProfile: FTB_QUESTS_SCHEMA_PROFILE,
+    byCategory: countCategories(uniquePaths, localSettings.schemaExtensions),
+    schemaProfile: {
+      ...FTB_QUESTS_SCHEMA_PROFILE,
+      ...(localSettings.schemaExtensions.length > 0
+        ? { localExtensions: localSettings.schemaExtensions }
+        : {})
+    },
+    ...(localSettings.schemaExtensions.length > 0
+      ? {
+          localSettings: {
+            source: "workspace_local_settings",
+            applied: true,
+            path: ".mcpskill/settings.json",
+            schemaExtensionCount: localSettings.schemaExtensions.length
+          }
+        }
+      : {}),
     topPaths: uniquePaths.slice(0, MAX_LISTED_PATHS),
     truncated: uniquePaths.length > MAX_LISTED_PATHS || paths.length >= MAX_FILES
   };
@@ -157,11 +192,14 @@ function countFormats(paths: string[]): Record<string, number> {
   );
 }
 
-function countCategories(paths: string[]): Partial<Record<FtbQuestsCategory, number>> {
+function countCategories(
+  paths: string[],
+  extensions: LocalSchemaExtension[]
+): Partial<Record<FtbQuestsCategory, number>> {
   const counts: Partial<Record<FtbQuestsCategory, number>> = {};
 
   for (const path of paths) {
-    const category = classifyQuestPath(path);
+    const category = classifyQuestPath(path, extensions);
 
     counts[category] = (counts[category] ?? 0) + 1;
   }
@@ -171,9 +209,19 @@ function countCategories(paths: string[]): Partial<Record<FtbQuestsCategory, num
   ) as Partial<Record<FtbQuestsCategory, number>>;
 }
 
-function classifyQuestPath(path: string): FtbQuestsCategory {
+function classifyQuestPath(
+  path: string,
+  extensions: LocalSchemaExtension[]
+): FtbQuestsCategory {
   const rootRelativePath = path.split("config/ftbquests/quests/").at(1) ?? path;
   const segments = rootRelativePath.split("/");
+  const localMatch = extensions.find((extension) =>
+    extension.paths.some((prefix) => pathStartsWith(rootRelativePath, prefix))
+  );
+
+  if (localMatch) {
+    return localMatch.category;
+  }
 
   if (rootRelativePath === "data.snbt") {
     return "file_settings";
@@ -192,6 +240,65 @@ function classifyQuestPath(path: string): FtbQuestsCategory {
   }
 
   return "addon_or_unknown";
+}
+
+async function readFtbQuestsLocalSettings(
+  workspaceRoot: string
+): Promise<FtbQuestsLocalSettings> {
+  try {
+    const raw = await readFile(join(workspaceRoot, ".mcpskill", "settings.json"), "utf-8");
+    const parsed = JSON.parse(raw) as {
+      ftbQuests?: { schemaExtensions?: unknown };
+    };
+
+    return {
+      schemaExtensions: parseLocalSchemaExtensions(
+        parsed.ftbQuests?.schemaExtensions
+      )
+    };
+  } catch {
+    return { schemaExtensions: [] };
+  }
+}
+
+function parseLocalSchemaExtensions(value: unknown): LocalSchemaExtension[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    if (!isRecord(entry)) {
+      return [];
+    }
+
+    const id = typeof entry.id === "string" ? entry.id : "";
+    const category = typeof entry.category === "string" ? entry.category : "";
+    const paths = Array.isArray(entry.paths)
+      ? entry.paths.filter((path): path is string => typeof path === "string")
+      : [];
+
+    if (!safeIdentifier(id) || !safeIdentifier(category) || paths.length === 0) {
+      return [];
+    }
+
+    return [{ id, category, paths: paths.map(normalizeLocalPathPrefix) }];
+  });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function safeIdentifier(value: string): boolean {
+  return /^[a-z0-9_.-]+$/i.test(value);
+}
+
+function normalizeLocalPathPrefix(path: string): string {
+  return path.split(sep).join("/").replace(/^\/+|\/+$/g, "");
+}
+
+function pathStartsWith(path: string, prefix: string): boolean {
+  return path === prefix || path.startsWith(`${prefix}/`);
 }
 
 function toPosixPath(path: string): string {

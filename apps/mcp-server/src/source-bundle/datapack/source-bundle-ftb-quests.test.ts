@@ -105,6 +105,59 @@ describe("source.bundle FTB Quests evidence", () => {
       }
     });
   });
+
+  it("applies local schema categories from workspace settings", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-ftb-quests-settings-");
+
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "addon_bridge", "custom.snbt"),
+      "{ }\n"
+    );
+    await writeText(
+      join(workspaceRoot, ".mcpskill", "settings.json"),
+      JSON.stringify({
+        ftbQuests: {
+          schemaExtensions: [
+            {
+              id: "addon_bridge",
+              category: "addon_bridge",
+              paths: ["addon_bridge"]
+            }
+          ]
+        }
+      })
+    );
+
+    await expect(
+      executeMcpServerDatapackFiles(
+        createInput(workspaceRoot, "Inspect FTB Quests addon bridge quest data.")
+      )
+    ).resolves.toMatchObject({
+      matched: true,
+      payload: {
+        ftbQuestsSummary: {
+          byCategory: {
+            addon_bridge: 1
+          },
+          localSettings: {
+            source: "workspace_local_settings",
+            applied: true,
+            path: ".mcpskill/settings.json",
+            schemaExtensionCount: 1
+          },
+          schemaProfile: {
+            localExtensions: [
+              {
+                id: "addon_bridge",
+                category: "addon_bridge",
+                paths: ["addon_bridge"]
+              }
+            ]
+          }
+        }
+      }
+    });
+  });
 });
 
 function createInput(
