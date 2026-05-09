@@ -22,6 +22,9 @@ export const KUBEJS_DEBUG_POLICY_TEXT =
 export const KUBEJS_RESOURCE_POLICY_TEXT =
   "Resources: connect scripts to datapack and resource-pack evidence for generated recipes, tags, loot, assets, models, lang keys, textures, and custom registries; report unresolved IDs instead of inventing them.";
 
+export const KUBEJS_FTB_INTEGRATION_POLICY_TEXT =
+  "FTB integrations: for FTB XMod Compat or FTB Quests integration, inspect mod archive/decompiled evidence and quest data formats before writing compatibility KubeJS; treat quest files, rewards, tasks, events, and addon bridge behavior as runtime data that must be proven from the pack.";
+
 export const KUBEJS_MIGRATION_POLICY_TEXT =
   "Migration: for version changes, compare runtime, ProbeJS surface, docs, datapack/resource-pack profiles, and existing scripts before prescribing API/event renames.";
 
@@ -33,5 +36,6 @@ export const KUBEJS_SCRIPTING_POLICY_TEXT = [
   KUBEJS_STATE_POLICY_TEXT,
   KUBEJS_DEBUG_POLICY_TEXT,
   KUBEJS_RESOURCE_POLICY_TEXT,
+  KUBEJS_FTB_INTEGRATION_POLICY_TEXT,
   KUBEJS_MIGRATION_POLICY_TEXT
 ].join(" ");

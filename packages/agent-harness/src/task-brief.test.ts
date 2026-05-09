@@ -165,6 +165,12 @@ describe("buildHarnessTaskBrief", () => {
     expect(kubejsTaskPolicy?.text).toContain(
       "avoid persistent console.* output in committed scripts"
     );
+    expect(kubejsTaskPolicy?.text).toContain(
+      "FTB XMod Compat or FTB Quests integration"
+    );
+    expect(kubejsTaskPolicy?.text).toContain(
+      "inspect mod archive/decompiled evidence and quest data formats"
+    );
   });
 
   it("builds a libs-heavy Java mod task brief with local jar evidence before docs", () => {
