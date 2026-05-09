@@ -100,6 +100,17 @@ const preparationPolicySchema = z.object({
     .describe("Optional local jar execution intent. prewarm_entry_index builds the private SQLite entry index for later class/resource owner lookup.")
 });
 
+const gradleSourceDiscoverySchema = z.object({
+  gradleUserHome: z
+    .string()
+    .optional()
+    .describe("Optional Gradle user home to inspect for dependency source and binary archives."),
+  includeDefaultGradleUserHome: z
+    .boolean()
+    .optional()
+    .describe("Defaults to false in mc_develop; set true to also inspect ~/.gradle.")
+});
+
 const mcpDevelopInputSchema = z.object({
   requestText: z
     .string()
@@ -125,7 +136,10 @@ const mcpDevelopInputSchema = z.object({
     .describe("Optional explicit progressive source acquisition route selection."),
   preparationPolicy: preparationPolicySchema
     .optional()
-    .describe("Optional execution policy for preparation routes. Defaults are conservative and network-safe.")
+    .describe("Optional execution policy for preparation routes. Defaults are conservative and network-safe."),
+  gradleSourceDiscovery: gradleSourceDiscoverySchema
+    .optional()
+    .describe("Optional Gradle source archive discovery policy shared by service profile and source lookup.")
 });
 
 export const mcpDevelopInputShape = mcpDevelopInputSchema.shape;
@@ -257,11 +271,12 @@ async function executeMcpDevelopTool(
     });
     const vanillaReleaseCatalog =
       await loadMdmVanillaReleaseCatalog(mdmResources);
+    const gradleSourceDiscovery = resolveGradleSourceDiscovery(input);
     const requestContext =
       await buildMcpServerRequestContextWithServiceProfile(bootstrap, {
         requestText: input.requestText,
         runtimeRoot,
-        includeDefaultGradleUserHome: false,
+        ...gradleSourceDiscovery,
         env,
         mdmResources,
         sourceIndexDatabasePaths
@@ -279,7 +294,8 @@ async function executeMcpDevelopTool(
       javaDiagnosticsPreparation,
       sourceBundle: {
         vanillaReleaseCatalog,
-        sourceIndexDatabasePaths
+        sourceIndexDatabasePaths,
+        gradleSourceDiscovery
       },
       contextQuery: {
         docsRecords: mdmDocs.records,
@@ -448,6 +464,14 @@ function resolveLocalJarMode(
   return hasLocalJarPrewarmIntent(input.requestText)
     ? "prewarm_entry_index"
     : "inspect";
+}
+
+function resolveGradleSourceDiscovery(input: McpDevelopToolInput) {
+  return {
+    gradleUserHome: input.gradleSourceDiscovery?.gradleUserHome,
+    includeDefaultGradleUserHome:
+      input.gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false
+  };
 }
 
 function hasLocalJarPrewarmIntent(requestText: string): boolean {
