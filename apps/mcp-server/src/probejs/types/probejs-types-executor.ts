@@ -361,6 +361,10 @@ async function resolveProbeResourceOnlyQuery(
     resourceQueries,
     cache: probeResourceSummaryCache
   });
+  const lifecycleEvidence = await resolveResourceOnlyLifecycleEvidence(
+    workspaceRoot,
+    input.requestPlan.requestText ?? ""
+  );
 
   return {
     matched: true,
@@ -371,9 +375,52 @@ async function resolveProbeResourceOnlyQuery(
       queryMode: "resource_summary",
       probeResourceCacheHit: probeResourcesResult.cacheHit,
       resourceQueries,
-      probeResources: compactProbeResources(probeResourcesResult.summary)
+      probeResources: compactProbeResources(probeResourcesResult.summary),
+      ...lifecycleEvidence
     }
   };
+}
+
+async function resolveResourceOnlyLifecycleEvidence(
+  workspaceRoot: string,
+  requestText: string
+) {
+  if (!mentionsKubeJsLifecycleEvidence(requestText)) {
+    return {};
+  }
+
+  const scriptFiles = await collectKubeJsScripts(workspaceRoot);
+  const scriptFile = findBestKubeJsScriptFile(
+    workspaceRoot,
+    scriptFiles,
+    requestText
+  );
+  if (!scriptFile) {
+    return {};
+  }
+
+  const scope = classifyKubeJsScriptScope(scriptFile, workspaceRoot);
+  const probeProject = await discoverProbeJsLanguageProject({
+    workspaceRoot,
+    scope
+  });
+  if (probeProject.declarationFiles.length === 0) {
+    return {};
+  }
+
+  return buildKubeJsLifecycleEvidence({
+    workspaceRoot,
+    requestText,
+    selectedScriptFile: scriptFile,
+    selectedScope: scope,
+    declarationFiles: probeProject.declarationFiles,
+    scriptFiles
+  });
+}
+
+function mentionsKubeJsLifecycleEvidence(requestText: string): boolean {
+  return /\b(?:ForgeEvents|ForgeModEvents|NativeEvents|global|Global|startup_scripts|server_scripts|client_scripts)\b/i
+    .test(requestText);
 }
 
 async function buildLanguageProjectCacheKey(

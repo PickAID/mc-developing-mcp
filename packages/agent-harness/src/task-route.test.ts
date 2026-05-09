@@ -271,6 +271,29 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("keeps mod archive inventory refresh on the inventory route instead of workspace preparation", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          facts: {
+            ...createTaskRouteFacts(),
+            hasModArchives: true
+          }
+        }),
+        "Refresh the mod archive inventory cache for this modpack."
+      )
+    ).toMatchObject({
+      intent: {
+        id: "workspace_default"
+      },
+      reasons: expect.arrayContaining([
+        "request explicitly asks for mod archive inventory"
+      ]),
+      steps: ["mod_archive_content", "docs_lookup"],
+      preferredTools: ["context.query", "workspace.analyze"]
+    });
+  });
+
   it("keeps vanilla source questions on source-side evidence before docs", () => {
     expect(
       buildHarnessTaskRoute(

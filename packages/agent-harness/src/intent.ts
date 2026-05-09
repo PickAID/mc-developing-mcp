@@ -394,6 +394,9 @@ function matchesWorkspacePreparationIntent(
   requestText: string,
   snapshot: AgentRuntimeHarnessSnapshot
 ): boolean {
+  if (mentionsModArchiveInventoryRequest(requestText)) {
+    return false;
+  }
   if (!matchesAny(requestText, WORKSPACE_PREPARATION_KEYWORDS)) {
     return false;
   }
@@ -409,6 +412,13 @@ function matchesWorkspacePreparationIntent(
     snapshot.facts.hasModArchives ||
     snapshot.facts.hasDatapack ||
     snapshot.facts.hasResourcePack
+  );
+}
+
+function mentionsModArchiveInventoryRequest(requestText: string): boolean {
+  return (
+    /\b(inventory|index|summary|清单|索引|概览)\b/i.test(requestText) &&
+    /\b(mod|mods|jar|jars|jarjar|archive|archives)\b/i.test(requestText)
   );
 }
 

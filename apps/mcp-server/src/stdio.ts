@@ -9,6 +9,7 @@ import {
   createMcpSkillServer,
   type McpSkillServerOptions
 } from "./core/server/mcp-server.js";
+import { MCP_SERVER_VERSION } from "./core/metadata/server-metadata.js";
 
 export async function runMcpServerStdio(
   options: McpSkillServerOptions = {}
@@ -28,10 +29,14 @@ function isDirectRun(moduleUrl: string): boolean {
 }
 
 if (isDirectRun(import.meta.url)) {
-  runMcpServerStdio().catch((error: unknown) => {
-    const message = error instanceof Error ? error.stack ?? error.message : String(error);
+  if (process.argv.includes("--version") || process.argv.includes("-v")) {
+    console.log(MCP_SERVER_VERSION);
+  } else {
+    runMcpServerStdio().catch((error: unknown) => {
+      const message = error instanceof Error ? error.stack ?? error.message : String(error);
 
-    console.error(message);
-    process.exitCode = 1;
-  });
+      console.error(message);
+      process.exitCode = 1;
+    });
+  }
 }

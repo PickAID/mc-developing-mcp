@@ -136,6 +136,57 @@ describe("ProbeJS resource-only summaries", () => {
     });
   });
 
+  it("summarizes generic ProbeJS discovery requests without an explicit symbol", async () => {
+    const workspaceRoot = await createProbeResourceWorkspace();
+    const input = await createProbeJsExecutorInput(
+      workspaceRoot,
+      "Discover ProbeJS types, snippets, items, recipes, registries, ForgeEvents, NativeEvents, and Global usage."
+    );
+    const executor = createMcpServerProbeJsTypesExecutor();
+
+    const result = await executor(input);
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "probejs_resources",
+        queryMode: "resource_summary",
+        probeResources: {
+          summary: {
+            counts: {
+              item: 2,
+              registry: 2,
+              snippet: 1
+            }
+          }
+        },
+        lifecycleEvidence: {
+          declarationScopes: expect.arrayContaining(["startup"])
+        },
+        nativeEventEvidence: {
+          forgeEvents: {
+            declarationFiles: expect.arrayContaining([
+              ".probe/startup/events.d.ts"
+            ])
+          },
+          nativeEvents: {
+            declarationFiles: expect.arrayContaining([
+              ".probe/startup/events.d.ts"
+            ])
+          }
+        },
+        globalStateEvidence: {
+          usages: expect.arrayContaining([
+            expect.objectContaining({
+              object: "Global",
+              key: "recipeOwner"
+            })
+          ])
+        }
+      }
+    });
+  });
+
   it("filters resource-only summaries by explicit IDs", async () => {
     const workspaceRoot = await createProbeResourceWorkspace();
     const input = await createProbeJsExecutorInput(
@@ -206,11 +257,23 @@ async function createProbeResourceWorkspace(): Promise<string> {
 
   await writeText(
     join(workspaceRoot, "kubejs", "server_scripts", "main.js"),
-    "ServerEvents.recipes(event => {});\n"
+    "ServerEvents.recipes(event => { Global.recipeOwner(event); });\n"
+  );
+  await writeText(
+    join(workspaceRoot, "kubejs", "startup_scripts", "main.js"),
+    "ForgeEvents.onEvent('net.minecraftforge.event.TickEvent', event => {});\n"
   );
   await writeText(
     join(workspaceRoot, ".probe", "server", "events.d.ts"),
     "declare const ServerEvents: { recipes(handler: unknown): void };\n"
+  );
+  await writeText(
+    join(workspaceRoot, ".probe", "startup", "events.d.ts"),
+    [
+      "declare const ForgeEvents: { onEvent(name: string, handler: Function): void };",
+      "declare const NativeEvents: { onEvent(type: unknown, handler: Function): void };",
+      ""
+    ].join("\n")
   );
   await writeText(
     join(workspaceRoot, ".vscode", "probe.code-snippets"),

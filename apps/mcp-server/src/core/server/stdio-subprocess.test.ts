@@ -11,6 +11,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { MCP_SERVER_VERSION } from "../metadata/server-metadata.js";
 import { MC_DEVELOP_TOOL_NAME } from "../tools/mcp-tools.js";
 
 const tempRoots: string[] = [];
@@ -23,6 +24,21 @@ afterEach(async () => {
 });
 
 describe("stdio MCP subprocess", () => {
+  it("prints the server version without starting stdio transport", async () => {
+    const packageRoot = fileURLToPath(new URL("../../..", import.meta.url));
+    const stdioEntrypoint = fileURLToPath(
+      new URL("../../../dist/stdio.js", import.meta.url)
+    );
+
+    const { stdout, stderr } = await execFileAsync(process.execPath, [
+      stdioEntrypoint,
+      "--version"
+    ], { cwd: packageRoot });
+
+    expect(stdout.trim()).toBe(MCP_SERVER_VERSION);
+    expect(stderr).toBe("");
+  });
+
   it("starts the built stdio server and routes mc_develop through real JSON-RPC pipes", async () => {
     const runtimeRoot = await createTempRoot("mcpskill-stdio-runtime-");
     const workspaceRoot = await createCrashModpackWorkspace();
