@@ -62,6 +62,7 @@ export function buildMcpDevelopStructuredContent(
       budget,
       compactPayload
     ),
+    clientVisualVerifier: buildClientVisualVerifierSummary(result, budget),
     budget: {
       payloadPolicy: "bounded",
       maxArrayItems: budget.maxArrayItems,
@@ -93,6 +94,64 @@ export function buildMcpDevelopStructuredContent(
   };
 
   return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
+}
+
+function buildClientVisualVerifierSummary(
+  result: McpServerRequestExecutorResult,
+  budget: RequiredBudgetOptions
+) {
+  const selected = verifierFromExecution(result.selectedEvidence);
+  const fallback = selected
+    ? undefined
+    : result.executions.map(verifierFromExecution).find((entry) => entry);
+  const entry = selected ?? fallback;
+  if (!entry) {
+    return undefined;
+  }
+
+  const summary = {
+    source: entry.source,
+    candidateId: entry.candidateId,
+    overall: optionalString(entry.verifier.overall),
+    missingChecks: checkIdsByStatus(entry.verifier.checks, "missing"),
+    riskyChecks: checkIdsByStatus(entry.verifier.checks, "risky"),
+    nextProofSteps: arrayOfStrings(entry.verifier.nextProofSteps)
+  };
+
+  return compactPayload(summary, budget).value;
+}
+
+function verifierFromExecution(
+  execution: McpServerRequestExecutorResult["executions"][number] | undefined
+) {
+  const payload = isRecord(execution?.payload) ? execution.payload : undefined;
+  const evidence = isRecord(payload?.clientVisualEvidence)
+    ? payload.clientVisualEvidence
+    : undefined;
+  const verifier = isRecord(evidence?.visualVerifier)
+    ? evidence.visualVerifier
+    : undefined;
+  if (!execution || !verifier) {
+    return undefined;
+  }
+
+  return {
+    source: execution.status === "selected" ? "selectedEvidence" : "execution",
+    candidateId: execution.candidateId,
+    verifier
+  };
+}
+
+function checkIdsByStatus(value: unknown, status: string): string[] {
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  return Object.entries(value)
+    .filter(
+      ([, entry]) => isRecord(entry) && optionalString(entry.status) === status
+    )
+    .map(([id]) => id);
 }
 
 function buildWorkspacePreparation(
@@ -294,6 +353,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function arrayOfRecords(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function arrayOfStrings(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
 }
 
 function optionalString(value: unknown): string | undefined {
