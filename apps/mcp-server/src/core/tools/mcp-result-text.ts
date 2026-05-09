@@ -1,9 +1,11 @@
+import type { MdmPackageRecommendations } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import type { McpMdmReleaseInstallResult } from "../../docs/mdm-resource/mdm-release-install.js";
 import type { McpServerRequestExecutorResult } from "../../request/execution/request-executor.js";
 
 export function formatMcpDevelopResultText(
   result: McpServerRequestExecutorResult,
-  mdmReleaseInstall?: McpMdmReleaseInstallResult
+  mdmReleaseInstall?: McpMdmReleaseInstallResult,
+  mdmPackageRecommendations?: MdmPackageRecommendations
 ): string {
   const selected = result.selectedEvidence;
   const lines = [
@@ -24,6 +26,10 @@ export function formatMcpDevelopResultText(
   if (workspacePreparation) {
     lines.push(`Workspace preparation: ${workspacePreparation}`);
   }
+  const resourceActions = formatResourceActions(mdmPackageRecommendations);
+  if (resourceActions) {
+    lines.push(`Resource actions: ${resourceActions}`);
+  }
   if (mdmReleaseInstall) {
     lines.push(
       `MDM release install: ${mdmReleaseInstall.status} (${mdmReleaseInstall.packageId})`
@@ -31,6 +37,19 @@ export function formatMcpDevelopResultText(
   }
 
   return lines.join("\n");
+}
+
+function formatResourceActions(
+  recommendations: MdmPackageRecommendations | undefined
+): string | undefined {
+  const actions = recommendations?.suggestions
+    .filter((suggestion) => suggestion.mdmReleaseInstall)
+    .map((suggestion) => `install_mdm_${suggestion.packageId}`)
+    .slice(0, 3);
+
+  return actions && actions.length > 0
+    ? `${actions.join(", ")} (requires confirmation)`
+    : undefined;
 }
 
 function formatWorkspacePreparation(

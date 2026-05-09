@@ -329,7 +329,11 @@ async function executeMcpDevelopTool(
       content: [
         {
           type: "text",
-          text: formatMcpDevelopResultText(result, mdmReleaseInstall)
+          text: formatMcpDevelopResultText(
+            result,
+            mdmReleaseInstall,
+            mdmPackageRecommendations
+          )
         }
       ],
       structuredContent: toStructuredContent(result, {
