@@ -15,12 +15,9 @@ export interface WorkspaceLocalSettings {
   };
 }
 
-export type WorkspaceLocalSettingsPath =
-  | ".mc-developing-mcp/settings.json"
-  | ".mcpskill/settings.json";
+export type WorkspaceLocalSettingsPath = ".mc-developing-mcp/settings.json";
 
 const primarySettingsPath = ".mc-developing-mcp/settings.json" as const;
-const legacySettingsPath = ".mcpskill/settings.json" as const;
 
 export async function readWorkspaceLocalSettings(
   workspaceRoot: string
@@ -31,14 +28,6 @@ export async function readWorkspaceLocalSettings(
   );
   if (primary !== undefined) {
     return primary;
-  }
-
-  const legacy = await tryReadWorkspaceLocalSettings(
-    workspaceRoot,
-    legacySettingsPath
-  );
-  if (legacy !== undefined) {
-    return legacy;
   }
 
   return buildWorkspaceLocalSettings(primarySettingsPath, undefined);
