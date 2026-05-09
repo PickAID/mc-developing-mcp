@@ -88,7 +88,9 @@ const preparationRoutesSchema = z
   .array(preparationRouteOriginSchema)
   .min(1)
   .max(8)
-  .describe("Optional explicit source acquisition origins to plan. Defaults to progressive auto-discovery.");
+  .describe(
+    "Optional explicit source acquisition origins to plan. Defaults to progressive auto-discovery. Use workspace_gradle for Gradle dependency/cache/source archive evidence; workspace_probejs for KubeJS ProbeJS/d.ts resources; runtime_cache for offline SQLite/source packages; local_jar or user_jar for mod jars/JarJar/assets/data/classes; official for consent-gated vanilla generation; modrinth, curseforge, or github for remote metadata/source discovery."
+  );
 
 const preparationPolicySchema = z.object({
   remoteMetadataPolicy: z
@@ -99,7 +101,9 @@ const preparationPolicySchema = z.object({
     .enum(["inspect", "prewarm_entry_index"])
     .optional()
     .describe("Optional local jar execution intent. prewarm_entry_index builds the private SQLite entry index for later class/resource owner lookup.")
-});
+}).describe(
+  "Optional execution policy for preparation routes. Use remoteMetadataPolicy: enabled only after remote lookup is allowed and credentials are available where required; use localJarMode: prewarm_entry_index to build the private local jar SQLite entry index before broad crash triage or class/resource owner lookup."
+);
 
 const gradleSourceDiscoverySchema = z.object({
   gradleUserHome: z
@@ -110,7 +114,9 @@ const gradleSourceDiscoverySchema = z.object({
     .boolean()
     .optional()
     .describe("Defaults to false in mc_develop; set true to also inspect ~/.gradle.")
-});
+}).describe(
+  "Optional Gradle source archive discovery policy. Use includeDefaultGradleUserHome: true when workspace Gradle files are known but source jars were not found and inspecting ~/.gradle is acceptable."
+);
 
 const mcpDevelopInputSchema = z.object({
   requestText: z
@@ -134,13 +140,13 @@ const mcpDevelopInputSchema = z.object({
     .describe("Optional explicit MDM Release artifact cache request."),
   preparationRoutes: preparationRoutesSchema
     .optional()
-    .describe("Optional explicit progressive source acquisition route selection."),
+    .describe(preparationRoutesSchema.description ?? ""),
   preparationPolicy: preparationPolicySchema
     .optional()
-    .describe("Optional execution policy for preparation routes. Defaults are conservative and network-safe."),
+    .describe(preparationPolicySchema.description ?? ""),
   gradleSourceDiscovery: gradleSourceDiscoverySchema
     .optional()
-    .describe("Optional Gradle source archive discovery policy shared by service profile and source lookup.")
+    .describe(gradleSourceDiscoverySchema.description ?? "")
 });
 
 export const mcpDevelopInputShape = mcpDevelopInputSchema.shape;
