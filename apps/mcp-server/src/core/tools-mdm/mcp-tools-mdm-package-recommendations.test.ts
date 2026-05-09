@@ -32,7 +32,7 @@ describe("mc_develop mdm package recommendations", () => {
     expect(result.content[0]).toMatchObject({
       type: "text",
       text: expect.stringContaining(
-        "Resource actions: install_mdm_kubejs-1.20.1-guidance"
+        "Resource actions: [mdm-install] install_mdm_kubejs-1.20.1-guidance"
       )
     });
     expect(result.structuredContent).toMatchObject({

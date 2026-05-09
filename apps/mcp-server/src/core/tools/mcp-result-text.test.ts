@@ -45,6 +45,32 @@ describe("formatMcpDevelopResultText", () => {
       "KubeJS quality: issues=2, errors=1, warnings=1; kubejs/server_scripts/main.js:3 persistent_console_output"
     );
   });
+
+  it("labels resource actions by execution model in plain text", () => {
+    const text = formatMcpDevelopResultText(createResult(), undefined, {
+      policy: "recommend_before_download",
+      status: "available",
+      message: "MDM packages are recommendations only.",
+      suggestions: [
+        {
+          packageId: "minecraft-1.20.1-vanilla-source-profile",
+          status: "missing_optional",
+          priority: "high",
+          matchedSignals: ["sources"],
+          reason: "Matched source lookup request.",
+          mdmReleaseInstall: {
+            packageId: "minecraft-1.20.1-vanilla-source-profile",
+            downloadPolicy: "disabled",
+            manifestPath: "/repo/mdm-release-manifest.json"
+          }
+        }
+      ]
+    });
+
+    expect(text).toContain(
+      "Resource actions: [local-generation] generate_local_minecraft_1.20.1_source_pack, [mdm-install] install_mdm_minecraft-1.20.1-vanilla-source-profile (requires confirmation)"
+    );
+  });
 });
 
 function createResult(

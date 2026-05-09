@@ -123,7 +123,7 @@ function formatResourceActions(
     .flatMap((suggestion) => [
       ...localVanillaSourceActionIds(suggestion.packageId),
       ...(suggestion.mdmReleaseInstall
-        ? [`install_mdm_${suggestion.packageId}`]
+        ? [`[mdm-install] install_mdm_${suggestion.packageId}`]
         : [])
     ])
     .slice(0, 3);
@@ -138,7 +138,9 @@ function localVanillaSourceActionIds(packageId: string): string[] {
     /^minecraft-(?<version>.+)-vanilla-source-profile$/u
   );
   return match?.groups?.version
-    ? [`generate_local_minecraft_${match.groups.version}_source_pack`]
+    ? [
+        `[local-generation] generate_local_minecraft_${match.groups.version}_source_pack`
+      ]
     : [];
 }
 
