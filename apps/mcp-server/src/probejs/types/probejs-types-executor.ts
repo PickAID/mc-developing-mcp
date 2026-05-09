@@ -14,13 +14,6 @@ import {
   type KubeJsLanguageServiceProject,
   type KubeJsScriptScope
 } from "minecraft-developing-mcp-kubejs-language-service";
-import {
-  type KubeJsSemanticResourceEntry,
-  type KubeJsSemanticResourceKind,
-  type KubeJsTypeSemanticSummary,
-  type KubeJsUnknownResource
-} from "minecraft-developing-mcp-kubejs-types-adapter";
-
 import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
@@ -34,6 +27,10 @@ import {
   extractExplicitProbeResourceQueries,
   isProbeResourceOnlyRequest
 } from "./probejs-resource-only-query.js";
+import {
+  compactProbeResources,
+  extractProbeResourceQueries
+} from "./probejs-types-payload.js";
 import { buildKubeJsLifecycleEvidence } from "../lifecycle/kubejs-lifecycle-evidence.js";
 import { extractProbeJsRequestedSymbol } from "../symbols/probejs-symbol-extraction.js";
 
@@ -271,72 +268,6 @@ async function walkJavaScriptFiles(root: string): Promise<string[]> {
   return files;
 }
 
-function extractProbeResourceQueries(
-  requestText: string | undefined,
-  symbol?: string
-): string[] {
-  const queries = new Set<string>();
-  let freeText = requestText ?? "";
-  addQuery(queries, symbol);
-  addQuery(queries, symbol?.split(".").at(-1));
-
-  for (const resourceId of freeText.match(/#?[a-z0-9_.-]+:[a-z0-9_./-]+/gi) ?? []) {
-    addQuery(queries, resourceId);
-    addQuery(queries, resourceId.replace(/^#/, ""));
-    freeText = freeText.replace(resourceId, " ");
-  }
-
-  for (const dotted of freeText.match(/\b[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+\b/g) ?? []) {
-    addQuery(queries, dotted);
-    if (/[A-Z$]/.test(dotted)) {
-      addQuery(queries, dotted.split(".").at(-1));
-    }
-    freeText = freeText.replace(dotted, " ");
-  }
-
-  for (const word of freeText.match(/\b[A-Za-z][A-Za-z0-9_$-]{3,}\b/g) ?? []) {
-    if (!isProbeResourceStopWord(word)) {
-      addQuery(queries, word);
-    }
-  }
-
-  return [...queries];
-}
-
-function addQuery(queries: Set<string>, value: string | undefined): void {
-  const query = value?.trim().replace(/[,.]+$/g, "");
-  if (query && query.length >= 3) {
-    queries.add(query);
-  }
-}
-
-function isProbeResourceStopWord(word: string): boolean {
-  return PROBE_RESOURCE_STOP_WORDS.has(word.toLowerCase());
-}
-
-const PROBE_RESOURCE_STOP_WORDS = new Set([
-  "and",
-  "block",
-  "class",
-  "client",
-  "fabric",
-  "fluid",
-  "forge",
-  "item",
-  "kubejs",
-  "minecraft",
-  "modpack",
-  "neoforge",
-  "registry",
-  "script",
-  "scripts",
-  "server",
-  "startup",
-  "this",
-  "use",
-  "with"
-]);
-
 async function resolveProbeResourceOnlyQuery(
   input: McpServerEvidenceExecutorInput,
   workspaceRoot: string,
@@ -462,47 +393,4 @@ function fingerprintFile(
   mtimeMs: number
 ): string {
   return [kind, path, sizeBytes, Math.floor(mtimeMs)].join(":");
-}
-
-function compactProbeResources(summary: KubeJsTypeSemanticSummary) {
-  return {
-    summary: summary.summary,
-    capabilityUsage: summary.capabilityUsage,
-    entries: compactEntryGroups(summary.entries),
-    unknownResources: compactUnknownResources(summary.unknownResources)
-  };
-}
-
-function compactEntryGroups(
-  entries: Record<KubeJsSemanticResourceKind, KubeJsSemanticResourceEntry[]>
-) {
-  return Object.fromEntries(
-    Object.entries(entries).map(([kind, values]) => [kind, compactEntries(values)])
-  );
-}
-
-function compactEntries(entries: KubeJsSemanticResourceEntry[]) {
-  return entries.map((entry) => ({
-    sourceKind: entry.sourceKind satisfies KubeJsSemanticResourceKind,
-    extractorId: entry.extractorId,
-    sourceFormat: entry.sourceFormat,
-    confidence: entry.confidence,
-    name: entry.name,
-    value: entry.value,
-    file: entry.file.relativePath,
-    lineNumber: entry.lineNumber,
-    warnings: entry.warnings,
-    metadata: entry.metadata
-  }));
-}
-
-function compactUnknownResources(resources: KubeJsUnknownResource[]) {
-  return resources.map((resource) => ({
-    extractorId: resource.extractorId,
-    sourceFormat: resource.sourceFormat,
-    confidence: resource.confidence,
-    reason: resource.reason,
-    file: resource.file.relativePath,
-    preview: resource.preview
-  }));
 }

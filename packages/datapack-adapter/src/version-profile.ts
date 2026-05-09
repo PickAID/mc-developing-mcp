@@ -163,8 +163,8 @@ function createProfile(input: {
 }): DatapackVersionProfile {
   const notes = [
     "profile describes version evidence and broad data kind support only",
-    "versioned JSON schema validation is not implemented yet",
-    "version-to-version datapack migration analysis is not implemented yet",
+    "deep per-file JSON schema validation is outside this compact profile",
+    "pack-format migration evidence is reported separately when source and target versions are known",
     ...(input.note ? [input.note] : [])
   ];
 

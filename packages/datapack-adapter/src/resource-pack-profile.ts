@@ -238,7 +238,8 @@ function createProfile(input: {
     migrationAnalysis: "not_available",
     notes: [
       "profile describes resource-pack metadata and observed asset kinds only",
-      "versioned asset validation is not implemented yet",
+      "deep per-asset validation is outside this compact profile",
+      "resource-pack migration evidence is reported separately when source and target versions are known",
       ...(input.note ? [input.note] : [])
     ]
   };

@@ -34,7 +34,11 @@ describe("resolveDatapackVersionProfile", () => {
       packFormat: 15,
       semanticValidation: "not_available",
       migrationAnalysis: "not_available",
-      knownDataKinds: expect.arrayContaining(["recipes", "tags", "worldgen"])
+      knownDataKinds: expect.arrayContaining(["recipes", "tags", "worldgen"]),
+      notes: expect.arrayContaining([
+        "deep per-file JSON schema validation is outside this compact profile",
+        "pack-format migration evidence is reported separately when source and target versions are known"
+      ])
     });
   });
 
