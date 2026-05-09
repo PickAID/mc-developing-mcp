@@ -43,13 +43,26 @@ function formatResourceActions(
   recommendations: MdmPackageRecommendations | undefined
 ): string | undefined {
   const actions = recommendations?.suggestions
-    .filter((suggestion) => suggestion.mdmReleaseInstall)
-    .map((suggestion) => `install_mdm_${suggestion.packageId}`)
+    .flatMap((suggestion) => [
+      ...localVanillaSourceActionIds(suggestion.packageId),
+      ...(suggestion.mdmReleaseInstall
+        ? [`install_mdm_${suggestion.packageId}`]
+        : [])
+    ])
     .slice(0, 3);
 
   return actions && actions.length > 0
     ? `${actions.join(", ")} (requires confirmation)`
     : undefined;
+}
+
+function localVanillaSourceActionIds(packageId: string): string[] {
+  const match = packageId.match(
+    /^minecraft-(?<version>.+)-vanilla-source-profile$/u
+  );
+  return match?.groups?.version
+    ? [`generate_local_minecraft_${match.groups.version}_source_pack`]
+    : [];
 }
 
 function formatWorkspacePreparation(

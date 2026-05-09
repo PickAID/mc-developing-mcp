@@ -19,9 +19,10 @@ export function buildMcpResourceActions(
     return undefined;
   }
 
-  const actions = recommendations.suggestions
-    .filter((suggestion) => suggestion.mdmReleaseInstall)
-    .map((suggestion) => ({
+  const actions = recommendations.suggestions.flatMap((suggestion) => [
+    ...localVanillaSourceActions(suggestion.packageId, suggestion.reason),
+    ...(suggestion.mdmReleaseInstall
+      ? [{
       id: `install_mdm_${suggestion.packageId}`,
       kind: "mdm_release_install",
       safety: "requires_user_confirmation",
@@ -31,7 +32,9 @@ export function buildMcpResourceActions(
       inputPatch: {
         mdmReleaseInstall: suggestion.mdmReleaseInstall
       }
-    }));
+    }]
+      : [])
+  ]);
 
   if (actions.length === 0) {
     return undefined;
@@ -45,4 +48,26 @@ export function buildMcpResourceActions(
     },
     budget
   ).value;
+}
+
+function localVanillaSourceActions(packageId: string, reason: string) {
+  const match = packageId.match(
+    /^minecraft-(?<version>.+)-vanilla-source-profile$/u
+  );
+  if (!match?.groups?.version) {
+    return [];
+  }
+
+  const minecraftVersion = match.groups.version;
+  return [{
+    id: `generate_local_minecraft_${minecraftVersion}_source_pack`,
+    kind: "local_vanilla_source_generation",
+    safety: "requires_user_confirmation",
+    packageId: `minecraft-${minecraftVersion}-source-pack-named`,
+    minecraftVersion,
+    reason,
+    inputPatch: {
+      preparationRoutes: ["official"]
+    }
+  }];
 }

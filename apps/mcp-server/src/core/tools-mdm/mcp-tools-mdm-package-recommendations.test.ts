@@ -82,6 +82,11 @@ describe("mc_develop mdm package recommendations", () => {
     });
 
     expect(result.isError).toBeUndefined();
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining(
+        "generate_local_minecraft_1.20.1_source_pack"
+      )
+    });
     expect(result.structuredContent).toMatchObject({
       mdmPackageRecommendations: {
         suggestions: expect.arrayContaining([
