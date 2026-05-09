@@ -408,7 +408,7 @@ describe("mc_develop source acquisition acceptance", () => {
       preparationPolicy: { localJarMode: "prewarm_entry_index" }
     });
     const inspect = await registry.calls[0].handler({
-      requestText: "Inspect the local jar evidence after prewarm.",
+      requestText: "Inspect the local jar evidence from the runtime cache.",
       runtimeRoot,
       workspaceRoot,
       preparationRoutes: ["local_jar"]
@@ -465,6 +465,47 @@ describe("mc_develop source acquisition acceptance", () => {
         })
       })
     });
+  });
+
+  it("infers local jar prewarm mode from explicit prewarm requests", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-inferred-prewarm-runtime-");
+    const workspaceRoot = await createModpackWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Prewarm the local mod jar entry index for later crash triage.",
+      runtimeRoot,
+      workspaceRoot,
+      preparationRoutes: ["local_jar"]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: expect.objectContaining({
+        routeStep: "source_acquisition_plan",
+        payload: expect.objectContaining({
+          workItemExecutions: expect.arrayContaining([
+            expect.objectContaining({
+              kind: "jar_index",
+              status: "completed",
+              payload: expect.objectContaining({
+                source: "source_acquisition_jar_index",
+                mode: "prewarm_entry_index",
+                tokenPolicy: "counts_only",
+                archiveCount: 1,
+                entryCount: 3
+              })
+            })
+          ])
+        })
+      })
+    });
+    expect(JSON.stringify(result.structuredContent)).not.toContain(
+      "sampleEntries"
+    );
   });
 
 });

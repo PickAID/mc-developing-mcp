@@ -1,6 +1,5 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { readdir, stat } from "node:fs/promises";
 
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { LspDiagnosticRegistry } from "minecraft-developing-mcp-java-jdtls-adapter";
@@ -47,6 +46,7 @@ import type { MappingIndexProvider } from "../../source-acquisition/mapping/sour
 import { resolveMappingIndexProvider } from "./mcp-tools-mapping-provider.js";
 import { buildMcpDevelopToolDescription } from "./mcp-tool-description.js";
 import { shouldPrepareJavaDiagnostics } from "./mcp-java-diagnostics-trigger.js";
+import { resolveMcpDevelopSourceIndexDatabasePaths } from "./mcp-source-index-databases.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -294,7 +294,7 @@ async function executeMcpDevelopTool(
             runtimeRoot,
             remoteMetadataPolicy:
               input.preparationPolicy?.remoteMetadataPolicy ?? "disabled",
-            localJarMode: input.preparationPolicy?.localJarMode ?? "inspect",
+            localJarMode: resolveLocalJarMode(input),
             modrinthFetch: options.modrinthFetch,
             modrinthApiBaseUrl: options.modrinthApiBaseUrl,
             curseForgeFetch: options.curseForgeFetch,
@@ -438,58 +438,25 @@ function shouldRefreshMdmResourceStatus(
   );
 }
 
-async function resolveMcpDevelopSourceIndexDatabasePaths(input: {
-  runtimeRoot: string;
-  mdmSourceIndexDatabasePaths: string[];
-}): Promise<string[]> {
-  const databases = [...input.mdmSourceIndexDatabasePaths];
-  const queue = [input.runtimeRoot];
-
-  while (queue.length > 0 && databases.length < 32) {
-    const current = queue.shift();
-    if (!current) {
-      break;
-    }
-
-    for (const entry of await readDirectoryIfPresent(current)) {
-      const path = join(current, entry.name);
-
-      if (entry.isDirectory()) {
-        if (entry.name !== "node_modules" && entry.name !== ".git") {
-          queue.push(path);
-        }
-        continue;
-      }
-
-      if (entry.isFile() && entry.name === "source-index.sqlite") {
-        databases.push(path);
-      }
-    }
+function resolveLocalJarMode(
+  input: McpDevelopToolInput
+): "inspect" | "prewarm_entry_index" {
+  if (input.preparationPolicy?.localJarMode) {
+    return input.preparationPolicy.localJarMode;
   }
 
-  return (await uniqueExistingFiles(databases)).slice(0, 32);
+  return hasLocalJarPrewarmIntent(input.requestText)
+    ? "prewarm_entry_index"
+    : "inspect";
 }
 
-async function readDirectoryIfPresent(directory: string) {
-  try {
-    return await readdir(directory, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-}
+function hasLocalJarPrewarmIntent(requestText: string): boolean {
+  const normalizedText = requestText.toLowerCase();
 
-async function uniqueExistingFiles(paths: string[]): Promise<string[]> {
-  const existing: string[] = [];
-  for (const path of [...new Set(paths)].sort()) {
-    try {
-      if ((await stat(path)).isFile()) {
-        existing.push(path);
-      }
-    } catch {
-      // Ignore stale optional indexes; executors still handle unreadable paths defensively.
-    }
-  }
-  return existing;
+  return (
+    /\b(?:prewarm|warm\s+up)\b/.test(normalizedText) ||
+    /预热/.test(requestText)
+  );
 }
 
 function formatToolError(error: unknown): string {
