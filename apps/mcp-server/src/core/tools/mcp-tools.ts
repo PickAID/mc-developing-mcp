@@ -47,6 +47,7 @@ import { resolveMappingIndexProvider } from "./mcp-tools-mapping-provider.js";
 import { buildMcpDevelopToolDescription } from "./mcp-tool-description.js";
 import { shouldPrepareJavaDiagnostics } from "./mcp-java-diagnostics-trigger.js";
 import { resolveMcpDevelopSourceIndexDatabasePaths } from "./mcp-source-index-databases.js";
+import { formatMcpDevelopResultText } from "./mcp-result-text.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
 
@@ -403,34 +404,6 @@ function resolveWorkspaceRoot(
     options.cwd ??
     process.cwd()
   );
-}
-
-function formatMcpDevelopResultText(
-  result: McpServerRequestExecutorResult,
-  mdmReleaseInstall?: McpMdmReleaseInstallResult
-): string {
-  const selected = result.selectedEvidence;
-  const lines = [
-    selected
-      ? `Selected: ${selected.candidateId} (${selected.routeStep}, ${selected.preferredTool})`
-      : "Selected: none",
-    `Route: ${result.trace.routeSteps.join(" -> ")}`,
-    `Executed: ${result.trace.executedCandidateIds.join(", ") || "none"}`
-  ];
-
-  if (result.trace.contextCandidateIds.length > 0) {
-    lines.push(`Context: ${result.trace.contextCandidateIds.join(", ")}`);
-  }
-  if (selected?.summary) {
-    lines.push(`Summary: ${selected.summary}`);
-  }
-  if (mdmReleaseInstall) {
-    lines.push(
-      `MDM release install: ${mdmReleaseInstall.status} (${mdmReleaseInstall.packageId})`
-    );
-  }
-
-  return lines.join("\n");
 }
 
 function toStructuredContent(

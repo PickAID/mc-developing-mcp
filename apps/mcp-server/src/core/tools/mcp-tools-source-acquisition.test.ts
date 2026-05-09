@@ -34,6 +34,12 @@ describe("mc_develop source acquisition acceptance", () => {
     });
 
     expect(result.isError).toBeUndefined();
+    expect(result.content[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining(
+        "Workspace preparation: local jar archives=1, entries=3"
+      )
+    });
     expect(result.structuredContent).toMatchObject({
       workspacePreparation: expect.objectContaining({
         source: "source_acquisition_plan",
