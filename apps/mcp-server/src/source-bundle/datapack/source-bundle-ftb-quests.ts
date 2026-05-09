@@ -10,6 +10,10 @@ import {
   type WorkspaceLocalSchemaExtension,
   type WorkspaceLocalSettingsPath
 } from "../../workspace/local-settings.js";
+import {
+  buildFtbQuestsSettingsProposal,
+  type FtbQuestsSettingsProposal
+} from "./source-bundle-ftb-quests-proposal.js";
 
 const FTB_QUESTS_ROOTS = [
   join("config", "ftbquests", "quests"),
@@ -104,6 +108,7 @@ interface FtbQuestsLogSignals {
   ftbQuestsErrorCount: number;
   errors: CrashFtbQuestsError[];
   suggestedSchemaExtensions: FtbQuestsSuggestedSchemaExtension[];
+  settingsProposal?: FtbQuestsSettingsProposal;
 }
 
 interface FtbQuestsSuggestedSchemaExtension extends WorkspaceLocalSchemaExtension {
@@ -132,7 +137,10 @@ export async function summarizeFtbQuestsFiles(
     ...BUILTIN_FTB_QUESTS_SCHEMA_EXTENSIONS
   ];
   const uniquePaths = [...new Set(paths)].sort();
-  const logSignals = await summarizeFtbQuestsLogSignals(workspaceRoot);
+  const logSignals = await summarizeFtbQuestsLogSignals(
+    workspaceRoot,
+    localSettings.path
+  );
 
   if (uniquePaths.length === 0) {
     return undefined;
@@ -176,7 +184,8 @@ export async function summarizeFtbQuestsFiles(
 }
 
 async function summarizeFtbQuestsLogSignals(
-  workspaceRoot: string
+  workspaceRoot: string,
+  settingsPath: WorkspaceLocalSettingsPath
 ): Promise<FtbQuestsLogSignals | undefined> {
   const logs = await Promise.all(
     [join(workspaceRoot, "logs", "latest.log"), join(workspaceRoot, "logs", "debug.log")]
@@ -190,12 +199,18 @@ async function summarizeFtbQuestsLogSignals(
   if (uniqueErrors.length === 0) {
     return undefined;
   }
+  const suggestedSchemaExtensions = suggestSchemaExtensions(uniqueErrors);
+  const settingsProposal = buildFtbQuestsSettingsProposal({
+    targetPath: settingsPath,
+    schemaExtensions: suggestedSchemaExtensions.map(toWorkspaceSchemaExtension)
+  });
 
   return {
     source: "workspace_logs",
     ftbQuestsErrorCount: uniqueErrors.length,
     errors: uniqueErrors,
-    suggestedSchemaExtensions: suggestSchemaExtensions(uniqueErrors)
+    suggestedSchemaExtensions,
+    ...(settingsProposal ? { settingsProposal } : {})
   };
 }
 
@@ -239,6 +254,16 @@ function suggestSchemaExtensions(
     }),
     (entry) => entry.id
   );
+}
+
+function toWorkspaceSchemaExtension(
+  extension: FtbQuestsSuggestedSchemaExtension
+): WorkspaceLocalSchemaExtension {
+  return {
+    id: extension.id,
+    category: extension.category,
+    paths: extension.paths
+  };
 }
 
 function buildSchemaEvolutionGuidance(

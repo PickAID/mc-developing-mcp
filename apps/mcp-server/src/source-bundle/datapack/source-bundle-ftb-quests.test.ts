@@ -270,7 +270,27 @@ describe("source.bundle FTB Quests evidence", () => {
                 paths: ["addon_bridge"],
                 confidence: "needs_user_verification"
               }
-            ]
+            ],
+            settingsProposal: {
+              targetPath: ".mc-developing-mcp/settings.json",
+              mode: "manual_review_only",
+              reason: "FTB Quests log errors suggest reusable schema categories, but user verification is required before writing.",
+              proposedJson: {
+                ftbQuests: {
+                  schemaExtensions: [
+                    {
+                      id: "observed.addon_bridge",
+                      category: "addon_bridge",
+                      paths: ["addon_bridge"]
+                    }
+                  ]
+                }
+              },
+              requiredBeforeWrite: [
+                "confirm the edited quest files load in-game",
+                "confirm this directory is reusable pack schema, not one broken file"
+              ]
+            }
           },
           schemaProfile: {
             evolutionGuidance: {
