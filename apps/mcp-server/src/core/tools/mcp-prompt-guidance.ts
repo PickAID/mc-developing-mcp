@@ -17,6 +17,7 @@ const EXPOSED_PROMPT_GUIDANCE_IDS = new Set<AgentRuntimePromptFragmentId>([
   "kubejs_authoring_policy",
   "service_profile",
   "task_evidence_policy",
+  "task_workspace_preparation_policy",
   "task_client_visual_capability_policy",
   "task_hotai_patch_workflow_policy",
   "task_kubejs_scripting_policy"

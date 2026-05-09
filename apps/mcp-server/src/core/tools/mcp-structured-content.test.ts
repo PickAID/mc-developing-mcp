@@ -137,64 +137,89 @@ describe("buildMcpDevelopStructuredContent", () => {
   });
 
   it("promotes source acquisition capability guidance to top-level workspace preparation", () => {
-    const content = buildMcpDevelopStructuredContent(
-      createExecutorResult({
-        candidateId: "candidate-1-source_acquisition_plan",
-        routeStep: "source_acquisition_plan",
-        summary: "Planned 2 source acquisition routes.",
-        payload: {
-          source: "source_acquisition_plan",
-          requiresWorkspace: false,
-          capabilityGuidance: {
-            nextActions: ["populate Gradle dependency caches"],
-            capabilityMap: {
-              mode: "progressive_discovery",
-              recommendedRouteOrder: ["runtime_cache", "local_jar"],
-              routeCapabilities: [
-                {
-                  origin: "runtime_cache",
-                  status: "ready",
-                  useFor: ["offline packages", "SQLite indexes"]
-                },
-                {
-                  origin: "local_jar",
-                  status: "ready",
-                  useFor: ["local mod classes"],
-                  nextAction: "inspect cached jar entries"
+    const result = createExecutorResult({
+      candidateId: "candidate-1-source_acquisition_plan",
+      routeStep: "source_acquisition_plan",
+      summary: "Planned 2 source acquisition routes.",
+      payload: {
+        source: "source_acquisition_plan",
+        requiresWorkspace: false,
+        capabilityGuidance: {
+          nextActions: ["populate Gradle dependency caches"],
+          capabilityMap: {
+            mode: "progressive_discovery",
+            recommendedRouteOrder: ["runtime_cache", "local_jar"],
+            routeCapabilities: [
+              {
+                origin: "runtime_cache",
+                status: "ready",
+                useFor: ["offline packages", "SQLite indexes"]
+              },
+              {
+                origin: "local_jar",
+                status: "ready",
+                useFor: ["local mod classes"],
+                nextAction: "inspect cached jar entries"
+              }
+            ]
+          }
+        },
+        routes: [{ origin: "runtime_cache" }, { origin: "local_jar" }],
+        workItems: [{ kind: "jar_index", sourceArchive: "/private/mods/demo.jar" }],
+        sourceIndexPreview: {
+          query: "ItemStack",
+          searchedDatabaseCount: 1,
+          matches: [{ path: "net/minecraft/world/item/ItemStack.java" }]
+        },
+        workItemExecutionStatus: "partial",
+        workItemExecutions: [
+          {
+            kind: "workspace_gradle_dependencies",
+            status: "completed",
+            payload: {
+              source: "workspace_gradle",
+              dependencyCount: 2,
+              repositoryCount: 1,
+              declaredDependencySourceArchiveCount: 1,
+              declaredDependencyBinaryArchiveCount: 1,
+              declaredDependencySourceArchives: [{ archivePath: "/gradle/demo-sources.jar" }]
+            }
+          },
+          {
+            kind: "workspace_probejs_types",
+            status: "completed",
+            payload: {
+              probeResources: {
+                summary: {
+                  counts: { item: 2, recipe: 1 },
+                  totalCounts: { item: 20, recipe: 4 }
                 }
-              ]
-            }
-          },
-          routes: [
-            { origin: "runtime_cache", artifactStrategy: "query_cached_packages_and_indexes" },
-            { origin: "local_jar", artifactStrategy: "index_binary_jar" }
-          ],
-          workItems: [
-            {
-              kind: "jar_index",
-              sourceArchive: "/private/mods/demo.jar",
-              cacheScope: "private_runtime"
-            }
-          ],
-          sourceIndexPreview: {
-            query: "ItemStack",
-            searchedDatabaseCount: 1,
-            matches: [{ symbol: "net.minecraft.world.item.ItemStack" }]
-          },
-          workItemExecutionStatus: "partial",
-          workItemExecutions: [
-            {
-              kind: "jar_index",
-              status: "completed",
-              summary: "Indexed local jar.",
-              payload: {
-                rawLargePayloadShouldNotBeCopied: "x".repeat(100)
               }
             }
-          ]
-        }
-      })
-    );
+          },
+          {
+            kind: "jar_index",
+            status: "completed",
+            summary: "Indexed local jar.",
+            payload: {
+              source: "source_acquisition_jar_index",
+              mode: "prewarm_entry_index",
+              archiveCount: 1,
+              entryCount: 3,
+              cache: { archiveHits: 1, archiveMisses: 0 },
+              rawLargePayloadShouldNotBeCopied: "x".repeat(100)
+            }
+          }
+        ]
+      }
+    });
+    result.requestPlan.trace.selectedPromptFragmentIds = ["task_evidence_policy", "task_workspace_preparation_policy"];
+    result.requestPlan.requestContext.taskBrief.promptFragments.push({
+      id: "task_workspace_preparation_policy",
+      text: "Workspace preparation policy: report ready routes, missing prerequisites, and concrete next actions."
+    });
+
+    const content = buildMcpDevelopStructuredContent(result);
 
     expect(content.workspacePreparation).toMatchObject({
       source: "source_acquisition_plan",
@@ -255,7 +280,39 @@ describe("buildMcpDevelopStructuredContent", () => {
             inputPatch: { preparationRoutes: ["runtime_cache"] }
           })
         ])
+      },
+      evidenceSummary: {
+        gradle: {
+          dependencyCount: 2,
+          repositoryCount: 1,
+          sourceArchiveCount: 1,
+          binaryArchiveCount: 1,
+          sourceArchives: ["/gradle/demo-sources.jar"]
+        },
+        probejs: {
+          counts: { item: 2, recipe: 1 },
+          totalCounts: { item: 20, recipe: 4 }
+        },
+        localJar: {
+          mode: "prewarm_entry_index",
+          archiveCount: 1,
+          entryCount: 3,
+          cache: { archiveHits: 1, archiveMisses: 0 }
+        },
+        sourceIndex: {
+          query: "ItemStack",
+          matchCount: 1,
+          topPaths: ["net/minecraft/world/item/ItemStack.java"]
+        }
       }
+    });
+    expect(content.promptGuidance).toMatchObject({
+      exposedFragments: expect.arrayContaining([
+        {
+          id: "task_workspace_preparation_policy",
+          text: expect.stringContaining("report ready routes")
+        }
+      ])
     });
     expect(JSON.stringify(content.workspacePreparation)).not.toContain(
       "rawLargePayloadShouldNotBeCopied"

@@ -125,12 +125,125 @@ function buildWorkspacePreparation(
     },
     capabilityMap: capabilityMapPayload.value,
     workflow: buildWorkspacePreparationWorkflow(payload, capabilityGuidance),
+    evidenceSummary: buildWorkspacePreparationEvidenceSummary(payload),
     budget: capabilityMapPayload.stats.truncated
       ? capabilityMapPayload.stats
       : undefined
   };
 
   return compactPayload(topLevel, budget).value;
+}
+
+function buildWorkspacePreparationEvidenceSummary(
+  payload: Record<string, unknown>
+) {
+  const workItemExecutions = arrayOfRecords(payload.workItemExecutions);
+  const summary = {
+    gradle: summarizeGradleExecution(workItemExecutions),
+    probejs: summarizeProbeJsExecution(workItemExecutions),
+    localJar: summarizeJarExecution(workItemExecutions),
+    sourceIndex: summarizeSourceIndexPreview(payload.sourceIndexPreview)
+  };
+
+  return Object.fromEntries(
+    Object.entries(summary).filter(([, value]) => value !== undefined)
+  );
+}
+
+function summarizeGradleExecution(executions: Array<Record<string, unknown>>) {
+  const execution = findWorkItemPayload(executions, "workspace_gradle_dependencies");
+  if (!execution || execution.source !== "workspace_gradle") {
+    return undefined;
+  }
+
+  return {
+    dependencyCount: numberValue(execution.dependencyCount),
+    repositoryCount: numberValue(execution.repositoryCount),
+    sourceArchiveCount: numberValue(execution.declaredDependencySourceArchiveCount),
+    binaryArchiveCount: numberValue(execution.declaredDependencyBinaryArchiveCount),
+    sourceArchives: archivePaths(execution.declaredDependencySourceArchives),
+    binaryArchives: archivePaths(execution.declaredDependencyBinaryArchives)
+  };
+}
+
+function summarizeProbeJsExecution(executions: Array<Record<string, unknown>>) {
+  const execution = findWorkItemPayload(executions, "workspace_probejs_types");
+  const probeResources = isRecord(execution?.probeResources)
+    ? execution.probeResources
+    : undefined;
+  const summary = isRecord(probeResources?.summary)
+    ? probeResources.summary
+    : undefined;
+
+  if (!summary) {
+    return undefined;
+  }
+
+  return {
+    counts: summary.counts,
+    totalCounts: summary.totalCounts,
+    cacheHit: execution?.probeResourceCacheHit
+  };
+}
+
+function summarizeJarExecution(executions: Array<Record<string, unknown>>) {
+  const execution = findWorkItemPayload(executions, "jar_index");
+  if (!execution || execution.source !== "source_acquisition_jar_index") {
+    return undefined;
+  }
+
+  const cache = isRecord(execution.cache) ? execution.cache : undefined;
+
+  return {
+    mode: execution.mode,
+    archiveCount: numberValue(execution.archiveCount),
+    entryCount: numberValue(execution.entryCount),
+    tokenPolicy: execution.tokenPolicy,
+    cache: cache
+      ? {
+          archiveHits: numberValue(cache.archiveHits),
+          archiveMisses: numberValue(cache.archiveMisses)
+        }
+      : undefined,
+    domainCounts: execution.domainCounts
+  };
+}
+
+function summarizeSourceIndexPreview(value: unknown) {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const matches = arrayOfRecords(value.matches);
+
+  return {
+    query: value.query,
+    searchedDatabaseCount: numberValue(value.searchedDatabaseCount),
+    matchCount: matches.length,
+    topPaths: matches
+      .map((match) => optionalString(match.path))
+      .filter((path): path is string => path !== undefined)
+      .slice(0, 5),
+    warnings: value.warnings
+  };
+}
+
+function findWorkItemPayload(
+  executions: Array<Record<string, unknown>>,
+  kind: string
+): Record<string, unknown> | undefined {
+  const execution = executions.find((item) => item.kind === kind);
+  return isRecord(execution?.payload) ? execution.payload : undefined;
+}
+
+function archivePaths(value: unknown): string[] {
+  return arrayOfRecords(value)
+    .map((archive) => optionalString(archive.archivePath))
+    .filter((path): path is string => path !== undefined)
+    .slice(0, 5);
+}
+
+function numberValue(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
 }
 
 function resolveWorkspacePreparationStatus(
@@ -285,6 +398,14 @@ function summarizeDepthLimitedValue(value: object): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function arrayOfRecords(value: unknown): Array<Record<string, unknown>> {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
 }
 
 interface PayloadBudgetStats {
