@@ -26,6 +26,10 @@ export function formatMcpDevelopResultText(
   if (workspacePreparation) {
     lines.push(`Workspace preparation: ${workspacePreparation}`);
   }
+  const javaDiagnostics = formatJavaDiagnostics(result);
+  if (javaDiagnostics) {
+    lines.push(`Java diagnostics: ${javaDiagnostics}`);
+  }
   const resourceActions = formatResourceActions(mdmPackageRecommendations);
   if (resourceActions) {
     lines.push(`Resource actions: ${resourceActions}`);
@@ -37,6 +41,32 @@ export function formatMcpDevelopResultText(
   }
 
   return lines.join("\n");
+}
+
+function formatJavaDiagnostics(
+  result: McpServerRequestExecutorResult
+): string | undefined {
+  const payload = result.executions
+    .map((execution) => recordValue(execution.payload))
+    .find((candidate) => candidate?.mode === "java_diagnostics");
+  const firstFile = arrayOfRecords(payload?.files)[0];
+  const firstDiagnostic = arrayOfRecords(firstFile?.diagnostics)[0];
+  const message = stringValue(firstDiagnostic?.message);
+
+  if (!firstFile || !message) {
+    return undefined;
+  }
+
+  const relativePath = stringValue(firstFile.relativePath) ?? "unknown.java";
+  const start = recordValue(recordValue(firstDiagnostic.range)?.start);
+  const line = numberValue(start?.line);
+  const character = numberValue(start?.character);
+  const location =
+    line !== undefined && character !== undefined
+      ? `${relativePath}:${line + 1}:${character + 1}`
+      : relativePath;
+
+  return `${location} ${message}`;
 }
 
 function formatResourceActions(
@@ -165,6 +195,14 @@ function arrayOfRecords(value: unknown): Array<Record<string, unknown>> {
 
 function recordValue(value: unknown): Record<string, unknown> | undefined {
   return isRecord(value) ? value : undefined;
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function numberValue(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
