@@ -57,6 +57,7 @@ import {
   lookupLoaderDependencyOwner,
   lookupMixinTargetVerification
 } from "./mod-archive-content-owners.js";
+import { lookupHotaiPatchProof } from "../hotai/hotai-patch-proof.js";
 
 export interface McpServerModArchiveContentExecutorOptions {
   cache?: ArchiveContentCache;
@@ -252,6 +253,16 @@ export async function executeMcpServerModArchiveContent(
       domains: listDomains,
       cache: options.cache
     });
+  }
+
+  const hotaiPatchProofResult = await lookupHotaiPatchProof({
+    workspaceRoot,
+    archivePaths: archives.archives.map((archive) => archive.archivePath),
+    requestText,
+    cache: options.cache
+  });
+  if (hotaiPatchProofResult) {
+    return hotaiPatchProofResult;
   }
 
   const mixinTargetVerificationResult = await lookupMixinTargetVerification({
