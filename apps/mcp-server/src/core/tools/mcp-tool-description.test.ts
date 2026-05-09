@@ -18,6 +18,8 @@ describe("mc_develop tool description", () => {
     expect(description).toContain("remoteMetadataPolicy: enabled");
     expect(description).toContain("includeDefaultGradleUserHome: true");
     expect(description).toContain("localJarMode: prewarm_entry_index");
+    expect(description).toContain("clientVisualVerifier");
+    expect(description).toContain("workspacePreparation");
   });
 
   it("documents route and policy schema with concrete usage hints", () => {
