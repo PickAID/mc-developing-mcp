@@ -21,11 +21,27 @@ describe("source.bundle FTB Quests evidence", () => {
 
     await writeText(
       join(workspaceRoot, "config", "ftbquests", "quests", "chapters", "start.snbt"),
-      '{ id: "start", title: "Getting Started" }\n'
+      '{ id: "start", quests: [{ id: "quest", tasks: [{ id: "task", type: "item" }] }] }\n'
     );
     await writeText(
-      join(workspaceRoot, "config", "ftbquests", "quests", "reward_tables", "basic.json"),
-      '{ "id": "basic" }\n'
+      join(workspaceRoot, "config", "ftbquests", "quests", "reward_tables", "basic.snbt"),
+      '{ id: "basic", rewards: [{ id: "reward", type: "item" }] }\n'
+    );
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "data.snbt"),
+      "{ version: 13 }\n"
+    );
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "chapter_groups.snbt"),
+      '{ chapter_groups: [{ id: "group" }] }\n'
+    );
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "lang", "en_us.snbt"),
+      "{ }\n"
+    );
+    await writeText(
+      join(workspaceRoot, "config", "ftbquests", "quests", "addon_bridge", "custom.snbt"),
+      "{ }\n"
     );
     await writeText(
       join(workspaceRoot, "config", "ftbquests", "quests", "README.txt"),
@@ -41,23 +57,49 @@ describe("source.bundle FTB Quests evidence", () => {
       )
     ).resolves.toMatchObject({
       matched: true,
-      summary: "Summarized 2 local FTB Quests file(s).",
+      summary: "Summarized 6 local FTB Quests file(s).",
       payload: {
         source: "datapack_files",
         ftbQuestsSummary: {
           source: "ftb_quests_files",
           tokenPolicy: "counts_first",
           rootCount: 1,
-          fileCount: 2,
+          fileCount: 6,
           chapterFileCount: 1,
           rewardTableFileCount: 1,
           byFormat: {
-            json: 1,
-            snbt: 1
+            snbt: 6
+          },
+          byCategory: {
+            addon_or_unknown: 1,
+            chapter: 1,
+            chapter_groups: 1,
+            file_settings: 1,
+            reward_table: 1,
+            translation: 1
+          },
+          schemaProfile: {
+            sourceEvidence: "ftb_quests_source",
+            storageRoot: "config/ftbquests/quests",
+            primaryFormat: "snbt",
+            canonicalFiles: ["data.snbt", "chapter_groups.snbt"],
+            canonicalDirectories: ["chapters", "reward_tables", "lang"],
+            embeddedChapterCollections: [
+              "quests",
+              "tasks",
+              "rewards",
+              "quest_links",
+              "images"
+            ],
+            extensionPolicy: "preserve_unknown_snbt_categories"
           },
           topPaths: [
+            "config/ftbquests/quests/addon_bridge/custom.snbt",
+            "config/ftbquests/quests/chapter_groups.snbt",
             "config/ftbquests/quests/chapters/start.snbt",
-            "config/ftbquests/quests/reward_tables/basic.json"
+            "config/ftbquests/quests/data.snbt",
+            "config/ftbquests/quests/lang/en_us.snbt",
+            "config/ftbquests/quests/reward_tables/basic.snbt"
           ]
         }
       }

@@ -5,9 +5,33 @@ const FTB_QUESTS_ROOTS = [
   join("config", "ftbquests", "quests"),
   join("config", "ftbquests")
 ];
-const SUPPORTED_FORMATS = new Set([".json", ".nbt", ".snbt"]);
+const SUPPORTED_FORMATS = new Set([".snbt"]);
 const MAX_FILES = 128;
 const MAX_LISTED_PATHS = 24;
+
+const FTB_QUESTS_SCHEMA_PROFILE = {
+  sourceEvidence: "ftb_quests_source",
+  storageRoot: "config/ftbquests/quests",
+  primaryFormat: "snbt",
+  canonicalFiles: ["data.snbt", "chapter_groups.snbt"],
+  canonicalDirectories: ["chapters", "reward_tables", "lang"],
+  embeddedChapterCollections: [
+    "quests",
+    "tasks",
+    "rewards",
+    "quest_links",
+    "images"
+  ],
+  extensionPolicy: "preserve_unknown_snbt_categories"
+} as const;
+
+type FtbQuestsCategory =
+  | "addon_or_unknown"
+  | "chapter"
+  | "chapter_groups"
+  | "file_settings"
+  | "reward_table"
+  | "translation";
 
 export interface FtbQuestsSummary {
   source: "ftb_quests_files";
@@ -17,6 +41,8 @@ export interface FtbQuestsSummary {
   chapterFileCount: number;
   rewardTableFileCount: number;
   byFormat: Record<string, number>;
+  byCategory: Partial<Record<FtbQuestsCategory, number>>;
+  schemaProfile: typeof FTB_QUESTS_SCHEMA_PROFILE;
   topPaths: string[];
   truncated: boolean;
 }
@@ -50,6 +76,8 @@ export async function summarizeFtbQuestsFiles(
     chapterFileCount: countPathSegment(uniquePaths, "chapters"),
     rewardTableFileCount: countPathSegment(uniquePaths, "reward_tables"),
     byFormat: countFormats(uniquePaths),
+    byCategory: countCategories(uniquePaths),
+    schemaProfile: FTB_QUESTS_SCHEMA_PROFILE,
     topPaths: uniquePaths.slice(0, MAX_LISTED_PATHS),
     truncated: uniquePaths.length > MAX_LISTED_PATHS || paths.length >= MAX_FILES
   };
@@ -127,6 +155,43 @@ function countFormats(paths: string[]): Record<string, number> {
   return Object.fromEntries(
     Object.entries(counts).sort(([left], [right]) => left.localeCompare(right))
   );
+}
+
+function countCategories(paths: string[]): Partial<Record<FtbQuestsCategory, number>> {
+  const counts: Partial<Record<FtbQuestsCategory, number>> = {};
+
+  for (const path of paths) {
+    const category = classifyQuestPath(path);
+
+    counts[category] = (counts[category] ?? 0) + 1;
+  }
+
+  return Object.fromEntries(
+    Object.entries(counts).sort(([left], [right]) => left.localeCompare(right))
+  ) as Partial<Record<FtbQuestsCategory, number>>;
+}
+
+function classifyQuestPath(path: string): FtbQuestsCategory {
+  const rootRelativePath = path.split("config/ftbquests/quests/").at(1) ?? path;
+  const segments = rootRelativePath.split("/");
+
+  if (rootRelativePath === "data.snbt") {
+    return "file_settings";
+  }
+  if (rootRelativePath === "chapter_groups.snbt") {
+    return "chapter_groups";
+  }
+  if (segments[0] === "chapters") {
+    return "chapter";
+  }
+  if (segments[0] === "reward_tables") {
+    return "reward_table";
+  }
+  if (segments[0] === "lang") {
+    return "translation";
+  }
+
+  return "addon_or_unknown";
 }
 
 function toPosixPath(path: string): string {
