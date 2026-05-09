@@ -107,6 +107,18 @@ describe("source.bundle client visual evidence", () => {
             missingAssetKinds: []
           },
           missingEvidence: [],
+          visualVerifier: {
+            tokenPolicy: "compact_client_visual_verifier",
+            overall: "missing",
+            checks: {
+              registry: { status: "proven" },
+              client_init: { status: "proven" },
+              renderer_or_screen_binding: { status: "proven" },
+              asset_chain: { status: "proven" },
+              resource_reload_or_dynamic_texture: { status: "missing" },
+              api_version: { status: "proven" }
+            }
+          },
           implementationSkeleton: {
             tokenPolicy: "compact_client_visual_implementation_skeleton",
             evidenceBackedSteps: expect.arrayContaining([

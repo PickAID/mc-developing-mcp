@@ -12,6 +12,7 @@ import {
 import type { ClientVisualSourceScan } from "../source-scan/client-visual-source-scanner.js";
 import type { ExternalShaderReferenceResult } from "../../external-mod/shader/external-shader-reference.js";
 import { buildSourceReadNextReads } from "../../source-bundle/shared/source-read-next.js";
+import { buildClientVisualVerifier } from "./client-visual-verifier.js";
 
 export interface ClientVisualEvidencePacketInput {
   descriptor?: WorkspaceDescriptor;
@@ -42,6 +43,11 @@ export function buildClientVisualEvidencePacket(
   const apiProof = buildClientVisualApiProof({
     descriptor: input.descriptor,
     sourceScan: input.sourceScan
+  });
+  const visualVerifier = buildClientVisualVerifier({
+    sourceScan: input.sourceScan,
+    apiProof,
+    matchedAssetPaths
   });
 
   return {
@@ -74,6 +80,7 @@ export function buildClientVisualEvidencePacket(
     },
     missingEvidence: missingEvidence(input.sourceScan),
     evidenceLimitations: evidenceLimitations(input.sourceScan),
+    visualVerifier,
     ...(input.externalShaderReference
       ? { externalShaderReference: input.externalShaderReference }
       : {}),
