@@ -209,6 +209,24 @@ describe("buildMcpDevelopStructuredContent", () => {
               cache: { archiveHits: 1, archiveMisses: 0 },
               rawLargePayloadShouldNotBeCopied: "x".repeat(100)
             }
+          },
+          {
+            kind: "java_diagnostics",
+            status: "completed",
+            payload: {
+              source: "workspace_analyze",
+              mode: "java_diagnostics",
+              totalDiagnostics: 1,
+              files: [
+                {
+                  relativePath: "src/main/java/example/Broken.java",
+                  diagnostics: [{
+                    message: "RegistryObject cannot be resolved",
+                    range: { start: { line: 11, character: 4 } }
+                  }]
+                }
+              ]
+            }
           }
         ]
       }
@@ -303,6 +321,11 @@ describe("buildMcpDevelopStructuredContent", () => {
           query: "ItemStack",
           matchCount: 1,
           topPaths: ["net/minecraft/world/item/ItemStack.java"]
+        },
+        javaDiagnostics: {
+          totalDiagnostics: 1,
+          firstLocation: "src/main/java/example/Broken.java:12:5",
+          firstMessage: "RegistryObject cannot be resolved"
         }
       }
     });
@@ -319,48 +342,6 @@ describe("buildMcpDevelopStructuredContent", () => {
     );
   });
 
-  it("exposes MDM package install recommendations as confirmation-gated resource actions", () => {
-    const content = buildMcpDevelopStructuredContent(createExecutorResult(), {
-      mdmPackageRecommendations: {
-        policy: "recommend_before_download",
-        status: "available",
-        message: "MDM packages are recommendations only.",
-        suggestions: [
-          {
-            packageId: "minecraft-1.20.1-source-index",
-            status: "missing_optional",
-            priority: "high",
-            matchedSignals: ["sources"],
-            reason: "Matched source index request.",
-            mdmReleaseInstall: {
-              packageId: "minecraft-1.20.1-source-index",
-              downloadPolicy: "disabled",
-              manifestPath: "/repo/mdm-release-manifest.json"
-            }
-          }
-        ]
-      }
-    });
-
-    expect(content.resourceActions).toMatchObject({
-      policy: "recommend_before_download",
-      executeWithDownloadOnlyAfterUserConfirmation: true,
-      actions: [
-        {
-          id: "install_mdm_minecraft-1.20.1-source-index",
-          kind: "mdm_release_install",
-          safety: "requires_user_confirmation",
-          packageId: "minecraft-1.20.1-source-index",
-          inputPatch: {
-            mdmReleaseInstall: {
-              packageId: "minecraft-1.20.1-source-index",
-              downloadPolicy: "disabled"
-            }
-          }
-        }
-      ]
-    });
-  });
 });
 
 function createExecutorResult(

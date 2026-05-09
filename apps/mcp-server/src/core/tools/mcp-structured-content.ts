@@ -142,7 +142,8 @@ function buildWorkspacePreparationEvidenceSummary(
     gradle: summarizeGradleExecution(workItemExecutions),
     probejs: summarizeProbeJsExecution(workItemExecutions),
     localJar: summarizeJarExecution(workItemExecutions),
-    sourceIndex: summarizeSourceIndexPreview(payload.sourceIndexPreview)
+    sourceIndex: summarizeSourceIndexPreview(payload.sourceIndexPreview),
+    javaDiagnostics: summarizeJavaDiagnosticsExecution(workItemExecutions)
   };
 
   return Object.fromEntries(
@@ -225,6 +226,48 @@ function summarizeSourceIndexPreview(value: unknown) {
       .slice(0, 5),
     warnings: value.warnings
   };
+}
+
+function summarizeJavaDiagnosticsExecution(
+  executions: Array<Record<string, unknown>>
+) {
+  const execution = findWorkItemPayload(executions, "java_diagnostics");
+  if (!execution || execution.mode !== "java_diagnostics") {
+    return undefined;
+  }
+
+  const firstFile = arrayOfRecords(execution.files)[0];
+  const firstDiagnostic = arrayOfRecords(firstFile?.diagnostics)[0];
+  const firstMessage = optionalString(firstDiagnostic?.message);
+  if (!firstFile || !firstMessage) {
+    return {
+      totalDiagnostics: numberValue(execution.totalDiagnostics)
+    };
+  }
+
+  return {
+    totalDiagnostics: numberValue(execution.totalDiagnostics),
+    firstLocation: formatDiagnosticLocation(firstFile, firstDiagnostic),
+    firstMessage
+  };
+}
+
+function formatDiagnosticLocation(
+  file: Record<string, unknown>,
+  diagnostic: Record<string, unknown>
+): string {
+  const relativePath = optionalString(file.relativePath) ?? "unknown.java";
+  const start = isRecord(diagnostic.range)
+    ? isRecord(diagnostic.range.start)
+      ? diagnostic.range.start
+      : undefined
+    : undefined;
+  const line = numberValue(start?.line);
+  const character = numberValue(start?.character);
+
+  return line !== undefined && character !== undefined
+    ? `${relativePath}:${line + 1}:${character + 1}`
+    : relativePath;
 }
 
 function findWorkItemPayload(
