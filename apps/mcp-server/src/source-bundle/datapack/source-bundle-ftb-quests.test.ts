@@ -253,6 +253,16 @@ describe("source.bundle FTB Quests evidence", () => {
       matched: true,
       payload: {
         ftbQuestsSummary: {
+          decisionTrace: {
+            priorityOrder: [
+              "workspace_settings",
+              "builtin_schema_fallback",
+              "workspace_log_signals",
+              "manual_settings_proposal"
+            ],
+            activeSchemaSource: "builtin_schema_fallback",
+            nextAction: "review settingsProposal, test in-game, then update .mc-developing-mcp/settings.json only if verified"
+          },
           logSignals: {
             source: "workspace_logs",
             ftbQuestsErrorCount: 1,

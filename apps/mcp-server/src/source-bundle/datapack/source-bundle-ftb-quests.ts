@@ -14,6 +14,10 @@ import {
   buildFtbQuestsSettingsProposal,
   type FtbQuestsSettingsProposal
 } from "./source-bundle-ftb-quests-proposal.js";
+import {
+  buildFtbQuestsDecisionTrace,
+  type FtbQuestsDecisionTrace
+} from "./source-bundle-ftb-quests-trace.js";
 
 const FTB_QUESTS_ROOTS = [
   join("config", "ftbquests", "quests"),
@@ -90,6 +94,7 @@ export interface FtbQuestsSummary {
     path: WorkspaceLocalSettingsPath;
     schemaExtensionCount: number;
   };
+  decisionTrace: FtbQuestsDecisionTrace;
   logSignals?: FtbQuestsLogSignals;
   topPaths: string[];
   truncated: boolean;
@@ -177,6 +182,10 @@ export async function summarizeFtbQuestsFiles(
           }
         }
       : {}),
+    decisionTrace: buildFtbQuestsDecisionTrace({
+      hasWorkspaceSchema: localSchemaExtensions.length > 0,
+      hasSettingsProposal: logSignals?.settingsProposal !== undefined
+    }),
     ...(logSignals ? { logSignals } : {}),
     topPaths: uniquePaths.slice(0, MAX_LISTED_PATHS),
     truncated: uniquePaths.length > MAX_LISTED_PATHS || paths.length >= MAX_FILES
