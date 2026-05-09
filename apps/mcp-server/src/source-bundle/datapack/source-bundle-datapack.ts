@@ -13,6 +13,7 @@ import {
   executeMcpServerVanillaDatapackPackage,
   type McpServerVanillaDatapackPackageOptions
 } from "./source-bundle-vanilla-datapack.js";
+import { summarizeFtbQuestsFiles } from "./source-bundle-ftb-quests.js";
 import {
   executeMcpServerVanillaAssetsPackage,
   type McpServerVanillaAssetsPackageOptions
@@ -75,8 +76,23 @@ export async function executeMcpServerDatapackFiles(
   const queries = extractResourceLocationQueries(requestText);
   const requestedPaths = extractDatapackPathQueries(requestText);
   const discovery = await discoverDatapackContent(workspaceRoot);
+  const ftbQuestsSummary = await summarizeFtbQuestsFiles(workspaceRoot);
 
   if (discovery.roots.length === 0) {
+    if (ftbQuestsSummary) {
+      return {
+        matched: true,
+        summary: `Summarized ${ftbQuestsSummary.fileCount} local FTB Quests file(s).`,
+        payload: {
+          source: "datapack_files",
+          workspaceRoot,
+          queries,
+          requestedPaths,
+          ftbQuestsSummary
+        }
+      };
+    }
+
     const vanillaDatapackResult = await executeMcpServerVanillaDatapackPackage({
       executorInput: input,
       requestText,
@@ -211,6 +227,7 @@ export async function executeMcpServerDatapackFiles(
         resourceSummary: compactResourceSummary,
         ...(resourceRootSummary ? { resourceRootSummary } : {}),
         ...(clientVisualEvidence ? { clientVisualEvidence } : {}),
+        ...(ftbQuestsSummary ? { ftbQuestsSummary } : {}),
         ...(isResourcePackRequest ? {} : { files: listed.entries }),
         skipped: listed.skipped,
         truncated: listed.truncated
@@ -236,6 +253,7 @@ export async function executeMcpServerDatapackFiles(
       ...(datapackMigrationAnalysis ? { datapackMigrationAnalysis } : {}),
       ...(resourcePackMigrationAnalysis ? { resourcePackMigrationAnalysis } : {}),
       resourceSummary: compactResourceSummary,
+      ...(ftbQuestsSummary ? { ftbQuestsSummary } : {}),
       reads: reads.files,
       matches: search.matches,
       ...(clientVisualEvidence ? { clientVisualEvidence } : {}),
