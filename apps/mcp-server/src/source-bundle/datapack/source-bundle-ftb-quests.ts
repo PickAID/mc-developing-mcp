@@ -1,5 +1,10 @@
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import { extname, join, relative, sep } from "node:path";
+
+import {
+  readWorkspaceLocalSettings,
+  type WorkspaceLocalSchemaExtension
+} from "../../workspace/local-settings.js";
 
 const FTB_QUESTS_ROOTS = [
   join("config", "ftbquests", "quests"),
@@ -34,16 +39,6 @@ type FtbQuestsCategory =
   | "translation"
   | string;
 
-interface LocalSchemaExtension {
-  id: string;
-  category: string;
-  paths: string[];
-}
-
-interface FtbQuestsLocalSettings {
-  schemaExtensions: LocalSchemaExtension[];
-}
-
 export interface FtbQuestsSummary {
   source: "ftb_quests_files";
   tokenPolicy: "counts_first";
@@ -54,7 +49,7 @@ export interface FtbQuestsSummary {
   byFormat: Record<string, number>;
   byCategory: Partial<Record<FtbQuestsCategory, number>>;
   schemaProfile: typeof FTB_QUESTS_SCHEMA_PROFILE & {
-    localExtensions?: LocalSchemaExtension[];
+    localExtensions?: WorkspaceLocalSchemaExtension[];
   };
   localSettings?: {
     source: "workspace_local_settings";
@@ -81,7 +76,8 @@ export async function summarizeFtbQuestsFiles(
     await collectQuestPaths(root, workspaceRoot, paths);
   }
 
-  const localSettings = await readFtbQuestsLocalSettings(workspaceRoot);
+  const localSettings = await readWorkspaceLocalSettings(workspaceRoot);
+  const schemaExtensions = localSettings.ftbQuests.schemaExtensions;
   const uniquePaths = [...new Set(paths)].sort();
 
   if (uniquePaths.length === 0) {
@@ -96,20 +92,20 @@ export async function summarizeFtbQuestsFiles(
     chapterFileCount: countPathSegment(uniquePaths, "chapters"),
     rewardTableFileCount: countPathSegment(uniquePaths, "reward_tables"),
     byFormat: countFormats(uniquePaths),
-    byCategory: countCategories(uniquePaths, localSettings.schemaExtensions),
+    byCategory: countCategories(uniquePaths, schemaExtensions),
     schemaProfile: {
       ...FTB_QUESTS_SCHEMA_PROFILE,
-      ...(localSettings.schemaExtensions.length > 0
-        ? { localExtensions: localSettings.schemaExtensions }
+      ...(schemaExtensions.length > 0
+        ? { localExtensions: schemaExtensions }
         : {})
     },
-    ...(localSettings.schemaExtensions.length > 0
+    ...(schemaExtensions.length > 0
       ? {
           localSettings: {
-            source: "workspace_local_settings",
+            source: localSettings.source,
             applied: true,
-            path: ".mcpskill/settings.json",
-            schemaExtensionCount: localSettings.schemaExtensions.length
+            path: localSettings.path,
+            schemaExtensionCount: schemaExtensions.length
           }
         }
       : {}),
@@ -194,7 +190,7 @@ function countFormats(paths: string[]): Record<string, number> {
 
 function countCategories(
   paths: string[],
-  extensions: LocalSchemaExtension[]
+  extensions: WorkspaceLocalSchemaExtension[]
 ): Partial<Record<FtbQuestsCategory, number>> {
   const counts: Partial<Record<FtbQuestsCategory, number>> = {};
 
@@ -211,7 +207,7 @@ function countCategories(
 
 function classifyQuestPath(
   path: string,
-  extensions: LocalSchemaExtension[]
+  extensions: WorkspaceLocalSchemaExtension[]
 ): FtbQuestsCategory {
   const rootRelativePath = path.split("config/ftbquests/quests/").at(1) ?? path;
   const segments = rootRelativePath.split("/");
@@ -240,61 +236,6 @@ function classifyQuestPath(
   }
 
   return "addon_or_unknown";
-}
-
-async function readFtbQuestsLocalSettings(
-  workspaceRoot: string
-): Promise<FtbQuestsLocalSettings> {
-  try {
-    const raw = await readFile(join(workspaceRoot, ".mcpskill", "settings.json"), "utf-8");
-    const parsed = JSON.parse(raw) as {
-      ftbQuests?: { schemaExtensions?: unknown };
-    };
-
-    return {
-      schemaExtensions: parseLocalSchemaExtensions(
-        parsed.ftbQuests?.schemaExtensions
-      )
-    };
-  } catch {
-    return { schemaExtensions: [] };
-  }
-}
-
-function parseLocalSchemaExtensions(value: unknown): LocalSchemaExtension[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.flatMap((entry) => {
-    if (!isRecord(entry)) {
-      return [];
-    }
-
-    const id = typeof entry.id === "string" ? entry.id : "";
-    const category = typeof entry.category === "string" ? entry.category : "";
-    const paths = Array.isArray(entry.paths)
-      ? entry.paths.filter((path): path is string => typeof path === "string")
-      : [];
-
-    if (!safeIdentifier(id) || !safeIdentifier(category) || paths.length === 0) {
-      return [];
-    }
-
-    return [{ id, category, paths: paths.map(normalizeLocalPathPrefix) }];
-  });
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function safeIdentifier(value: string): boolean {
-  return /^[a-z0-9_.-]+$/i.test(value);
-}
-
-function normalizeLocalPathPrefix(path: string): string {
-  return path.split(sep).join("/").replace(/^\/+|\/+$/g, "");
 }
 
 function pathStartsWith(path: string, prefix: string): boolean {
