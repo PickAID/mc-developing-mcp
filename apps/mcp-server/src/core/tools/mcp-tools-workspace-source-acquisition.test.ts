@@ -136,7 +136,17 @@ describe("mc_develop workspace source acquisition acceptance", () => {
     expect(result.isError).toBeUndefined();
     expect(result.content?.[0]).toMatchObject({
       type: "text",
-      text: expect.stringContaining("ftb quests files=1")
+      text: expect.stringContaining("ftb quests/datapack files=1, log errors=1")
+    });
+    expect(result.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining(
+        "schema proposal=.mc-developing-mcp/settings.json"
+      )
+    });
+    expect(result.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining("suggested schema=chapters")
     });
     expect(result.structuredContent).toMatchObject({
       workspacePreparation: {
@@ -144,6 +154,19 @@ describe("mc_develop workspace source acquisition acceptance", () => {
           ftbQuests: {
             fileCount: 1,
             logErrorCount: 1,
+            topPaths: ["config/ftbquests/quests/chapters/start.snbt"],
+            firstLogError: {
+              kind: "load_error",
+              path: "config/ftbquests/quests/chapters/start.snbt",
+              message: "Unknown task type hotai:flight_task"
+            },
+            firstSuggestedSchemaExtension: {
+              id: "observed.chapters",
+              category: "chapters",
+              paths: ["chapters"]
+            },
+            settingsProposalTargetPath: ".mc-developing-mcp/settings.json",
+            settingsProposalMode: "manual_review_only",
             nextAction: expect.stringContaining(".mc-developing-mcp/settings.json")
           }
         }

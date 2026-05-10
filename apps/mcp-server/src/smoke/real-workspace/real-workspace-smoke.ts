@@ -91,13 +91,11 @@ export function parseSmokeConfig(
     getArg(args, "workspaceRoot") ??
     getArg(args, "workspace") ??
     args._[0] ??
-    env.MC_DEVELOPING_MCP_SMOKE_WORKSPACE_ROOT ??
-    env.MCPSKILL_SMOKE_WORKSPACE_ROOT;
+    env.MC_DEVELOPING_MCP_SMOKE_WORKSPACE_ROOT;
   const runtimeRoot =
     getArg(args, "runtimeRoot") ??
     getArg(args, "runtime") ??
     env.MC_DEVELOPING_MCP_RUNTIME_ROOT ??
-    env.MCPSKILL_RUNTIME_ROOT ??
     resolve(tmpdir(), "mc-developing-mcp-real-workspace-smoke");
 
   if (!workspaceRoot) {

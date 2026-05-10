@@ -23,8 +23,6 @@ export function resolveRuntimeRoot(
     input.runtimeRoot ??
     options.env?.MC_DEVELOPING_MCP_RUNTIME_ROOT ??
     process.env.MC_DEVELOPING_MCP_RUNTIME_ROOT ??
-    options.env?.MCPSKILL_RUNTIME_ROOT ??
-    process.env.MCPSKILL_RUNTIME_ROOT ??
     join(homedir(), ".cache", "mc-developing-mcp", "runtime")
   );
 }
@@ -37,8 +35,6 @@ export function resolveWorkspaceRoot(
     input.workspaceRoot ??
     options.env?.MC_DEVELOPING_MCP_WORKSPACE_ROOT ??
     process.env.MC_DEVELOPING_MCP_WORKSPACE_ROOT ??
-    options.env?.MCPSKILL_WORKSPACE_ROOT ??
-    process.env.MCPSKILL_WORKSPACE_ROOT ??
     options.cwd ??
     process.cwd()
   );

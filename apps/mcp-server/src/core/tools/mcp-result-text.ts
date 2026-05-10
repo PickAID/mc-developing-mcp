@@ -372,10 +372,20 @@ function formatFtbQuests(result: McpServerRequestExecutorResult) {
   }
 
   const logSignals = recordValue(summary.logSignals);
-  return compactCounts("ftb quests", [
+  const proposal = recordValue(logSignals?.settingsProposal);
+  const firstSuggestion = arrayOfRecords(logSignals?.suggestedSchemaExtensions)[0];
+  const counts = compactCounts("ftb quests/datapack", [
     ["files", summary.fileCount],
     ["log errors", logSignals?.ftbQuestsErrorCount]
   ]);
+  const details = [
+    proposal?.targetPath ? `schema proposal=${proposal.targetPath}` : undefined,
+    firstSuggestion?.category
+      ? `suggested schema=${firstSuggestion.category}`
+      : undefined
+  ].filter(Boolean);
+
+  return [counts, ...details].filter(Boolean).join(", ") || undefined;
 }
 
 function workItemPayload(

@@ -236,10 +236,7 @@ async function executeMcpDevelopTool(
     const runtimeRoot = resolveRuntimeRoot(input, options);
     const workspaceRoot = resolveWorkspaceRoot(input, options);
     const env = resolveToolEnv(options);
-    const prismRoot =
-      input.prismRoot ??
-      env.MC_DEVELOPING_MCP_PRISM_ROOT ??
-      env.MCPSKILL_PRISM_ROOT;
+    const prismRoot = input.prismRoot ?? env.MC_DEVELOPING_MCP_PRISM_ROOT;
     const bootstrap = await buildMcpServerBootstrap({
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }

@@ -192,6 +192,48 @@ describe("createMcpServerProbeJsTypesExecutor", () => {
     });
   });
 
+  it("combines ProbeJS quick info with resource literal evidence", async () => {
+    const workspaceRoot = await createKubeJsLanguageWorkspace({
+      scriptContent: "ServerEvents.recipes(event => {});\n"
+    });
+    const input = await createProbeJsExecutorInput(
+      workspaceRoot,
+      [
+        "Use KubeJS ServerEvents.recipes with minecraft:stone",
+        "and #forge:ingots/iron in this modpack."
+      ].join(" ")
+    );
+    const executor = createMcpServerProbeJsTypesExecutor();
+
+    const result = await executor(input);
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "kubejs_language_service",
+        queryMode: "virtual",
+        symbol: "ServerEvents.recipes",
+        quickInfo: expect.stringContaining("recipes(handler"),
+        probeResources: {
+          entries: {
+            item: [
+              {
+                name: "minecraft:stone",
+                value: "minecraft:stone"
+              }
+            ],
+            tag: [
+              {
+                name: "forge:ingots/iron",
+                value: "#forge:ingots/iron"
+              }
+            ]
+          }
+        }
+      }
+    });
+  });
+
   it("omits unrelated ProbeJS resources for a symbol-only request", async () => {
     const workspaceRoot = await createKubeJsLanguageWorkspace();
     const input = await createProbeJsExecutorInput(workspaceRoot);

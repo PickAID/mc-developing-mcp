@@ -46,6 +46,16 @@ describe("real workspace smoke output", () => {
     });
   });
 
+  it("ignores legacy MCPSKILL environment variable names", () => {
+    const config = parseSmokeConfig(["/tmp/argv-workspace"], {
+      MCPSKILL_SMOKE_WORKSPACE_ROOT: "/tmp/legacy-smoke-workspace",
+      MCPSKILL_RUNTIME_ROOT: "/tmp/legacy-smoke-runtime"
+    });
+
+    expect(config.workspaceRoot).toBe("/tmp/argv-workspace");
+    expect(config.runtimeRoot).not.toBe("/tmp/legacy-smoke-runtime");
+  });
+
   it("points missing workspace guidance at current environment variable names", () => {
     expect(() => parseSmokeConfig([], {})).toThrow(
       "Missing workspaceRoot. Pass --workspaceRoot, positional argv, or MC_DEVELOPING_MCP_SMOKE_WORKSPACE_ROOT."

@@ -129,6 +129,10 @@ function summarizeFtbQuestsExecution(
     ? payload.ftbQuestsSummary
     : undefined;
   const logSignals = isRecord(summary?.logSignals) ? summary.logSignals : undefined;
+  const firstLogError = arrayOfRecords(logSignals?.errors)[0];
+  const firstSuggestedSchemaExtension = arrayOfRecords(
+    logSignals?.suggestedSchemaExtensions
+  )[0];
   const proposal = isRecord(logSignals?.settingsProposal)
     ? logSignals.settingsProposal
     : undefined;
@@ -141,8 +145,24 @@ function summarizeFtbQuestsExecution(
     schemaSource: isRecord(summary.schemaProfile)
       ? summary.schemaProfile.sourceEvidence
       : undefined,
+    topPaths: arrayOfStrings(summary.topPaths).slice(0, 3),
     logErrorCount: numberValue(logSignals?.ftbQuestsErrorCount),
+    firstLogError: firstLogError
+      ? {
+          kind: optionalString(firstLogError.kind),
+          path: optionalString(firstLogError.path),
+          message: optionalString(firstLogError.message)
+        }
+      : undefined,
+    firstSuggestedSchemaExtension: firstSuggestedSchemaExtension
+      ? {
+          id: optionalString(firstSuggestedSchemaExtension.id),
+          category: optionalString(firstSuggestedSchemaExtension.category),
+          paths: arrayOfStrings(firstSuggestedSchemaExtension.paths)
+        }
+      : undefined,
     settingsProposalTargetPath: proposal?.targetPath,
+    settingsProposalMode: proposal?.mode,
     nextAction: isRecord(summary.decisionTrace)
       ? summary.decisionTrace.nextAction
       : undefined
@@ -192,6 +212,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function arrayOfRecords(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function arrayOfStrings(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
 }
 
 function optionalString(value: unknown): string | undefined {
