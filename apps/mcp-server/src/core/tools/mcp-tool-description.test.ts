@@ -18,6 +18,7 @@ describe("mc_develop tool description", () => {
     expect(description).toContain("remoteMetadataPolicy: enabled");
     expect(description).toContain("includeDefaultGradleUserHome: true");
     expect(description).toContain("localJarMode: prewarm_entry_index");
+    expect(description).toContain("crashSignals");
     expect(description).toContain("javaDiagnostics");
     expect(description).toContain("kubeJsQuality");
     expect(description).toContain("clientVisualVerifier");
