@@ -62,6 +62,7 @@ export function buildMcpDevelopStructuredContent(
       budget,
       compactPayload
     ),
+    kubeJsQuality: buildKubeJsQualitySummary(result, budget),
     clientVisualVerifier: buildClientVisualVerifierSummary(result, budget),
     budget: {
       payloadPolicy: "bounded",
@@ -94,6 +95,58 @@ export function buildMcpDevelopStructuredContent(
   };
 
   return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
+}
+
+function buildKubeJsQualitySummary(
+  result: McpServerRequestExecutorResult,
+  budget: RequiredBudgetOptions
+) {
+  const selected = kubeJsQualityFromExecution(result.selectedEvidence);
+  const fallback = selected
+    ? undefined
+    : result.executions.map(kubeJsQualityFromExecution).find((entry) => entry);
+  const entry = selected ?? fallback;
+  if (!entry) {
+    return undefined;
+  }
+
+  const firstIssue = arrayOfRecords(entry.quality.issues)[0];
+  const summary = {
+    source: entry.source,
+    candidateId: entry.candidateId,
+    issueCount: numberValue(entry.quality.issueCount),
+    severityCounts: isRecord(entry.quality.severityCounts)
+      ? entry.quality.severityCounts
+      : undefined,
+    firstIssue: firstIssue
+      ? {
+          kind: optionalString(firstIssue.kind),
+          severity: optionalString(firstIssue.severity),
+          file: optionalString(firstIssue.file),
+          line: numberValue(firstIssue.line)
+        }
+      : undefined
+  };
+
+  return compactPayload(summary, budget).value;
+}
+
+function kubeJsQualityFromExecution(
+  execution: McpServerRequestExecutorResult["executions"][number] | undefined
+) {
+  const payload = isRecord(execution?.payload) ? execution.payload : undefined;
+  const quality = isRecord(payload?.scriptQualityEvidence)
+    ? payload.scriptQualityEvidence
+    : undefined;
+  if (!execution || !quality) {
+    return undefined;
+  }
+
+  return {
+    source: execution.status === "selected" ? "selectedEvidence" : "execution",
+    candidateId: execution.candidateId,
+    quality
+  };
 }
 
 function buildClientVisualVerifierSummary(
@@ -363,6 +416,10 @@ function arrayOfStrings(value: unknown): string[] {
 
 function optionalString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
+}
+
+function numberValue(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
 }
 
 interface PayloadBudgetStats {
