@@ -84,6 +84,9 @@ function buildCandidate(
   const vanillaAssetsRequest = mentionsVanillaAssetsRequest(
     requestPlan.requestText
   );
+  const sourceDerivedSchemaRequest = mentionsSourceDerivedSchemaRequest(
+    requestPlan.requestText
+  );
   const resourcePackRequest =
     requestPlan.trace.taskIntent.id === "resource_pack_lookup";
   const clientVisualRequest =
@@ -239,10 +242,20 @@ function buildCandidate(
         provenance: "docs",
         preferredTool: "context.query",
         estimatedCost: "medium",
-        reliability: "medium",
-        reason: "Use docs only after exact workspace or typed evidence.",
-        pathHints: [],
-        queryHint: requestPlan.requestText
+        reliability: sourceDerivedSchemaRequest ? "high" : "medium",
+        reason: sourceDerivedSchemaRequest
+          ? "Use source-derived schema evidence from vanilla-mcdoc and misode after local datapack/assets evidence; do not invent JSON fields from generic docs."
+          : "Use docs only after exact workspace or typed evidence.",
+        pathHints: sourceDerivedSchemaRequest
+          ? [
+              "mdm-package:vanilla-schema-docs",
+              "source-derived:SpyglassMC/vanilla-mcdoc",
+              "source-derived:misode/misode.github.io"
+            ]
+          : [],
+        queryHint: sourceDerivedSchemaRequest
+          ? buildSourceDerivedSchemaQueryHint(requestPlan.requestText)
+          : requestPlan.requestText
       };
   }
 }
@@ -364,6 +377,30 @@ function mentionsSourceAcquisitionRequest(requestText?: string): boolean {
   return /(?:source|sources|源码|jar|cache|cached|offline|workspace|bundle|bundles|prewarm|prepare|index|indexes|工作区|缓存|离线|本地|打包|预热|准备|索引)/.test(
     normalized
   );
+}
+
+function mentionsSourceDerivedSchemaRequest(requestText?: string): boolean {
+  if (!requestText) {
+    return false;
+  }
+
+  const normalized = requestText.toLowerCase();
+  const schemaSignal =
+    /(?:schema|mcdoc|misode|explain|format|格式|结构|解释器|解释)/u.test(
+      normalized
+    );
+  const packSignal =
+    /(?:datapack|data pack|resourcepack|resource pack|assets|recipe|loot|advancement|predicate|tag|model|blockstate|texture|数据包|资源包|配方|战利品|标签|模型|纹理)/u.test(
+      normalized
+    );
+
+  return schemaSignal && packSignal;
+}
+
+function buildSourceDerivedSchemaQueryHint(requestText?: string): string {
+  const base = requestText?.trim() || "vanilla datapack resource-pack schema";
+
+  return `${base}\nPrefer source-derived schema evidence: vanilla-mcdoc mcdoc schemas and misode generator/interpreter logic.`;
 }
 
 function buildVanillaSourceReason(minecraftVersion?: string): string {

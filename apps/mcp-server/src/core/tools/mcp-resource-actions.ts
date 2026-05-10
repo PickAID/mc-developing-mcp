@@ -27,6 +27,7 @@ export function buildMcpResourceActions(
       kind: "mdm_release_install",
       safety: "requires_user_confirmation",
       packageId: suggestion.packageId,
+      evidenceRole: sourceDerivedSchemaEvidenceRole(suggestion),
       priority: suggestion.priority,
       reason: suggestion.reason,
       inputPatch: {
@@ -48,6 +49,15 @@ export function buildMcpResourceActions(
     },
     budget
   ).value;
+}
+
+function sourceDerivedSchemaEvidenceRole(
+  suggestion: MdmPackageRecommendations["suggestions"][number]
+): "source_derived_schema_evidence" | undefined {
+  return suggestion.packageId === "vanilla-schema-docs" ||
+    suggestion.matchedSignals.includes("schema-docs")
+    ? "source_derived_schema_evidence"
+    : undefined;
 }
 
 function localVanillaSourceActions(packageId: string, reason: string) {

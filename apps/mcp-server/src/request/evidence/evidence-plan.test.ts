@@ -273,6 +273,48 @@ describe("buildMcpServerEvidencePlan", () => {
     });
   });
 
+  it("marks schema docs lookup as source-derived vanilla schema evidence", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-evidence-plan-"));
+    const workspaceRoot = await createForgeWorkspace();
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: {
+        workspaceRoot
+      }
+    });
+
+    const requestPlan = buildMcpServerRequestPlan(
+      bootstrap,
+      "Explain recipe datapack schema and model resourcepack format using vanilla-mcdoc and misode."
+    );
+
+    expect(buildMcpServerEvidencePlan(requestPlan)).toMatchObject({
+      candidates: [
+        {
+          id: "candidate-1-workspace_source",
+          routeStep: "workspace_source",
+          provenance: "workspace_source"
+        },
+        {
+          id: "candidate-2-docs_lookup",
+          routeStep: "docs_lookup",
+          provenance: "docs",
+          reliability: "high",
+          reason:
+            "Use source-derived schema evidence from vanilla-mcdoc and misode after local datapack/assets evidence; do not invent JSON fields from generic docs.",
+          pathHints: [
+            "mdm-package:vanilla-schema-docs",
+            "source-derived:SpyglassMC/vanilla-mcdoc",
+            "source-derived:misode/misode.github.io"
+          ],
+          queryHint: expect.stringContaining(
+            "Prefer source-derived schema evidence"
+          )
+        }
+      ]
+    });
+  });
+
   it("adds Java diagnostics evidence before source for compile error requests", async () => {
     const workspaceRoot = await createForgeWorkspace();
     const bootstrap = await buildMcpServerBootstrap({

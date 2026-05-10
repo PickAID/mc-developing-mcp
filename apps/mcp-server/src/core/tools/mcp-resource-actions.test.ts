@@ -38,6 +38,27 @@ describe("buildMcpResourceActions", () => {
       ])
     );
   });
+
+  it("labels vanilla schema docs as source-derived schema evidence", () => {
+    const actions = buildMcpResourceActions(
+      recommendations({
+        packageId: "vanilla-schema-docs",
+        matchedSignals: ["datapack", "resourcepack", "schema-docs"],
+        reason: "Matched source-derived vanilla schema request."
+      }),
+      { maxArrayItems: 20, maxDepth: 8, maxStringLength: 4000 },
+      (value) => ({ value })
+    );
+
+    expect((actions as { actions: unknown[] }).actions).toEqual([
+      expect.objectContaining({
+        id: "install_mdm_vanilla-schema-docs",
+        kind: "mdm_release_install",
+        evidenceRole: "source_derived_schema_evidence",
+        packageId: "vanilla-schema-docs"
+      })
+    ]);
+  });
 });
 
 function recommendations(
