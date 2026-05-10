@@ -5,8 +5,7 @@ import type { MdmDocsResourceSummary } from "../../docs/mdm-docs/mdm-docs-record
 import type { MdmPackageRecommendations } from "../../docs/mdm-resource/mdm-package-recommendations.js";
 import { buildMcpResourceActions } from "./mcp-resource-actions.js";
 import { buildMcpPromptGuidance } from "./mcp-prompt-guidance.js";
-import { buildWorkspacePreparationWorkflow } from "./mcp-workspace-preparation-workflow.js";
-import { buildWorkspacePreparationEvidenceSummary } from "./mcp-workspace-preparation-summary.js";
+import { buildStructuredWorkspacePreparation } from "./mcp-structured-workspace-preparation.js";
 import {
   buildCrashSignalsSummary,
   buildClientVisualVerifierSummary,
@@ -62,7 +61,11 @@ export function buildMcpDevelopStructuredContent(
       facts: snapshot.facts
     },
     trace: result.trace,
-    workspacePreparation: buildWorkspacePreparation(result, budget),
+    workspacePreparation: buildStructuredWorkspacePreparation(
+      result,
+      budget,
+      compactPayload
+    ),
     promptGuidance: buildMcpPromptGuidance(
       result.requestPlan,
       budget,
@@ -107,65 +110,6 @@ export function buildMcpDevelopStructuredContent(
   };
 
   return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
-}
-
-function buildWorkspacePreparation(
-  result: McpServerRequestExecutorResult,
-  budget: RequiredBudgetOptions
-) {
-  const execution = result.executions.find(
-    (item) => item.routeStep === "source_acquisition_plan" && item.payload
-  );
-  const payload = execution?.payload;
-  if (!isRecord(payload) || payload.source !== "source_acquisition_plan") {
-    return undefined;
-  }
-
-  const capabilityGuidance = isRecord(payload.capabilityGuidance)
-    ? payload.capabilityGuidance
-    : undefined;
-
-  const capabilityMapPayload = compactPayload(
-    capabilityGuidance?.capabilityMap,
-    budget
-  );
-  const topLevel = {
-    source: payload.source,
-    candidateId: execution?.candidateId,
-    status: resolveWorkspacePreparationStatus(payload),
-    requiresWorkspace: payload.requiresWorkspace,
-    capabilityGuidance: {
-      statusLines: capabilityGuidance?.statusLines,
-      nextActions: capabilityGuidance?.nextActions
-    },
-    capabilityMap: capabilityMapPayload.value,
-    workflow: buildWorkspacePreparationWorkflow(payload, capabilityGuidance),
-    evidenceSummary: buildWorkspacePreparationEvidenceSummary(
-      payload,
-      result.executions
-    ),
-    budget: capabilityMapPayload.stats.truncated
-      ? capabilityMapPayload.stats
-      : undefined
-  };
-
-  return compactPayload(topLevel, budget).value;
-}
-
-function resolveWorkspacePreparationStatus(
-  payload: Record<string, unknown>
-): "ready" | "partial" | "blocked" | "no_workspace" {
-  if (payload.requiresWorkspace === true) {
-    return "no_workspace";
-  }
-  if (payload.workItemExecutionStatus === "partial") {
-    return "partial";
-  }
-  if (payload.workItemExecutionStatus === "completed") {
-    return "ready";
-  }
-
-  return "ready";
 }
 
 function normalizeBudget(
