@@ -101,7 +101,8 @@ export function toMdmDocsResourceRecords(value: unknown): DocsPackageRecord[] {
         scriptScopes: entry.scriptScopes ?? [],
         addonNames: entry.addonNames ?? [],
         eventNames: entry.eventNames ?? [],
-        codeSymbols: entry.codeSymbols ?? []
+        codeSymbols: entry.codeSymbols ?? [],
+        ...docsEntryMetadata(entry)
       });
     }
   }
@@ -260,8 +261,35 @@ function readEntry(value: unknown): MdmDocsEntry {
     scriptScopes: optionalStringArray(record.scriptScopes),
     addonNames: optionalStringArray(record.addonNames),
     eventNames: optionalStringArray(record.eventNames),
-    codeSymbols: optionalStringArray(record.codeSymbols)
+    codeSymbols: optionalStringArray(record.codeSymbols),
+    metadata: optionalMetadata({
+      schemaDefinitionOutlines: record.schemaDefinitionOutlines,
+      schemaDefinitions: record.schemaDefinitions,
+      schemaSymbol: record.schemaSymbol,
+      upstreamPath: record.upstreamPath,
+      contentHash: record.contentHash
+    })
   };
+}
+
+function optionalMetadata(value: Record<string, unknown>): Record<string, unknown> | undefined {
+  const entries = Object.entries(value).filter(([, entry]) => entry !== undefined);
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+function docsEntryMetadata(
+  entry: MdmDocsEntry
+): Pick<DocsPackageRecord, "metadata"> | Record<string, never> {
+  const metadata = optionalMetadata({
+    schemaDefinitionOutlines: entry.schemaDefinitionOutlines,
+    schemaDefinitions: entry.schemaDefinitions,
+    schemaSymbol: entry.schemaSymbol,
+    upstreamPath: entry.upstreamPath,
+    contentHash: entry.contentHash,
+    ...entry.metadata
+  });
+
+  return metadata ? { metadata } : {};
 }
 
 function optionalKind(value: unknown): DocsPackageRecord["kind"] | undefined {
@@ -436,6 +464,12 @@ interface MdmDocsEntry {
   addonNames?: string[];
   eventNames?: string[];
   codeSymbols?: string[];
+  metadata?: Record<string, unknown>;
+  schemaDefinitionOutlines?: unknown;
+  schemaDefinitions?: unknown;
+  schemaSymbol?: unknown;
+  upstreamPath?: unknown;
+  contentHash?: unknown;
 }
 
 interface SqliteDatabase {

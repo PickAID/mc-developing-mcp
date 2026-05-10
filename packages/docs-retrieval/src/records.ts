@@ -13,6 +13,7 @@ export interface DocsPackageRecord {
   addonNames: string[];
   eventNames: string[];
   codeSymbols: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export const CRYCHICDOC_KUBEJS_1201_RECORDS: DocsPackageRecord[] = [

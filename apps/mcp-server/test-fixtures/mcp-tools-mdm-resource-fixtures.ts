@@ -262,7 +262,43 @@ export function mdmVanillaSchemaDocsArtifactBody(): string {
                 "recipe",
                 "java/data/recipe.mcdoc"
               ],
-              codeSymbols: ["Recipe"]
+              codeSymbols: ["Recipe"],
+              schemaDefinitionOutlines: [
+                {
+                  kind: "dispatch",
+                  name: "minecraft:resource[recipe]",
+                  line: 1,
+                  target: "minecraft:resource[recipe]",
+                  fields: [
+                    {
+                      kind: "field",
+                      name: "type",
+                      optional: false,
+                      type: "string",
+                      line: 2
+                    }
+                  ]
+                }
+              ],
+              schemaSymbol: {
+                source: "vanilla-mcdoc-generated-symbols",
+                ref: "fixture-symbols-ref",
+                modulePath: "::java::data::recipe",
+                typePaths: ["::java::data::recipe::Recipe"],
+                dispatchers: [
+                  {
+                    name: "minecraft:resource",
+                    key: "recipe",
+                    type: {
+                      kind: "reference",
+                      path: "::java::data::recipe::Recipe"
+                    },
+                    domain: "datapack"
+                  }
+                ]
+              },
+              upstreamPath: "java/data/recipe.mcdoc",
+              contentHash: "fixture-recipe-hash"
             },
             {
               id: "vanilla-schema-docs-resource-pack-mcdoc-java-assets-model",
@@ -278,7 +314,43 @@ export function mdmVanillaSchemaDocsArtifactBody(): string {
                 "model",
                 "java/assets/model.mcdoc"
               ],
-              codeSymbols: ["Model"]
+              codeSymbols: ["Model"],
+              schemaDefinitionOutlines: [
+                {
+                  kind: "dispatch",
+                  name: "minecraft:resource[model]",
+                  line: 1,
+                  target: "minecraft:resource[model]",
+                  fields: [
+                    {
+                      kind: "field",
+                      name: "parent",
+                      optional: true,
+                      type: "string",
+                      line: 2
+                    }
+                  ]
+                }
+              ],
+              schemaSymbol: {
+                source: "vanilla-mcdoc-generated-symbols",
+                ref: "fixture-symbols-ref",
+                modulePath: "::java::assets::model",
+                typePaths: ["::java::assets::model::Model"],
+                dispatchers: [
+                  {
+                    name: "minecraft:resource",
+                    key: "model",
+                    type: {
+                      kind: "reference",
+                      path: "::java::assets::model::Model"
+                    },
+                    domain: "resource-pack"
+                  }
+                ]
+              },
+              upstreamPath: "java/assets/model.mcdoc",
+              contentHash: "fixture-model-hash"
             }
           ]
         })

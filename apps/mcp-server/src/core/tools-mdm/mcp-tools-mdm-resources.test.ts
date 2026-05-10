@@ -437,7 +437,34 @@ describe("mc_develop mdm resource status", () => {
           hits: expect.arrayContaining([
             expect.objectContaining({
               entryId: "vanilla-schema-docs-datapack-mcdoc-java-data-recipe",
-              packageId: "vanilla-schema-docs"
+              packageId: "vanilla-schema-docs",
+              metadata: {
+                upstreamPath: "java/data/recipe.mcdoc",
+                contentHash: "fixture-recipe-hash",
+                schemaDefinitionOutlines: [
+                  expect.objectContaining({
+                    kind: "dispatch",
+                    name: "minecraft:resource[recipe]",
+                    fields: [
+                      expect.objectContaining({
+                        kind: "field",
+                        name: "type",
+                        type: "string"
+                      })
+                    ]
+                  })
+                ],
+                schemaSymbol: expect.objectContaining({
+                  source: "vanilla-mcdoc-generated-symbols",
+                  modulePath: "::java::data::recipe",
+                  dispatchers: [
+                    expect.objectContaining({
+                      name: "minecraft:resource",
+                      key: "recipe"
+                    })
+                  ]
+                })
+              }
             }),
             expect.objectContaining({
               entryId: "vanilla-schema-docs-resource-pack-mcdoc-java-assets-model",

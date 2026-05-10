@@ -12,6 +12,7 @@ export interface DocsSearchHit {
   score: number;
   matchedTerms: string[];
   matchReasons: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export type DocsSearchHitSource = "builtin" | "resource" | "sqlite";
@@ -106,7 +107,8 @@ export function buildDocsSearchHit(
     summary: record.summary,
     score,
     matchedTerms: [...matchedTerms],
-    matchReasons: [...matchReasons]
+    matchReasons: [...matchReasons],
+    ...(record.metadata ? { metadata: record.metadata } : {})
   };
 }
 
