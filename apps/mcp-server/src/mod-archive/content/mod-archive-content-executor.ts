@@ -109,6 +109,7 @@ export async function executeMcpServerModArchiveContent(
     maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES
   });
   const requestText = input.candidate.queryHint ?? input.requestPlan.requestText;
+  const originalRequestText = input.requestPlan.requestText;
   const queries = extractModArchiveQueries(requestText);
 
   if (isModArchiveInventoryRequest(requestText)) {
@@ -258,7 +259,7 @@ export async function executeMcpServerModArchiveContent(
   const hotaiPatchProofResult = await lookupHotaiPatchProof({
     workspaceRoot,
     archivePaths: archives.archives.map((archive) => archive.archivePath),
-    requestText,
+    requestText: joinRequestTexts(requestText, originalRequestText),
     cache: options.cache
   });
   if (hotaiPatchProofResult) {
@@ -328,4 +329,18 @@ export async function executeMcpServerModArchiveContent(
     summary: `Found ${result.matches.length} mod archive content match(es).`,
     payload
   };
+}
+
+function joinRequestTexts(
+  primary: string | undefined,
+  secondary: string | undefined
+): string | undefined {
+  if (!primary) {
+    return secondary;
+  }
+  if (!secondary || primary.includes(secondary)) {
+    return primary;
+  }
+
+  return `${primary}\n${secondary}`;
 }

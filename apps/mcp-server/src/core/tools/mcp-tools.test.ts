@@ -316,7 +316,7 @@ describe("registerMcpServerTools", () => {
 
     const result = await registry.calls[0].handler({
       requestText:
-        "Use Hotai badiff patches for com.example.problem.CrashHandler in hotai/before_mixin.",
+        "Use Hotai badiff patches from hotai/before_mixin and prove the local target owner before editing.",
       runtimeRoot,
       workspaceRoot
     });
@@ -342,12 +342,19 @@ describe("registerMcpServerTools", () => {
       selectedEvidence: {
         payload: {
           source: "mod_archive_content",
-          mode: "class_owner",
-          requestedClasses: ["com.example.problem.CrashHandler"],
-          matches: [
+          mode: "hotai_patch_proof",
+          patchFileCount: 1,
+          targetClassCount: 1,
+          patches: [
             expect.objectContaining({
-              archiveRelativePath: "mods/problem-mod.jar",
-              binaryName: "com.example.problem.CrashHandler"
+              relativePath: "hotai/before_mixin/com/example/problem/CrashHandler.badiff",
+              phase: "before_mixin",
+              targetClass: "com.example.problem.CrashHandler",
+              proofStatus: "owner_matched",
+              targetOwner: expect.objectContaining({
+                sourceArchive: expect.stringContaining("mods/problem-mod.jar"),
+                binaryName: "com.example.problem.CrashHandler"
+              })
             })
           ]
         }
@@ -404,6 +411,18 @@ async function createHotaiModpackWorkspace(): Promise<string> {
         compressionMethod: 0
       }
     ])
+  );
+  await writeBinary(
+    join(
+      workspaceRoot,
+      "hotai",
+      "before_mixin",
+      "com",
+      "example",
+      "problem",
+      "CrashHandler.badiff"
+    ),
+    Buffer.from("badiff fixture")
   );
 
   return workspaceRoot;
