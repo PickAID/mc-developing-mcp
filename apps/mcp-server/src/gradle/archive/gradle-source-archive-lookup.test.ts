@@ -401,4 +401,67 @@ describe("resolveGradleSourceArchiveLookup", () => {
       ]
     });
   });
+
+  it("falls back to broad Gradle cache when declared source archives miss the requested class", async () => {
+    const { gradleUserHome, workspaceRoot } = await createLookupWorkspace();
+    const declaredJar = joinGradleSourceJar(
+      gradleUserHome,
+      "org.widgets",
+      "widget-api",
+      "1.0.0"
+    );
+    const fallbackJar = joinGradleSourceJar(
+      gradleUserHome,
+      "com.example",
+      "fallback-lib",
+      "1.0.0"
+    );
+
+    await writeTextFile(
+      join(workspaceRoot, "build.gradle"),
+      'dependencies { implementation "org.widgets:widget-api:1.0.0" }\n'
+    );
+    await writeZip(declaredJar, [
+      {
+        name: "org/widgets/Other.java",
+        content: "package org.widgets;\npublic class Other {}\n",
+        compressionMethod: 8
+      }
+    ]);
+    await writeZip(fallbackJar, [
+      {
+        name: "com/example/lib/Widget.java",
+        content: "package com.example.lib;\npublic class Widget {}\n",
+        compressionMethod: 8
+      }
+    ]);
+
+    await expect(
+      resolveGradleSourceArchiveLookup({
+        workspaceRoot,
+        requestText:
+          "Inspect com.example.lib.Widget when declared source jar is incomplete.",
+        discovery: {
+          gradleUserHome,
+          includeDefaultGradleUserHome: false
+        }
+      })
+    ).resolves.toMatchObject({
+      status: "ready",
+      searchedArchives: 2,
+      references: [
+        {
+          sourceArchive: fallbackJar,
+          relativePath: "com/example/lib/Widget.java"
+        }
+      ],
+      skipped: [
+        {
+          sourceArchive: declaredJar,
+          relativePath: "com/example/lib/Widget.java",
+          reason: "not-found"
+        }
+      ]
+    });
+  });
 });

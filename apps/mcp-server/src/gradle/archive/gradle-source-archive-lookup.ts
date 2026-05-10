@@ -84,8 +84,8 @@ export async function resolveGradleSourceArchiveLookup(input: {
     request
   );
 
-  if (declaredResult) {
-    return declaredResult;
+  if (declaredResult.match) {
+    return declaredResult.match;
   }
 
   const archives = await discoverGradleSourceArchives({
@@ -97,19 +97,31 @@ export async function resolveGradleSourceArchiveLookup(input: {
     maxResults: input.discovery?.maxResults
   });
   const rankedArchives = rankGradleSourceArchives(
-    archives,
+    excludeAlreadySearchedArchives(archives, declaredArchives),
     request,
     declaredDependencies
   );
-  return readFirstMatchingArchive(rankedArchives, request);
+  const broadResult = await readFirstMatchingArchive(rankedArchives, request, {
+    initialSearchedArchives: declaredResult.searchedArchives,
+    initialSkipped: declaredResult.skipped
+  });
+  return broadResult.match;
 }
 
 async function readFirstMatchingArchive(
   archives: GradleSourceArchiveCandidate[],
-  request: GradleSourceArchiveRequest
-): Promise<GradleSourceArchiveLookupResult | undefined> {
-  const skipped: GradleSourceArchiveSkippedEntry[] = [];
-  let searchedArchives = 0;
+  request: GradleSourceArchiveRequest,
+  initial?: {
+    initialSearchedArchives?: number;
+    initialSkipped?: GradleSourceArchiveSkippedEntry[];
+  }
+): Promise<{
+  match?: GradleSourceArchiveLookupResult;
+  searchedArchives: number;
+  skipped: GradleSourceArchiveSkippedEntry[];
+}> {
+  const skipped = [...(initial?.initialSkipped ?? [])];
+  let searchedArchives = initial?.initialSearchedArchives ?? 0;
 
   for (const archive of archives) {
     searchedArchives += 1;
@@ -125,27 +137,31 @@ async function readFirstMatchingArchive(
         buildRangeOptions(request)
       );
       return {
-        status: "ready",
-        request,
+        match: {
+          status: "ready",
+          request,
+          searchedArchives,
+          references: [
+            {
+              sourceArchive: archive.archivePath,
+              relativePath: readResult.entry.relativePath,
+              ...range,
+              nextReads: buildSourceReadNextReads({
+                path: readResult.entry.relativePath,
+                startLine: range.startLine,
+                endLine: range.endLine
+              }),
+              reason: archive.reason
+            }
+          ],
+          skipped
+        },
         searchedArchives,
-        references: [
-          {
-            sourceArchive: archive.archivePath,
-            relativePath: readResult.entry.relativePath,
-            ...range,
-            nextReads: buildSourceReadNextReads({
-              path: readResult.entry.relativePath,
-              startLine: range.startLine,
-              endLine: range.endLine
-            }),
-            reason: archive.reason
-          }
-        ],
         skipped
       };
     }
 
-    if (readResult.skipped && readResult.skipped.reason !== "not-found") {
+    if (readResult.skipped) {
       skipped.push({
         sourceArchive: archive.archivePath,
         relativePath: readResult.skipped.relativePath,
@@ -154,7 +170,18 @@ async function readFirstMatchingArchive(
     }
   }
 
-  return undefined;
+  return { searchedArchives, skipped };
+}
+
+function excludeAlreadySearchedArchives(
+  archives: GradleSourceArchiveCandidate[],
+  searchedArchives: GradleSourceArchiveCandidate[]
+): GradleSourceArchiveCandidate[] {
+  const searchedPaths = new Set(
+    searchedArchives.map((archive) => archive.archivePath)
+  );
+
+  return archives.filter((archive) => !searchedPaths.has(archive.archivePath));
 }
 
 function extractGradleSourceArchiveRequest(
