@@ -71,6 +71,40 @@ export function buildClientVisualVerifierSummary(
   return compactPayload(summary, budget).value;
 }
 
+export function buildJavaDiagnosticsSummary(
+  result: McpServerRequestExecutorResult,
+  budget: StructuredEvidenceSummaryBudget,
+  compactPayload: StructuredEvidenceSummaryCompactPayload
+) {
+  const entry = result.executions.map(javaDiagnosticsFromExecution).find(Boolean);
+  if (!entry) {
+    return undefined;
+  }
+
+  const firstFile = arrayOfRecords(entry.payload.files)[0];
+  const firstDiagnostic = arrayOfRecords(firstFile?.diagnostics)[0];
+  const range = isRecord(firstDiagnostic?.range) ? firstDiagnostic.range : undefined;
+  const start = isRecord(range?.start) ? range.start : undefined;
+  const line = numberValue(start?.line);
+  const character = numberValue(start?.character);
+  const summary = {
+    source: entry.source,
+    candidateId: entry.candidateId,
+    totalDiagnostics: numberValue(entry.payload.totalDiagnostics),
+    fileCount: arrayOfRecords(entry.payload.files).length,
+    firstDiagnostic: firstDiagnostic
+      ? {
+          file: optionalString(firstFile?.relativePath),
+          line: line !== undefined ? line + 1 : undefined,
+          character: character !== undefined ? character + 1 : undefined,
+          message: optionalString(firstDiagnostic.message)
+        }
+      : undefined
+  };
+
+  return compactPayload(summary, budget).value;
+}
+
 function kubeJsQualityFromExecution(
   execution: McpServerRequestExecutorResult["executions"][number] | undefined
 ) {
@@ -107,6 +141,21 @@ function verifierFromExecution(
     source: execution.status === "selected" ? "selectedEvidence" : "execution",
     candidateId: execution.candidateId,
     verifier
+  };
+}
+
+function javaDiagnosticsFromExecution(
+  execution: McpServerRequestExecutorResult["executions"][number]
+) {
+  const payload = isRecord(execution.payload) ? execution.payload : undefined;
+  if (payload?.mode !== "java_diagnostics") {
+    return undefined;
+  }
+
+  return {
+    source: execution.status === "selected" ? "selectedEvidence" : "execution",
+    candidateId: execution.candidateId,
+    payload
   };
 }
 

@@ -9,6 +9,7 @@ import { buildWorkspacePreparationWorkflow } from "./mcp-workspace-preparation-w
 import { buildWorkspacePreparationEvidenceSummary } from "./mcp-workspace-preparation-summary.js";
 import {
   buildClientVisualVerifierSummary,
+  buildJavaDiagnosticsSummary,
   buildKubeJsQualitySummary
 } from "./mcp-structured-evidence-summaries.js";
 
@@ -66,6 +67,7 @@ export function buildMcpDevelopStructuredContent(
       budget,
       compactPayload
     ),
+    javaDiagnostics: buildJavaDiagnosticsSummary(result, budget, compactPayload),
     kubeJsQuality: buildKubeJsQualitySummary(result, budget, compactPayload),
     clientVisualVerifier: buildClientVisualVerifierSummary(
       result,
