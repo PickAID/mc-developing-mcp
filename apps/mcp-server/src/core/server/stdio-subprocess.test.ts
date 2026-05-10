@@ -55,8 +55,8 @@ describe("stdio MCP subprocess", () => {
       args: [stdioEntrypoint],
       cwd: packageRoot,
       env: {
-        MCPSKILL_RUNTIME_ROOT: runtimeRoot,
-        MCPSKILL_WORKSPACE_ROOT: workspaceRoot
+        MC_DEVELOPING_MCP_RUNTIME_ROOT: runtimeRoot,
+        MC_DEVELOPING_MCP_WORKSPACE_ROOT: workspaceRoot
       },
       stderr: "pipe"
     });
@@ -137,8 +137,8 @@ describe("stdio MCP subprocess", () => {
       args: [stdioEntrypoint],
       cwd: packageRoot,
       env: {
-        MCPSKILL_RUNTIME_ROOT: runtimeRoot,
-        MCPSKILL_WORKSPACE_ROOT: workspaceRoot,
+        MC_DEVELOPING_MCP_RUNTIME_ROOT: runtimeRoot,
+        MC_DEVELOPING_MCP_WORKSPACE_ROOT: workspaceRoot,
         MDM_SOURCES_ROOT: copiedMdmSourcesRoot
       },
       stderr: "pipe"

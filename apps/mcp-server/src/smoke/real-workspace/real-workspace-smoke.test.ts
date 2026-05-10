@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { toSmokeLine } from "./real-workspace-smoke.js";
+import { parseSmokeConfig, toSmokeLine } from "./real-workspace-smoke.js";
 
 describe("real workspace smoke output", () => {
   it("prints only compact payload metadata", () => {
@@ -32,5 +32,23 @@ describe("real workspace smoke output", () => {
     });
     expect(JSON.stringify(line)).not.toContain("private user script content");
     expect(JSON.stringify(line)).not.toContain("nested private content");
+  });
+
+  it("accepts current environment variable names for workspace and runtime roots", () => {
+    const config = parseSmokeConfig([], {
+      MC_DEVELOPING_MCP_SMOKE_WORKSPACE_ROOT: "/tmp/current-smoke-workspace",
+      MC_DEVELOPING_MCP_RUNTIME_ROOT: "/tmp/current-smoke-runtime"
+    });
+
+    expect(config).toEqual({
+      workspaceRoot: "/tmp/current-smoke-workspace",
+      runtimeRoot: "/tmp/current-smoke-runtime"
+    });
+  });
+
+  it("points missing workspace guidance at current environment variable names", () => {
+    expect(() => parseSmokeConfig([], {})).toThrow(
+      "Missing workspaceRoot. Pass --workspaceRoot, positional argv, or MC_DEVELOPING_MCP_SMOKE_WORKSPACE_ROOT."
+    );
   });
 });
