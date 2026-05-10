@@ -19,6 +19,16 @@ describe("buildMdmPackageRecommendations vanilla schema docs", () => {
           ],
           "vanilla-schema-docs"
         ),
+        docsPackage(
+          "misode-generator-catalog",
+          [
+            "docs_search",
+            "schema_reference",
+            "datapack_trace",
+            "resourcepack_trace"
+          ],
+          "misode-generator-catalog"
+        ),
         docsPackage("core-docs-search-sqlite", ["docs"], "core-docs")
       ])
     });
@@ -35,6 +45,20 @@ describe("buildMdmPackageRecommendations vanilla schema docs", () => {
           ]),
           mdmReleaseInstall: {
             packageId: "vanilla-schema-docs",
+            downloadPolicy: "disabled",
+            manifestPath: "/mdm-sources/release-out/mdm-release-manifest.json"
+          }
+        }),
+        expect.objectContaining({
+          packageId: "misode-generator-catalog",
+          priority: "high",
+          matchedSignals: expect.arrayContaining([
+            "datapack",
+            "resourcepack",
+            "schema-docs"
+          ]),
+          mdmReleaseInstall: {
+            packageId: "misode-generator-catalog",
             downloadPolicy: "disabled",
             manifestPath: "/mdm-sources/release-out/mdm-release-manifest.json"
           }
