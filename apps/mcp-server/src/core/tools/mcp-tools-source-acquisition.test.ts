@@ -186,7 +186,7 @@ describe("mc_develop source acquisition acceptance", () => {
 
     registerMcpServerTools(registry, {
       env: {
-        MCPSKILL_YARN_MAPPING_URL_TEMPLATE:
+        MC_DEVELOPING_MCP_YARN_MAPPING_URL_TEMPLATE:
           "https://maven.test/yarn/{version}/mappings.tiny"
       },
       mappingIndexFetch: async (url) => {
@@ -242,7 +242,8 @@ describe("mc_develop source acquisition acceptance", () => {
 
     registerMcpServerTools(registry, {
       env: {
-        MCPSKILL_YARN_MAVEN_BASE_URL: "https://maven.fabricmc.test"
+        MC_DEVELOPING_MCP_YARN_MAVEN_BASE_URL:
+          "https://maven.fabricmc.test"
       },
       mappingIndexFetch: async (url) => {
         fetchedUrls.push(url.toString());
@@ -315,10 +316,10 @@ describe("mc_develop source acquisition acceptance", () => {
 
     registerMcpServerTools(registry, {
       env: {
-        MCPSKILL_YARN_MAPPING_URL_TEMPLATE: undefined,
-        MCPSKILL_YARN_MAVEN_BASE_URL: undefined,
-        MCPSKILL_MOJANG_VERSION_MANIFEST_URL: undefined,
-        MCPSKILL_PARCHMENT_MAVEN_BASE_URL: undefined
+        MC_DEVELOPING_MCP_YARN_MAPPING_URL_TEMPLATE: undefined,
+        MC_DEVELOPING_MCP_YARN_MAVEN_BASE_URL: undefined,
+        MC_DEVELOPING_MCP_MOJANG_VERSION_MANIFEST_URL: undefined,
+        MC_DEVELOPING_MCP_PARCHMENT_MAVEN_BASE_URL: undefined
       },
       mappingIndexFetch: async (url) => {
         fetchedUrls.push(url.toString());

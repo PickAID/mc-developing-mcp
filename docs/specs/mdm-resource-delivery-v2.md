@@ -30,13 +30,13 @@ source.
 Mapping providers must be opt-in or explicitly injected. The MCP may parse Tiny
 v2 mapping text and `.zip`/`.jar` artifacts containing `.tiny` files, and it may
 resolve Yarn build artifacts from Maven metadata when
-`MCPSKILL_YARN_MAVEN_BASE_URL` is configured. It may also resolve Mojang
-official mapping artifacts from a configured version manifest when
-`MCPSKILL_MOJANG_VERSION_MANIFEST_URL` is configured. It may resolve Parchment
-Maven artifacts when `MCPSKILL_PARCHMENT_MAVEN_BASE_URL` is configured. It must
-not perform default remote mapping downloads unless a provider, URL template,
-Maven base URL, Mojang manifest URL, or Parchment Maven base URL is configured
-by the runtime environment.
+`MC_DEVELOPING_MCP_YARN_MAVEN_BASE_URL` is configured. It may also resolve
+Mojang official mapping artifacts from a configured version manifest when
+`MC_DEVELOPING_MCP_MOJANG_VERSION_MANIFEST_URL` is configured. It may resolve
+Parchment Maven artifacts when `MC_DEVELOPING_MCP_PARCHMENT_MAVEN_BASE_URL` is
+configured. It must not perform default remote mapping downloads unless a
+provider, URL template, Maven base URL, Mojang manifest URL, or Parchment Maven
+base URL is configured by the runtime environment.
 
 The public repository is therefore a seed and profile repository, not a dump of
 every useful artifact.
@@ -346,24 +346,25 @@ The verified path is:
     errors.
 22. Current MCP implementation can materialize provider-supplied mapping entries
     into runtime JSONL and parse Tiny v2 mapping text or zip/jar artifacts. Yarn
-    Tiny v2 download can be enabled with `MCPSKILL_YARN_MAPPING_URL_TEMPLATE`;
-    Yarn Maven metadata resolution can be enabled with
-    `MCPSKILL_YARN_MAVEN_BASE_URL`. The Maven resolver reads Fabric-style
+    Tiny v2 download can be enabled with
+    `MC_DEVELOPING_MCP_YARN_MAPPING_URL_TEMPLATE`; Yarn Maven metadata
+    resolution can be enabled with `MC_DEVELOPING_MCP_YARN_MAVEN_BASE_URL`.
+    The Maven resolver reads Fabric-style
     `net/fabricmc/yarn/maven-metadata.xml`, selects the highest matching
     `${minecraftVersion}+build.N` version, fetches the corresponding
     `yarn-...-v2.jar`, and writes only runtime-private mapping indexes.
     Metadata misses are provider-unavailable results and must not be cached as
     ready empty indexes.
 23. Mojmap acquisition can be enabled with
-    `MCPSKILL_MOJANG_VERSION_MANIFEST_URL`. The resolver follows the configured
-    Mojang version manifest to the requested version JSON, fetches optional
+    `MC_DEVELOPING_MCP_MOJANG_VERSION_MANIFEST_URL`. The resolver follows the
+    configured Mojang version manifest to the requested version JSON, fetches optional
     `client_mappings` and `server_mappings` artifacts when present, parses
     ProGuard text into `official -> mojmap` mapping entries, and writes only
     runtime-private mapping indexes. Missing versions or missing mapping
     artifacts are provider-unavailable results and must not be cached as ready
     empty indexes.
 24. Parchment acquisition can be enabled with
-    `MCPSKILL_PARCHMENT_MAVEN_BASE_URL`. The resolver reads
+    `MC_DEVELOPING_MCP_PARCHMENT_MAVEN_BASE_URL`. The resolver reads
     `org.parchmentmc.data:parchment-<minecraftVersion>` Maven metadata, selects
     a release artifact, fetches the zip, parses `parchment.json`, and writes
     runtime-private `mojmap -> parchment` enrichment entries. Parchment entries

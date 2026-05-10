@@ -55,7 +55,10 @@ function createConfiguredYarnProvider(
   options: McpMappingProviderRuntimeOptions,
   env: NodeJS.ProcessEnv
 ): MappingIndexProvider | undefined {
-  const yarnTemplate = env.MCPSKILL_YARN_MAPPING_URL_TEMPLATE;
+  const yarnTemplate = firstConfiguredEnv(
+    env.MC_DEVELOPING_MCP_YARN_MAPPING_URL_TEMPLATE,
+    env.MCPSKILL_YARN_MAPPING_URL_TEMPLATE
+  );
   if (yarnTemplate) {
     return createTinyV2MappingIndexProvider({
       fetch: options.mappingIndexFetch,
@@ -66,7 +69,10 @@ function createConfiguredYarnProvider(
     });
   }
 
-  const yarnMavenBaseUrl = env.MCPSKILL_YARN_MAVEN_BASE_URL;
+  const yarnMavenBaseUrl = firstConfiguredEnv(
+    env.MC_DEVELOPING_MCP_YARN_MAVEN_BASE_URL,
+    env.MCPSKILL_YARN_MAVEN_BASE_URL
+  );
   return yarnMavenBaseUrl
     ? createYarnMavenTinyV2MappingIndexProvider({
         fetch: options.mappingIndexFetch,
@@ -79,7 +85,10 @@ function createConfiguredMojmapProvider(
   options: McpMappingProviderRuntimeOptions,
   env: NodeJS.ProcessEnv
 ): MappingIndexProvider | undefined {
-  const mojangManifestUrl = env.MCPSKILL_MOJANG_VERSION_MANIFEST_URL;
+  const mojangManifestUrl = firstConfiguredEnv(
+    env.MC_DEVELOPING_MCP_MOJANG_VERSION_MANIFEST_URL,
+    env.MCPSKILL_MOJANG_VERSION_MANIFEST_URL
+  );
   return mojangManifestUrl
     ? createMojangManifestMappingIndexProvider({
         fetch: options.mappingIndexFetch,
@@ -92,7 +101,10 @@ function createConfiguredParchmentProvider(
   options: McpMappingProviderRuntimeOptions,
   env: NodeJS.ProcessEnv
 ): MappingIndexProvider | undefined {
-  const parchmentMavenBaseUrl = env.MCPSKILL_PARCHMENT_MAVEN_BASE_URL;
+  const parchmentMavenBaseUrl = firstConfiguredEnv(
+    env.MC_DEVELOPING_MCP_PARCHMENT_MAVEN_BASE_URL,
+    env.MCPSKILL_PARCHMENT_MAVEN_BASE_URL
+  );
   return parchmentMavenBaseUrl
     ? createParchmentMavenMappingIndexProvider({
         fetch: options.mappingIndexFetch,
@@ -124,4 +136,11 @@ function expandMappingUrlTemplate(
     .replaceAll("{version}", encodeURIComponent(request.minecraftVersion))
     .replaceAll("{minecraftVersion}", encodeURIComponent(request.minecraftVersion))
     .replaceAll("{family}", encodeURIComponent(request.mappingFamily));
+}
+
+function firstConfiguredEnv(
+  preferred: string | undefined,
+  legacy: string | undefined
+): string | undefined {
+  return preferred && preferred.length > 0 ? preferred : legacy;
 }

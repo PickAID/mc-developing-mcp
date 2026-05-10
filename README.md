@@ -165,6 +165,10 @@ Environment variables:
 | `MC_DEVELOPING_MCP_WORKSPACE_ROOT` | Default workspace or modpack root if the request does not pass `workspaceRoot`.           |
 | `MC_DEVELOPING_MCP_RUNTIME_ROOT`   | Runtime/cache root. Defaults to `~/.cache/mc-developing-mcp/runtime`.                     |
 | `MC_DEVELOPING_MCP_PRISM_ROOT`     | Optional PrismLauncher root hint. The MCP must not assume Prism metadata exists.          |
+| `MC_DEVELOPING_MCP_YARN_MAPPING_URL_TEMPLATE` | Optional Tiny v2 Yarn mapping URL template. Supports `{version}`, `{minecraftVersion}`, and `{family}`. |
+| `MC_DEVELOPING_MCP_YARN_MAVEN_BASE_URL` | Optional Fabric Maven base URL for Yarn mapping artifact discovery.                       |
+| `MC_DEVELOPING_MCP_MOJANG_VERSION_MANIFEST_URL` | Optional Mojang version manifest URL for Mojmap mapping acquisition.                      |
+| `MC_DEVELOPING_MCP_PARCHMENT_MAVEN_BASE_URL` | Optional Parchment Maven base URL for Parchment metadata acquisition.                     |
 | `MDM_SOURCES_ROOT`                 | Optional local `mdm-sources` checkout for resource development.                           |
 | `CURSEFORGE_API_KEY`               | Optional CurseForge API key. Create one at `https://console.curseforge.com/?#/api-keys`.  |
 | `SHADERTOY_APP_KEY`                | Optional ShaderToy API key. Without it, use browser-based fallback and compact summaries. |
