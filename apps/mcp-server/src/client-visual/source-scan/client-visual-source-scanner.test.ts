@@ -99,6 +99,33 @@ describe("scanClientVisualSourceEvidence", () => {
     });
   });
 
+  it("ignores MCP workspace metadata directories when scanning client visual sources", async () => {
+    const root = await createTempRoot();
+
+    await writeText(
+      join(root, ".mc-developing-mcp", "jdtls", "Generated.java"),
+      "class Generated { void render() { RenderSystem.enableBlend(); } }\n"
+    );
+    await writeText(
+      join(root, "src", "main", "java", "demo", "Client.java"),
+      "class Client { void render(GuiGraphics graphics) { graphics.blit(TEXTURE, 0, 0, 0, 0, 16, 16); } }\n"
+    );
+
+    await expect(
+      scanClientVisualSourceEvidence({
+        workspaceRoot: root
+      })
+    ).resolves.toMatchObject({
+      scannedFiles: 1,
+      evidence: expect.arrayContaining([
+        expect.objectContaining({
+          file: "src/main/java/demo/Client.java",
+          kind: "uiLayoutHints"
+        })
+      ])
+    });
+  });
+
   it("finds dynamic texture, reload, sync, animation, and performance hints", async () => {
     const root = await createTempRoot();
     const javaRoot = join(root, "src", "main", "java");

@@ -59,6 +59,7 @@ const IGNORED_DIRECTORIES = new Set([
   ".git",
   ".gradle",
   ".idea",
+  ".mc-developing-mcp",
   ".mcpskill",
   "build",
   "dist",
