@@ -105,6 +105,42 @@ export function buildJavaDiagnosticsSummary(
   return compactPayload(summary, budget).value;
 }
 
+export function buildCrashSignalsSummary(
+  result: McpServerRequestExecutorResult,
+  budget: StructuredEvidenceSummaryBudget,
+  compactPayload: StructuredEvidenceSummaryCompactPayload
+) {
+  const entry = result.executions.map(crashSignalsFromExecution).find(Boolean);
+  if (!entry) {
+    return undefined;
+  }
+
+  const signals = entry.signals;
+  const firstFtbQuestsError = arrayOfRecords(signals.ftbQuestsErrors)[0];
+  const summary = {
+    source: entry.source,
+    candidateId: entry.candidateId,
+    logFileCount: arrayOfRecords(entry.payload.logFiles).length,
+    truncated: booleanValue(entry.payload.truncated),
+    exceptionClasses: arrayOfStrings(signals.exceptionClasses),
+    actionableClassReferences: arrayOfStrings(signals.actionableClassReferences),
+    resourceLocations: arrayOfStrings(signals.resourceLocations),
+    resourcePaths: arrayOfStrings(signals.resourcePaths),
+    loaderModIds: arrayOfStrings(signals.loaderModIds),
+    loaderModReferences: arrayOfStrings(signals.loaderModReferences),
+    ftbQuestsErrorCount: arrayOfRecords(signals.ftbQuestsErrors).length,
+    firstFtbQuestsError: firstFtbQuestsError
+      ? {
+          kind: optionalString(firstFtbQuestsError.kind),
+          path: optionalString(firstFtbQuestsError.path),
+          message: optionalString(firstFtbQuestsError.message)
+        }
+      : undefined
+  };
+
+  return compactPayload(summary, budget).value;
+}
+
 function kubeJsQualityFromExecution(
   execution: McpServerRequestExecutorResult["executions"][number] | undefined
 ) {
@@ -159,6 +195,23 @@ function javaDiagnosticsFromExecution(
   };
 }
 
+function crashSignalsFromExecution(
+  execution: McpServerRequestExecutorResult["executions"][number]
+) {
+  const payload = isRecord(execution.payload) ? execution.payload : undefined;
+  const signals = isRecord(payload?.signals) ? payload.signals : undefined;
+  if (payload?.mode !== "log_files" || !signals) {
+    return undefined;
+  }
+
+  return {
+    source: execution.status === "selected" ? "selectedEvidence" : "execution",
+    candidateId: execution.candidateId,
+    payload,
+    signals
+  };
+}
+
 function checkIdsByStatus(value: unknown, status: string): string[] {
   if (!isRecord(value)) {
     return [];
@@ -191,4 +244,8 @@ function optionalString(value: unknown): string | undefined {
 
 function numberValue(value: unknown): number | undefined {
   return typeof value === "number" ? value : undefined;
+}
+
+function booleanValue(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
 }

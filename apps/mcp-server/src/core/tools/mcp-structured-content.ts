@@ -8,6 +8,7 @@ import { buildMcpPromptGuidance } from "./mcp-prompt-guidance.js";
 import { buildWorkspacePreparationWorkflow } from "./mcp-workspace-preparation-workflow.js";
 import { buildWorkspacePreparationEvidenceSummary } from "./mcp-workspace-preparation-summary.js";
 import {
+  buildCrashSignalsSummary,
   buildClientVisualVerifierSummary,
   buildJavaDiagnosticsSummary,
   buildKubeJsQualitySummary
@@ -67,6 +68,7 @@ export function buildMcpDevelopStructuredContent(
       budget,
       compactPayload
     ),
+    crashSignals: buildCrashSignalsSummary(result, budget, compactPayload),
     javaDiagnostics: buildJavaDiagnosticsSummary(result, budget, compactPayload),
     kubeJsQuality: buildKubeJsQualitySummary(result, budget, compactPayload),
     clientVisualVerifier: buildClientVisualVerifierSummary(
