@@ -33,7 +33,7 @@ export async function buildJdtlsServiceProfile(
   return {
     status,
     workspaceRoot,
-    workspaceDataDir: join(workspaceRoot, ".mcpskill", "jdtls"),
+    workspaceDataDir: join(workspaceRoot, ".mc-developing-mcp", "jdtls"),
     workspaceSignals,
     javaHome: javaRuntime.javaHome,
     javaExecutable: javaRuntime.javaExecutable,

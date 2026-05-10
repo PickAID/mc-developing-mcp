@@ -17,7 +17,7 @@ describe("startJdtlsProcessSession", () => {
     const profile: JdtlsServiceProfile = {
       status: "ready",
       workspaceRoot,
-      workspaceDataDir: join(workspaceRoot, ".mcpskill", "jdtls"),
+      workspaceDataDir: join(workspaceRoot, ".mc-developing-mcp", "jdtls"),
       workspaceSignals: {
         hasGradleBuild: true,
         hasGradleSettings: false,
@@ -54,7 +54,7 @@ describe("startJdtlsProcessSession", () => {
     expect(spawned).toEqual([
       {
         command: "/toolchain/bin/jdtls",
-        args: ["-data", join(workspaceRoot, ".mcpskill", "jdtls")]
+        args: ["-data", join(workspaceRoot, ".mc-developing-mcp", "jdtls")]
       }
     ]);
     expect(processSession.session).toBeDefined();
@@ -69,7 +69,7 @@ describe("startJdtlsProcessSession", () => {
       profile: {
         status: "ready",
         workspaceRoot,
-        workspaceDataDir: join(workspaceRoot, ".mcpskill", "jdtls"),
+        workspaceDataDir: join(workspaceRoot, ".mc-developing-mcp", "jdtls"),
         workspaceSignals: {
           hasGradleBuild: true,
           hasGradleSettings: false,
@@ -113,7 +113,7 @@ describe("startJdtlsProcessSession", () => {
         profile: {
           status: "missing_jdtls",
           workspaceRoot,
-          workspaceDataDir: join(workspaceRoot, ".mcpskill", "jdtls"),
+          workspaceDataDir: join(workspaceRoot, ".mc-developing-mcp", "jdtls"),
           workspaceSignals: {
             hasGradleBuild: true,
             hasGradleSettings: false,

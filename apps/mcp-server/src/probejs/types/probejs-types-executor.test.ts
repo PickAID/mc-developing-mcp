@@ -241,6 +241,8 @@ describe("createMcpServerProbeJsTypesExecutor", () => {
         quickInfo: expect.stringContaining("foodEaten(handler")
       }
     });
+    expect(JSON.stringify(result)).toContain(".mc-developing-mcp/probe-query");
+    expect(JSON.stringify(result)).not.toContain(".mcpskill");
   });
 
   it("does not return unrelated diagnostics from the selected workspace script", async () => {

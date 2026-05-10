@@ -45,7 +45,9 @@ describe("buildJdtlsServiceProfile", () => {
         "diagnostics"
       ]
     });
-    expect(profile.workspaceDataDir).toBe(join(workspaceRoot, ".mcpskill", "jdtls"));
+    expect(profile.workspaceDataDir).toBe(
+      join(workspaceRoot, ".mc-developing-mcp", "jdtls")
+    );
     expect(profile.operationContracts).toEqual([
       {
         operation: "definition",

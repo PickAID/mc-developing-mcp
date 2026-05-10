@@ -129,7 +129,11 @@ async function executeMcpServerProbeJsTypesWithCache(
     scope,
     probeProject.declarationFiles
   );
-  const queryFile = join(workspaceRoot, ".mcpskill", `probe-query-${scope}.js`);
+  const queryFile = join(
+    workspaceRoot,
+    ".mc-developing-mcp",
+    `probe-query-${scope}.js`
+  );
   const queryContent = `${symbol};\n`;
   let cacheHit = true;
   const project = languageProjectCache.getOrCreate(cacheKey, () => {
@@ -201,6 +205,7 @@ async function executeMcpServerProbeJsTypesWithCache(
       cacheHit,
       probeResourceCacheHit: probeResourcesResult.cacheHit,
       queryMode: "virtual",
+      virtualQueryFile: `.mc-developing-mcp/probe-query-${scope}.js`,
       probeResources: compactProbeResources(probeResourcesResult.summary),
       ...lifecycleEvidence,
       completions: completions.entries,

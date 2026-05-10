@@ -148,7 +148,7 @@ function readyProfile(workspaceRoot: string): JdtlsServiceProfile {
   return {
     status: "ready",
     workspaceRoot,
-    workspaceDataDir: join(workspaceRoot, ".mcpskill", "jdtls"),
+    workspaceDataDir: join(workspaceRoot, ".mc-developing-mcp", "jdtls"),
     workspaceSignals: {
       hasGradleBuild: true,
       hasGradleSettings: false,
