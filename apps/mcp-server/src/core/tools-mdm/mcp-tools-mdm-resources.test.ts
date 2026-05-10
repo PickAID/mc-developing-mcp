@@ -18,7 +18,8 @@ import {
   createWorkspaceRoot,
   hashText,
   mdmDocsArtifactBody,
-  mdmGuidanceArtifactBody
+  mdmGuidanceArtifactBody,
+  mdmVanillaSchemaDocsArtifactBody
 } from "../../../test-fixtures/mcp-tools-mdm-resource-fixtures.js";
 
 describe("mc_develop mdm resource status", () => {
@@ -383,6 +384,64 @@ describe("mc_develop mdm resource status", () => {
             expect.objectContaining({
               entryId: "client-visual-1.20.1-guidance-purpose",
               packageId: "client-visual-1.20.1-guidance"
+            })
+          ])
+        }
+      }
+    });
+  });
+
+  it("uses cached vanilla-schema-docs during schema docs lookup", async () => {
+    const registry = createCapturingRegistry();
+    const body = mdmVanillaSchemaDocsArtifactBody();
+    const release = await createMdmReleaseOutForPackage({
+      body,
+      artifactName: "vanilla-schema-docs-0.1.0.mdm-resource.json",
+      packageId: "vanilla-schema-docs",
+      namespace: "minecraft",
+      version: "0.1.0",
+      releaseFamily: "vanilla-schema-docs"
+    });
+    const mdmSourcesRoot = await createSinglePackageMdmSourcesRoot({
+      packageId: "vanilla-schema-docs",
+      manifestName: "vanilla-schema-docs.json",
+      release
+    });
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-runtime-"));
+    const workspaceRoot = await createWorkspaceRoot();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Explain vanilla-mcdoc recipe datapack schema and model resource-pack schema.",
+      runtimeRoot,
+      workspaceRoot,
+      mdmReleaseInstall: {
+        manifestPath: release.manifestPath,
+        packageId: "vanilla-schema-docs",
+        downloadPolicy: "allowed"
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: {
+        routeStep: "docs_lookup",
+        payload: {
+          hits: expect.arrayContaining([
+            expect.objectContaining({
+              entryId: "vanilla-schema-docs-datapack-mcdoc-java-data-recipe",
+              packageId: "vanilla-schema-docs"
+            }),
+            expect.objectContaining({
+              entryId: "vanilla-schema-docs-resource-pack-mcdoc-java-assets-model",
+              packageId: "vanilla-schema-docs"
             })
           ])
         }

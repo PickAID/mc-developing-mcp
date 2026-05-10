@@ -46,6 +46,8 @@ For normal use, first call `mc_develop` without `mdmReleaseInstall` and inspect 
 
 The npm package does not include MDM bundles. The `mdm-resources-v0.2.0` release uses channel bundles for datapack, resourcepack, mappings, and source-profile packages as transport and verification containers. The MCP downloads the bundle asset only after confirmation, verifies it, extracts the requested package member, and stores the package artifact in the local runtime cache.
 
+Vanilla datapack/resource-pack explanation docs are generated in the `mdm-sources` repository from `SpyglassMC/vanilla-mcdoc` and `misode/misode.github.io`. The `vanilla-schema-docs` bundle internalizes compact mcdoc schema previews, upstream hashes, and misode generator/interpreter references, then refreshes by scheduled upstream update workflow before release.
+
 External services that require credentials, such as CurseForge or ShaderToy API lookup, should be configured by the user at runtime. The package does not embed private API keys or generated private cache data.
 
 This package requires Node.js `>=22.5.0` because runtime indexing and offline documentation paths use `node:sqlite`. It is published as one public npm package; internal workspace modules are bundled into the package and are not required as public npm dependencies.

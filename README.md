@@ -157,11 +157,14 @@ Common resource package types:
 | Docs index            | `core-docs-search-sqlite`                       |
 | Datapack profile      | `minecraft-1.20.1-vanilla-datapack-profile`     |
 | Resource-pack profile | `minecraft-1.20.1-vanilla-resourcepack-profile` |
+| Vanilla schema docs   | `vanilla-schema-docs`                         |
 | Mapping profile       | `minecraft-1.20.1-yarn-mapping-profile`         |
 | Source profile/index  | `minecraft-1.20.1-vanilla-source-profile`       |
 
 
 The npm package does not include MDM bundles. A release bundle is only a transport and verification container; the runtime cache stores the requested package artifact and local private indexes under `MC_DEVELOPING_MCP_RUNTIME_ROOT`. Vanilla datapack/resource-pack data is generated from Mojang distribution metadata on demand. Private modpack caches, generated Minecraft source, ProbeJS outputs, local jar indexes, and user jar-derived bundles should not be committed to this repository.
+
+Vanilla datapack/resource-pack explanation docs are generated in `mdm-sources` from `SpyglassMC/vanilla-mcdoc` and `misode/misode.github.io`. The `vanilla-schema-docs` bundle internalizes compact mcdoc schema previews, upstream hashes, and misode generator/interpreter references, then refreshes through a scheduled upstream-update workflow before release.
 
 ## Configuration
 

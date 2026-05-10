@@ -219,6 +219,74 @@ export function mdmGuidanceArtifactBody(): string {
   });
 }
 
+export function mdmVanillaSchemaDocsArtifactBody(): string {
+  return JSON.stringify({
+    schemaVersion: 1,
+    package: {
+      identity: {
+        packageId: "vanilla-schema-docs",
+        displayName: "Vanilla Schema Docs",
+        namespace: "minecraft"
+      },
+      artifact: {
+        kind: "docs_bundle",
+        format: "json"
+      },
+      capabilities: [
+        "docs_search",
+        "docs_direct_read",
+        "schema_reference",
+        "mcdoc_reference",
+        "datapack_trace",
+        "resourcepack_trace"
+      ]
+    },
+    payload: {
+      "payload/explanations.json": {
+        repoPath:
+          "packages/docs/vanilla-schema-docs/payload/explanations.json",
+        content: JSON.stringify({
+          schemaVersion: 1,
+          entries: [
+            {
+              id: "vanilla-schema-docs-datapack-mcdoc-java-data-recipe",
+              kind: "format-reference",
+              title: "vanilla-mcdoc recipe",
+              summary:
+                "Schema source for recipe datapack data. Use this before inventing JSON fields.",
+              headings: ["datapack", "recipe", "mcdoc"],
+              searchTerms: [
+                "vanilla-mcdoc",
+                "mcdoc",
+                "datapack schema",
+                "recipe",
+                "java/data/recipe.mcdoc"
+              ],
+              codeSymbols: ["Recipe"]
+            },
+            {
+              id: "vanilla-schema-docs-resource-pack-mcdoc-java-assets-model",
+              kind: "format-reference",
+              title: "vanilla-mcdoc model",
+              summary:
+                "Schema source for model resource-pack data. Use this before inventing JSON fields.",
+              headings: ["resource-pack", "model", "mcdoc"],
+              searchTerms: [
+                "vanilla-mcdoc",
+                "mcdoc",
+                "resource-pack schema",
+                "model",
+                "java/assets/model.mcdoc"
+              ],
+              codeSymbols: ["Model"]
+            }
+          ]
+        })
+      }
+    }
+  });
+}
+
 export function mdmResourcepackGuidanceArtifactBody(): string {
   return JSON.stringify({
     schemaVersion: 1,
