@@ -60,8 +60,15 @@ export function executeMcpServerDocsLookup(
   });
   const rankedHits = rankDocsSearchHits([...sqliteHits, ...result.hits]);
   const hits = rankedHits.slice(0, hitLimit);
+  const effectiveSelectedPackageIds = [
+    ...new Set([
+      ...selectedPackageIds,
+      ...hits.map((hit) => hit.packageId)
+    ])
+  ];
   const trace = {
     ...result.trace,
+    effectiveSelectedPackageIds,
     matchedEntryIds: hits.map((hit) => hit.entryId),
     rankedEntryIds: rankedHits.map((hit) => hit.entryId),
     truncatedEntryIds: rankedHits.slice(hitLimit).map((hit) => hit.entryId),
@@ -88,7 +95,7 @@ export function executeMcpServerDocsLookup(
       payload: {
         source: "docs_lookup",
         queryText,
-        selectedPackageIds,
+        selectedPackageIds: effectiveSelectedPackageIds,
         hits: [],
         trace
       }
@@ -101,7 +108,7 @@ export function executeMcpServerDocsLookup(
     payload: {
       source: "docs_lookup",
       queryText,
-      selectedPackageIds,
+      selectedPackageIds: effectiveSelectedPackageIds,
       hits,
       trace
     }

@@ -198,6 +198,7 @@ describe("executeMcpServerDocsLookup", () => {
     expect(result).toMatchObject({
       matched: true,
       payload: {
+        selectedPackageIds: ["docs-json", "docs-sqlite"],
         hits: [
           expect.objectContaining({
             entryId: "json-resource-recipes",
@@ -209,6 +210,8 @@ describe("executeMcpServerDocsLookup", () => {
           })
         ],
         trace: {
+          selectedPackageIds: [],
+          effectiveSelectedPackageIds: ["docs-json", "docs-sqlite"],
           sqliteCandidateEntryIds: ["kubejs-server-recipes"],
           sqliteMatchedEntryIds: ["kubejs-server-recipes"],
           recordMatchedEntryIds: ["json-resource-recipes"],
