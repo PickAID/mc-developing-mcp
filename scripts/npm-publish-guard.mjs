@@ -6,13 +6,12 @@ const repoRoot = process.cwd();
 const publishableSet = new Set(publishablePackages);
 const packageNames = new Map();
 const failures = [];
-const internalDependencyPrefixes = [
+const forbiddenPublicDependencyPrefixes = [
+  // Guard against accidentally reintroducing the retired scoped prerelease packages.
   "@mcpskill/",
   "minecraft-developing-mcp-"
 ];
-const releaseMode =
-  process.env.MC_DEVELOPING_MCP_RELEASE === "1" ||
-  process.env.MCPSKILL_RELEASE === "1";
+const releaseMode = process.env.MC_DEVELOPING_MCP_RELEASE === "1";
 
 for (const packageDir of publishablePackages) {
   const packageJsonPath = join(repoRoot, packageDir, "package.json");
@@ -100,7 +99,7 @@ function internalDependencyNames(packageJson) {
 }
 
 function isInternalDependencyName(name) {
-  return internalDependencyPrefixes.some((prefix) => name.startsWith(prefix));
+  return forbiddenPublicDependencyPrefixes.some((prefix) => name.startsWith(prefix));
 }
 
 function dependencyEntries(packageJson) {

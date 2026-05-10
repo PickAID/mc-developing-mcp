@@ -1,19 +1,18 @@
 # npm Publish Runbook
 
-This runbook prepares a real npm upload for `mc-developing-mcp`. Do not publish from a dirty tree and do not publish `0.0.0`.
+This runbook prepares a real npm upload for `minecraft-developing-mcp`. Do not publish from a dirty tree and do not publish `0.0.0`.
 
 Publishing to npm is irreversible for a package version. A published `name@version` cannot be reused later even if it is unpublished, and unpublish is constrained by npm policy. Treat every publish command as permanent.
 
 ## Release Shape
 
-The MCP server is not a single self-contained tarball. `@mcpskill/mcp-server` imports internal runtime packages, so the publishable package closure must be released together in the order listed by `scripts/npm-publish-packages.mjs`.
+The MCP server publishes as one public npm package, `minecraft-developing-mcp`. Internal workspace modules must be bundled into that package rather than published as public npm dependencies.
 
 ## Preflight Decisions
 
-- Choose a real version before publishing. The current development version `0.0.0` is not a release version.
-- Decide whether the public release remains `UNLICENSED` or moves to an SPDX license with a root `LICENSE` file.
-- Confirm the npm account has publish rights for the `@mcpskill` scope.
-- Confirm the `@mcpskill` npm scope exists. If the publishing account is not the `mcpskill` user, create or obtain access to the `mcpskill` npm organization before publishing any package.
+- Choose a real version before publishing. The current stable package must use normal semver.
+- Confirm the root `LICENSE` file and package license field match the intended release terms.
+- Confirm the npm account has publish rights for the unscoped `minecraft-developing-mcp` package.
 - Prepare npm 2FA/OTP if the account requires it.
 - Confirm no private runtime cache, generated source cache, API key, or user modpack content is staged.
 - Confirm the companion MDM resources release is available and verified. The current bundled release is `mdm-resources-v0.2.0`:
@@ -48,19 +47,7 @@ node ../mdm-sources/tools/verify-live-release.mjs \
 
 ## Versioning
 
-Use lockstep versions for the publishable `@mcpskill/*` package graph until the package boundaries are stable enough for independent versioning. This avoids MCP server installs resolving mismatched internal packages.
-
-Recommended first public pre-release:
-
-```txt
-0.1.0-next.0
-```
-
-Recommended stable tag after real external validation:
-
-```txt
-0.1.0
-```
+Use one semver version for the public `minecraft-developing-mcp` package. Internal workspace modules are implementation details and should not appear as published package dependencies.
 
 Do not publish `0.0.0`. npm versions cannot be overwritten. `pnpm run publish:release-check` enforces this rule for real release preparation while normal development checks can still pass before a version is chosen.
 
@@ -70,34 +57,28 @@ The published packages require Node.js `>=22.5.0`. Several runtime paths use `no
 
 ## Publish Order
 
-Publish in this order:
+Publish the package directory listed by `scripts/npm-publish-packages.mjs`:
 
 ```sh
-node -e "import('./scripts/npm-publish-packages.mjs').then(m => console.log(m.publishablePackages.join('\n')))"
+pnpm --dir apps/mcp-server publish --access public
 ```
 
-For each package directory:
-
-```sh
-pnpm --dir <package-dir> publish --access public --tag next
-```
-
-Use `--tag next` for pre-release versions such as `0.1.0-next.0`. Use the default `latest` tag only for stable releases. Never publish a `next` version without `--tag next`, because npm would otherwise attach the prerelease to the `latest` dist-tag.
+Use `--tag next` only for prerelease versions. Use the default `latest` tag for stable releases.
 
 ## Post-Publish Checks
 
 Verify npm metadata:
 
 ```sh
-npm view @mcpskill/mcp-server version
-npm view @mcpskill/mcp-server bin
-npm view @mcpskill/mcp-server dependencies
+npm view minecraft-developing-mcp version
+npm view minecraft-developing-mcp bin
+npm view minecraft-developing-mcp dependencies
 ```
 
 Verify user-facing startup:
 
 ```sh
-npx -y --package @mcpskill/mcp-server mc-developing-mcp
+npx -y --package minecraft-developing-mcp mc-developing-mcp
 ```
 
 Verify explicit bundled MDM resource installation through `mc_develop` using the `mdm-resources-v0.2.0` manifest URL. The MCP must not require a default remote download; users provide `manifestUrl` or `manifestPath` and set `downloadPolicy` to `allowed`.
@@ -107,16 +88,10 @@ For MCP clients, configure:
 ```json
 {
   "command": "npx",
-  "args": ["-y", "--package", "@mcpskill/mcp-server", "mc-developing-mcp"]
+  "args": ["-y", "--package", "minecraft-developing-mcp", "mc-developing-mcp"]
 }
 ```
 
 ## Verification Record
 
-Each release attempt must create or update a dated review document:
-
-```txt
-docs/reviews/YYYY-MM-DD-npm-release-verification.md
-```
-
-Record every command, pass/fail result, package count, real publish status, and any retry reason. If real publishing is intentionally skipped, state that explicitly.
+For normal development, keep verification in the terminal and commit message. Only create a dated verification document when explicitly requested for an audit trail.

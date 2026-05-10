@@ -95,6 +95,22 @@ Datapack/resource-pack example:
 
 The response is compact evidence for the agent: detected workspace facts, relevant files, package status, route decisions, warnings, and follow-up actions.
 
+## Structured Output
+
+`mc_develop` returns both human-readable text and `structuredContent`. The structured output is meant for agents and MCP clients that need reliable fields instead of parsing prose.
+
+Top-level summaries currently include:
+
+| Field                  | What it gives the agent                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `workspacePreparation` | Route readiness, detected workspace shape, missing prerequisites, and next call patterns. |
+| `crashSignals`        | Compact crash/log signals such as exception classes, owner hints, resource paths, and FTB-related errors. |
+| `javaDiagnostics`     | Java/LSP diagnostic counts and representative diagnostics when a Java diagnostics route runs. |
+| `kubeJsQuality`       | KubeJS script quality warnings and evidence gathered from KubeJS/ProbeJS routes. |
+| `clientVisualVerifier` | Client visual proof-chain status for assets, models, rendering, UI, and shader-oriented work. |
+
+These summaries are intentionally shallow entry points. When an agent needs details, it should follow the referenced evidence blocks and suggested `nextCallPatterns` instead of guessing or issuing unrelated searches.
+
 ## Optional Offline Resources
 
 The npm package does not bundle large generated datasets. Offline documentation and version profiles are distributed separately through MDM resource releases and are installed only when explicitly requested.
@@ -154,7 +170,7 @@ Environment variables:
 | `SHADERTOY_APP_KEY`                | Optional ShaderToy API key. Without it, use browser-based fallback and compact summaries. |
 
 
-Legacy `MCPSKILL_*` environment variables may still be accepted by older prerelease builds. New setup should use the `MC_DEVELOPING_MCP_*` names.
+Use `MC_DEVELOPING_MCP_*` names for new setup. Older prerelease builds accepted `MCPSKILL_*` names, but current user-facing configuration should not rely on them.
 
 ## Developer Setup
 

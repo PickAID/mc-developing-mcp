@@ -19,6 +19,24 @@ describe("workspace package output", () => {
       expect(packageJson.files, packageJson.name).toEqual(["dist"]);
     }
   });
+
+  it("uses only the current release environment variable in publish scripts", () => {
+    const rootPackageJson = JSON.parse(
+      readFileSync(join(repoRoot, "package.json"), "utf-8")
+    ) as { scripts?: Record<string, string> };
+    const publishGuard = readFileSync(
+      join(repoRoot, "scripts", "npm-publish-guard.mjs"),
+      "utf-8"
+    );
+
+    expect(rootPackageJson.scripts?.["publish:release-check"]).toContain(
+      "MC_DEVELOPING_MCP_RELEASE=1"
+    );
+    expect(rootPackageJson.scripts?.["publish:release-check"]).not.toContain(
+      "MCPSKILL_RELEASE"
+    );
+    expect(publishGuard).not.toContain("process.env.MCPSKILL_RELEASE");
+  });
 });
 
 function workspacePackageJsonPaths(): string[] {

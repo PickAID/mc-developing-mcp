@@ -6,7 +6,7 @@ Current status: design corrective spec. The existing package/database/cache laye
 
 This spec covers both sides of the system:
 
-- MCP local package/query substrate in `SKillUpdate`.
+- MCP local package/query substrate in this repository.
 - Public curated resource repository in sibling `mdm-sources`.
 
 ## Problem Statement

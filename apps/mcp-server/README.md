@@ -19,6 +19,8 @@ For MCP client configuration, use the same command shape:
 
 The package exposes the `mc-developing-mcp` binary and keeps the public MCP tool surface focused on `mc_develop`. Runtime evidence routes cover workspace detection, Gradle dependency evidence, Java diagnostics, local mod archives and nested JarJar archives, ProbeJS/KubeJS type evidence, datapack/resource-pack files, vanilla source acquisition, and optional offline documentation resources.
 
+`structuredContent` includes top-level summaries for `workspacePreparation`, `crashSignals`, `javaDiagnostics`, `kubeJsQuality`, and `clientVisualVerifier`. MCP clients should use these fields as compact entry points, then follow detailed evidence blocks and suggested next-call patterns only when more context is needed.
+
 Optional MDM resource packages are installed only when requested. To consume the current bundled public resource release, call `mc_develop` with:
 
 ```json
