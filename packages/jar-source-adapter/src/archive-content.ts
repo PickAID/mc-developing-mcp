@@ -8,6 +8,7 @@ import {
   type ZipEntry
 } from "./java-source-archive.js";
 import type { ArchiveContentCache } from "./archive-content-cache.js";
+import { classifyArchiveContentDomain } from "./archive-content-domain.js";
 
 export { createArchiveContentCache } from "./archive-content-cache.js";
 export type { ArchiveContentCache } from "./archive-content-cache.js";
@@ -327,38 +328,6 @@ async function readArchiveCentralDirectory(
     entries: readZipCentralDirectory(await readFile(sourceArchive)),
     cacheHit: false
   };
-}
-
-function classifyArchiveContentDomain(
-  relativePath: string
-): ArchiveContentDomain | undefined {
-  if (relativePath.endsWith(".java")) {
-    return "java";
-  }
-  if (relativePath.endsWith(".class")) {
-    return "class";
-  }
-  if (relativePath.startsWith("data/")) {
-    return "data";
-  }
-  if (relativePath.startsWith("assets/")) {
-    return "assets";
-  }
-  if (isArchiveMetadataPath(relativePath)) {
-    return "metadata";
-  }
-
-  return undefined;
-}
-
-function isArchiveMetadataPath(relativePath: string): boolean {
-  return (
-    /^(?:fabric|quilt)\.mod\.json$/i.test(relativePath) ||
-    /^[^/]+\.mixins?\.json$/i.test(relativePath) ||
-    /\.(?:accesswidener|classtweaker)$/i.test(relativePath) ||
-    relativePath === "pack.mcmeta" ||
-    /^META-INF\/(?:mods|neoforge\.mods)\.toml$/i.test(relativePath)
-  );
 }
 
 function findClassPathMatch(

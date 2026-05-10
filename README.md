@@ -121,7 +121,15 @@ Current public resource manifest:
 https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json
 ```
 
-Example:
+Start with a discovery call that does not download anything:
+
+```json
+{
+  "requestText": "Check whether an offline docs package would help this task."
+}
+```
+
+After `structuredContent.resourceActions.actions` suggests a package and the user confirms the download, call again with the suggested patch and `downloadPolicy: "allowed"`:
 
 ```json
 {
@@ -153,7 +161,7 @@ Common resource package types:
 | Source profile/index  | `minecraft-1.20.1-vanilla-source-profile`       |
 
 
-Downloaded artifacts are verified and stored in the local runtime cache. Vanilla datapack/resource-pack data is generated from Mojang distribution metadata on demand. Private modpack caches, generated Minecraft source, ProbeJS outputs, local jar indexes, and user jar-derived bundles should not be committed to this repository.
+The npm package does not include MDM bundles. A release bundle is only a transport and verification container; the runtime cache stores the requested package artifact and local private indexes under `MC_DEVELOPING_MCP_RUNTIME_ROOT`. Vanilla datapack/resource-pack data is generated from Mojang distribution metadata on demand. Private modpack caches, generated Minecraft source, ProbeJS outputs, local jar indexes, and user jar-derived bundles should not be committed to this repository.
 
 ## Configuration
 
@@ -174,7 +182,7 @@ Environment variables:
 | `SHADERTOY_APP_KEY`                | Optional ShaderToy API key. Without it, use browser-based fallback and compact summaries. |
 
 
-Use `MC_DEVELOPING_MCP_*` names for new setup. Older prerelease builds accepted `MCPSKILL_*` names, but current user-facing configuration should not rely on them.
+Only `MC_DEVELOPING_MCP_*` environment names are supported for current setup.
 
 ## Developer Setup
 

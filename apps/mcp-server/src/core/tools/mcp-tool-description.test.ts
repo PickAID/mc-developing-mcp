@@ -16,6 +16,7 @@ describe("mc_develop tool description", () => {
     expect(description).toContain("curseforge");
     expect(description).toContain("github");
     expect(description).toContain("remoteMetadataPolicy: enabled");
+    expect(description).toContain("CURSEFORGE_API_KEY");
     expect(description).toContain("includeDefaultGradleUserHome: true");
     expect(description).toContain("localJarMode: prewarm_entry_index");
     expect(description).toContain("crashSignals");

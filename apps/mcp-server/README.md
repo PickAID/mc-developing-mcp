@@ -21,7 +21,15 @@ The package exposes the `mc-developing-mcp` binary and keeps the public MCP tool
 
 `structuredContent` includes top-level summaries for `workspacePreparation`, `crashSignals`, `javaDiagnostics`, `kubeJsQuality`, and `clientVisualVerifier`. MCP clients should use these fields as compact entry points, then follow detailed evidence blocks and suggested next-call patterns only when more context is needed.
 
-Optional MDM resource packages are installed only when requested. To consume the current bundled public resource release, call `mc_develop` with:
+Optional MDM resource packages are installed only when requested. Normal use starts with a discovery call and no download:
+
+```json
+{
+  "requestText": "Check whether an offline docs/resource package would help this task."
+}
+```
+
+If `structuredContent.resourceActions.actions` suggests a package and the user confirms the download, call `mc_develop` again with the suggested `inputPatch.mdmReleaseInstall` and `downloadPolicy: "allowed"`:
 
 ```json
 {
@@ -36,7 +44,7 @@ Optional MDM resource packages are installed only when requested. To consume the
 
 For normal use, first call `mc_develop` without `mdmReleaseInstall` and inspect `structuredContent.resourceActions.actions`. If a suggested action is appropriate, call again with its `inputPatch.mdmReleaseInstall` and change `downloadPolicy` from `disabled` to `allowed` after user confirmation. Installed artifacts are reused from the local runtime cache on later calls.
 
-The `mdm-resources-v0.2.0` release uses channel bundles for datapack, resourcepack, mappings, and source-profile packages. The MCP downloads the bundle asset, verifies it, extracts the requested package member, and stores only the package artifact in the local runtime cache.
+The npm package does not include MDM bundles. The `mdm-resources-v0.2.0` release uses channel bundles for datapack, resourcepack, mappings, and source-profile packages as transport and verification containers. The MCP downloads the bundle asset only after confirmation, verifies it, extracts the requested package member, and stores the package artifact in the local runtime cache.
 
 External services that require credentials, such as CurseForge or ShaderToy API lookup, should be configured by the user at runtime. The package does not embed private API keys or generated private cache data.
 

@@ -117,9 +117,13 @@ async function smokeInstalledBinary() {
   if (initialize?.result?.serverInfo?.name !== "mc-developing-mcp") {
     throw new Error(`Installed MCP server did not initialize correctly.\n${stderr.join("")}`);
   }
-  if (!tools?.result?.tools?.some((tool) => tool.name === "mc_develop")) {
+  const mcDevelopTool = tools?.result?.tools?.find(
+    (tool) => tool.name === "mc_develop"
+  );
+  if (!mcDevelopTool) {
     throw new Error(`Installed MCP server did not expose mc_develop.\n${stderr.join("")}`);
   }
+  assertToolDescription(mcDevelopTool.description, stderr);
 }
 
 async function waitFor(predicate, context) {
@@ -156,4 +160,32 @@ function run(command, args, cwd) {
   }
 
   return result;
+}
+
+function assertToolDescription(description, stderr) {
+  if (typeof description !== "string") {
+    throw new Error(`Installed mc_develop did not expose a text description.\n${stderr.join("")}`);
+  }
+
+  const requiredFragments = [
+    "progressive",
+    "downloadPolicy",
+    "CURSEFORGE_API_KEY"
+  ];
+  for (const fragment of requiredFragments) {
+    if (!description.includes(fragment)) {
+      throw new Error(
+        `Installed mc_develop description is missing ${fragment}.\n${stderr.join("")}`
+      );
+    }
+  }
+
+  const forbiddenFragments = ["@mcpskill/next", "@mcpskill/", "MCPSKILL_"];
+  for (const fragment of forbiddenFragments) {
+    if (description.includes(fragment)) {
+      throw new Error(
+        `Installed mc_develop description contains legacy fragment ${fragment}.\n${stderr.join("")}`
+      );
+    }
+  }
 }
