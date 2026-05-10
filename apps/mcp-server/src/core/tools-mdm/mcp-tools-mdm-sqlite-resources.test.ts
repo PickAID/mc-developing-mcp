@@ -56,7 +56,15 @@ describe("mc_develop sqlite mdm docs resources", () => {
             expect.objectContaining({
               entryId: "mdm.sqlite-index-role",
               packageId: "core-docs-search-sqlite",
-              source: "sqlite"
+              source: "sqlite",
+              metadata: {
+                schemaSymbol: {
+                  identifier: "mdm.docs.sqlite.docs_entries",
+                  kind: "table"
+                },
+                upstreamPath: "packages/docs/search/core-sqlite/payload/docs-search.json",
+                contentHash: "sha256:test"
+              }
             })
           ]),
           trace: expect.objectContaining({
@@ -166,7 +174,7 @@ function writeSqliteDocsArtifact(path: string): void {
       "title TEXT NOT NULL, path TEXT NOT NULL, headings TEXT NOT NULL,",
       "summary TEXT NOT NULL, search_terms TEXT NOT NULL,",
       "script_scopes TEXT NOT NULL, addon_names TEXT NOT NULL,",
-      "event_names TEXT NOT NULL, code_symbols TEXT NOT NULL",
+      "event_names TEXT NOT NULL, code_symbols TEXT NOT NULL, metadata TEXT",
       ")",
       ";",
       "CREATE VIRTUAL TABLE docs_entries_fts USING fts5(",
@@ -185,8 +193,8 @@ function insertDocsEntry(database: SqliteDatabase): void {
   database.prepare([
     "INSERT INTO docs_entries",
     "(entry_id, package_id, kind, title, path, headings, summary, search_terms,",
-    "script_scopes, addon_names, event_names, code_symbols)",
-    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "script_scopes, addon_names, event_names, code_symbols, metadata)",
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ].join(" ")).run(
     "mdm.sqlite-index-role",
     "core-docs-search-sqlite",
@@ -199,7 +207,15 @@ function insertDocsEntry(database: SqliteDatabase): void {
     JSON.stringify([]),
     JSON.stringify([]),
     JSON.stringify([]),
-    JSON.stringify(["sqlite_docs", "docs_entries"])
+    JSON.stringify(["sqlite_docs", "docs_entries"]),
+    JSON.stringify({
+      schemaSymbol: {
+        identifier: "mdm.docs.sqlite.docs_entries",
+        kind: "table"
+      },
+      upstreamPath: "packages/docs/search/core-sqlite/payload/docs-search.json",
+      contentHash: "sha256:test"
+    })
   );
 }
 
