@@ -106,6 +106,49 @@ describe("persistent mod archive class owner index", () => {
       }
     });
   });
+
+  it("refreshes only the changed mod jar when a cached crash triage workspace changes", async () => {
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-runtime-incremental-"));
+    const workspaceRoot = await createWorkspaceWithManyMods(18);
+    tempRoots.push(runtimeRoot);
+
+    const bootstrap = await buildMcpServerBootstrap({
+      runtimeRoot,
+      workspace: { workspaceRoot }
+    });
+    const requestText =
+      "The crash report mentions com.example.problem.CrashHandler; find the mod jar owner.";
+
+    await executeMcpServerRequest({ bootstrap, requestText });
+    await writeFile(
+      join(workspaceRoot, "mods", "content-0.jar"),
+      createZip(["com/example/filler/Changed0.class"])
+    );
+    const incremental = await executeMcpServerRequest({ bootstrap, requestText });
+
+    expect(incremental.selectedEvidence).toMatchObject({
+      payload: {
+        mode: "class_owner",
+        searchedArchives: 18,
+        matches: [
+          {
+            binaryName: "com.example.problem.CrashHandler",
+            archiveRelativePath: "mods/content-17.jar"
+          }
+        ],
+        cache: {
+          entryIndex: {
+            archiveHits: 17,
+            archiveMisses: 0,
+            archiveStale: 1,
+            archiveRefreshes: 0,
+            archiveFingerprintCount: 18,
+            elapsedMs: expect.any(Number)
+          }
+        }
+      }
+    });
+  });
 });
 
 async function createWorkspace(): Promise<string> {
