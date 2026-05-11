@@ -208,16 +208,16 @@ function defaultWorkspaceWorkItemHandlers(
           gradleUserHome: gradleSourceDiscovery?.gradleUserHome,
           includeDefaultGradleUserHome:
             gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false,
-          maxVisitedEntries: 40_000,
-          maxResults: 200
+          maxVisitedEntries: 200_000,
+          maxResults: 2_000
         }),
         discoverGradleBinaryArchives({
           workspaceRoot: item.workspaceRoot,
           gradleUserHome: gradleSourceDiscovery?.gradleUserHome,
           includeDefaultGradleUserHome:
             gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false,
-          maxVisitedEntries: 40_000,
-          maxResults: 200
+          maxVisitedEntries: 200_000,
+          maxResults: 2_000
         })
       ]);
       const rankedGradleCacheSourceArchives = rankArchivesForRequest(

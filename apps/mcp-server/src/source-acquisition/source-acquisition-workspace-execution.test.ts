@@ -436,6 +436,70 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
     );
   });
 
+  it("finds requested Gradle cache source jars beyond the first broad scan page", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-gradle-source-rank-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-gradle-source-rank-home-"));
+    await writeFile(join(workspaceRoot, "build.gradle"), "plugins { id 'java' }\n");
+
+    for (let index = 0; index < 240; index++) {
+      const archive = join(
+        gradleUserHome,
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "aaa.example",
+        `unused-${String(index).padStart(3, "0")}`,
+        "1.0.0",
+        "hash",
+        `unused-${String(index).padStart(3, "0")}-1.0.0-sources.jar`
+      );
+      await mkdir(join(archive, ".."), { recursive: true });
+      await writeFile(archive, "unrelated source jar placeholder");
+    }
+
+    const requestedSourceJar = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "net.minecraftforge",
+      "fmlloader",
+      "1.20.1-47.4.10",
+      "hash",
+      "fmlloader-1.20.1-47.4.10-sources.jar"
+    );
+    await mkdir(join(requestedSourceJar, ".."), { recursive: true });
+    await writeFile(requestedSourceJar, "requested FMLLoader source jar placeholder");
+
+    const result = await executeMcpServerSourceAcquisitionPlan(
+      inputFixture(workspaceRoot, {
+        requestText: "Read FMLLoader source from Gradle cache."
+      }),
+      {
+        gradleSourceDiscovery: {
+          gradleUserHome,
+          includeDefaultGradleUserHome: false
+        }
+      }
+    );
+    const payload = result.payload as {
+      workItemExecutions: Array<{
+        payload?: {
+          gradleCacheSourceArchives?: Array<{ archivePath: string }>;
+        };
+      }>;
+    };
+    const gradleExecution = payload.workItemExecutions.find(
+      (execution) => execution.payload?.gradleCacheSourceArchives
+    );
+
+    expect(gradleExecution?.payload?.gradleCacheSourceArchives?.[0]).toEqual(
+      expect.objectContaining({
+        archivePath: requestedSourceJar
+      })
+    );
+  });
+
   it("executes ProbeJS workspace routes with the default workspace handler", async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-probe-"));
 
