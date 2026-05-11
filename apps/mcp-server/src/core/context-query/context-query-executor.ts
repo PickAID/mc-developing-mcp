@@ -40,6 +40,7 @@ export interface McpServerContextQueryExecutorOptions {
   externalModCurseForgeApiBaseUrl?: string;
   sourceAcquisitionWorkItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
   sourceAcquisitionRouteOrigins?: SourceAcquisitionOrigin[];
+  sourceAcquisitionGradleDiscovery?: GradleSourceArchiveDiscoveryOptions;
   modArchiveContentCache?: ArchiveContentCache;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
@@ -87,7 +88,8 @@ export function buildMcpServerContextQueryExecutor(
         return executeMcpServerSourceAcquisitionPlan(input, {
           workItemHandlers: options.sourceAcquisitionWorkItemHandlers,
           sourceIndexDatabasePaths: options.sourceIndexDatabasePaths,
-          routeOrigins: options.sourceAcquisitionRouteOrigins
+          routeOrigins: options.sourceAcquisitionRouteOrigins,
+          gradleSourceDiscovery: options.sourceAcquisitionGradleDiscovery
         });
       default:
         return (

@@ -166,6 +166,265 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
     );
   });
 
+  it("reports Gradle cache source archives even when templated build files hide coordinates", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-gradle-template-"));
+
+    await writeFile(
+      join(workspaceRoot, "build.gradle"),
+      [
+        "plugins { id 'java' }",
+        "dependencies {",
+        "  implementation \"${config.mod_group}:${config.mod_id}:${config.mod_version}\"",
+        "}"
+      ].join("\n")
+    );
+    await mkdir(
+      join(
+        workspaceRoot,
+        ".gradle",
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "com.mihono.pickaid",
+        "piserializekit",
+        "0.0.7",
+        "abc"
+      ),
+      { recursive: true }
+    );
+    await writeFile(
+      join(
+        workspaceRoot,
+        ".gradle",
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "com.mihono.pickaid",
+        "piserializekit",
+        "0.0.7",
+        "abc",
+        "piserializekit-0.0.7-sources.jar"
+      ),
+      "source jar placeholder"
+    );
+    await writeFile(
+      join(
+        workspaceRoot,
+        ".gradle",
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "com.mihono.pickaid",
+        "piserializekit",
+        "0.0.7",
+        "abc",
+        "piserializekit-0.0.7.jar"
+      ),
+      "binary jar placeholder"
+    );
+
+    const result = await executeMcpServerSourceAcquisitionPlan(
+      inputFixture(workspaceRoot, {
+        serviceProfile:
+          "Gradle: ready, source archives=1, declared source archives=0, binary archives=0"
+      })
+    );
+    const payload = result.payload as {
+      workItemExecutions: Array<{
+        kind: string;
+        status: string;
+        payload?: unknown;
+      }>;
+    };
+
+    expect(payload.workItemExecutions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "workspace_gradle_dependencies",
+          status: "completed",
+          payload: expect.objectContaining({
+            source: "workspace_gradle",
+            dependencyCount: 0,
+            gradleCacheSourceArchiveCount: 1,
+            gradleCacheBinaryArchiveCount: 1,
+            gradleCacheSourceArchives: [
+              expect.objectContaining({
+                archivePath: expect.stringContaining(
+                  "piserializekit-0.0.7-sources.jar"
+                ),
+                source: "gradle-cache",
+                reason: "workspace-local Gradle module cache"
+              })
+            ],
+            gradleCacheBinaryArchives: [
+              expect.objectContaining({
+                archivePath: expect.stringContaining("piserializekit-0.0.7.jar"),
+                source: "gradle-cache"
+              })
+            ]
+          })
+        })
+      ])
+    );
+  });
+
+  it("uses configured Gradle user home for source acquisition cache scans", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-gradle-userhome-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-gradle-userhome-"));
+
+    await writeFile(join(workspaceRoot, "build.gradle"), "plugins { id 'java' }\n");
+    await writeFile(
+      join(workspaceRoot, "gradle.properties"),
+      "note = no concrete dependency coordinates here\n"
+    );
+    await mkdir(
+      join(
+        gradleUserHome,
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "com.example",
+        "example-lib",
+        "1.0.0",
+        "abc"
+      ),
+      { recursive: true }
+    );
+    await writeFile(
+      join(
+        gradleUserHome,
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "com.example",
+        "example-lib",
+        "1.0.0",
+        "abc",
+        "example-lib-1.0.0-sources.jar"
+      ),
+      "source jar placeholder"
+    );
+    await writeFile(
+      join(
+        gradleUserHome,
+        "caches",
+        "modules-2",
+        "files-2.1",
+        "com.example",
+        "example-lib",
+        "1.0.0",
+        "abc",
+        "example-lib-1.0.0-slim.jar"
+      ),
+      "slim jar placeholder"
+    );
+
+    const result = await executeMcpServerSourceAcquisitionPlan(
+      inputFixture(workspaceRoot, {
+        requestText: "Need Gradle cache evidence for piserializekit slim jar."
+      }),
+      {
+        gradleSourceDiscovery: {
+          gradleUserHome,
+          includeDefaultGradleUserHome: false
+        }
+      }
+    );
+    const payload = result.payload as {
+      workItemExecutions: Array<{
+        kind: string;
+        status: string;
+        payload?: unknown;
+      }>;
+    };
+
+    expect(payload.workItemExecutions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "workspace_gradle_dependencies",
+          status: "completed",
+          payload: expect.objectContaining({
+            gradleCacheSourceArchiveCount: 1,
+            gradleCacheBinaryArchiveCount: 1,
+            gradleCacheSourceArchives: [
+              expect.objectContaining({
+                archivePath: expect.stringContaining("example-lib-1.0.0-sources.jar"),
+                reason: "configured Gradle user home module cache"
+              })
+            ],
+            gradleCacheBinaryArchives: [
+              expect.objectContaining({
+                archivePath: expect.stringContaining("example-lib-1.0.0-slim.jar"),
+                reason: "configured Gradle user home module cache"
+              })
+            ]
+          })
+        })
+      ])
+    );
+  });
+
+  it("ranks requested Gradle cache binary jars before unrelated cache jars", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-gradle-rank-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-gradle-rank-home-"));
+    const unrelatedJar = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "aaa.example",
+      "unused",
+      "1.0.0",
+      "hash",
+      "unused-1.0.0.jar"
+    );
+    const requestedJar = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "com.mihono.pickaid",
+      "piserializekit",
+      "0.0.7",
+      "hash",
+      "piserializekit-0.0.7-slim.jar"
+    );
+
+    await writeFile(join(workspaceRoot, "build.gradle"), "plugins { id 'java' }\n");
+    await mkdir(join(unrelatedJar, ".."), { recursive: true });
+    await mkdir(join(requestedJar, ".."), { recursive: true });
+    await writeFile(unrelatedJar, "unrelated jar placeholder");
+    await writeFile(requestedJar, "requested slim jar placeholder");
+
+    const result = await executeMcpServerSourceAcquisitionPlan(
+      inputFixture(workspaceRoot, {
+        requestText: "Find piserializekit slim jar from Gradle cache."
+      }),
+      {
+        gradleSourceDiscovery: {
+          gradleUserHome,
+          includeDefaultGradleUserHome: false
+        }
+      }
+    );
+    const payload = result.payload as {
+      workItemExecutions: Array<{
+        payload?: {
+          gradleCacheBinaryArchives?: Array<{ archivePath: string }>;
+        };
+      }>;
+    };
+    const gradleExecution = payload.workItemExecutions.find(
+      (execution) => execution.payload?.gradleCacheBinaryArchives
+    );
+
+    expect(gradleExecution?.payload?.gradleCacheBinaryArchives?.[0]).toEqual(
+      expect.objectContaining({
+        archivePath: requestedJar
+      })
+    );
+  });
+
   it("executes ProbeJS workspace routes with the default workspace handler", async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-source-acq-probe-"));
 

@@ -342,7 +342,7 @@ function parseDependencyNotation(
 ): Omit<GradleDeclaredDependency, "sourceFile"> | undefined {
   const [group, artifact, version] = notation.split(":");
 
-  if (!group || !artifact) {
+  if (!group || !artifact || hasUnresolvedGradleTemplate(notation)) {
     return undefined;
   }
 
@@ -352,6 +352,10 @@ function parseDependencyNotation(
     version,
     notation
   };
+}
+
+function hasUnresolvedGradleTemplate(value: string): boolean {
+  return /\$\{[^}]+}/.test(value);
 }
 
 function dedupeDependencies(

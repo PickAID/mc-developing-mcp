@@ -61,6 +61,21 @@ Requirements:
 - Node.js `>=22.5.0`
 - An MCP client that supports stdio servers
 - A Minecraft project or modpack root when you want workspace-specific evidence
+- A local Java JDK when you want Gradle, Java LSP/JDTLS, ForgeGradle/NeoForgeGradle, source generation, or Minecraft mod project diagnostics. The MCP can inspect some files without Java, but real Java mod evidence needs the same kind of JDK the project itself needs.
+
+Recommended JDK baselines for Minecraft development:
+
+| Minecraft target | Typical JDK |
+| ---------------- | ----------- |
+| `1.18.2` to `1.20.1` | JDK 17 |
+| `1.20.5` to current modern releases | JDK 21 unless the loader/project says otherwise |
+
+Set `JAVA_HOME` or use the JDK selected by your Gradle toolchain. If Java diagnostics or Gradle evidence looks incomplete, first verify:
+
+```sh
+java -version
+./gradlew --version
+```
 
 ## Basic Use
 

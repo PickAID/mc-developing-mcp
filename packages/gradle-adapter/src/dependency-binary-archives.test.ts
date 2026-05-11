@@ -4,7 +4,10 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { discoverDeclaredDependencyBinaryArchives } from "./dependency-binary-archives.js";
+import {
+  discoverDeclaredDependencyBinaryArchives,
+  discoverGradleBinaryArchives
+} from "./dependency-binary-archives.js";
 
 describe("discoverDeclaredDependencyBinaryArchives", () => {
   it("locates binary jars directly from declared Gradle dependency coordinates", async () => {
@@ -128,6 +131,63 @@ describe("discoverDeclaredDependencyBinaryArchives", () => {
         confidence: "high",
         reason:
           "declared Gradle dependency dev.xkmc:l2library:3.0.4-slim in build.gradle; workspace libs directory"
+      }
+    ]);
+  });
+});
+
+describe("discoverGradleBinaryArchives", () => {
+  it("discovers runtime jars from broad Gradle cache scans including slim jars", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-bin-workspace-"));
+    const gradleUserHome = await mkdtemp(join(tmpdir(), "mcpskill-bin-home-"));
+    const slimJar = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "com.mihono.pickaid",
+      "piserializekit",
+      "0.0.7",
+      "hash",
+      "piserializekit-0.0.7-slim.jar"
+    );
+    const normalJar = join(
+      gradleUserHome,
+      "caches",
+      "modules-2",
+      "files-2.1",
+      "com.mihono.pickaid",
+      "piserializekit",
+      "0.0.7",
+      "hash2",
+      "piserializekit-0.0.7.jar"
+    );
+
+    await mkdir(join(slimJar, ".."), { recursive: true });
+    await mkdir(join(normalJar, ".."), { recursive: true });
+    await writeFile(slimJar, Buffer.from("slim jar"));
+    await writeFile(normalJar, Buffer.from("normal jar"));
+    await writeFile(join(slimJar, "..", "piserializekit-0.0.7-sources.jar"), Buffer.from("sources"));
+    await writeFile(join(normalJar, "..", "piserializekit-0.0.7-javadoc.jar"), Buffer.from("docs"));
+
+    await expect(
+      discoverGradleBinaryArchives({
+        workspaceRoot,
+        gradleUserHome,
+        includeDefaultGradleUserHome: false
+      })
+    ).resolves.toEqual([
+      {
+        archivePath: slimJar,
+        source: "gradle-cache",
+        confidence: "high",
+        reason: "configured Gradle user home module cache"
+      },
+      {
+        archivePath: normalJar,
+        source: "gradle-cache",
+        confidence: "high",
+        reason: "configured Gradle user home module cache"
       }
     ]);
   });

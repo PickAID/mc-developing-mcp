@@ -15,6 +15,8 @@ import {
 import {
   discoverDeclaredDependencyBinaryArchives,
   discoverDeclaredDependencySourceArchives,
+  discoverGradleBinaryArchives,
+  discoverGradleSourceArchives,
   readGradleDeclaredDependencies,
   readGradleMavenRepositories
 } from "minecraft-developing-mcp-gradle-adapter";
@@ -33,6 +35,10 @@ export interface McpServerSourceAcquisitionPlanExecutorOptions {
   workItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
   sourceIndexDatabasePaths?: string[];
   routeOrigins?: SourceAcquisitionOrigin[];
+  gradleSourceDiscovery?: {
+    gradleUserHome?: string;
+    includeDefaultGradleUserHome?: boolean;
+  };
 }
 
 export async function executeMcpServerSourceAcquisitionPlan(
@@ -82,7 +88,7 @@ export async function executeMcpServerSourceAcquisitionPlan(
     })
   ).concat(mappingIndexWorkItems(requestText, minecraftVersion));
   const workItemHandlers = mergeWorkItemHandlers(
-    defaultWorkspaceWorkItemHandlers(input),
+    defaultWorkspaceWorkItemHandlers(input, options.gradleSourceDiscovery),
     options.workItemHandlers
   );
   const shouldRunWorkItems =
@@ -166,7 +172,8 @@ function isRemoteSource(
 }
 
 function defaultWorkspaceWorkItemHandlers(
-  input: McpServerEvidenceExecutorInput
+  input: McpServerEvidenceExecutorInput,
+  gradleSourceDiscovery: McpServerSourceAcquisitionPlanExecutorOptions["gradleSourceDiscovery"]
 ): SourceAcquisitionWorkItemRunnerHandlers {
   return {
     async workspaceGradleDependencies(item) {
@@ -174,23 +181,56 @@ function defaultWorkspaceWorkItemHandlers(
         readGradleDeclaredDependencies({ workspaceRoot: item.workspaceRoot }),
         readGradleMavenRepositories({ workspaceRoot: item.workspaceRoot })
       ]);
-      const [sourceArchives, binaryArchives] = await Promise.all([
+      const [
+        sourceArchives,
+        binaryArchives,
+        gradleCacheSourceArchives,
+        gradleCacheBinaryArchives
+      ] = await Promise.all([
         discoverDeclaredDependencySourceArchives({
           workspaceRoot: item.workspaceRoot,
           dependencies,
-          includeDefaultGradleUserHome: false,
+          gradleUserHome: gradleSourceDiscovery?.gradleUserHome,
+          includeDefaultGradleUserHome:
+            gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false,
           maxResults: 20
         }),
         discoverDeclaredDependencyBinaryArchives({
           workspaceRoot: item.workspaceRoot,
           dependencies,
-          includeDefaultGradleUserHome: false,
+          gradleUserHome: gradleSourceDiscovery?.gradleUserHome,
+          includeDefaultGradleUserHome:
+            gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false,
           maxResults: 20
+        }),
+        discoverGradleSourceArchives({
+          workspaceRoot: item.workspaceRoot,
+          gradleUserHome: gradleSourceDiscovery?.gradleUserHome,
+          includeDefaultGradleUserHome:
+            gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false,
+          maxVisitedEntries: 40_000,
+          maxResults: 200
+        }),
+        discoverGradleBinaryArchives({
+          workspaceRoot: item.workspaceRoot,
+          gradleUserHome: gradleSourceDiscovery?.gradleUserHome,
+          includeDefaultGradleUserHome:
+            gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false,
+          maxVisitedEntries: 40_000,
+          maxResults: 200
         })
       ]);
+      const rankedGradleCacheSourceArchives = rankArchivesForRequest(
+        gradleCacheSourceArchives,
+        input.requestPlan.requestText
+      );
+      const rankedGradleCacheBinaryArchives = rankArchivesForRequest(
+        gradleCacheBinaryArchives,
+        input.requestPlan.requestText
+      );
 
       return {
-        summary: `Read ${dependencies.length} Gradle dependencies, ${repositories.length} repositories, ${sourceArchives.length} source archives, and ${binaryArchives.length} binary archives from workspace.`,
+        summary: `Read ${dependencies.length} Gradle dependencies, ${repositories.length} repositories, ${sourceArchives.length} declared source archives, ${gradleCacheSourceArchives.length} Gradle cache source archives, ${binaryArchives.length} declared binary archives, and ${gradleCacheBinaryArchives.length} Gradle cache binary archives from workspace.`,
         payload: {
           source: "workspace_gradle",
           workspaceRoot: item.workspaceRoot,
@@ -198,6 +238,8 @@ function defaultWorkspaceWorkItemHandlers(
           repositoryCount: repositories.length,
           declaredDependencySourceArchiveCount: sourceArchives.length,
           declaredDependencyBinaryArchiveCount: binaryArchives.length,
+          gradleCacheSourceArchiveCount: gradleCacheSourceArchives.length,
+          gradleCacheBinaryArchiveCount: gradleCacheBinaryArchives.length,
           dependencies: dependencies.slice(0, 20),
           repositories: repositories.slice(0, 10),
           declaredDependencySourceArchives: sourceArchives
@@ -208,7 +250,23 @@ function defaultWorkspaceWorkItemHandlers(
               confidence: archive.confidence,
               reason: archive.reason
             })),
+          gradleCacheSourceArchives: rankedGradleCacheSourceArchives
+            .slice(0, 10)
+            .map((archive) => ({
+              archivePath: archive.archivePath,
+              source: archive.source,
+              confidence: archive.confidence,
+              reason: archive.reason
+            })),
           declaredDependencyBinaryArchives: binaryArchives
+            .slice(0, 10)
+            .map((archive) => ({
+              archivePath: archive.archivePath,
+              source: archive.source,
+              confidence: archive.confidence,
+              reason: archive.reason
+            })),
+          gradleCacheBinaryArchives: rankedGradleCacheBinaryArchives
             .slice(0, 10)
             .map((archive) => ({
               archivePath: archive.archivePath,
@@ -252,6 +310,43 @@ function defaultWorkspaceWorkItemHandlers(
       };
     }
   };
+}
+
+function rankArchivesForRequest<T extends { archivePath: string }>(
+  archives: T[],
+  requestText?: string
+): T[] {
+  const tokens = requestTokens(requestText);
+
+  return archives
+    .map((archive, index) => ({
+      archive,
+      index,
+      score: archiveScore(archive.archivePath, tokens)
+    }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((entry) => entry.archive);
+}
+
+function requestTokens(requestText?: string): string[] {
+  if (!requestText) {
+    return [];
+  }
+
+  return [...new Set(
+    requestText
+      .toLowerCase()
+      .match(/[a-z0-9][a-z0-9_.-]{2,}/g) ?? []
+  )];
+}
+
+function archiveScore(archivePath: string, tokens: string[]): number {
+  const normalizedPath = archivePath.toLowerCase();
+
+  return tokens.reduce(
+    (score, token) => score + (normalizedPath.includes(token) ? token.length : 0),
+    0
+  );
 }
 
 function mergeWorkItemHandlers(

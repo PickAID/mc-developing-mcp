@@ -125,6 +125,18 @@ describe("readGradleDeclaredDependencies", () => {
     ]);
   });
 
+  it("does not report unresolved template placeholders as concrete dependencies", async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
+
+    await writeGradleFile(
+      workspaceRoot,
+      "build.gradle",
+      'dependencies { implementation "${config.mod_group}:${config.mod_id}:${config.mod_version}" }\n'
+    );
+
+    await expect(readGradleDeclaredDependencies({ workspaceRoot })).resolves.toEqual([]);
+  });
+
   it("reads dependency declarations from included Gradle subprojects", async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), "mcpskill-gradle-deps-"));
 

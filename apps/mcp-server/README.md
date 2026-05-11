@@ -51,3 +51,19 @@ Vanilla datapack/resource-pack explanation docs are generated in the `mdm-source
 External services that require credentials, such as CurseForge or ShaderToy API lookup, should be configured by the user at runtime. The package does not embed private API keys or generated private cache data.
 
 This package requires Node.js `>=22.5.0` because runtime indexing and offline documentation paths use `node:sqlite`. It is published as one public npm package; internal workspace modules are bundled into the package and are not required as public npm dependencies.
+
+Java modding routes also need a local Java JDK. File-only inspection can work without Java, but Gradle dependency evidence, ForgeGradle/NeoForgeGradle workspaces, Java LSP/JDTLS diagnostics, and generated vanilla/source-package workflows require a JDK compatible with the target Minecraft project.
+
+Typical baselines:
+
+- Minecraft `1.18.2` through `1.20.1`: JDK 17.
+- Minecraft `1.20.5` and newer modern projects: JDK 21 unless the loader or Gradle toolchain says otherwise.
+
+Before diagnosing Java mod projects, verify the host:
+
+```sh
+java -version
+./gradlew --version
+```
+
+If those commands fail in the target workspace, the MCP may still return file and jar evidence, but Java diagnostics and Gradle-derived source evidence will be incomplete.

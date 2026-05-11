@@ -316,6 +316,7 @@ async function executeMcpDevelopTool(
         docsRecords: mdmDocs.records,
         docsSqliteArtifacts: mdmDocs.sqliteArtifacts,
         sourceIndexDatabasePaths,
+        sourceAcquisitionGradleDiscovery: gradleSourceDiscovery,
         sourceAcquisitionRouteOrigins: input.preparationRoutes as
           | SourceAcquisitionOrigin[]
           | undefined,

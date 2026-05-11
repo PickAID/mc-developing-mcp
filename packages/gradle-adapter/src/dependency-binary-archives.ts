@@ -12,11 +12,13 @@ export interface DiscoverDeclaredDependencyBinaryArchivesInput {
   workspaceRoot: string;
   gradleUserHome?: string;
   includeDefaultGradleUserHome?: boolean;
+  maxVisitedEntries?: number;
   maxResults?: number;
   dependencies?: GradleDeclaredDependency[];
 }
 
 const DEFAULT_MAX_RESULTS = 32;
+const DEFAULT_MAX_VISITED_ENTRIES = 8_000;
 type BinaryArchiveRoot =
   | {
       kind: "flat";
@@ -68,6 +70,101 @@ export async function discoverDeclaredDependencyBinaryArchives(
   }
 
   return dedupeCandidates(candidates).slice(0, maxResults);
+}
+
+export async function discoverGradleBinaryArchives(
+  input: Omit<DiscoverDeclaredDependencyBinaryArchivesInput, "dependencies">
+): Promise<GradleSourceArchiveCandidate[]> {
+  const roots = buildBinaryArchiveRoots(input);
+  const maxResults = Math.max(0, Math.floor(input.maxResults ?? DEFAULT_MAX_RESULTS));
+  let remainingBudget = Math.max(
+    0,
+    Math.floor(input.maxVisitedEntries ?? DEFAULT_MAX_VISITED_ENTRIES)
+  );
+  const candidates: GradleSourceArchiveCandidate[] = [];
+
+  for (const root of roots) {
+    if (remainingBudget <= 0 || candidates.length >= maxResults) {
+      break;
+    }
+
+    const result = await scanBinaryArchiveRoot(root, {
+      maxVisitedEntries: remainingBudget,
+      maxResults: maxResults - candidates.length
+    });
+
+    remainingBudget -= result.visitedEntries;
+    candidates.push(...result.candidates);
+  }
+
+  return dedupeCandidates(candidates).slice(0, maxResults);
+}
+
+async function scanBinaryArchiveRoot(
+  root: BinaryArchiveRoot,
+  limits: { maxVisitedEntries: number; maxResults: number }
+): Promise<{
+  candidates: GradleSourceArchiveCandidate[];
+  visitedEntries: number;
+}> {
+  const queue = [root.path];
+  const candidates: GradleSourceArchiveCandidate[] = [];
+  let visitedEntries = 0;
+
+  while (
+    queue.length > 0 &&
+    visitedEntries < limits.maxVisitedEntries &&
+    candidates.length < limits.maxResults
+  ) {
+    const current = queue.shift();
+
+    if (!current) {
+      break;
+    }
+
+    let entries;
+
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch (error) {
+      if (isSkippablePathError(error)) {
+        continue;
+      }
+      throw error;
+    }
+
+    for (const entry of entries) {
+      if (
+        visitedEntries >= limits.maxVisitedEntries ||
+        candidates.length >= limits.maxResults
+      ) {
+        break;
+      }
+
+      visitedEntries += 1;
+      const entryPath = join(current, entry.name);
+
+      if (entry.isDirectory()) {
+        if (!shouldSkipDirectory(entry.name)) {
+          queue.push(entryPath);
+        }
+        continue;
+      }
+
+      if (!entry.isFile() || !isRuntimeJarName(entry.name)) {
+        continue;
+      }
+
+      candidates.push({
+        archivePath: entryPath,
+        source: root.source,
+        confidence: root.source === "gradle-cache" ? "high" : "medium",
+        reason: root.kind === "flat" ? root.reason : gradleCacheRootReason(root.path)
+      });
+    }
+  }
+
+  return { candidates, visitedEntries };
 }
 
 async function findDependencyBinariesInRoot(
@@ -203,6 +300,30 @@ function isRuntimeClassifier(classifier: string): boolean {
   const parts = classifier.toLowerCase().split(/[-_.]+/).filter(Boolean);
 
   return parts.length > 0 && parts.every((part) => !nonRuntimeParts.has(part));
+}
+
+function isRuntimeJarName(fileName: string): boolean {
+  if (!fileName.endsWith(".jar")) {
+    return false;
+  }
+
+  const baseName = fileName.slice(0, -".jar".length);
+  const parts = baseName.toLowerCase().split(/[-_.]+/).filter(Boolean);
+  const classifier = parts.at(-1);
+
+  return classifier ? isRuntimeClassifier(classifier) : true;
+}
+
+function shouldSkipDirectory(name: string): boolean {
+  return name === ".git" || name === "node_modules";
+}
+
+function gradleCacheRootReason(path: string): string {
+  if (path.includes(`${normalize(homedir())}/.gradle/caches/modules-2/files-2.1`)) {
+    return "default Gradle user home module cache";
+  }
+
+  return "configured Gradle user home module cache";
 }
 
 function buildBinaryArchiveRoots(
