@@ -32,6 +32,7 @@ export interface MdmReleaseInstallOptions {
 export type McpMdmReleaseInstallResult =
   EnsureMdmReleasePackageCachedResult & {
     manifestSource: string;
+    manifest: MdmReleaseManifest;
     downloadPolicy: MdmArtifactDownloadPolicy;
   };
 
@@ -52,6 +53,7 @@ export async function installMdmReleasePackage(
   return {
     ...result,
     manifestSource: manifest.source,
+    manifest,
     downloadPolicy
   };
 }

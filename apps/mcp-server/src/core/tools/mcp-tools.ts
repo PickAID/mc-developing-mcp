@@ -26,6 +26,7 @@ import { buildMcpServerRequestContextWithServiceProfile } from "../../request/pl
 import {
   installMdmReleasePackage, type McpMdmReleaseInstallResult
 } from "../../docs/mdm-resource/mdm-release-install.js";
+import { mergeInstalledReleaseResources } from "../../docs/mdm-resource/mdm-release-resource-merge.js";
 import {
   loadMdmDocsResourcesFromStatus,
   type MdmDocsResourceSummary
@@ -259,6 +260,11 @@ async function executeMcpDevelopTool(
       mdmResources = await buildMdmResourceStatusContext({
         runtimeRoot,
         mdmSourcesRoot: env.MDM_SOURCES_ROOT
+      });
+      mdmResources = await mergeInstalledReleaseResources({
+        runtimeRoot,
+        mdmResources,
+        mdmReleaseInstall
       });
     }
 

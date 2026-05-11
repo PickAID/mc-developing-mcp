@@ -210,6 +210,125 @@ describe("mc_develop remote mdm-sources release acceptance", () => {
       }
     });
   }, 20_000);
+
+  it("installs bundled vanilla schema docs and preserves sqlite evidence metadata", async () => {
+    const mdmSourcesRoot = await findMdmSourcesRoot();
+    if (!mdmSourcesRoot) {
+      return;
+    }
+
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-remote-mdm-docs-bundle-"));
+    const copiedMdmSourcesRoot = join(tempRoot, "mdm-sources");
+    const releaseOut = join(tempRoot, "release-out");
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+    const manifestUrl =
+      "https://github.com/PickAID/mdm-sources/releases/download/mdm-resources-v0.2.0/mdm-release-manifest.json";
+    const manifestFetchUrls: string[] = [];
+    const artifactFetchUrls: string[] = [];
+
+    await cp(mdmSourcesRoot, copiedMdmSourcesRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${mdmSourcesRoot}/.git`)
+    });
+    await execFileAsync("node", [
+      "tools/build-local-release.mjs",
+      "--out",
+      releaseOut,
+      "--channel",
+      "docs",
+      "--bundle-channel",
+      "docs",
+      "--no-registry-update"
+    ], { cwd: copiedMdmSourcesRoot });
+
+    const manifestText = await readFile(
+      join(releaseOut, "mdm-release-manifest.json"),
+      "utf-8"
+    );
+    const bundleUrl = new URL("docs.mdm-bundle.json", manifestUrl).toString();
+    const bundleBytes = await readFile(join(releaseOut, "docs.mdm-bundle.json"));
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: copiedMdmSourcesRoot,
+        PATH: ""
+      },
+      mdmReleaseManifestFetch: async (url) => {
+        manifestFetchUrls.push(url);
+
+        return {
+          ok: true,
+          status: 200,
+          text: async () => manifestText
+        };
+      },
+      mdmArtifactFetch: async (url) => {
+        artifactFetchUrls.push(url);
+
+        return {
+          ok: url === bundleUrl,
+          status: url === bundleUrl ? 200 : 404,
+          arrayBuffer: async () => bundleBytes
+        };
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Explain vanilla-mcdoc recipe datapack schema using upstream schema evidence.",
+      runtimeRoot,
+      workspaceRoot,
+      mdmReleaseInstall: {
+        manifestUrl,
+        packageId: "vanilla-schema-docs",
+        downloadPolicy: "allowed"
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(manifestFetchUrls).toEqual([manifestUrl]);
+    expect(artifactFetchUrls).toEqual([bundleUrl]);
+    expect(result.structuredContent).toMatchObject({
+      mdmReleaseInstall: {
+        status: "downloaded",
+        packageId: "vanilla-schema-docs",
+        artifactUrl: bundleUrl,
+        downloadPolicy: "allowed",
+        state: {
+          artifactName: "vanilla-schema-docs-0.1.0.sqlite"
+        }
+      },
+      selectedEvidence: {
+        routeStep: "docs_lookup",
+        payload: {
+          hits: expect.arrayContaining([
+            expect.objectContaining({
+              entryId: "vanilla-schema-docs-datapack-mcdoc-java-data-recipe",
+              packageId: "vanilla-schema-docs",
+              source: "sqlite",
+              metadata: expect.objectContaining({
+                schemaSymbol: expect.objectContaining({
+                  source: "vanilla-mcdoc-generated-symbols"
+                }),
+                upstreamPath: "java/data/recipe.mcdoc",
+                contentHash: expect.any(String)
+              })
+            })
+          ]),
+          trace: expect.objectContaining({
+            sqliteArtifactPackageIds: expect.arrayContaining([
+              "vanilla-schema-docs"
+            ]),
+            sqliteMatchedEntryIds: expect.arrayContaining([
+              "vanilla-schema-docs-datapack-mcdoc-java-data-recipe"
+            ])
+          })
+        }
+      }
+    });
+  }, 20_000);
 });
 
 async function createWorkspaceRoot(tempRoot: string): Promise<string> {
