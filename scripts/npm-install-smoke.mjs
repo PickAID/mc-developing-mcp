@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { delimiter, join } from "node:path";
+import { delimiter, join, resolve } from "node:path";
 import { publishablePackages } from "./npm-publish-packages.mjs";
 
 const tempRoot = mkdtempSync(join(tmpdir(), "mc-developing-mcp-install-smoke-"));
@@ -16,6 +16,8 @@ try {
     join(installRoot, "package.json"),
     JSON.stringify({ private: true, type: "module" }, null, 2)
   );
+  mkdirSync(join(installRoot, "kubejs", "server_scripts"), { recursive: true });
+  writeFileSync(join(installRoot, "kubejs", "server_scripts", "main.js"), "\n");
 
   run("npm", [
     "install",
@@ -25,7 +27,8 @@ try {
     ...tarballs
   ], installRoot);
 
-  await smokeInstalledBinary();
+  const mdmSourcesRoot = prepareMdmSourcesRelease();
+  await smokeInstalledBinary({ mdmSourcesRoot });
   console.log(`npm install smoke passed with ${tarballs.length} local package tarball(s).`);
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
@@ -42,7 +45,7 @@ function packPackage(packageDir) {
   return packResult.filename;
 }
 
-async function smokeInstalledBinary() {
+async function smokeInstalledBinary({ mdmSourcesRoot }) {
   const binPath = join(
     installRoot,
     "node_modules",
@@ -55,7 +58,8 @@ async function smokeInstalledBinary() {
       ...process.env,
       PATH: `${join(installRoot, "node_modules", ".bin")}${delimiter}${process.env.PATH ?? ""}`,
       MC_DEVELOPING_MCP_RUNTIME_ROOT: join(tempRoot, "runtime"),
-      MC_DEVELOPING_MCP_WORKSPACE_ROOT: installRoot
+      MC_DEVELOPING_MCP_WORKSPACE_ROOT: installRoot,
+      MDM_SOURCES_ROOT: mdmSourcesRoot
     },
     stdio: ["pipe", "pipe", "pipe"]
   });
@@ -103,8 +107,29 @@ async function smokeInstalledBinary() {
     method: "tools/list",
     params: {}
   })}\n`);
+  child.stdin.write(`${JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "mc_develop",
+      arguments: {
+        requestText:
+          "Explain vanilla-mcdoc recipe datapack schema using upstream schema evidence.",
+        mdmReleaseInstall: {
+          manifestPath: join(mdmSourcesRoot, "release-out", "mdm-release-manifest.json"),
+          packageId: "vanilla-schema-docs",
+          downloadPolicy: "allowed"
+        }
+      }
+    }
+  })}\n`);
 
   await waitFor(() => responses.some((response) => response.id === 2), {
+    stderr,
+    getExitStatus: () => exitStatus
+  });
+  await waitFor(() => responses.some((response) => response.id === 3), {
     stderr,
     getExitStatus: () => exitStatus
   });
@@ -113,6 +138,7 @@ async function smokeInstalledBinary() {
 
   const initialize = responses.find((response) => response.id === 1);
   const tools = responses.find((response) => response.id === 2);
+  const mcDevelop = responses.find((response) => response.id === 3);
 
   if (initialize?.result?.serverInfo?.name !== "mc-developing-mcp") {
     throw new Error(`Installed MCP server did not initialize correctly.\n${stderr.join("")}`);
@@ -124,6 +150,7 @@ async function smokeInstalledBinary() {
     throw new Error(`Installed MCP server did not expose mc_develop.\n${stderr.join("")}`);
   }
   assertToolDescription(mcDevelopTool.description, stderr);
+  assertVanillaSchemaDocsResult(mcDevelop, stderr);
 }
 
 async function waitFor(predicate, context) {
@@ -144,6 +171,74 @@ async function waitFor(predicate, context) {
     `Timed out waiting for installed MCP server response.${statusText}` +
       (stderrText ? `\nStderr:\n${stderrText}` : "")
   );
+}
+
+function prepareMdmSourcesRelease() {
+  const sourceRoot = findMdmSourcesRoot();
+  const copiedRoot = join(tempRoot, "mdm-sources");
+  const releaseOut = join(copiedRoot, "release-out");
+
+  cpSync(sourceRoot, copiedRoot, {
+    recursive: true,
+    filter: (source) => !source.includes(`${sourceRoot}/.git`)
+  });
+  run("node", [
+    "tools/build-local-release.mjs",
+    "--out",
+    releaseOut,
+    "--channel",
+    "docs",
+    "--bundle-channel",
+    "docs",
+    "--no-registry-update"
+  ], copiedRoot);
+
+  return copiedRoot;
+}
+
+function findMdmSourcesRoot() {
+  const candidates = [
+    resolve(process.cwd(), "..", "mdm-sources"),
+    resolve(process.cwd(), "..", "..", "mdm-sources"),
+    resolve("/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources")
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(join(candidate, "tools", "build-local-release.mjs"))) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Could not find mdm-sources for install smoke.");
+}
+
+function assertVanillaSchemaDocsResult(response, stderr) {
+  const structured = response?.result?.structuredContent;
+  const hits = structured?.selectedEvidence?.payload?.hits;
+  if (!Array.isArray(hits)) {
+    throw new Error(
+      `Installed mc_develop did not return docs hits. Trace=${JSON.stringify(structured?.trace)}\n${stderr.join("")}`
+    );
+  }
+
+  const hit = hits.find((entry) =>
+    entry?.packageId === "vanilla-schema-docs" &&
+    entry?.entryId === "vanilla-schema-docs-datapack-mcdoc-java-data-recipe" &&
+    entry?.source === "sqlite"
+  );
+  if (!hit) {
+    throw new Error(
+      `Installed mc_develop did not query bundled vanilla-schema-docs sqlite evidence.\n${stderr.join("")}`
+    );
+  }
+  if (
+    hit.metadata?.schemaSymbol?.source !== "vanilla-mcdoc-generated-symbols" ||
+    hit.metadata?.upstreamPath !== "java/data/recipe.mcdoc"
+  ) {
+    throw new Error(
+      `Installed mc_develop did not preserve vanilla schema metadata.\n${stderr.join("")}`
+    );
+  }
 }
 
 function run(command, args, cwd) {
