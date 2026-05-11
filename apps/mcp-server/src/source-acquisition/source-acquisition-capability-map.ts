@@ -38,6 +38,8 @@ export interface SourceAcquisitionSourceLookupCapability {
   sourceArchiveCount: number;
   declaredDependencySourceArchiveCount: number;
   declaredDependencyBinaryArchiveCount: number;
+  gradleCacheSourceArchiveCount: number;
+  gradleCacheBinaryArchiveCount: number;
   supportsDirectSourceRead: boolean;
   supportsBinaryOwnerLookup: boolean;
   status: "ready" | "partial" | "not_found";
@@ -261,16 +263,33 @@ function parseGradleSourceLookup(
   );
   const declaredDependencyBinaryArchiveCount = readDetailCount(
     gradle.detail,
+    "declared binary archives"
+  ) || readDetailCount(
+    gradle.detail,
     "binary archives"
   );
+  const gradleCacheSourceArchiveCount = readDetailCount(
+    gradle.detail,
+    "gradle cache source archives"
+  );
+  const gradleCacheBinaryArchiveCount = readDetailCount(
+    gradle.detail,
+    "gradle cache binary archives"
+  );
   const supportsDirectSourceRead =
-    sourceArchiveCount > 0 || declaredDependencySourceArchiveCount > 0;
-  const supportsBinaryOwnerLookup = declaredDependencyBinaryArchiveCount > 0;
+    sourceArchiveCount > 0 ||
+    declaredDependencySourceArchiveCount > 0 ||
+    gradleCacheSourceArchiveCount > 0;
+  const supportsBinaryOwnerLookup =
+    declaredDependencyBinaryArchiveCount > 0 ||
+    gradleCacheBinaryArchiveCount > 0;
 
   return {
     sourceArchiveCount,
     declaredDependencySourceArchiveCount,
     declaredDependencyBinaryArchiveCount,
+    gradleCacheSourceArchiveCount,
+    gradleCacheBinaryArchiveCount,
     supportsDirectSourceRead,
     supportsBinaryOwnerLookup,
     status: supportsDirectSourceRead

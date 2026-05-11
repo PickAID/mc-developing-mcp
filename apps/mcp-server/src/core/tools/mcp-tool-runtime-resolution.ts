@@ -56,7 +56,7 @@ export function resolveGradleSourceDiscovery(input: McpDevelopToolInput) {
   return {
     gradleUserHome: input.gradleSourceDiscovery?.gradleUserHome,
     includeDefaultGradleUserHome:
-      input.gradleSourceDiscovery?.includeDefaultGradleUserHome ?? false
+      input.gradleSourceDiscovery?.includeDefaultGradleUserHome ?? true
   };
 }
 

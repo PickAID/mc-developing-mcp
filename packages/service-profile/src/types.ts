@@ -31,9 +31,13 @@ export interface GradleServiceCapability {
   sourceArchiveCount: number;
   declaredDependencySourceArchiveCount: number;
   declaredDependencyBinaryArchiveCount: number;
+  gradleCacheSourceArchiveCount: number;
+  gradleCacheBinaryArchiveCount: number;
   sourceArchives: string[];
   declaredDependencySourceArchives: string[];
   declaredDependencyBinaryArchives: string[];
+  gradleCacheSourceArchives: string[];
+  gradleCacheBinaryArchives: string[];
 }
 
 export interface KubeJsTypesServiceCapability {

@@ -4,6 +4,7 @@ import { discoverDatapackContent, listDatapackFiles } from "minecraft-developing
 import {
   discoverDeclaredDependencyBinaryArchives,
   discoverDeclaredDependencySourceArchives,
+  discoverGradleBinaryArchives,
   discoverGradleSourceArchives
 } from "minecraft-developing-mcp-gradle-adapter";
 import { discoverModArchives } from "minecraft-developing-mcp-jar-source-adapter";
@@ -35,6 +36,7 @@ export async function buildMinecraftServiceProfile(
     sourceArchives,
     declaredDependencySourceArchives,
     declaredDependencyBinaryArchives,
+    gradleCacheBinaryArchives,
     javaLsp,
     kubejsTypes,
     resourceCapabilities,
@@ -60,6 +62,13 @@ export async function buildMinecraftServiceProfile(
       gradleUserHome: options.gradleUserHome,
       includeDefaultGradleUserHome: options.includeDefaultGradleUserHome,
       maxResults: 16
+    }),
+    discoverGradleBinaryArchives({
+      workspaceRoot,
+      gradleUserHome: options.gradleUserHome,
+      includeDefaultGradleUserHome: options.includeDefaultGradleUserHome,
+      maxResults: 16,
+      maxVisitedEntries: 4_000
     }),
     buildJdtlsServiceProfile({
       workspaceRoot,
@@ -98,11 +107,19 @@ export async function buildMinecraftServiceProfile(
           declaredDependencySourceArchives.length,
         declaredDependencyBinaryArchiveCount:
           declaredDependencyBinaryArchives.length,
+        gradleCacheSourceArchiveCount: sourceArchives.length,
+        gradleCacheBinaryArchiveCount: gradleCacheBinaryArchives.length,
         sourceArchives: sourceArchives.map((candidate) => candidate.archivePath),
         declaredDependencySourceArchives: declaredDependencySourceArchives.map(
           (candidate) => candidate.archivePath
         ),
         declaredDependencyBinaryArchives: declaredDependencyBinaryArchives.map(
+          (candidate) => candidate.archivePath
+        ),
+        gradleCacheSourceArchives: sourceArchives.map(
+          (candidate) => candidate.archivePath
+        ),
+        gradleCacheBinaryArchives: gradleCacheBinaryArchives.map(
           (candidate) => candidate.archivePath
         )
       },

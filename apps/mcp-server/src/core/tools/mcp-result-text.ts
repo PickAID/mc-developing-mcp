@@ -303,8 +303,10 @@ function formatGradle(workItems: Array<Record<string, unknown>>) {
   return compactCounts("gradle", [
     ["dependencies", payload.dependencyCount],
     ["repositories", payload.repositoryCount],
-    ["source archives", payload.declaredDependencySourceArchiveCount],
-    ["binary archives", payload.declaredDependencyBinaryArchiveCount]
+    ["declared source archives", payload.declaredDependencySourceArchiveCount],
+    ["declared binary archives", payload.declaredDependencyBinaryArchiveCount],
+    ["gradle cache source archives", payload.gradleCacheSourceArchiveCount],
+    ["gradle cache binary archives", payload.gradleCacheBinaryArchiveCount]
   ]);
 }
 

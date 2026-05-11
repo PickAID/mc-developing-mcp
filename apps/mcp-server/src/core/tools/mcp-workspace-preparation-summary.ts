@@ -24,14 +24,34 @@ function summarizeGradleExecution(executions: Array<Record<string, unknown>>) {
   if (!execution || execution.source !== "workspace_gradle") {
     return undefined;
   }
+  const declaredSourceArchiveCount =
+    numberValue(execution.declaredDependencySourceArchiveCount) ?? 0;
+  const declaredBinaryArchiveCount =
+    numberValue(execution.declaredDependencyBinaryArchiveCount) ?? 0;
+  const gradleCacheSourceArchiveCount =
+    numberValue(execution.gradleCacheSourceArchiveCount) ?? 0;
+  const gradleCacheBinaryArchiveCount =
+    numberValue(execution.gradleCacheBinaryArchiveCount) ?? 0;
+  const declaredSourceArchives = archivePaths(execution.declaredDependencySourceArchives);
+  const declaredBinaryArchives = archivePaths(execution.declaredDependencyBinaryArchives);
+  const gradleCacheSourceArchives = archivePaths(execution.gradleCacheSourceArchives);
+  const gradleCacheBinaryArchives = archivePaths(execution.gradleCacheBinaryArchives);
 
   return {
     dependencyCount: numberValue(execution.dependencyCount),
     repositoryCount: numberValue(execution.repositoryCount),
-    sourceArchiveCount: numberValue(execution.declaredDependencySourceArchiveCount),
-    binaryArchiveCount: numberValue(execution.declaredDependencyBinaryArchiveCount),
-    sourceArchives: archivePaths(execution.declaredDependencySourceArchives),
-    binaryArchives: archivePaths(execution.declaredDependencyBinaryArchives)
+    declaredSourceArchiveCount,
+    declaredBinaryArchiveCount,
+    gradleCacheSourceArchiveCount,
+    gradleCacheBinaryArchiveCount,
+    sourceArchiveCount: declaredSourceArchiveCount + gradleCacheSourceArchiveCount,
+    binaryArchiveCount: declaredBinaryArchiveCount + gradleCacheBinaryArchiveCount,
+    declaredSourceArchives,
+    declaredBinaryArchives,
+    gradleCacheSourceArchives,
+    gradleCacheBinaryArchives,
+    sourceArchives: declaredSourceArchives.concat(gradleCacheSourceArchives),
+    binaryArchives: declaredBinaryArchives.concat(gradleCacheBinaryArchives)
   };
 }
 

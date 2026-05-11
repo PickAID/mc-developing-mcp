@@ -63,7 +63,9 @@ export function formatServiceProfilePrompt(profile: MinecraftServiceProfile): st
       `Gradle: ${profile.capabilities.gradle.status}`,
       `source archives=${profile.capabilities.gradle.sourceArchiveCount}`,
       `declared source archives=${profile.capabilities.gradle.declaredDependencySourceArchiveCount}`,
-      `binary archives=${profile.capabilities.gradle.declaredDependencyBinaryArchiveCount}`
+      `declared binary archives=${profile.capabilities.gradle.declaredDependencyBinaryArchiveCount}`,
+      `gradle cache source archives=${profile.capabilities.gradle.gradleCacheSourceArchiveCount}`,
+      `gradle cache binary archives=${profile.capabilities.gradle.gradleCacheBinaryArchiveCount}`
     ].join(", "),
     `Java LSP: ${profile.capabilities.javaLsp.status}, implemented=${formatImplementedLspOperations(profile)}`,
     `ProbeJS types: ${profile.capabilities.kubejsTypes.status}, files=${profile.capabilities.kubejsTypes.fileCount}`,

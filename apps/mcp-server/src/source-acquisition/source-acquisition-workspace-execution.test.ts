@@ -226,7 +226,7 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
     const result = await executeMcpServerSourceAcquisitionPlan(
       inputFixture(workspaceRoot, {
         serviceProfile:
-          "Gradle: ready, source archives=1, declared source archives=0, binary archives=0"
+          "Gradle: ready, source archives=1, declared source archives=0, declared binary archives=0, gradle cache source archives=1, gradle cache binary archives=1"
       })
     );
     const payload = result.payload as {
@@ -266,6 +266,17 @@ describe("executeMcpServerSourceAcquisitionPlan workspace execution", () => {
         })
       ])
     );
+    expect(
+      payload.capabilityGuidance.capabilityMap.routeCapabilities.find(
+        (route) => route.origin === "workspace_gradle"
+      )?.sourceLookup
+    ).toMatchObject({
+      gradleCacheSourceArchiveCount: 1,
+      gradleCacheBinaryArchiveCount: 1,
+      supportsDirectSourceRead: true,
+      supportsBinaryOwnerLookup: true,
+      status: "ready"
+    });
   });
 
   it("uses configured Gradle user home for source acquisition cache scans", async () => {

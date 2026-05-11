@@ -108,7 +108,8 @@ describe("buildMinecraftServiceProfile", () => {
     expect(profile.capabilities.gradle).toMatchObject({
       status: "ready",
       buildFileCount: 1,
-      sourceArchiveCount: 1
+      sourceArchiveCount: 1,
+      gradleCacheSourceArchiveCount: 1
     });
     expect(profile.capabilities.javaLsp).toMatchObject({
       status: "ready",

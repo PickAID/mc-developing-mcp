@@ -182,7 +182,12 @@ describe("buildMcpDevelopStructuredContent", () => {
               repositoryCount: 1,
               declaredDependencySourceArchiveCount: 1,
               declaredDependencyBinaryArchiveCount: 1,
-              declaredDependencySourceArchives: [{ archivePath: "/gradle/demo-sources.jar" }]
+              gradleCacheSourceArchiveCount: 1,
+              gradleCacheBinaryArchiveCount: 1,
+              declaredDependencySourceArchives: [{ archivePath: "/gradle/demo-sources.jar" }],
+              declaredDependencyBinaryArchives: [{ archivePath: "/gradle/demo.jar" }],
+              gradleCacheSourceArchives: [{ archivePath: "/gradle-cache/cache-sources.jar" }],
+              gradleCacheBinaryArchives: [{ archivePath: "/gradle-cache/cache-slim.jar" }]
             }
           },
           {
@@ -321,9 +326,18 @@ describe("buildMcpDevelopStructuredContent", () => {
         gradle: {
           dependencyCount: 2,
           repositoryCount: 1,
-          sourceArchiveCount: 1,
-          binaryArchiveCount: 1,
-          sourceArchives: ["/gradle/demo-sources.jar"]
+          declaredSourceArchiveCount: 1,
+          declaredBinaryArchiveCount: 1,
+          gradleCacheSourceArchiveCount: 1,
+          gradleCacheBinaryArchiveCount: 1,
+          sourceArchiveCount: 2,
+          binaryArchiveCount: 2,
+          declaredSourceArchives: ["/gradle/demo-sources.jar"],
+          declaredBinaryArchives: ["/gradle/demo.jar"],
+          gradleCacheSourceArchives: ["/gradle-cache/cache-sources.jar"],
+          gradleCacheBinaryArchives: ["/gradle-cache/cache-slim.jar"],
+          sourceArchives: ["/gradle/demo-sources.jar", "/gradle-cache/cache-sources.jar"],
+          binaryArchives: ["/gradle/demo.jar", "/gradle-cache/cache-slim.jar"]
         },
         probejs: {
           counts: { item: 2, recipe: 1 },
