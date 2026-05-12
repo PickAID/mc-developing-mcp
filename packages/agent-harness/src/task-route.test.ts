@@ -196,6 +196,28 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("routes version-change research from unknown workspaces to authoritative docs", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot(),
+        "Analyze Minecraft 26.1 version changes and migration using NeoForged primers and the misode changelog."
+      )
+    ).toEqual({
+      intent: {
+        id: "version_change_research",
+        confidence: "high",
+        reasons: [
+          "request text asks for Minecraft version changes, changelogs, primers, or migration evidence"
+        ]
+      },
+      reasons: [
+        "version-change research should inspect local version-bound evidence before authoritative change docs"
+      ],
+      steps: ["docs_lookup"],
+      preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+    });
+  });
+
   it("routes external mod coordinate requests to API-backed resolution before docs", () => {
     expect(
       buildHarnessTaskRoute(

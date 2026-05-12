@@ -99,6 +99,15 @@ export function buildHarnessTaskRoute(
         steps: buildClientVisualResourceSteps(snapshot),
         preferredTools: ["source.bundle", "context.query", "workspace.analyze"]
       };
+    case "version_change_research":
+      return {
+        intent,
+        reasons: [
+          "version-change research should inspect local version-bound evidence before authoritative change docs"
+        ],
+        steps: buildVersionChangeResearchSteps(snapshot),
+        preferredTools: ["context.query", "source.bundle", "workspace.analyze"]
+      };
     case "hotai_patch_workflow":
       return {
         intent,
@@ -159,6 +168,33 @@ export function buildHarnessTaskRoute(
           : deriveDefaultTools(snapshot)
       };
   }
+}
+
+function buildVersionChangeResearchSteps(
+  snapshot: AgentRuntimeHarnessSnapshot
+): AgentRuntimeTaskRouteStep[] {
+  const steps: AgentRuntimeTaskRouteStep[] = [];
+
+  if (snapshot.facts.hasGradle || snapshot.facts.hasJavaSource) {
+    steps.push("workspace_source");
+  }
+  if (snapshot.facts.hasProbeJS || snapshot.facts.hasKubeJS) {
+    steps.push("probejs_types");
+  }
+  if (
+    snapshot.facts.hasDatapack ||
+    snapshot.facts.hasResourcePack ||
+    snapshot.facts.datapackRootCount > 0 ||
+    snapshot.facts.resourcePackRootCount > 0
+  ) {
+    steps.push("datapack_files");
+  }
+  if (snapshot.facts.hasModArchives) {
+    steps.push("mod_archive_content");
+  }
+
+  steps.push("docs_lookup");
+  return [...new Set(steps)];
 }
 
 function buildHotaiPatchWorkflowSteps(

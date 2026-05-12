@@ -195,7 +195,7 @@ describe("buildHarnessBrief", () => {
       "connect scripts to datapack and resource-pack evidence"
     );
     expect(kubejsPolicy?.text).toContain(
-      "compare runtime, ProbeJS surface, docs, datapack/resource-pack profiles, and existing scripts"
+      "compare runtime, ProbeJS surface, docs, datapack/resource-pack profiles, NeoForged primers, misode version changelogs, and existing scripts"
     );
   });
 });

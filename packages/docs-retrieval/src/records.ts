@@ -121,6 +121,62 @@ export const CRYCHICDOC_KUBEJS_1201_RECORDS: DocsPackageRecord[] = [
   }
 ];
 
+export const MINECRAFT_VERSION_CHANGES_RECORDS: DocsPackageRecord[] = [
+  {
+    entryId: "minecraft-version-changes-authoritative-sources",
+    packageId: "minecraft-version-changes",
+    kind: "upgrade-note",
+    title: "Minecraft Version Change Authoritative Sources",
+    path: "mdm://minecraft-version-changes/sources",
+    headings: [
+      "NeoForged primers",
+      "misode technical changes",
+      "version migration"
+    ],
+    summary:
+      "Use NeoForged primers for loader-side migration notes and misode/technical-changes markdown for vanilla data and resource format changelogs.",
+    searchTerms: [
+      "version changes",
+      "technical changes",
+      "changelog",
+      "migration",
+      "upgrade",
+      "neoforged primers",
+      "neoforge primers",
+      "misode changelog",
+      "misode technical changes",
+      "26.1"
+    ],
+    scriptScopes: [],
+    addonNames: [],
+    eventNames: [],
+    codeSymbols: [
+      "https://github.com/neoforged/.github/tree/main/primers",
+      "https://github.com/neoforged/.github/tree/main/primers/26.1",
+      "https://github.com/misode/technical-changes/tree/main/26.1",
+      "https://misode.github.io/versions/?id=26.1&tab=changelog"
+    ],
+    metadata: {
+      upstreamSources: [
+        {
+          name: "NeoForged primers",
+          repository: "neoforged/.github",
+          pathPattern: "primers/<minecraftVersion>/index.md",
+          url: "https://github.com/neoforged/.github/tree/main/primers"
+        },
+        {
+          name: "misode technical changes",
+          repository: "misode/technical-changes",
+          pathPattern: "<minecraftVersion>/*.md",
+          url: "https://github.com/misode/technical-changes/tree/main/26.1",
+          pageUrl: "https://misode.github.io/versions/?id=26.1&tab=changelog"
+        }
+      ]
+    }
+  }
+];
+
 export const BUILTIN_DOCS_RECORDS: DocsPackageRecord[] = [
-  ...CRYCHICDOC_KUBEJS_1201_RECORDS
+  ...CRYCHICDOC_KUBEJS_1201_RECORDS,
+  ...MINECRAFT_VERSION_CHANGES_RECORDS
 ];

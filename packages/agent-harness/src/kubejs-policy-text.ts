@@ -26,7 +26,7 @@ export const KUBEJS_FTB_INTEGRATION_POLICY_TEXT =
   "FTB integrations: for FTB XMod Compat or FTB Quests integration, inspect mod archive/decompiled evidence and quest data formats before writing compatibility KubeJS; treat quest files, rewards, tasks, events, and addon bridge behavior as runtime data that must be proven from the pack.";
 
 export const KUBEJS_MIGRATION_POLICY_TEXT =
-  "Migration: for version changes, compare runtime, ProbeJS surface, docs, datapack/resource-pack profiles, and existing scripts before prescribing API/event renames.";
+  "Migration: for version changes, compare runtime, ProbeJS surface, docs, datapack/resource-pack profiles, NeoForged primers, misode version changelogs, and existing scripts before prescribing API/event renames.";
 
 export const KUBEJS_SCRIPTING_POLICY_TEXT = [
   "KubeJS policy:",

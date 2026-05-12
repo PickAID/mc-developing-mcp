@@ -161,6 +161,35 @@ export const JAVA_DIAGNOSTIC_KEYWORDS = [
   "无法解析"
 ];
 
+export const VERSION_CHANGE_KEYWORDS = [
+  "version change",
+  "version changes",
+  "technical change",
+  "technical changes",
+  "changelog",
+  "change log",
+  "migration",
+  "migrate",
+  "upgrade",
+  "porting",
+  "primer",
+  "primers",
+  "neoforged primer",
+  "neoforged primers",
+  "neoforge primer",
+  "neoforge primers",
+  "misode changelog",
+  "misode version",
+  "technical-changes",
+  "版本变化",
+  "版本变更",
+  "迁移",
+  "升级",
+  "移植",
+  "更新日志",
+  "变更日志"
+];
+
 export const EXTERNAL_MOD_KEYWORDS = [
   "modrinth",
   "curseforge",

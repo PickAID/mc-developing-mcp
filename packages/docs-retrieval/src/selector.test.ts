@@ -11,6 +11,7 @@ import { buildPackageRegistry } from "minecraft-developing-mcp-package-registry"
 import {
   buildBuiltinDocsRegistry,
   CRYCHICDOC_KUBEJS_1201_PACKAGE,
+  MINECRAFT_VERSION_CHANGES_PACKAGE,
   selectDocsPackages
 } from "./index.js";
 
@@ -47,9 +48,9 @@ describe("selectDocsPackages", () => {
         "route step is docs_lookup"
       ])
     });
-    expect(result.trace.registryPackageIds).toEqual([
+    expect(result.trace.registryPackageIds).toEqual(expect.arrayContaining([
       CRYCHICDOC_KUBEJS_1201_PACKAGE.packageId
-    ]);
+    ]));
   });
 
   it("rejects the CrychicDoc package when the workspace runtime is not 1.20.1", () => {
@@ -73,12 +74,12 @@ describe("selectDocsPackages", () => {
     });
 
     expect(result.selections).toEqual([]);
-    expect(result.trace.rejectedPackages).toEqual([
+    expect(result.trace.rejectedPackages).toEqual(expect.arrayContaining([
       {
         packageId: CRYCHICDOC_KUBEJS_1201_PACKAGE.packageId,
         reason: "workspace runtime 1.21 is outside the package version fence"
       }
-    ]);
+    ]));
   });
 
   it("rejects the CrychicDoc package for non-KubeJS crash triage requests", () => {
@@ -103,19 +104,20 @@ describe("selectDocsPackages", () => {
     });
 
     expect(result.selections).toEqual([]);
-    expect(result.trace.rejectedPackages).toEqual([
+    expect(result.trace.rejectedPackages).toEqual(expect.arrayContaining([
       {
         packageId: CRYCHICDOC_KUBEJS_1201_PACKAGE.packageId,
         reason: "task intent crash_triage is outside the package intent scope"
       }
-    ]);
+    ]));
   });
 
   it("returns the builtin registry with the CrychicDoc package manifest", () => {
     const registry = buildBuiltinDocsRegistry();
 
     expect(registry.packageIds).toEqual([
-      CRYCHICDOC_KUBEJS_1201_PACKAGE.packageId
+      CRYCHICDOC_KUBEJS_1201_PACKAGE.packageId,
+      MINECRAFT_VERSION_CHANGES_PACKAGE.packageId
     ]);
     expect(registry.packages[0]).toMatchObject({
       packageId: "crychicdoc-kubejs-1.20.1-course-zh-cn",
@@ -123,6 +125,46 @@ describe("selectDocsPackages", () => {
       domain: "kubejs",
       language: "zh-CN",
       minecraftVersions: ["1.20.1"]
+    });
+  });
+
+  it("selects version-change docs for NeoForged primer and misode changelog requests", () => {
+    const result = selectDocsPackages({
+      requestPlan: createRequestPlan({
+        requestText:
+          "Analyze Minecraft 26.1 version changes and migration using NeoForged primers and the misode changelog.",
+        taskIntentId: "version_change_research",
+        workspaceKind: "unknown",
+        runtime: {
+          source: "unknown",
+          confidence: "unknown",
+          evidenceSources: [],
+          candidates: [],
+          evidence: []
+        },
+        hasKubeJS: false,
+        hasProbeJS: false
+      }),
+      routeStep: "docs_lookup"
+    });
+
+    expect(result.selections[0]).toMatchObject({
+      packageId: MINECRAFT_VERSION_CHANGES_PACKAGE.packageId,
+      matchedSignals: expect.arrayContaining([
+        "version changes",
+        "migration",
+        "neoforged primers",
+        "misode changelog"
+      ]),
+      manifest: {
+        minecraftVersions: ["26.1"],
+        querySignals: {
+          migrationTerms: expect.arrayContaining([
+            "https://github.com/neoforged/.github/tree/main/primers",
+            "https://github.com/misode/technical-changes/tree/main/26.1"
+          ])
+        }
+      }
     });
   });
 
@@ -213,11 +255,15 @@ function createRequestPlan(input: {
           hasGradle: true,
           hasKubeJS: input.hasKubeJS,
           hasProbeJS: input.hasProbeJS,
+          hasModArchives: false,
           hasJavaSource: input.workspaceKind === "java-mod",
           hasDatapack: false,
+          hasResourcePack: false,
           buildFiles: ["/tmp/workspace/build.gradle"],
           javaSourceRoots: input.workspaceKind === "java-mod" ? ["/tmp/workspace/src/main/java"] : [],
+          modArchivePaths: [],
           datapackRoots: [],
+          resourcePackRoots: [],
           logPaths: [],
           reasons: [],
           currentRuntime: input.runtime
@@ -239,10 +285,13 @@ function createRequestPlan(input: {
           hasJavaSource: input.workspaceKind === "java-mod",
           hasKubeJS: input.hasKubeJS,
           hasProbeJS: input.hasProbeJS,
+          hasModArchives: false,
           hasDatapack: false,
+          hasResourcePack: false,
           buildFileCount: 1,
           javaSourceRootCount: input.workspaceKind === "java-mod" ? 1 : 0,
           datapackRootCount: 0,
+          resourcePackRootCount: 0,
           logPathCount: 0
         }
       },

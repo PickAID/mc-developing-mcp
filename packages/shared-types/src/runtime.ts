@@ -130,6 +130,7 @@ export type AgentRuntimeTaskIntentId =
   | "external_mod_resolution"
   | "java_diagnostics"
   | "client_visual_resources"
+  | "version_change_research"
   | "hotai_patch_workflow"
   | "kubejs_authoring"
   | "datapack_lookup"

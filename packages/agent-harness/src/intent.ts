@@ -21,7 +21,8 @@ import {
   mentionsVanillaGeneratedDatapackRequest,
   mentionsVanillaGeneratedResourcePackRequest,
   mentionsVanillaGenerationTargetRequest,
-  RESOURCE_PACK_KEYWORDS
+  RESOURCE_PACK_KEYWORDS,
+  VERSION_CHANGE_KEYWORDS
 } from "./intent-matchers.js";
 
 export function detectHarnessTaskIntent(
@@ -134,6 +135,16 @@ export function detectHarnessTaskIntent(
       confidence: "high",
       reasons: [
         "request text mentions external mod acquisition or Maven coordinate keywords"
+      ]
+    };
+  }
+
+  if (matchesAny(normalized, VERSION_CHANGE_KEYWORDS)) {
+    return {
+      id: "version_change_research",
+      confidence: "high",
+      reasons: [
+        "request text asks for Minecraft version changes, changelogs, primers, or migration evidence"
       ]
     };
   }

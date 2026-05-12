@@ -331,6 +331,8 @@ For migration from one MC version to another, the MCP must check:
 - ProbeJS declarations for both available versions when possible.
 - Datapack pack format and data kind changes.
 - Resource-pack pack format and asset format changes.
+- NeoForged primers for loader-side Minecraft version migration notes: https://github.com/neoforged/.github/tree/main/primers
+- misode version changelogs for vanilla data/resource format changes, for example: https://misode.github.io/versions/?id=26.1&tab=changelog
 - Registry ID changes and removed mods.
 - Recipe schema changes.
 

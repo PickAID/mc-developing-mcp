@@ -57,6 +57,67 @@ export const CRYCHICDOC_KUBEJS_1201_PACKAGE: DocsPackageManifest = {
   }
 };
 
+export const MINECRAFT_VERSION_CHANGES_PACKAGE: DocsPackageManifest = {
+  packageId: "minecraft-version-changes",
+  origin: "mdm",
+  title: "Minecraft Version Changes",
+  language: "en",
+  domain: "migration",
+  summary:
+    "Version-change and migration notes sourced from NeoForged primers and misode technical changes.",
+  minecraftVersions: ["26.1"],
+  preferredIntents: ["version_change_research"],
+  kinds: ["upgrade-note", "migration-map", "format-reference"],
+  topics: [
+    "version changes",
+    "migration",
+    "neoforged primers",
+    "misode technical changes"
+  ],
+  querySignals: {
+    queryTerms: [
+      "version changes",
+      "technical changes",
+      "changelog",
+      "change log",
+      "migration",
+      "upgrade",
+      "porting",
+      "primer",
+      "primers"
+    ],
+    addonNames: [],
+    scriptScopes: [],
+    eventNames: [],
+    resourceFormats: [
+      "datapack",
+      "resourcepack",
+      "pack_format",
+      "data format",
+      "resource format"
+    ],
+    apiSymbols: [
+      "https://github.com/neoforged/.github/tree/main/primers",
+      "https://github.com/misode/technical-changes/tree/main/26.1",
+      "misode/technical-changes"
+    ],
+    migrationTerms: [
+      "neoforged primers",
+      "neoforge primers",
+      "misode changelog",
+      "misode version changelog",
+      "https://github.com/neoforged/.github/tree/main/primers",
+      "https://github.com/misode/technical-changes/tree/main/26.1",
+      "https://misode.github.io/versions/?id=26.1&tab=changelog"
+    ]
+  },
+  versionFence: {
+    minecraftVersions: ["26.1"],
+    strict: false
+  }
+};
+
 export const BUILTIN_DOCS_PACKAGES: DocsPackageManifest[] = [
-  CRYCHICDOC_KUBEJS_1201_PACKAGE
+  CRYCHICDOC_KUBEJS_1201_PACKAGE,
+  MINECRAFT_VERSION_CHANGES_PACKAGE
 ];

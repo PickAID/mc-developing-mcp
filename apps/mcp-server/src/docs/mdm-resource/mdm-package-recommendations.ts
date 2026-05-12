@@ -140,6 +140,7 @@ function detectRequestSignals(requestText: string): Set<RequestSignal> {
   addSignal(signals, normalized, "datapack", /datapack|data pack|recipe|loot|advancement|predicate|tag|function|registry|数据包|配方|战利品|标签/u);
   addSignal(signals, normalized, "resourcepack", /resourcepack|resource pack|assets|model|blockstate|texture|atlas|lang|sound|资源包|模型|纹理/u);
   addSignal(signals, normalized, "schema-docs", /schema|mcdoc|vanilla[- ]?mcdoc|misode|explain|解释器|解释|结构|格式/u);
+  addSignal(signals, normalized, "version-changes", /version changes?|technical changes?|changelog|change log|migration|migrate|upgrade|porting|primers?|neoforged primers?|neoforge primers?|misode changelog|technical-changes|版本变化|版本变更|迁移|升级|移植|更新日志|变更日志/u);
   addSignal(signals, normalized, "client-visual", /client visual|\bgui\b|\bui\b|render|renderer|shader|screen|nine|nine-slice|视觉|渲染|界面/u);
   addSignal(signals, normalized, "mappings", /mapping|mapped|remap|yarn|parchment|mojmap|official name|obfuscated|mixin target|映射|混淆/u);
   addSignal(signals, normalized, "sources", /source|sources|source lookup|source pack|source index|decompile|decompiled|源码|源代码|反编译/u);
@@ -247,6 +248,11 @@ function matchPackageSignals(
         searchable
       );
     }
+    if (signal === "version-changes") {
+      return /version[-_ ]?changes?|technical[-_ ]?changes?|changelog|migration[-_ ]?reference|neoforge(?:d)?[-_ ]?primer|misode[-_ ]?changelog/u.test(
+        searchable
+      );
+    }
 
     return searchable.includes(signal);
   });
@@ -324,8 +330,15 @@ function getVersionedMinecraftProfileVersion(
   const indexMatch = resourcePackage.packageId.match(
     /^minecraft-(?<version>.+)-source-index$/u
   );
+  if (indexMatch?.groups?.version) {
+    return indexMatch.groups.version;
+  }
 
-  return indexMatch?.groups?.version;
+  const versionChangesMatch = resourcePackage.packageId.match(
+    /^minecraft-(?<version>.+)-version-changes$/u
+  );
+
+  return versionChangesMatch?.groups?.version;
 }
 
 function getVersionedMinecraftProfile(
@@ -361,6 +374,7 @@ function resolvePriority(input: {
     matchedSignals.includes("kubejs") ||
     matchedSignals.includes("sources") ||
     matchedSignals.includes("schema-docs") ||
+    matchedSignals.includes("version-changes") ||
     score >= 20
   ) {
     return "high";
@@ -409,6 +423,7 @@ type RequestSignal =
   | "datapack"
   | "resourcepack"
   | "schema-docs"
+  | "version-changes"
   | "client-visual"
   | "mappings"
   | "sources"
