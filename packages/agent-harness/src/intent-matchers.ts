@@ -251,6 +251,9 @@ export function matchesWorkspacePreparationIntent(
   ) {
     return false;
   }
+  if (mentionsConcreteJavaSourceRead(requestText)) {
+    return false;
+  }
   if (!matchesAny(requestText, WORKSPACE_PREPARATION_KEYWORDS)) {
     return false;
   }
@@ -276,6 +279,17 @@ function mentionsModArchiveInventoryRequest(requestText: string): boolean {
   return (
     /\b(inventory|index|summary|清单|索引|概览)\b/i.test(requestText) &&
     /\b(mod|mods|jar|jars|jarjar|archive|archives)\b/i.test(requestText)
+  );
+}
+
+function mentionsConcreteJavaSourceRead(requestText: string): boolean {
+  return (
+    /\b(?:open|read|show|查看|读取|打开)\b/i.test(
+      requestText
+    ) &&
+    /\b(?:source|sources|java|gradle cache|gradle|源码|源代码)\b/i.test(
+      requestText
+    )
   );
 }
 

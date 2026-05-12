@@ -15,6 +15,7 @@ import { executeMcpServerDocsLookup } from "../../docs/lookup/docs-lookup-execut
 import type { MdmDocsSqliteArtifact } from "../../docs/mdm-docs/mdm-docs-records.js";
 import { executeMcpServerExternalModResolution } from "../../external-mod/resolution/external-mod-resolution-executor.js";
 import { createMcpServerModArchiveContentExecutor } from "../../mod-archive/content/mod-archive-content-executor.js";
+import type { ModArchiveDecompiler } from "../../mod-archive/content/mod-archive-decompiler.js";
 import { executeMcpServerProbeJsTypes } from "../../probejs/types/probejs-types-executor.js";
 import { executeMcpServerSourceAcquisitionPlan } from "../../source-acquisition/source-acquisition-plan-executor.js";
 import type {
@@ -42,6 +43,8 @@ export interface McpServerContextQueryExecutorOptions {
   sourceAcquisitionRouteOrigins?: SourceAcquisitionOrigin[];
   sourceAcquisitionGradleDiscovery?: GradleSourceArchiveDiscoveryOptions;
   modArchiveContentCache?: ArchiveContentCache;
+  modArchiveDecompiler?: ModArchiveDecompiler;
+  env?: NodeJS.ProcessEnv;
   modArchiveInventoryDatabasePath?: string;
   modArchiveContentExecutor?: McpServerEvidenceExecutor;
   docsRecords?: DocsPackageRecord[];
@@ -58,6 +61,8 @@ export function buildMcpServerContextQueryExecutor(
     options.modArchiveContentExecutor ??
     createMcpServerModArchiveContentExecutor({
       cache: options.modArchiveContentCache,
+      decompiler: options.modArchiveDecompiler,
+      env: options.env,
       inventoryDatabasePath: options.modArchiveInventoryDatabasePath,
       runtimeRoot: options.runtimeRoot,
       sourceIndexDatabasePaths: options.sourceIndexDatabasePaths

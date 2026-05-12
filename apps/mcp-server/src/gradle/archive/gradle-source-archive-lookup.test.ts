@@ -464,4 +464,62 @@ describe("resolveGradleSourceArchiveLookup", () => {
       ]
     });
   });
+
+  it("reads a simple class name from a Gradle cache sources jar", async () => {
+    const { gradleUserHome, workspaceRoot } = await createLookupWorkspace();
+    const unrelatedJar = joinGradleSourceJar(
+      gradleUserHome,
+      "aaa.example",
+      "unused-lib",
+      "1.0.0"
+    );
+    const sourceJar = joinGradleSourceJar(
+      gradleUserHome,
+      "net.minecraftforge",
+      "fmlloader",
+      "1.20.1-47.4.10"
+    );
+
+    await writeZip(unrelatedJar, [
+      {
+        name: "aaa/example/FMLLoader.java",
+        content: "package aaa.example;\npublic class FMLLoader {}\n",
+        compressionMethod: 0
+      }
+    ]);
+    await writeZip(sourceJar, [
+      {
+        name: "net/minecraftforge/fml/loading/FMLLoader.java",
+        content:
+          "package net.minecraftforge.fml.loading;\npublic class FMLLoader {}\n",
+        compressionMethod: 8
+      }
+    ]);
+
+    await expect(
+      resolveGradleSourceArchiveLookup({
+        workspaceRoot,
+        requestText: "Read FMLLoader source from Gradle cache for Forge 1.20.1.",
+        discovery: {
+          gradleUserHome,
+          includeDefaultGradleUserHome: false
+        }
+      })
+    ).resolves.toMatchObject({
+      status: "ready",
+      request: {
+        symbol: "FMLLoader",
+        relativePath: "FMLLoader.java",
+        simpleName: "FMLLoader",
+        versionHints: ["1.20.1"]
+      },
+      references: [
+        {
+          sourceArchive: sourceJar,
+          relativePath: "net/minecraftforge/fml/loading/FMLLoader.java",
+          content: expect.stringContaining("package net.minecraftforge.fml.loading")
+        }
+      ]
+    });
+  });
 });

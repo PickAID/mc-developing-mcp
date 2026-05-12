@@ -93,6 +93,73 @@ describe("executeMcpServerModArchiveContent", () => {
     });
   });
 
+  it("decompiles a requested class owner through the configured decompiler", async () => {
+    const workspaceRoot = await createModArchiveWorkspace();
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-decompile-runtime-"));
+    tempRoots.push(runtimeRoot);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Decompile com.example.problem.CrashHandler from mods/content-mod.jar."
+    );
+
+    await expect(
+      executeMcpServerModArchiveContent(input, {
+        runtimeRoot,
+        decompiler: {
+          name: "fixture",
+          decompileArchive: async ({ outputRoot }) => {
+            await writeBinary(
+              join(outputRoot, "com", "example", "problem", "CrashHandler.java"),
+              Buffer.from(
+                "package com.example.problem;\npublic class CrashHandler {}\n"
+              )
+            );
+          }
+        }
+      })
+    ).resolves.toMatchObject({
+      matched: true,
+      summary: "Decompiled com.example.problem.CrashHandler from a mod archive.",
+      payload: {
+        source: "mod_archive_content",
+        mode: "decompiled_class",
+        decompiler: "fixture",
+        sourceArchive: expect.stringContaining("mods/content-mod.jar"),
+        classOwner: {
+          binaryName: "com.example.problem.CrashHandler",
+          relativePath: "com/example/problem/CrashHandler.class"
+        },
+        javaRelativePath: "com/example/problem/CrashHandler.java",
+        content: "package com.example.problem;\npublic class CrashHandler {}\n"
+      }
+    });
+  });
+
+  it("returns setup guidance when class decompile is requested without a backend", async () => {
+    const workspaceRoot = await createModArchiveWorkspace();
+    const runtimeRoot = await mkdtemp(join(tmpdir(), "mcpskill-decompile-runtime-"));
+    tempRoots.push(runtimeRoot);
+    const input = await createExecutorInput(
+      workspaceRoot,
+      "Decompile com.example.problem.CrashHandler from mods/content-mod.jar."
+    );
+
+    await expect(
+      executeMcpServerModArchiveContent(input, { runtimeRoot })
+    ).resolves.toMatchObject({
+      matched: true,
+      summary: "Decompiler backend is not configured.",
+      payload: {
+        source: "mod_archive_content",
+        mode: "decompile_unavailable",
+        requestedClasses: ["com.example.problem.CrashHandler"],
+        setup: expect.arrayContaining([
+          expect.stringContaining("MC_DEVELOPING_MCP_VINEFLOWER_JAR")
+        ])
+      }
+    });
+  });
+
   it("adds mod metadata to content search matches", async () => {
     const workspaceRoot = await createModArchiveWorkspace();
     const input = await createExecutorInput(
@@ -272,7 +339,6 @@ describe("executeMcpServerModArchiveContent", () => {
       }
     });
   });
-
 });
 
 async function createExecutorInput(workspaceRoot: string, requestText: string) {

@@ -338,9 +338,22 @@ function mentionsProjectJavaSymbolRequest(
     /\b(?:[a-z_][A-Za-z0-9_]*\.){2,}[A-Z][A-Za-z0-9_]*\b/.test(
       requestText
     ) ||
+    mentionsSimpleJavaSourceRequest(requestText) ||
     /\b(?:inspect|open|find|where|implementation|implemented|class|method|symbol|查看|查找|实现|类|方法)\b[\s\S]{0,80}\b[A-Z][A-Za-z0-9_]*(?:Item|Block|Entity|Screen|Renderer|Menu|Model|Registry|Handler|Manager|Event|Mixin|Compat)\b/u.test(
       requestText
     )
+  );
+}
+
+function mentionsSimpleJavaSourceRequest(requestText: string): boolean {
+  return (
+    /\b(?:inspect|open|find|read|show|查看|查找|读取|打开)\b/i.test(
+      requestText
+    ) &&
+    /\b(?:source|sources|java|gradle cache|gradle|源码|源代码)\b/i.test(
+      requestText
+    ) &&
+    /\b[A-Z_$][A-Za-z0-9_$]*(?:\.java)?\b/.test(requestText)
   );
 }
 

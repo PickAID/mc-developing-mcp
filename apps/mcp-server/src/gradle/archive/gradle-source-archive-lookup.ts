@@ -5,7 +5,10 @@ import {
   type GradleDeclaredDependency,
   type GradleSourceArchiveCandidate
 } from "minecraft-developing-mcp-gradle-adapter";
-import { readArchiveContentFile } from "minecraft-developing-mcp-jar-source-adapter";
+import {
+  listArchiveContent,
+  readArchiveContentFile
+} from "minecraft-developing-mcp-jar-source-adapter";
 
 import {
   createLineRangeEvidence,
@@ -14,6 +17,8 @@ import {
 import { buildSourceReadNextReads } from "../../source-bundle/shared/source-read-next.js";
 
 const DEFAULT_GRADLE_SOURCE_MAX_BYTES = 65_536;
+const DEFAULT_GRADLE_SOURCE_SCAN_MAX_RESULTS = 2_000;
+const DEFAULT_GRADLE_SOURCE_SCAN_MAX_VISITED_ENTRIES = 200_000;
 const LINE_HINT_RADIUS = 20;
 const LINE_HINT_MAX_LINES = 41;
 
@@ -28,6 +33,8 @@ export interface GradleSourceArchiveDiscoveryOptions {
 export interface GradleSourceArchiveRequest {
   symbol: string;
   relativePath: string;
+  simpleName?: string;
+  versionHints: string[];
   line?: number;
   endLine?: number;
 }
@@ -93,8 +100,11 @@ export async function resolveGradleSourceArchiveLookup(input: {
     gradleUserHome: input.discovery?.gradleUserHome,
     includeDefaultGradleUserHome:
       input.discovery?.includeDefaultGradleUserHome,
-    maxVisitedEntries: input.discovery?.maxVisitedEntries,
-    maxResults: input.discovery?.maxResults
+    maxVisitedEntries:
+      input.discovery?.maxVisitedEntries ??
+      DEFAULT_GRADLE_SOURCE_SCAN_MAX_VISITED_ENTRIES,
+    maxResults:
+      input.discovery?.maxResults ?? DEFAULT_GRADLE_SOURCE_SCAN_MAX_RESULTS
   });
   const rankedArchives = rankGradleSourceArchives(
     excludeAlreadySearchedArchives(archives, declaredArchives),
@@ -127,7 +137,7 @@ async function readFirstMatchingArchive(
     searchedArchives += 1;
     const readResult = await readArchiveContentFile({
       sourceArchive: archive.archivePath,
-      relativePath: request.relativePath,
+      relativePath: await resolveArchiveRelativePath(archive.archivePath, request),
       maxBytes: DEFAULT_GRADLE_SOURCE_MAX_BYTES
     });
 
@@ -173,6 +183,28 @@ async function readFirstMatchingArchive(
   return { searchedArchives, skipped };
 }
 
+async function resolveArchiveRelativePath(
+  sourceArchive: string,
+  request: GradleSourceArchiveRequest
+): Promise<string> {
+  if (!request.simpleName) {
+    return request.relativePath;
+  }
+
+  const entries = await listArchiveContent({
+    sourceArchive,
+    domains: ["java"]
+  });
+  const expectedFileName = `${request.simpleName.replace(/\$.*$/, "")}.java`;
+  const match = entries.entries.find(
+    (entry) =>
+      entry.relativePath === expectedFileName ||
+      entry.relativePath.endsWith(`/${expectedFileName}`)
+  );
+
+  return match?.relativePath ?? request.relativePath;
+}
+
 function excludeAlreadySearchedArchives(
   archives: GradleSourceArchiveCandidate[],
   searchedArchives: GradleSourceArchiveCandidate[]
@@ -200,6 +232,7 @@ function extractGradleSourceArchiveRequest(
     return {
       symbol: symbolMatch[0],
       relativePath,
+      versionHints: extractVersionHints(requestText),
       ...findLineForRelativePath(relativePath, lineHints)
     };
   }
@@ -207,18 +240,71 @@ function extractGradleSourceArchiveRequest(
   const pathMatch = requestText.match(
     /\b(?:[a-z_][\w$]*\/){2,}[A-Z_$][\w$]*(?:\$[A-Za-z_$][\w$]*)*(?:\.java)?\b/
   );
-  if (!pathMatch || pathMatch[0].startsWith("net/minecraft/")) {
+  if (pathMatch && !pathMatch[0].startsWith("net/minecraft/")) {
+    const relativePath = toOuterJavaSourcePath(
+      pathMatch[0].endsWith(".java") ? pathMatch[0] : `${pathMatch[0]}.java`
+    );
+    return {
+      symbol: relativePath.replace(/\.java$/i, "").replaceAll("/", "."),
+      relativePath,
+      versionHints: extractVersionHints(requestText),
+      ...findLineForRelativePath(relativePath, lineHints)
+    };
+  }
+
+  const simpleName = mentionsSimpleJavaSourceLookup(requestText)
+    ? extractSimpleJavaClassName(requestText)
+    : undefined;
+  if (!simpleName) {
     return undefined;
   }
 
-  const relativePath = toOuterJavaSourcePath(
-    pathMatch[0].endsWith(".java") ? pathMatch[0] : `${pathMatch[0]}.java`
-  );
+  const relativePath = `${simpleName.replace(/\$.*$/, "")}.java`;
   return {
-    symbol: relativePath.replace(/\.java$/i, "").replaceAll("/", "."),
+    symbol: simpleName,
     relativePath,
+    simpleName,
+    versionHints: extractVersionHints(requestText),
     ...findLineForRelativePath(relativePath, lineHints)
   };
+}
+
+function mentionsSimpleJavaSourceLookup(requestText: string): boolean {
+  return (
+    /\b(?:open|read|show|inspect|查看|读取|打开)\b/i.test(requestText) &&
+    /\b(?:source|sources|java|gradle cache|源码|源代码)\b/i.test(requestText)
+  );
+}
+
+function extractVersionHints(requestText: string): string[] {
+  const matches = requestText.matchAll(/\b\d+\.\d+(?:\.\d+)?(?:[-+][\w.-]+)?\b/g);
+  return [...new Set([...matches].map((match) => match[0].toLowerCase()))];
+}
+
+function extractSimpleJavaClassName(requestText: string): string | undefined {
+  const ignored = new Set([
+    "Cache",
+    "Class",
+    "Code",
+    "Forge",
+    "Gradle",
+    "Inspect",
+    "Java",
+    "Minecraft",
+    "NeoForge",
+    "Read",
+    "Source"
+  ]);
+  const matches = requestText.matchAll(/\b[A-Z_$][A-Za-z0-9_$]*(?:\.java)?\b/g);
+
+  for (const match of matches) {
+    const simpleName = match[0].replace(/\.java$/i, "");
+    if (!ignored.has(simpleName) && /[a-z]/.test(simpleName)) {
+      return simpleName;
+    }
+  }
+
+  return undefined;
 }
 
 function buildRangeOptions(
@@ -293,7 +379,7 @@ function rankGradleSourceArchives(
       index,
       score: scoreGradleSourceArchive(
         archive.archivePath,
-        request.symbol,
+        request,
         declaredDependencies
       )
     }))
@@ -303,12 +389,23 @@ function rankGradleSourceArchives(
 
 function scoreGradleSourceArchive(
   archivePath: string,
-  symbol: string,
+  request: GradleSourceArchiveRequest,
   declaredDependencies: GradleDeclaredDependency[]
 ): number {
   const normalizedPath = archivePath.toLowerCase().replaceAll("\\", "/");
-  const packageParts = symbol.toLowerCase().split(".").slice(0, -1);
+  const packageParts = request.symbol.toLowerCase().split(".").slice(0, -1);
+  const simpleName = request.symbol.toLowerCase().split(".").at(-1);
   let score = scoreDeclaredDependencyMatch(normalizedPath, declaredDependencies);
+
+  if (simpleName && normalizedPath.includes(simpleName.replace(/\$.*$/, ""))) {
+    score += 12;
+  }
+
+  for (const version of request.versionHints) {
+    if (normalizedPath.includes(`/${version}/`) || normalizedPath.includes(version)) {
+      score += 50;
+    }
+  }
 
   for (let length = packageParts.length; length >= 2; length -= 1) {
     const dottedPackage = packageParts.slice(0, length).join(".");

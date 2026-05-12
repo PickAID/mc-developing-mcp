@@ -2,6 +2,7 @@ import {
   analyzeModArchiveBeforeDecompile,
   createArchiveContentCache,
   discoverModArchives,
+  type ArchiveClassOwnerMatch,
   type ArchiveContentCache
 } from "minecraft-developing-mcp-jar-source-adapter";
 
@@ -42,6 +43,11 @@ import {
   isModArchivePreDecompileAnalysisRequest
 } from "./mod-archive-content-query.js";
 import {
+  decompileModArchiveClass,
+  isModArchiveDecompileRequest,
+  type ModArchiveDecompiler
+} from "./mod-archive-decompiler.js";
+import {
   DEFAULT_MAX_ARCHIVES,
   DEFAULT_MAX_CLASS_OWNER_ARCHIVES
 } from "./mod-archive-content-constants.js";
@@ -61,6 +67,8 @@ import { lookupHotaiPatchProof } from "../hotai/hotai-patch-proof.js";
 
 export interface McpServerModArchiveContentExecutorOptions {
   cache?: ArchiveContentCache;
+  decompiler?: ModArchiveDecompiler;
+  env?: NodeJS.ProcessEnv;
   inventoryDatabasePath?: string;
   runtimeRoot?: string;
   sourceIndexDatabasePaths?: string[];
@@ -79,6 +87,8 @@ export function createMcpServerModArchiveContentExecutor(
   return (input: McpServerEvidenceExecutorInput) =>
     executeMcpServerModArchiveContent(input, {
       cache,
+      decompiler: options.decompiler,
+      env: options.env,
       inventoryDatabasePath,
       runtimeRoot: options.runtimeRoot,
       sourceIndexDatabasePaths: options.sourceIndexDatabasePaths
@@ -280,6 +290,23 @@ export async function executeMcpServerModArchiveContent(
     return mixinTargetVerificationResult;
   }
 
+  if (isModArchiveDecompileRequest(requestText)) {
+    const decompileResult = await decompileFirstClassOwner({
+      workspaceRoot,
+      archivePaths: archives.archives.map((archive) => archive.archivePath),
+      requestText,
+      cache: options.cache,
+      databasePath: options.inventoryDatabasePath,
+      refresh: shouldRefreshModArchiveInventory(requestText),
+      runtimeRoot: options.runtimeRoot,
+      decompiler: options.decompiler,
+      env: options.env
+    });
+    if (decompileResult) {
+      return decompileResult;
+    }
+  }
+
   const classOwnerResult = await lookupClassOwners({
     workspaceRoot,
     archivePaths: archives.archives.map((archive) => archive.archivePath),
@@ -329,6 +356,115 @@ export async function executeMcpServerModArchiveContent(
     summary: `Found ${result.matches.length} mod archive content match(es).`,
     payload
   };
+}
+
+async function decompileFirstClassOwner(input: {
+  workspaceRoot: string;
+  archivePaths: string[];
+  requestText?: string;
+  cache?: ArchiveContentCache;
+  databasePath?: string;
+  refresh?: boolean;
+  runtimeRoot?: string;
+  decompiler?: ModArchiveDecompiler;
+  env?: NodeJS.ProcessEnv;
+}): Promise<McpServerEvidenceExecutorResult | undefined> {
+  const ownerResult = await lookupClassOwners(input);
+  const ownerPayload = asClassOwnerPayload(ownerResult?.payload);
+  const owner = ownerPayload?.matches[0];
+  if (!owner) {
+    return undefined;
+  }
+
+  if (!input.runtimeRoot) {
+    return {
+      matched: true,
+      summary: "Decompiler runtime root is not configured.",
+      payload: {
+        source: "mod_archive_content",
+        mode: "decompile_unavailable",
+        requestedClasses: ownerPayload?.requestedClasses ?? [],
+        reason: "runtime_root_missing"
+      }
+    };
+  }
+
+  const result = await decompileModArchiveClass({
+    runtimeRoot: input.runtimeRoot,
+    classOwner: owner,
+    decompiler: input.decompiler,
+    env: input.env
+  });
+
+  if (result.status !== "ready") {
+    return {
+      matched: true,
+      summary: result.status === "needs_decompiler"
+        ? "Decompiler backend is not configured."
+        : `Decompiler did not produce source for ${owner.binaryName}.`,
+      payload: {
+        source: "mod_archive_content",
+        mode: result.status === "needs_decompiler"
+          ? "decompile_unavailable"
+          : "decompile_failed",
+        requestedClasses: ownerPayload?.requestedClasses ?? [],
+        classOwner: owner,
+        setup: result.setup,
+        status: result.status
+      }
+    };
+  }
+
+  return {
+    matched: true,
+    summary: `Decompiled ${owner.binaryName} from a mod archive.`,
+    payload: {
+      source: "mod_archive_content",
+      mode: "decompiled_class",
+      decompiler: result.decompiler,
+      sourceArchive: owner.sourceArchive,
+      classOwner: owner,
+      outputRoot: result.outputRoot,
+      javaRelativePath: result.javaRelativePath,
+      content: result.content
+    }
+  };
+}
+
+interface ClassOwnerPayload {
+  requestedClasses: string[];
+  matches: ArchiveClassOwnerMatch[];
+}
+
+function asClassOwnerPayload(payload: unknown): ClassOwnerPayload | undefined {
+  if (!payload || typeof payload !== "object") {
+    return undefined;
+  }
+
+  const record = payload as Record<string, unknown>;
+  if (!Array.isArray(record.requestedClasses) || !Array.isArray(record.matches)) {
+    return undefined;
+  }
+
+  return {
+    requestedClasses: record.requestedClasses.filter(
+      (entry): entry is string => typeof entry === "string"
+    ),
+    matches: record.matches.filter(isArchiveClassOwnerMatch)
+  };
+}
+
+function isArchiveClassOwnerMatch(value: unknown): value is ArchiveClassOwnerMatch {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.sourceArchive === "string" &&
+    typeof record.binaryName === "string" &&
+    typeof record.relativePath === "string"
+  );
 }
 
 function joinRequestTexts(

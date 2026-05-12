@@ -69,6 +69,57 @@ describe("mc_develop Gradle source discovery", () => {
       "declared source archives=1"
     );
   });
+
+  it("reads simple class names from Gradle cache source jars through mc_develop", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-gradle-runtime-");
+    const workspaceRoot = await createGradleWorkspace();
+    const gradleUserHome = await createTempRoot("mcpskill-gradle-home-");
+    const sourceJar = join(
+      gradleUserHome,
+      "caches/modules-2/files-2.1/net.minecraftforge/fmlloader/1.20.1-47.4.10/hash/fmlloader-1.20.1-47.4.10-sources.jar"
+    );
+
+    await writeStoredZip(sourceJar, {
+      "net/minecraftforge/fml/loading/FMLLoader.java":
+        "package net.minecraftforge.fml.loading;\npublic class FMLLoader {}\n"
+    });
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "Read FMLLoader source from Gradle cache for Forge 1.20.1.",
+      runtimeRoot,
+      workspaceRoot,
+      gradleSourceDiscovery: {
+        gradleUserHome,
+        includeDefaultGradleUserHome: false
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: {
+        payload: {
+          source: "gradle_source_archive",
+          request: {
+            symbol: "FMLLoader",
+            simpleName: "FMLLoader"
+          },
+          result: {
+            references: [
+              {
+                sourceArchive: sourceJar,
+                relativePath: "net/minecraftforge/fml/loading/FMLLoader.java",
+                content: expect.stringContaining(
+                  "package net.minecraftforge.fml.loading"
+                )
+              }
+            ]
+          }
+        }
+      }
+    });
+  });
 });
 
 async function createTempRoot(prefix: string): Promise<string> {

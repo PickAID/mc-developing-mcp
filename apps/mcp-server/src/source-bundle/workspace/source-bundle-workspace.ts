@@ -220,8 +220,19 @@ async function readTextFileWithinBudget(
 }
 
 function mentionsBuildFile(requestText: string): boolean {
+  if (mentionsExternalGradleSourceCache(requestText)) {
+    return false;
+  }
+
   return /\b(?:build\.gradle(?:\.kts)?|settings\.gradle(?:\.kts)?|gradle\.properties|libs\.versions\.toml|gradle)\b/i.test(
     requestText
+  );
+}
+
+function mentionsExternalGradleSourceCache(requestText: string): boolean {
+  return (
+    /\bgradle\s+cache\b/i.test(requestText) &&
+    /\b(?:source|sources|java|源码|源代码)\b/i.test(requestText)
   );
 }
 

@@ -313,6 +313,7 @@ async function executeMcpDevelopTool(
         gradleSourceDiscovery
       },
       contextQuery: {
+        env,
         docsRecords: mdmDocs.records,
         docsSqliteArtifacts: mdmDocs.sqliteArtifacts,
         sourceIndexDatabasePaths,

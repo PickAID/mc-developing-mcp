@@ -440,6 +440,32 @@ describe("buildHarnessTaskRoute", () => {
     });
   });
 
+  it("keeps simple Java source requests on source-side evidence", () => {
+    expect(
+      buildHarnessTaskRoute(
+        createTaskRouteSnapshot({
+          workspaceKind: "java-mod",
+          routePlan: {
+            scenario: "java-mod-workspace",
+            reasons: ["workspace descriptor reports a Java mod workspace"],
+            defaultRoutingScenario: "project_symbol",
+            steps: ["source_acquisition_plan", "workspace_source", "docs_lookup"]
+          },
+          facts: {
+            ...createTaskRouteFacts(),
+            hasGradle: true
+          }
+        }),
+        "Read FMLLoader source from Gradle cache for Forge 1.20.1."
+      )
+    ).toMatchObject({
+      reasons: expect.arrayContaining([
+        "request targets a Java project symbol and should stay on source-side evidence before docs"
+      ]),
+      steps: ["workspace_source", "docs_lookup"]
+    });
+  });
+
   it("routes libs-heavy Java mod workspaces through local jar evidence before docs", () => {
     expect(
       buildHarnessTaskRoute(
