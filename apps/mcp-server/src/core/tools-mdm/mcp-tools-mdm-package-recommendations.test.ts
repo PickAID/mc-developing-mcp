@@ -211,6 +211,46 @@ describe("mc_develop mdm package recommendations", () => {
       });
   });
 
+  it("recommends loader docs for NeoForge and Forge documentation requests", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-loader-docs-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Need docs.neoforged.net, neoforged.net/news, Forge documentation, and ChampionAsh5357 primer references.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmPackageRecommendations: {
+        suggestions: expect.arrayContaining([
+          expect.objectContaining({
+        packageId: "minecraft-loader-docs",
+        priority: "high",
+        matchedSignals: expect.arrayContaining(["loader-docs"]),
+        mdmReleaseInstall: {
+          packageId: "minecraft-loader-docs",
+          downloadPolicy: "disabled",
+          manifestPath: join(mdmSourcesRoot, "release-out", "mdm-release-manifest.json")
+        }
+          })
+        ])
+      }
+    });
+  });
+
   it("uses workspace Minecraft version when request text has no explicit version", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-workspace-rec-"));
     const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
@@ -366,6 +406,7 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
       packageIndexEntry("minecraft-1.14.4-vanilla-source-profile", "sources"),
       packageIndexEntry("minecraft-1.20.1-vanilla-source-profile", "sources"),
       packageIndexEntry("minecraft-26.1-vanilla-source-profile", "sources"),
+      packageIndexEntry("minecraft-loader-docs", "minecraft-loader-docs"),
       packageIndexEntry("minecraft-1.21.10-version-changes", "minecraft-version-changes"),
       packageIndexEntry("minecraft-26.1-version-changes", "minecraft-version-changes")
     ]
@@ -455,6 +496,14 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     artifactName:
       "minecraft-26.1-vanilla-source-profile-0.1.0.mdm-resource.json",
     capabilities: ["source_lookup", "source_chunk_search"]
+  });
+  await writePackage(root, {
+    id: "minecraft-loader-docs",
+    channel: "docs",
+    family: "minecraft-loader-docs",
+    artifactName:
+      "minecraft-loader-docs-0.1.0.sqlite",
+    capabilities: ["docs_search", "docs_direct_read"]
   });
   await writePackage(root, {
     id: "minecraft-1.21.10-version-changes",
