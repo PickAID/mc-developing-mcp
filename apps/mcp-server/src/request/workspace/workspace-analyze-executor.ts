@@ -180,12 +180,16 @@ function collectLogPaths(input: McpServerEvidenceExecutorInput): string[] {
     ...(descriptor?.logPaths ?? []),
     ...input.candidate.pathHints.filter((path) => !path.includes(":"))
   ]);
-  const requestedHints = extractRequestedLogPathHints(input.requestPlan.requestText);
+  const operationPaths = input.candidate.operationInput?.logFiles?.paths ?? [];
+  const requestedHints = [
+    ...operationPaths.map(normalizePath),
+    ...extractRequestedLogPathHints(input.requestPlan.requestText)
+  ];
   const requestedLogPaths = knownLogPaths.filter((path) =>
     requestedHints.some((hint) => normalizePath(path).endsWith(hint))
   );
 
-  return unique([...requestedLogPaths, ...knownLogPaths]);
+  return unique([...requestedLogPaths, ...operationPaths, ...knownLogPaths]);
 }
 
 function extractRequestedLogPathHints(requestText?: string): string[] {

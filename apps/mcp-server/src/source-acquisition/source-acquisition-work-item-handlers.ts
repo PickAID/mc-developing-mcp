@@ -20,6 +20,8 @@ import type {
 import {
   collectMissingConstraints,
   hasRequiredConstraints,
+  normalizeExternalModRequest,
+  type McpServerExternalModResolutionRequest,
   parseExternalModRequest
 } from "../external-mod/resolution/external-mod-resolution-request.js";
 import {
@@ -36,6 +38,7 @@ export interface McpServerSourceAcquisitionWorkItemHandlerOptions {
   vanillaRecipeProvider?: SourcePackageRecipeProvider;
   vanillaExecuteRecipe?: SourcePackageRecipeExecutor;
   remoteMetadataPolicy?: "enabled" | "disabled";
+  externalModRequests?: McpServerExternalModResolutionRequest[];
   modrinthFetch?: ResolveModrinthModInput["fetch"];
   modrinthApiBaseUrl?: string;
   curseForgeApiKey?: string;
@@ -122,7 +125,10 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
         return githubMetadataResult();
       }
 
-      const request = parseExternalModRequest(options.requestText);
+      const request = normalizeExternalModRequest(
+        findExternalModRequestForSource(options.externalModRequests, item.source) ??
+          parseExternalModRequest(options.requestText)
+      );
       const missing = collectMissingConstraints({
         ...request,
         platform: item.source
@@ -164,6 +170,8 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
           source: "source_acquisition_remote_metadata",
           result: await resolveModrinthMod({
             query: resolvableRequest.query,
+            slug: resolvableRequest.slug,
+            projectId: resolvableRequest.projectId,
             loader: resolvableRequest.loader,
             minecraftVersion: resolvableRequest.minecraftVersion,
             fetch: options.modrinthFetch,
@@ -173,6 +181,17 @@ export function createMcpServerSourceAcquisitionWorkItemHandlers(
       };
     }
   };
+}
+
+function findExternalModRequestForSource(
+  requests: McpServerExternalModResolutionRequest[] | undefined,
+  source: "modrinth" | "curseforge" | "github"
+): McpServerExternalModResolutionRequest | undefined {
+  if (source === "github") {
+    return undefined;
+  }
+
+  return requests?.find((request) => request.platform === source);
 }
 
 async function indexJarWorkItem(input: {

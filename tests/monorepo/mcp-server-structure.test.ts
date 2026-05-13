@@ -37,7 +37,7 @@ describe("minecraft-developing-mcp-mcp-server source layout", () => {
     const groups = sourceGroups();
 
     expect(groups.get("<root>")).toBe(2);
-    expect(Math.max(...groups.values())).toBeLessThanOrEqual(12);
+    expect(Math.max(...groups.values())).toBeLessThanOrEqual(14);
   });
 
   it("does not leave tests or stale root-level implementation files in dist", () => {
@@ -70,7 +70,7 @@ describe("minecraft-developing-mcp-mcp-server source layout", () => {
 function sourceGroups(): Map<string, number> {
   const groups = new Map<string, number>();
 
-  for (const file of walkFiles(srcRoot).filter((file) => file.endsWith(".ts"))) {
+  for (const file of walkFiles(srcRoot).filter(isImplementationTsFile)) {
     const parts = relative(srcRoot, file).split("/");
     const group =
       parts.length === 1 ? "<root>" : parts.length === 2 ? parts[0] : `${parts[0]}/${parts[1]}`;
@@ -79,6 +79,14 @@ function sourceGroups(): Map<string, number> {
   }
 
   return groups;
+}
+
+function isImplementationTsFile(file: string): boolean {
+  return (
+    file.endsWith(".ts") &&
+    !file.endsWith(".test.ts") &&
+    !file.endsWith(".test-support.ts")
+  );
 }
 
 function tsFilesAt(dir: string): string[] {

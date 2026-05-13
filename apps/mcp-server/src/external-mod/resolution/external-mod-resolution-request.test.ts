@@ -83,6 +83,20 @@ describe("parseExternalModRequest", () => {
     });
   });
 
+  it("keeps non-vanilla Minecraft version constraints intact", () => {
+    expect(
+      parseExternalModRequest(
+        "Find the Modrinth Maven coordinate for slug sodium neoforge Minecraft game_version 26.1.2."
+      )
+    ).toMatchObject({
+      platform: "modrinth",
+      slug: "sodium",
+      query: "sodium",
+      loader: "neoforge",
+      minecraftVersion: "26.1.2"
+    });
+  });
+
   it("keeps multi-word natural mod names before loader and version constraints", () => {
     expect(
       parseExternalModRequest(

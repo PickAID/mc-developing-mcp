@@ -23,7 +23,10 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "../../request/execution/request-handler.js";
-import type { McpServerExternalModMavenRepository } from "../../external-mod/resolution/external-mod-resolution-request.js";
+import type {
+  McpServerExternalModMavenRepository,
+  McpServerExternalModResolutionRequest
+} from "../../external-mod/resolution/external-mod-resolution-request.js";
 import type { GradleSourceArchiveDiscoveryOptions } from "../../gradle/archive/gradle-source-archive-lookup.js";
 
 export interface McpServerContextQueryExecutorOptions {
@@ -39,6 +42,7 @@ export interface McpServerContextQueryExecutorOptions {
   externalModCurseForgeCredentialProvider?: () => string | undefined;
   externalModCurseForgeFetch?: ResolveCurseForgeModInput["fetch"];
   externalModCurseForgeApiBaseUrl?: string;
+  externalModRequests?: McpServerExternalModResolutionRequest[];
   sourceAcquisitionWorkItemHandlers?: SourceAcquisitionWorkItemRunnerHandlers;
   sourceAcquisitionRouteOrigins?: SourceAcquisitionOrigin[];
   sourceAcquisitionGradleDiscovery?: GradleSourceArchiveDiscoveryOptions;
@@ -128,6 +132,7 @@ async function executeExternalModResolution(
     curseForgeCredentialProvider: options.externalModCurseForgeCredentialProvider,
     curseForgeFetch: options.externalModCurseForgeFetch,
     curseForgeApiBaseUrl: options.externalModCurseForgeApiBaseUrl,
+    requests: options.externalModRequests,
     modArchiveContentCache: options.modArchiveContentCache
   });
 }

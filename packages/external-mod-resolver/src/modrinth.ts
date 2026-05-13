@@ -10,7 +10,9 @@ const MODRINTH_API_BASE_URL = "https://api.modrinth.com";
 const MODRINTH_USER_AGENT = "PickAID-mc-developing-mcp/0.0.0";
 
 export interface ResolveModrinthModInput {
-  query: string;
+  query?: string;
+  slug?: string;
+  projectId?: string;
   loader: string;
   minecraftVersion: string;
   fetch?: ModrinthFetch;
@@ -25,6 +27,7 @@ export type ModrinthFetch = (
 export async function resolveModrinthMod(
   input: ResolveModrinthModInput
 ): Promise<ExternalModResolverResult> {
+  const query = resolveQuery(input);
   const fetchImpl = input.fetch ?? fetchModrinth;
   const directProject = await fetchProjectByIdOrSlug(fetchImpl, input);
 
@@ -40,18 +43,18 @@ export async function resolveModrinthMod(
     fetchImpl,
     buildSearchUrl(input)
   );
-  const ambiguity = detectAmbiguousProjectMatch(search.hits, input.query);
+  const ambiguity = detectAmbiguousProjectMatch(search.hits, query);
 
   if (ambiguity) {
     return {
       source: "modrinth",
-      query: input.query,
+      query,
       candidates: [],
       warnings: [
         {
           code: "ambiguous_project_match",
           message:
-            `Modrinth query ${input.query} matched multiple projects; ` +
+            `Modrinth query ${query} matched multiple projects; ` +
             "choose an exact slug or project id.",
           projectHints: ambiguity
         }
@@ -59,17 +62,17 @@ export async function resolveModrinthMod(
     };
   }
 
-  const project = chooseProject(search.hits, input.query);
+  const project = chooseProject(search.hits, query);
 
   if (!project) {
     return {
       source: "modrinth",
-      query: input.query,
+      query,
       candidates: [],
       warnings: [
         {
           code: "no_project_match",
-          message: `No Modrinth mod project matched ${input.query}.`
+          message: `No Modrinth mod project matched ${query}.`
         }
       ]
     };
@@ -104,7 +107,7 @@ async function resolveProjectVersions(input: {
   if (!version) {
     return {
       source: "modrinth",
-      query: input.input.query,
+      query: resolveQuery(input.input),
       candidates: [],
       warnings: [
         {
@@ -122,7 +125,7 @@ async function resolveProjectVersions(input: {
   if (!file) {
     return {
       source: "modrinth",
-      query: input.input.query,
+      query: resolveQuery(input.input),
       candidates: [],
       warnings: [
         {
@@ -135,7 +138,7 @@ async function resolveProjectVersions(input: {
 
   return {
     source: "modrinth",
-    query: input.input.query,
+    query: resolveQuery(input.input),
     candidates: [
       toCandidate({
         project: input.project,
@@ -150,7 +153,7 @@ async function resolveProjectVersions(input: {
 
 function buildProjectUrl(input: ResolveModrinthModInput): URL {
   return new URL(
-    `/v2/project/${encodeURIComponent(input.query)}`,
+    `/v2/project/${encodeURIComponent(resolveProjectLookup(input))}`,
     input.apiBaseUrl ?? MODRINTH_API_BASE_URL
   );
 }
@@ -158,7 +161,7 @@ function buildProjectUrl(input: ResolveModrinthModInput): URL {
 function buildSearchUrl(input: ResolveModrinthModInput): URL {
   const url = new URL("/v2/search", input.apiBaseUrl ?? MODRINTH_API_BASE_URL);
 
-  url.searchParams.set("query", input.query);
+  url.searchParams.set("query", resolveQuery(input));
   url.searchParams.set("limit", "5");
   url.searchParams.set(
     "facets",
@@ -170,6 +173,14 @@ function buildSearchUrl(input: ResolveModrinthModInput): URL {
   );
 
   return url;
+}
+
+function resolveQuery(input: ResolveModrinthModInput): string {
+  return input.query ?? input.slug ?? input.projectId ?? "";
+}
+
+function resolveProjectLookup(input: ResolveModrinthModInput): string {
+  return input.projectId ?? input.slug ?? input.query ?? "";
 }
 
 function buildProjectVersionsUrl(

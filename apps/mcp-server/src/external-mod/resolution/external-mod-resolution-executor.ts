@@ -18,8 +18,10 @@ import {
   buildMavenRepositories,
   collectMissingConstraints,
   hasRequiredConstraints,
+  normalizeExternalModRequest,
   parseExternalModRequest,
   type McpServerExternalModMavenRepository,
+  type McpServerExternalModResolutionRequest,
   type ResolvableExternalModRequest
 } from "./external-mod-resolution-request.js";
 import {
@@ -55,6 +57,7 @@ export interface McpServerExternalModResolutionOptions {
   curseForgeResolver?: (
     input: ResolveCurseForgeModInput
   ) => Promise<ExternalModResolverResult>;
+  requests?: McpServerExternalModResolutionRequest[];
 }
 
 type McpServerExternalModResolutionResult =
@@ -66,13 +69,78 @@ export async function executeMcpServerExternalModResolution(
   input: McpServerEvidenceExecutorInput,
   options: McpServerExternalModResolutionOptions = {}
 ): Promise<McpServerEvidenceExecutorResult> {
+  const defaults =
+    input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime;
+  const structuredRequests = (
+    input.candidate?.operationInput?.externalModRequests ??
+    options.requests
+  )?.map((request) =>
+    normalizeExternalModRequest(request, defaults)
+  );
+  if (structuredRequests && structuredRequests.length > 0) {
+    return await executeStructuredRequests(input, structuredRequests, options);
+  }
+
+  const requestText =
+    input.requestPlan.requestText ?? input.candidate?.queryHint ?? "";
+  const request = normalizeExternalModRequest(
+    parseExternalModRequest(requestText, defaults),
+    defaults
+  );
+
+  return await executeSingleRequest(input, request, options, requestText);
+}
+
+async function executeStructuredRequests(
+  input: McpServerEvidenceExecutorInput,
+  requests: McpServerExternalModResolutionRequest[],
+  options: McpServerExternalModResolutionOptions
+): Promise<McpServerEvidenceExecutorResult> {
   const requestText = input.requestPlan.requestText ?? input.candidate.queryHint ?? "";
-  const request = parseExternalModRequest(
-    requestText,
+
+  if (requests.length === 1) {
+    return await executeSingleRequest(input, requests[0], options, requestText);
+  }
+
+  const results = [];
+
+  for (const request of requests) {
+    const result = await executeSingleRequest(input, request, options, requestText);
+    const payload = isExternalModResolutionPayload(result.payload)
+      ? result.payload
+      : undefined;
+
+    results.push({
+      request,
+      matched: result.matched,
+      summary: result.summary,
+      result: payload?.result
+    });
+  }
+
+  return {
+    matched: true,
+    summary: summarizeAggregateResolution(results),
+    payload: {
+      source: "external_mod_resolution",
+      requests,
+      results
+    }
+  };
+}
+
+async function executeSingleRequest(
+  input: McpServerEvidenceExecutorInput,
+  request: McpServerExternalModResolutionRequest,
+  options: McpServerExternalModResolutionOptions,
+  requestText: string
+): Promise<McpServerEvidenceExecutorResult> {
+  const normalizedRequest = normalizeExternalModRequest(
+    request,
     input.requestPlan.requestContext.workspaceContext?.descriptor.currentRuntime
   );
   const localResult = await resolveLocalModArchiveEvidence({
-    request,
+    request: normalizedRequest,
     workspaceRoot:
       input.requestPlan.requestContext.workspaceContext?.workspaceRoot,
     cache: options.modArchiveContentCache
@@ -84,14 +152,14 @@ export async function executeMcpServerExternalModResolution(
       summary: summarizeResolution(localResult),
       payload: {
         source: "external_mod_resolution",
-        request,
+        request: normalizedRequest,
         result: localResult
       }
     };
   }
 
   const gradleResult = await resolveGradleDependencyArchiveEvidence({
-    request,
+    request: normalizedRequest,
     workspaceRoot:
       input.requestPlan.requestContext.workspaceContext?.workspaceRoot,
     discovery: options.gradleDependencyDiscovery,
@@ -105,16 +173,16 @@ export async function executeMcpServerExternalModResolution(
       summary: summarizeResolution(gradleResult),
       payload: {
         source: "external_mod_resolution",
-        request,
+        request: normalizedRequest,
         result: gradleResult
       }
     };
   }
 
-  const missing = collectMissingConstraints(request);
+  const missing = collectMissingConstraints(normalizedRequest);
 
   if (missing.length > 0) {
-    if (isNonDependencyCrashContext(requestText, request)) {
+    if (isNonDependencyCrashContext(requestText, normalizedRequest)) {
       return {
         matched: false,
         summary:
@@ -127,7 +195,7 @@ export async function executeMcpServerExternalModResolution(
       summary: `External mod resolution needs ${missing.join(", ")}.`,
       payload: {
         source: "external_mod_resolution",
-        request,
+        request: normalizedRequest,
         result: {
           candidates: [],
           warnings: [
@@ -143,18 +211,18 @@ export async function executeMcpServerExternalModResolution(
     };
   }
 
-  if (!hasRequiredConstraints(request)) {
+  if (!hasRequiredConstraints(normalizedRequest)) {
     throw new Error("External mod request constraints were not narrowed.");
   }
 
-  const result = await resolveByPlatform(request, options);
+  const result = await resolveByPlatform(normalizedRequest, options);
 
   return {
     matched: true,
     summary: summarizeResolution(result),
     payload: {
       source: "external_mod_resolution",
-      request,
+      request: normalizedRequest,
       result
     }
   };
@@ -211,6 +279,8 @@ async function resolveByPlatform(
   const resolver = options.modrinthResolver ?? resolveModrinthMod;
   return await resolver({
     query: request.query,
+    slug: request.slug,
+    projectId: request.projectId,
     loader: request.loader,
     minecraftVersion: request.minecraftVersion,
     fetch: options.modrinthFetch,
@@ -253,4 +323,49 @@ function summarizeResolution(
   }
 
   return `No external mod candidates matched ${result.query}.`;
+}
+
+function isExternalModResolutionPayload(
+  payload: unknown
+): payload is {
+  result: McpServerExternalModResolutionResult;
+} {
+  return typeof payload === "object" && payload !== null && "result" in payload;
+}
+
+function summarizeAggregateResolution(
+  results: Array<{
+    summary: string;
+    result?: McpServerExternalModResolutionResult;
+  }>
+): string {
+  const coordinates = [
+    ...new Set(
+      results.flatMap((entry) =>
+        entry.result?.candidates.flatMap((candidate) => {
+          if (!hasMavenArtifacts(candidate)) {
+            return [];
+          }
+
+          return candidate.mavenArtifacts.map((artifact) => artifact.coordinates);
+        }) ?? []
+      )
+    )
+  ];
+
+  if (coordinates.length > 0) {
+    return `Resolved external mod Maven coordinates: ${coordinates.join(", ")}.`;
+  }
+
+  return results.map((entry) => entry.summary).join(" ");
+}
+
+function hasMavenArtifacts(
+  candidate: unknown
+): candidate is { mavenArtifacts: Array<{ coordinates: string }> } {
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    Array.isArray((candidate as { mavenArtifacts?: unknown }).mavenArtifacts)
+  );
 }

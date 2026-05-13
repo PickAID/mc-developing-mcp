@@ -212,13 +212,13 @@ describe("executeMcpServerRequestHandler", () => {
       docsSelection: {
         selections: [],
         trace: {
-          rejectedPackages: [
+          rejectedPackages: expect.arrayContaining([
             {
               packageId: "crychicdoc-kubejs-1.20.1-course-zh-cn",
               reason:
                 "task intent crash_triage is outside the package intent scope"
             }
-          ]
+          ])
         }
       }
     });

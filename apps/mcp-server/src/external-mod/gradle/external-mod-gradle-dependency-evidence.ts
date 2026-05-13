@@ -139,7 +139,7 @@ function toGradleDependencyQuery(
     return request.coordinate;
   }
 
-  return request.query;
+  return request.query ?? request.slug ?? request.projectId;
 }
 
 async function collectCandidates(input: {

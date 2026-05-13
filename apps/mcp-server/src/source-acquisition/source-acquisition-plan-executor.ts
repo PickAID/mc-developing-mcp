@@ -25,6 +25,7 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "../request/execution/request-handler.js";
+import type { McpOperationSourceAcquisitionInput } from "../request/evidence/evidence-operation-input.js";
 import { executeMcpServerProbeJsTypes } from "../probejs/types/probejs-types-executor.js";
 import {
   buildSourceAcquisitionCapabilityGuidance,
@@ -56,8 +57,14 @@ export async function executeMcpServerSourceAcquisitionPlan(
   const workspaceRoot =
     input.requestPlan.requestContext.workspaceContext?.workspaceRoot ??
     descriptor?.root;
-  const requestText = input.requestPlan.requestText ?? "";
+  const operation = input.candidate.operationInput?.sourceAcquisition;
+  const requestText = buildSourceAcquisitionRequestText(
+    operation,
+    input.requestPlan.requestText ?? ""
+  );
   const minecraftVersion =
+    operation?.minecraftVersion ??
+    operation?.mapping?.minecraftVersion ??
     descriptor?.currentRuntime.minecraftVersion ??
     inferMinecraftVersion(requestText);
   const plan = planSourceAcquisition({
@@ -135,6 +142,26 @@ export async function executeMcpServerSourceAcquisitionPlan(
       workItemExecutions: workItemResult?.executions
     }
   };
+}
+
+function buildSourceAcquisitionRequestText(
+  operation: McpOperationSourceAcquisitionInput | undefined,
+  fallback: string
+): string {
+  if (!operation) {
+    return fallback;
+  }
+
+  const parts = [
+    operation.sourceIndexQuery,
+    operation.minecraftVersion,
+    operation.mapping
+      ? `mapping ${operation.mapping.family ?? ""} ${operation.mapping.minecraftVersion ?? ""}`
+      : undefined,
+    fallback
+  ].filter((part): part is string => typeof part === "string" && part.trim().length > 0);
+
+  return parts.length > 0 ? parts.join(" ") : fallback;
 }
 
 function resolveRemoteSources(

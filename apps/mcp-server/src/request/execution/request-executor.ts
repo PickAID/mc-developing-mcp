@@ -1,4 +1,5 @@
 import type {
+  AgentRuntimeTaskRouteStep,
   AgentRuntimeToolName,
   McpServerBootstrap,
   McpServerRequestContext
@@ -13,8 +14,11 @@ import {
 
 import {
   buildMcpServerEvidencePlan,
+  buildMcpServerEvidencePlanForRouteSteps,
+  buildMcpServerEvidencePlanForOperations,
   type McpServerEvidencePlan
 } from "../evidence/evidence-plan.js";
+import type { McpOperationInput } from "../evidence/evidence-operation-input.js";
 import { buildMcpServerDocsSelection } from "../../docs/selection/docs-selection.js";
 import {
   buildMcpServerRequestPlan,
@@ -62,6 +66,8 @@ export interface McpServerRequestExecutorOptions {
   lspDiagnostics?: LspDiagnosticRegistry;
   javaDiagnosticsPreparation?: McpJavaDiagnosticsPreparation;
   requestContext?: McpServerRequestContext;
+  routeSteps?: AgentRuntimeTaskRouteStep[];
+  operations?: Array<{ kind: AgentRuntimeTaskRouteStep; input?: McpOperationInput }>;
 }
 
 export type McpServerRequestSourceBundleOptions = Omit<
@@ -77,7 +83,11 @@ export async function executeMcpServerRequest(
   const requestPlan = options.requestContext
     ? buildMcpServerRequestPlanFromContext(options.requestContext)
     : buildMcpServerRequestPlan(options.bootstrap, options.requestText);
-  const evidencePlan = buildMcpServerEvidencePlan(requestPlan);
+  const evidencePlan = options.operations
+    ? buildMcpServerEvidencePlanForOperations(requestPlan, options.operations)
+    : options.routeSteps
+    ? buildMcpServerEvidencePlanForRouteSteps(requestPlan, options.routeSteps)
+    : buildMcpServerEvidencePlan(requestPlan);
   const executors = {
     ...buildDefaultExecutors(options),
     ...options.executors

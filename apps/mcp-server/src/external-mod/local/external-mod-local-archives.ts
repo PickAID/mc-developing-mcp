@@ -25,7 +25,7 @@ import {
 
 type LocalModArchiveRequest = McpServerExternalModResolutionRequest & {
   platform: "modrinth" | "curseforge";
-  query: string;
+  query?: string;
 };
 
 export interface McpServerLocalModArchiveResolutionResult {
@@ -119,7 +119,7 @@ export async function resolveLocalModArchiveEvidence(input: {
 
   return {
     source: "local_archive",
-    query: request.query,
+    query: resolveRequestQuery(request),
     candidates: candidates.sort(compareLocalCandidates),
     warnings,
     scannedArchives: discovered.archives.length,
@@ -247,7 +247,7 @@ function scoreLocalMatch(
     return undefined;
   }
 
-  const query = normalizeText(request.query);
+  const query = normalizeText(resolveRequestQuery(request));
   const values = [
     metadata.modId,
     metadata.name,
@@ -344,7 +344,7 @@ function toLocalModArchiveRequest(
   request: McpServerExternalModResolutionRequest
 ): LocalModArchiveRequest | undefined {
   const platform = request.platform;
-  const query = request.query;
+  const query = resolveRequestQuery(request);
 
   if (platform !== "modrinth" && platform !== "curseforge") {
     return undefined;
@@ -358,6 +358,12 @@ function toLocalModArchiveRequest(
     platform,
     query
   };
+}
+
+function resolveRequestQuery(
+  request: McpServerExternalModResolutionRequest
+): string {
+  return request.query ?? request.slug ?? request.projectId ?? "";
 }
 
 export function formatLocalArchiveCandidateReference(

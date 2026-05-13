@@ -26,6 +26,17 @@ Use this after every `mc_develop` call. The goal is to turn structured evidence 
 | `kubeJsQuality` | Use before editing KubeJS. It may identify wrong folders, missing ProbeJS, or script issues. |
 | `clientVisualVerifier` | Use for asset/model/rendering/shader proof chains. |
 
+## Structured Calls
+
+If the user supplied exact ids, versions, paths, or desired MCP capabilities, verify that the call used structured fields:
+
+- `operations[].kind` for the capability.
+- `externalModRequests[]` for Modrinth, CurseForge, or Maven constraints.
+- Per-operation fields such as `docsQuery`, `workspaceSource`, `probeJs`, `modArchive`, `datapack`, `logFiles`, `vanillaSource`, and `sourceAcquisition` for exact queries, paths, symbols, resources, or class names.
+- `preparationRoutes[]` and `preparationPolicy` for acquisition policy.
+
+Do not treat a successful-looking result as reliable if exact constraints were only present in `requestText` and the selected evidence shows a broad `queryHint`.
+
 ## Next Action Rules
 
 If `nextCallPatterns` exists, call `mc_develop` again unless the result already answers the user.

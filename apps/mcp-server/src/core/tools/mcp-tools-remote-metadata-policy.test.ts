@@ -62,6 +62,11 @@ describe("mc_develop remote metadata policy", () => {
       requestText: "Find source metadata for Sodium fabric 1.20.1 on Modrinth.",
       runtimeRoot,
       workspaceRoot,
+      operations: [
+        {
+          kind: "source_acquisition_plan"
+        }
+      ],
       preparationRoutes: ["modrinth"],
       preparationPolicy: {
         remoteMetadataPolicy: "enabled"
@@ -90,6 +95,100 @@ describe("mc_develop remote metadata policy", () => {
                       expect.objectContaining({
                         slug: "sodium",
                         fileName: "sodium-fabric-0.5.11+mc1.20.1.jar"
+                      })
+                    ]
+                  })
+                })
+              })
+            ])
+          })
+        })
+      ])
+    });
+  });
+
+  it("uses structured Modrinth metadata requests for source acquisition", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-remote-policy-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-remote-policy-workspace-");
+    const fetchUrls: string[] = [];
+
+    registerMcpServerTools(registry, {
+      modrinthApiBaseUrl: "https://api.test.modrinth.local",
+      modrinthFetch: async (url) => {
+        fetchUrls.push(url.toString());
+        if (url.pathname.includes("/version")) {
+          return jsonResponse([
+            {
+              id: "version-id",
+              version_number: "mc26.1.2-1.0.0-neoforge",
+              loaders: ["neoforge"],
+              game_versions: ["26.1.2"],
+              files: [
+                {
+                  filename: "sodium-neoforge-26.1.2.jar",
+                  url: "https://cdn.modrinth.test/sodium.jar",
+                  hashes: { sha512: "abc" },
+                  primary: true
+                }
+              ]
+            }
+          ]);
+        }
+
+        return jsonResponse({
+          id: "AANobbMI",
+          slug: "sodium",
+          title: "Sodium",
+          downloads: 1_000_000
+        });
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "精确解析外部 Modrinth 元数据，不从自然语言抽取版本。",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "source_acquisition_plan"
+        }
+      ],
+      externalModRequests: [
+        {
+          platform: "modrinth",
+          slug: "sodium",
+          projectId: "AANobbMI",
+          loader: "neoforge",
+          minecraftVersion: "26.1.2"
+        }
+      ],
+      preparationRoutes: ["modrinth"],
+      preparationPolicy: {
+        remoteMetadataPolicy: "enabled"
+      }
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(fetchUrls).toEqual([
+      "https://api.test.modrinth.local/v2/project/AANobbMI",
+      "https://api.test.modrinth.local/v2/project/sodium/version?loaders=%5B%22neoforge%22%5D&game_versions=%5B%2226.1.2%22%5D"
+    ]);
+    expect(result.structuredContent).toMatchObject({
+      executions: expect.arrayContaining([
+        expect.objectContaining({
+          routeStep: "source_acquisition_plan",
+          payload: expect.objectContaining({
+            workItemExecutions: expect.arrayContaining([
+              expect.objectContaining({
+                kind: "remote_metadata",
+                status: "completed",
+                payload: expect.objectContaining({
+                  result: expect.objectContaining({
+                    candidates: [
+                      expect.objectContaining({
+                        slug: "sodium",
+                        minecraftVersions: ["26.1.2"]
                       })
                     ]
                   })

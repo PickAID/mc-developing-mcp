@@ -3,6 +3,7 @@ import type {
   AgentRuntimeToolName,
   McpServerRequestPlan
 } from "minecraft-developing-mcp-shared-types";
+import type { McpOperationInput } from "./evidence-operation-input.js";
 
 export type McpServerEvidenceProvenance =
   | "logs"
@@ -29,6 +30,7 @@ export interface McpServerEvidenceCandidate {
   reason: string;
   pathHints: string[];
   queryHint?: string;
+  operationInput?: McpOperationInput;
 }
 
 export interface McpServerEvidencePlan {
@@ -48,6 +50,105 @@ export function buildMcpServerEvidencePlan(
   requestPlan: McpServerRequestPlan
 ): McpServerEvidencePlan {
   const routeSteps = expandRouteSteps(requestPlan);
+  return buildEvidencePlanForRouteSteps(requestPlan, routeSteps);
+}
+
+export function buildMcpServerEvidencePlanForRouteSteps(
+  requestPlan: McpServerRequestPlan,
+  routeSteps: AgentRuntimeTaskRouteStep[]
+): McpServerEvidencePlan {
+  return buildEvidencePlanForRouteSteps(requestPlan, routeSteps);
+}
+
+export function buildMcpServerEvidencePlanForOperations(
+  requestPlan: McpServerRequestPlan,
+  operations: Array<{ kind: AgentRuntimeTaskRouteStep; input?: McpOperationInput }>
+): McpServerEvidencePlan {
+  const candidates = operations.map((operation, index) => {
+    const candidate = buildCandidate(requestPlan, operation.kind, index);
+
+    return applyOperationInput(candidate, operation.input, requestPlan);
+  });
+
+  return {
+    appId: "mcp-server",
+    requestPlan,
+    candidates,
+    trace: {
+      routeSteps: operations.map((operation) => operation.kind),
+      candidateIds: candidates.map((candidate) => candidate.id),
+      fallbackCandidateIds: candidates
+        .filter((candidate) => candidate.tier === "fallback")
+        .map((candidate) => candidate.id)
+    }
+  };
+}
+
+function applyOperationInput(
+  candidate: McpServerEvidenceCandidate,
+  input: McpOperationInput | undefined,
+  requestPlan: McpServerRequestPlan
+): McpServerEvidenceCandidate {
+  const queryHint = buildOperationQueryHint(input) ?? candidate.queryHint;
+  const base = {
+    ...candidate,
+    operationInput: input,
+    queryHint
+  };
+
+  if (candidate.routeStep !== "workspace_source" || !input?.vanillaSource) {
+    return base;
+  }
+
+  return {
+    ...base,
+    provenance: "vanilla_source",
+    reason:
+      "Resolve explicit vanilla source operation input before broader workspace docs.",
+    pathHints: collectVanillaSourceHints(
+      requestPlan.requestContext.workspaceContext?.descriptor,
+      requestPlan.requestContext.workspaceContext?.workspaceRoot
+    )
+  };
+}
+
+function buildOperationQueryHint(
+  input: McpOperationInput | undefined
+): string | undefined {
+  if (!input) {
+    return undefined;
+  }
+
+  const parts = [
+    input.docsQuery,
+    input.sourceAcquisition?.sourceIndexQuery,
+    input.sourceAcquisition?.minecraftVersion,
+    input.sourceAcquisition?.mapping?.family,
+    input.workspaceSource?.javaSymbols?.join(" "),
+    input.workspaceSource?.javaPaths?.join(" "),
+    input.workspaceSource?.buildFiles?.join(" "),
+    input.probeJs?.symbol,
+    input.probeJs?.resourceQueries?.join(" "),
+    input.modArchive?.archive,
+    input.modArchive?.queries?.join(" "),
+    input.modArchive?.entryPaths?.join(" "),
+    input.modArchive?.classOwners?.join(" "),
+    input.modArchive?.mixinTargets?.join(" "),
+    input.modArchive?.decompileClasses?.join(" "),
+    input.datapack?.resourceLocations?.join(" "),
+    input.datapack?.paths?.join(" "),
+    input.logFiles?.paths?.join(" "),
+    input.vanillaSource?.symbol,
+    input.vanillaSource?.relativePath
+  ].filter((part): part is string => typeof part === "string" && part.length > 0);
+
+  return parts.length > 0 ? parts.join(" ") : undefined;
+}
+
+function buildEvidencePlanForRouteSteps(
+  requestPlan: McpServerRequestPlan,
+  routeSteps: AgentRuntimeTaskRouteStep[]
+): McpServerEvidencePlan {
   const candidates = routeSteps.map((step, index) =>
     buildCandidate(requestPlan, step, index)
   );

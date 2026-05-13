@@ -64,6 +64,7 @@ import {
   lookupMixinTargetVerification
 } from "./mod-archive-content-owners.js";
 import { lookupHotaiPatchProof } from "../hotai/hotai-patch-proof.js";
+import type { McpOperationModArchiveInput } from "../../request/evidence/evidence-operation-input.js";
 
 export interface McpServerModArchiveContentExecutorOptions {
   cache?: ArchiveContentCache;
@@ -118,16 +119,20 @@ export async function executeMcpServerModArchiveContent(
     workspaceRoot,
     maxArchives: DEFAULT_MAX_CLASS_OWNER_ARCHIVES
   });
-  const requestText = input.candidate.queryHint ?? input.requestPlan.requestText;
+  const operation = input.candidate.operationInput?.modArchive;
+  const requestText = buildModArchiveRequestText(
+    operation,
+    input.candidate.queryHint ?? input.requestPlan.requestText
+  );
   const originalRequestText = input.requestPlan.requestText;
-  const queries = extractModArchiveQueries(requestText);
+  const queries = operation?.queries ?? extractModArchiveQueries(requestText);
 
-  if (isModArchiveInventoryRequest(requestText)) {
+  if (operation?.inventory || isModArchiveInventoryRequest(requestText)) {
     return listModArchiveInventory({
       executorInput: input,
       cache: options.cache,
       databasePath: options.inventoryDatabasePath,
-      refresh: shouldRefreshModArchiveInventory(requestText)
+      refresh: operation?.refreshInventory ?? shouldRefreshModArchiveInventory(requestText)
     });
   }
 
@@ -158,7 +163,7 @@ export async function executeMcpServerModArchiveContent(
   }
 
   const selectedArchive = selectArchive(archives.archives, requestText);
-  if (selectedArchive && isModArchivePreDecompileAnalysisRequest(requestText)) {
+  if (selectedArchive && (operation?.preDecompileAnalysis || isModArchivePreDecompileAnalysisRequest(requestText))) {
     const [analyzed] = await attachArchiveMetadata([
       await analyzeModArchiveBeforeDecompile({
         sourceArchive: selectedArchive.archivePath
@@ -178,7 +183,13 @@ export async function executeMcpServerModArchiveContent(
     };
   }
 
-  const nestedEntryPathRequest = extractNestedArchiveEntryPathRequest(requestText);
+  const nestedEntryPathRequest =
+    operation?.nestedEntryPaths
+      ? {
+          requests: operation.nestedEntryPaths,
+          truncated: false
+        }
+      : extractNestedArchiveEntryPathRequest(requestText);
   if (nestedEntryPathRequest.requests.length > 1 && selectedArchive) {
     return readSelectedNestedEntries({
       sourceArchive: selectedArchive.archivePath,
@@ -206,7 +217,10 @@ export async function executeMcpServerModArchiveContent(
     });
   }
 
-  const entryPathRequest = extractArchiveEntryPathRequest(requestText);
+  const entryPathRequest =
+    operation?.entryPaths
+      ? { paths: operation.entryPaths, truncated: false }
+      : extractArchiveEntryPathRequest(requestText);
   if (selectedArchive) {
     const resourceTrace = await traceSelectedModArchiveResourceReferences({
       sourceArchive: selectedArchive.archivePath,
@@ -248,8 +262,9 @@ export async function executeMcpServerModArchiveContent(
     });
   }
 
-  const listDomains = extractListDomains(requestText);
-  const nestedListPath = extractNestedArchiveListPath(requestText);
+  const listDomains = operation?.listDomains ?? extractListDomains(requestText);
+  const nestedListPath =
+    operation?.nestedListPath ?? extractNestedArchiveListPath(requestText);
   if (listDomains && nestedListPath && selectedArchive) {
     return listSelectedNestedEntries({
       sourceArchive: selectedArchive.archivePath,
@@ -266,38 +281,42 @@ export async function executeMcpServerModArchiveContent(
     });
   }
 
-  const hotaiPatchProofResult = await lookupHotaiPatchProof({
-    workspaceRoot,
-    archivePaths: archives.archives.map((archive) => archive.archivePath),
-    requestText: joinRequestTexts(requestText, originalRequestText),
-    cache: options.cache
-  });
-  if (hotaiPatchProofResult) {
-    return hotaiPatchProofResult;
+  if (operation?.hotaiPatchProof || !operation) {
+    const hotaiPatchProofResult = await lookupHotaiPatchProof({
+      workspaceRoot,
+      archivePaths: archives.archives.map((archive) => archive.archivePath),
+      requestText: joinRequestTexts(requestText, originalRequestText),
+      cache: options.cache
+    });
+    if (hotaiPatchProofResult) {
+      return hotaiPatchProofResult;
+    }
   }
 
   const mixinTargetVerificationResult = await lookupMixinTargetVerification({
     workspaceRoot,
     archivePaths: archives.archives.map((archive) => archive.archivePath),
     requestText,
+    requestedTargets: operation?.mixinTargets,
     cache: options.cache,
-      databasePath: options.inventoryDatabasePath,
-      runtimeRoot: options.runtimeRoot,
-      sourceIndexDatabasePaths: options.sourceIndexDatabasePaths,
-      refresh: shouldRefreshModArchiveInventory(requestText)
-    });
+    databasePath: options.inventoryDatabasePath,
+    runtimeRoot: options.runtimeRoot,
+    sourceIndexDatabasePaths: options.sourceIndexDatabasePaths,
+    refresh: shouldRefreshModArchiveInventory(requestText)
+  });
   if (mixinTargetVerificationResult) {
     return mixinTargetVerificationResult;
   }
 
-  if (isModArchiveDecompileRequest(requestText)) {
+  if (operation?.decompileClasses?.length || isModArchiveDecompileRequest(requestText)) {
     const decompileResult = await decompileFirstClassOwner({
       workspaceRoot,
       archivePaths: archives.archives.map((archive) => archive.archivePath),
       requestText,
+      requestedClasses: operation?.decompileClasses,
       cache: options.cache,
       databasePath: options.inventoryDatabasePath,
-      refresh: shouldRefreshModArchiveInventory(requestText),
+      refresh: operation?.refreshInventory ?? shouldRefreshModArchiveInventory(requestText),
       runtimeRoot: options.runtimeRoot,
       decompiler: options.decompiler,
       env: options.env
@@ -311,9 +330,10 @@ export async function executeMcpServerModArchiveContent(
     workspaceRoot,
     archivePaths: archives.archives.map((archive) => archive.archivePath),
     requestText,
+    requestedClasses: operation?.classOwners,
     cache: options.cache,
     databasePath: options.inventoryDatabasePath,
-    refresh: shouldRefreshModArchiveInventory(requestText)
+    refresh: operation?.refreshInventory ?? shouldRefreshModArchiveInventory(requestText)
   });
   if (classOwnerResult) {
     return classOwnerResult;
@@ -358,10 +378,41 @@ export async function executeMcpServerModArchiveContent(
   };
 }
 
+function buildModArchiveRequestText(
+  operation: McpOperationModArchiveInput | undefined,
+  fallback: string | undefined
+): string | undefined {
+  if (!operation) {
+    return fallback;
+  }
+
+  const parts = [
+    operation.archive,
+    ...(operation.queries ?? []),
+    ...(operation.entryPaths ?? []),
+    ...(operation.nestedEntryPaths ?? []).map(
+      (entry) => `${entry.embeddedArchivePath}!/${entry.relativePath}`
+    ),
+    operation.nestedListPath ? `${operation.nestedListPath}!/` : undefined,
+    ...(operation.classOwners ?? []),
+    ...(operation.mixinTargets ?? []),
+    ...(operation.decompileClasses ?? []),
+    operation.listDomains?.length ? `list ${operation.listDomains.join(" ")}` : undefined,
+    operation.inventory ? "mod archive inventory" : undefined,
+    operation.refreshInventory ? "refresh" : undefined,
+    operation.preDecompileAnalysis ? "analyze before decompile" : undefined,
+    operation.hotaiPatchProof ? "Hotai before_mixin proof" : undefined,
+    fallback
+  ].filter((part): part is string => typeof part === "string" && part.length > 0);
+
+  return parts.length > 0 ? parts.join(" ") : fallback;
+}
+
 async function decompileFirstClassOwner(input: {
   workspaceRoot: string;
   archivePaths: string[];
   requestText?: string;
+  requestedClasses?: string[];
   cache?: ArchiveContentCache;
   databasePath?: string;
   refresh?: boolean;

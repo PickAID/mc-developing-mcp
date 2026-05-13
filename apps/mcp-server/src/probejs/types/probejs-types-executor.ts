@@ -18,6 +18,7 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "../../request/execution/request-handler.js";
+import type { McpOperationProbeJsInput } from "../../request/evidence/evidence-operation-input.js";
 import {
   createProbeResourceSummaryCache,
   summarizeProbeResourcesWithCache,
@@ -88,12 +89,15 @@ async function executeMcpServerProbeJsTypesWithCache(
     };
   }
 
-  const symbol = extractProbeJsRequestedSymbol(input.requestPlan.requestText);
+  const operation = input.candidate.operationInput?.probeJs;
+  const requestText = buildProbeJsRequestText(operation, input.requestPlan.requestText);
+  const symbol = operation?.symbol ?? extractProbeJsRequestedSymbol(requestText);
   if (!symbol) {
     return resolveProbeResourceOnlyQuery(
       input,
       workspaceRoot,
-      probeResourceSummaryCache
+      probeResourceSummaryCache,
+      requestText
     );
   }
 
@@ -101,7 +105,7 @@ async function executeMcpServerProbeJsTypesWithCache(
   const scriptFile = findBestKubeJsScriptFile(
     workspaceRoot,
     scriptFiles,
-    input.requestPlan.requestText
+    requestText
   );
   if (!scriptFile) {
     return {
@@ -170,7 +174,7 @@ async function executeMcpServerProbeJsTypesWithCache(
     maxDiagnostics: 10
   });
   const resourceQueries = extractProbeResourceQueries(
-    input.requestPlan.requestText,
+    requestText,
     symbol
   );
   const probeResourcesResult = await summarizeProbeResourcesWithCache({
@@ -184,7 +188,7 @@ async function executeMcpServerProbeJsTypesWithCache(
   });
   const lifecycleEvidence = await buildKubeJsLifecycleEvidence({
     workspaceRoot,
-    requestText: input.requestPlan.requestText,
+    requestText,
     selectedScriptFile: scriptFile,
     selectedScope: scope,
     declarationFiles: probeProject.declarationFiles,
@@ -276,18 +280,20 @@ async function walkJavaScriptFiles(root: string): Promise<string[]> {
 async function resolveProbeResourceOnlyQuery(
   input: McpServerEvidenceExecutorInput,
   workspaceRoot: string,
-  probeResourceSummaryCache: ProbeResourceSummaryCache
+  probeResourceSummaryCache: ProbeResourceSummaryCache,
+  requestText = input.requestPlan.requestText
 ): Promise<McpServerEvidenceExecutorResult> {
-  if (!isProbeResourceOnlyRequest(input.requestPlan.requestText)) {
+  const operation = input.candidate.operationInput?.probeJs;
+  if (!operation?.resourceOnly && !operation?.resourceQueries && !isProbeResourceOnlyRequest(requestText)) {
     return {
       matched: false,
       summary: "No KubeJS symbol was found in the request text."
     };
   }
 
-  const resourceQueries = extractExplicitProbeResourceQueries(
-    input.requestPlan.requestText
-  );
+  const resourceQueries =
+    operation?.resourceQueries ??
+    extractExplicitProbeResourceQueries(requestText);
   const probeResourcesResult = await summarizeProbeResourcesWithCache({
     workspaceRoot,
     includeUnknownResources: false,
@@ -299,7 +305,7 @@ async function resolveProbeResourceOnlyQuery(
   });
   const lifecycleEvidence = await resolveResourceOnlyLifecycleEvidence(
     workspaceRoot,
-    input.requestPlan.requestText ?? ""
+    requestText ?? ""
   );
 
   return {
@@ -315,6 +321,26 @@ async function resolveProbeResourceOnlyQuery(
       ...lifecycleEvidence
     }
   };
+}
+
+function buildProbeJsRequestText(
+  operation: McpOperationProbeJsInput | undefined,
+  fallback: string | undefined
+): string | undefined {
+  if (!operation) {
+    return fallback;
+  }
+
+  const parts = [
+    operation.symbol,
+    ...(operation.resourceQueries ?? []),
+    operation.scope,
+    operation.resourceOnly ? "probe resources list" : undefined,
+    operation.includeLifecycle ? "kubejs lifecycle debug lint" : undefined,
+    fallback
+  ].filter((part): part is string => typeof part === "string" && part.length > 0);
+
+  return parts.length > 0 ? parts.join(" ") : fallback;
 }
 
 async function resolveResourceOnlyLifecycleEvidence(

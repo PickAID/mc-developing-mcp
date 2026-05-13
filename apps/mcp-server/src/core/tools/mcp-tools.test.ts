@@ -361,6 +361,281 @@ describe("registerMcpServerTools", () => {
       }
     });
   });
+
+  it("honors explicit operation route steps without depending on request text keywords", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-operations-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-operations-workspace-");
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "需要这个能力",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "docs_lookup"
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["docs_lookup"]
+      },
+      executions: [
+        expect.objectContaining({
+          routeStep: "docs_lookup",
+          attempted: true
+        })
+      ]
+    });
+  });
+
+  it("uses structured external mod requests for exact Modrinth constraints", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-operations-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-operations-workspace-");
+    const fetchUrls: string[] = [];
+
+    registerMcpServerTools(registry, {
+      modrinthApiBaseUrl: "https://api.test.modrinth.local",
+      modrinthFetch: async (url) => {
+        fetchUrls.push(url.toString());
+        if (url.pathname.includes("/version")) {
+          return jsonResponse([
+            {
+              id: "version-id",
+              version_number: "mc26.1.2-1.0.0-neoforge",
+              loaders: ["neoforge"],
+              game_versions: ["26.1.2"],
+              files: [
+                {
+                  filename: "sodium-neoforge-26.1.2.jar",
+                  url: "https://cdn.modrinth.test/sodium.jar",
+                  hashes: { sha512: "abc" },
+                  primary: true
+                }
+              ]
+            }
+          ]);
+        }
+
+        return jsonResponse({
+          id: "AANobbMI",
+          slug: "sodium",
+          title: "Sodium",
+          project_type: "mod",
+          downloads: 1_000_000
+        });
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "外部元数据精确解析",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "external_mod_resolution",
+          externalModRequests: [
+            {
+              platform: "modrinth",
+              slug: "sodium",
+              projectId: "AANobbMI",
+              loader: "neoforge",
+              minecraftVersion: "26.1.2"
+            }
+          ]
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(fetchUrls).toEqual([
+      "https://api.test.modrinth.local/v2/project/AANobbMI",
+      "https://api.test.modrinth.local/v2/project/sodium/version?loaders=%5B%22neoforge%22%5D&game_versions=%5B%2226.1.2%22%5D"
+    ]);
+    expect(result.structuredContent).toMatchObject({
+      selectedEvidence: {
+        routeStep: "external_mod_resolution",
+        payload: {
+          source: "external_mod_resolution",
+          request: {
+            platform: "modrinth",
+            slug: "sodium",
+            projectId: "AANobbMI",
+            loader: "neoforge",
+            minecraftVersion: "26.1.2"
+          },
+          result: {
+            candidates: [
+              {
+                slug: "sodium",
+                fileName: "sodium-neoforge-26.1.2.jar"
+              }
+            ]
+          }
+        }
+      }
+    });
+  });
+
+  it("uses structured operation inputs instead of request text keywords", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-structured-runtime-");
+    const workspaceRoot = await createJavaWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "需要这个能力",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "workspace_source",
+          workspaceSource: {
+            javaSymbols: ["example.Broken"]
+          }
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["workspace_source"],
+        selectedCandidateId: "candidate-1-workspace_source"
+      },
+      selectedEvidence: {
+        payload: {
+          source: "workspace_source",
+          references: [
+            {
+              kind: "java",
+              symbol: "example.Broken",
+              relativePath: "src/main/java/example/Broken.java"
+            }
+          ]
+        }
+      }
+    });
+  });
+
+  it("uses structured mod archive operation inputs for class owner lookup", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-structured-runtime-");
+    const workspaceRoot = await createCrashModpackWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "需要这个能力",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "mod_archive_content",
+          modArchive: {
+            classOwners: ["com.example.problem.CrashHandler"]
+          }
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["mod_archive_content"],
+        selectedCandidateId: "candidate-1-mod_archive_content"
+      },
+      selectedEvidence: {
+        payload: {
+          source: "mod_archive_content",
+          mode: "class_owner",
+          requestedClasses: ["com.example.problem.CrashHandler"]
+        }
+      }
+    });
+  });
+
+  it("uses structured docs query input without encoding it in request text", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-structured-runtime-");
+    const workspaceRoot = await createTempRoot("mcpskill-structured-workspace-");
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "需要这个能力",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "docs_lookup",
+          docsQuery: "NeoForge register event"
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["docs_lookup"]
+      },
+      executions: [
+        expect.objectContaining({
+          routeStep: "docs_lookup",
+          queryHint: "NeoForge register event",
+          payload: expect.objectContaining({
+            source: "docs_lookup",
+            queryText: "NeoForge register event"
+          })
+        })
+      ]
+    });
+  });
+
+  it("uses structured datapack resource-pack mode without request text keywords", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-structured-runtime-");
+    const workspaceRoot = await createResourcePackWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "需要这个能力",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "datapack_files",
+          datapack: {
+            mode: "resource_pack"
+          }
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["datapack_files"],
+        selectedCandidateId: "candidate-1-datapack_files"
+      },
+      selectedEvidence: {
+        payload: {
+          source: "datapack_files",
+          resourceRootSummary: {
+            entryCount: 1
+          }
+        }
+      }
+    });
+  });
 });
 
 function createCapturingRegistry(): CapturingRegistry {
@@ -450,6 +725,24 @@ async function createJavaWorkspace(): Promise<string> {
   return workspaceRoot;
 }
 
+async function createResourcePackWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-mcp-resource-pack-");
+
+  await writeText(
+    join(
+      workspaceRoot,
+      "assets",
+      "example",
+      "models",
+      "item",
+      "demo.json"
+    ),
+    '{"parent":"minecraft:item/generated"}\n'
+  );
+
+  return workspaceRoot;
+}
+
 async function createTempRoot(prefix: string): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), prefix));
   tempRoots.push(root);
@@ -513,6 +806,15 @@ function createZip(entries: ZipFixtureEntry[]): Buffer {
   eocd.writeUInt32LE(localFiles.length, 16);
 
   return Buffer.concat([localFiles, centralDirectory, eocd]);
+}
+
+function jsonResponse(payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: {
+      "content-type": "application/json"
+    }
+  });
 }
 
 interface CapturingRegistry {

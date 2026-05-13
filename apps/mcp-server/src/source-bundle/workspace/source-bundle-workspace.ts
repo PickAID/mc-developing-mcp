@@ -14,6 +14,7 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "../../request/execution/request-handler.js";
+import type { McpOperationWorkspaceSourceInput } from "../../request/evidence/evidence-operation-input.js";
 import {
   createLineRangeEvidence,
   type LineRangeEvidenceOptions
@@ -37,7 +38,10 @@ export async function resolveMcpServerWorkspaceSource(
   input: McpServerEvidenceExecutorInput
 ): Promise<McpServerEvidenceExecutorResult | undefined> {
   const workspaceContext = input.requestPlan.requestContext.workspaceContext;
-  const requestText = input.requestPlan.requestText ?? "";
+  const requestText = buildWorkspaceSourceRequestText(
+    input.candidate.operationInput?.workspaceSource,
+    input.requestPlan.requestText ?? ""
+  );
 
   if (!workspaceContext) {
     return undefined;
@@ -76,6 +80,24 @@ export async function resolveMcpServerWorkspaceSource(
       truncated: references.length >= MAX_REFERENCES
     }
   };
+}
+
+function buildWorkspaceSourceRequestText(
+  operation: McpOperationWorkspaceSourceInput | undefined,
+  fallback: string
+): string {
+  if (!operation) {
+    return fallback;
+  }
+
+  const parts = [
+    ...(operation.buildFiles ?? []),
+    ...(operation.javaPaths ?? []),
+    ...(operation.javaSymbols ?? []),
+    operation.line ? `:${operation.line}` : undefined
+  ].filter((part): part is string => typeof part === "string" && part.length > 0);
+
+  return parts.length > 0 ? parts.join(" ") : fallback;
 }
 
 async function readRequestedBuildFiles(

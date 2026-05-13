@@ -54,6 +54,7 @@ Read only the reference file matching the task:
 | Crash logs, modpack startup failures, missing classes, mixin errors | `references/crash-triage.md` |
 | Java mods, NeoForge/Forge/Fabric Gradle projects, mappings, source jars | `references/java-gradle-mods.md` |
 | Datapacks, resource packs, assets, models, tags, loot, recipes, vanilla schemas | `references/datapack-resourcepack.md` |
+| Modrinth, CurseForge, CurseMaven, Modrinth Maven, external dependency coordinates | `references/external-mod-resolution.md` |
 | Minecraft docs, NeoForge/Forge docs, version changes, MDM packages | `references/docs-version-resources.md` |
 | Environment roots, runtime cache, MDM source checkout, per-instance sharing | `references/runtime-environment.md` |
 | How to read `mc_develop` structured output and decide next action | `references/result-interpretation.md` |
@@ -63,7 +64,7 @@ If more than one task applies, read the most specific task reference first, then
 
 ## Route Cheatsheet
 
-Let the MCP auto-detect when uncertain. Add route hints only when the task is obvious or a previous result asks for them.
+Use explicit `operations` when the desired MCP capability is known. Let auto-detection handle only broad first-pass triage or unclear requests.
 
 | Need | Hint |
 | --- | --- |
@@ -74,6 +75,40 @@ Let the MCP auto-detect when uncertain. Add route hints only when the task is ob
 | User-supplied jar paths | `preparationRoutes: ["user_jar"]` |
 | Broad crash triage across many jars | `preparationPolicy.localJarMode: "prewarm_entry_index"` |
 | Remote Modrinth/GitHub metadata after local evidence is insufficient | `preparationPolicy.remoteMetadataPolicy: "enabled"` |
+
+## Explicit Operations
+
+Prefer `operations` over hiding control instructions in `requestText`. If you know an exact id, path, class, resource location, symbol, docs topic, or MCP capability, put it in a structured operation field.
+
+```json
+{
+  "requestText": "Short human context for the task.",
+  "workspaceRoot": "/absolute/path/to/workspace",
+  "operations": [
+    { "kind": "source_acquisition_plan" },
+    { "kind": "external_mod_resolution" },
+    { "kind": "docs_lookup" }
+  ]
+}
+```
+
+Supported `kind` values:
+
+`source_acquisition_plan`, `workspace_source`, `probejs_types`, `mod_archive_content`, `external_mod_resolution`, `datapack_files`, `docs_lookup`, `log_files`, `java_diagnostics`.
+
+Structured operation fields:
+
+- `docsQuery`: exact docs search query for `docs_lookup`.
+- `workspaceSource`: `javaSymbols`, `javaPaths`, `buildFiles`, and optional `line` for `workspace_source`.
+- `probeJs`: `symbol`, `resourceQueries`, `resourceOnly`, `scope`, and `includeLifecycle` for `probejs_types`.
+- `modArchive`: `queries`, `entryPaths`, `nestedEntryPaths`, `classOwners`, `mixinTargets`, `decompileClasses`, `listDomains`, `inventory`, `refreshInventory`, `preDecompileAnalysis`, and `hotaiPatchProof` for `mod_archive_content`.
+- `datapack`: `resourceLocations`, `paths`, `traceReferences`, `migration`, and `mode` for `datapack_files`.
+- `logFiles`: exact log/crash-report paths for `log_files`.
+- `vanillaSource`: `symbol`, `packageHint`, `relativePath`, or `maxFiles` for version-bound vanilla source through `workspace_source`.
+- `sourceAcquisition`: `sourceIndexQuery`, `minecraftVersion`, and `mapping` for `source_acquisition_plan`.
+- `externalModRequests`: Modrinth, CurseForge, or Maven constraints for `external_mod_resolution`.
+
+For exact Modrinth/CurseForge/Maven work, use `externalModRequests`; do not ask the MCP to parse project ids, slugs, loaders, or versions from prose.
 
 If Gradle dependencies are known but source jars are missing, call again with:
 

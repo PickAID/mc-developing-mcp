@@ -60,6 +60,136 @@ describe("executeMcpServerExternalModResolution", () => {
     });
   });
 
+  it("uses structured Modrinth requests instead of natural-language query extraction", async () => {
+    const input = await createExecutorInput(
+      "外部 Modrinth 元数据精确解析，不要把 Minecraft 版本 26.1.2 截断为 1.2。项目 1：slug=sodium，project id=AANobbMI，loader=neoforge，Minecraft game_version=26.1.2。"
+    );
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      requests: [
+        {
+          platform: "modrinth",
+          slug: "sodium",
+          projectId: "AANobbMI",
+          loader: "neoforge",
+          minecraftVersion: "26.1.2"
+        }
+      ],
+      modrinthResolver: async (request) => {
+        expect(request).toMatchObject({
+          query: "sodium",
+          slug: "sodium",
+          projectId: "AANobbMI",
+          loader: "neoforge",
+          minecraftVersion: "26.1.2"
+        });
+        return createModrinthSodiumResult("26.1.2", "neoforge");
+      }
+    });
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        request: {
+          platform: "modrinth",
+          slug: "sodium",
+          projectId: "AANobbMI",
+          query: "sodium",
+          loader: "neoforge",
+          minecraftVersion: "26.1.2"
+        },
+        result: {
+          source: "modrinth",
+          candidates: [
+            {
+              slug: "sodium",
+              loaders: ["neoforge"],
+              minecraftVersions: ["26.1.2"]
+            }
+          ]
+        }
+      }
+    });
+  });
+
+  it("resolves multiple structured external mod requests as one aggregate operation", async () => {
+    const input = await createExecutorInput(
+      "Resolve exact Modrinth Maven coordinates for Sodium and Iris."
+    );
+    const seen: string[] = [];
+
+    const result = await executeMcpServerExternalModResolution(input, {
+      requests: [
+        {
+          platform: "modrinth",
+          slug: "sodium",
+          projectId: "AANobbMI",
+          loader: "neoforge",
+          minecraftVersion: "26.1.2"
+        },
+        {
+          platform: "modrinth",
+          slug: "iris",
+          projectId: "YL57xq9U",
+          loader: "neoforge",
+          minecraftVersion: "26.1.2"
+        }
+      ],
+      modrinthResolver: async (request) => {
+        seen.push(`${request.projectId}:${request.slug}:${request.minecraftVersion}`);
+        return request.slug === "iris"
+          ? createModrinthIrisResult("26.1.2", "neoforge")
+          : createModrinthSodiumResult("26.1.2", "neoforge");
+      }
+    });
+
+    expect(seen).toEqual([
+      "AANobbMI:sodium:26.1.2",
+      "YL57xq9U:iris:26.1.2"
+    ]);
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "external_mod_resolution",
+        requests: [
+          {
+            platform: "modrinth",
+            slug: "sodium",
+            projectId: "AANobbMI",
+            minecraftVersion: "26.1.2"
+          },
+          {
+            platform: "modrinth",
+            slug: "iris",
+            projectId: "YL57xq9U",
+            minecraftVersion: "26.1.2"
+          }
+        ],
+        results: [
+          {
+            result: {
+              candidates: [
+                {
+                  slug: "sodium"
+                }
+              ]
+            }
+          },
+          {
+            result: {
+              candidates: [
+                {
+                  slug: "iris"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    });
+  });
+
   it("skips crash resource context without loader dependency evidence", async () => {
     const input = await createExecutorInput(
       [
@@ -408,7 +538,10 @@ async function createExecutorInput(requestText: string) {
   };
 }
 
-function createModrinthSodiumResult(): ExternalModResolverResult {
+function createModrinthSodiumResult(
+  minecraftVersion = "1.20.1",
+  loader = "fabric"
+): ExternalModResolverResult {
   return {
     source: "modrinth",
     query: "sodium",
@@ -422,8 +555,8 @@ function createModrinthSodiumResult(): ExternalModResolverResult {
         title: "Sodium",
         versionId: "OihdIimA",
         versionNumber: "mc1.20.1-0.5.13-fabric",
-        loaders: ["fabric"],
-        minecraftVersions: ["1.20.1"],
+        loaders: [loader],
+        minecraftVersions: [minecraftVersion],
         fileName: "sodium-fabric.jar",
         downloadUrl: "https://cdn.modrinth.com/data/AANobbMI/versions/OihdIimA.jar",
         hashes: {
@@ -435,6 +568,47 @@ function createModrinthSodiumResult(): ExternalModResolverResult {
             projectId: "AANobbMI",
             versionId: "OihdIimA",
             versionNumber: "mc1.20.1-0.5.13-fabric"
+          })
+        ],
+        requiresConfirmation: true,
+        cachePolicy: "metadata_only"
+      }
+    ],
+    warnings: []
+  };
+}
+
+function createModrinthIrisResult(
+  minecraftVersion = "1.20.1",
+  loader = "fabric"
+): ExternalModResolverResult {
+  return {
+    source: "modrinth",
+    query: "iris",
+    candidates: [
+      {
+        source: "modrinth",
+        confidence: "high",
+        confidenceReasons: ["matched Modrinth slug iris"],
+        projectId: "YL57xq9U",
+        slug: "iris",
+        title: "Iris Shaders",
+        versionId: "iris-version-id",
+        versionNumber: "mc26.1.2-1.0.0-neoforge",
+        loaders: [loader],
+        minecraftVersions: [minecraftVersion],
+        fileName: "iris-neoforge.jar",
+        downloadUrl:
+          "https://cdn.modrinth.com/data/YL57xq9U/versions/iris-version-id.jar",
+        hashes: {
+          sha512: "test-sha512"
+        },
+        mavenArtifacts: [
+          buildModrinthMavenArtifact({
+            slug: "iris",
+            projectId: "YL57xq9U",
+            versionId: "iris-version-id",
+            versionNumber: "mc26.1.2-1.0.0-neoforge"
           })
         ],
         requiresConfirmation: true,

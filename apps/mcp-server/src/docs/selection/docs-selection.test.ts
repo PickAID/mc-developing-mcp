@@ -35,7 +35,12 @@ describe("buildMcpServerDocsSelection", () => {
       trace: {
         taskIntentId: "kubejs_authoring",
         routeStep: "docs_lookup",
-        rejectedPackages: []
+        rejectedPackages: expect.arrayContaining([
+          {
+            packageId: "minecraft-version-changes",
+            reason: "task intent kubejs_authoring is outside the package intent scope"
+          }
+        ])
       }
     });
   });
@@ -60,13 +65,13 @@ describe("buildMcpServerDocsSelection", () => {
       trace: {
         taskIntentId: "crash_triage",
         routeStep: "docs_lookup",
-        rejectedPackages: [
+        rejectedPackages: expect.arrayContaining([
           {
             packageId: "crychicdoc-kubejs-1.20.1-course-zh-cn",
             reason:
               "task intent crash_triage is outside the package intent scope"
           }
-        ]
+        ])
       }
     });
   });

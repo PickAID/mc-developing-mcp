@@ -25,6 +25,16 @@
       "id": 5,
       "prompt": "MDM_SOURCES_ROOT 应该配到当前 MCP 仓库吗？",
       "expected_output": "Agent uses the runtime environment playbook, explains consumer checkout vs MCP source checkout, and prefers per-call inputPatch/envPatch evidence."
+    },
+    {
+      "id": 6,
+      "prompt": "帮我找 Sodium 和 Iris 在 Modrinth 上 NeoForge 26.1.2 的 maven.modrinth 坐标，Sodium 是 AANobbMI，Iris 是 YL57xq9U。",
+      "expected_output": "Agent calls mc_develop with operations.kind external_mod_resolution and externalModRequests for both exact Modrinth project ids, loader neoforge, minecraftVersion 26.1.2; it does not rely on requestText parsing."
+    },
+    {
+      "id": 7,
+      "prompt": "查 JEI forge 1.20.1 的 CurseMaven 坐标，CurseForge project id 是 238222。",
+      "expected_output": "Agent uses the external-mod-resolution playbook, calls mc_develop with a structured curseforge externalModRequest, and handles CURSEFORGE_API_KEY guidance if credentials are missing."
     }
   ]
 }

@@ -65,6 +65,73 @@ describe("resolveModrinthMod", () => {
     });
   });
 
+  it("resolves an explicit Modrinth project id without falling back to search", async () => {
+    const requests: string[] = [];
+    const result = await resolveModrinthMod({
+      projectId: "AANobbMI",
+      slug: "sodium",
+      loader: "neoforge",
+      minecraftVersion: "26.1.2",
+      fetch: async (url) => {
+        requests.push(url.toString());
+
+        if (url.toString().includes("/v2/search")) {
+          throw new Error("Explicit Modrinth project ids must not use search.");
+        }
+
+        if (url.toString().includes("/version")) {
+          return jsonResponse([
+            {
+              id: "version-id",
+              version_number: "mc26.1.2-1.0.0-neoforge",
+              loaders: ["neoforge"],
+              game_versions: ["26.1.2"],
+              files: [
+                {
+                  primary: true,
+                  filename: "sodium-neoforge-26.1.2.jar",
+                  url: "https://cdn.modrinth.com/data/AANobbMI/versions/version-id/sodium.jar",
+                  hashes: { sha512: "sha512-fixture" }
+                }
+              ]
+            }
+          ]);
+        }
+
+        return jsonResponse({
+          id: "AANobbMI",
+          slug: "sodium",
+          title: "Sodium",
+          project_type: "mod",
+          downloads: 148390564
+        });
+      }
+    });
+
+    expect(requests).toEqual([
+      "https://api.modrinth.com/v2/project/AANobbMI",
+      "https://api.modrinth.com/v2/project/sodium/version?loaders=%5B%22neoforge%22%5D&game_versions=%5B%2226.1.2%22%5D"
+    ]);
+    expect(result).toMatchObject({
+      source: "modrinth",
+      query: "sodium",
+      warnings: [],
+      candidates: [
+        {
+          projectId: "AANobbMI",
+          slug: "sodium",
+          versionId: "version-id",
+          fileName: "sodium-neoforge-26.1.2.jar",
+          mavenArtifacts: [
+            {
+              coordinates: "maven.modrinth:sodium:version-id"
+            }
+          ]
+        }
+      ]
+    });
+  });
+
   it("resolves a Modrinth slug to a primary jar candidate for the requested loader and Minecraft version", async () => {
     const requests: string[] = [];
     const result = await resolveModrinthMod({

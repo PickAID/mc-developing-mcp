@@ -47,7 +47,6 @@ export type ResolvableExternalModRequest =
     })
   | (McpServerExternalModResolutionRequest & {
       platform: "modrinth" | "curseforge";
-      query: string;
       loader: string;
       minecraftVersion: string;
     });
@@ -103,7 +102,9 @@ export function collectMissingConstraints(
   }
 
   return [
-    request.query ? undefined : "mod query or slug",
+    request.query || request.slug || request.projectId
+      ? undefined
+      : "mod query, slug, or project id",
     request.loader ? undefined : "mod loader",
     request.minecraftVersion ? undefined : "Minecraft version"
   ].filter((entry): entry is string => entry !== undefined);
@@ -116,7 +117,27 @@ export function hasRequiredConstraints(
     return Boolean(request.coordinate);
   }
 
-  return Boolean(request.query && request.loader && request.minecraftVersion);
+  return Boolean(
+    (request.query || request.slug || request.projectId) &&
+      request.loader &&
+      request.minecraftVersion
+  );
+}
+
+export function normalizeExternalModRequest(
+  request: McpServerExternalModResolutionRequest,
+  defaults: McpServerExternalModRequestDefaults = {}
+): McpServerExternalModResolutionRequest {
+  if (request.platform === "maven") {
+    return request;
+  }
+
+  return {
+    ...request,
+    query: request.query ?? request.slug ?? request.projectId,
+    loader: request.loader ?? defaults.loader,
+    minecraftVersion: request.minecraftVersion ?? defaults.minecraftVersion
+  };
 }
 
 export function buildMavenRepositories(
@@ -165,7 +186,11 @@ function detectLoader(requestText: string): string | undefined {
 }
 
 function detectMinecraftVersion(requestText: string): string | undefined {
-  return requestText.match(/\b1\.\d{1,2}(?:\.\d+)?\b/)?.[0];
+  const labeled = requestText.match(
+    /\b(?:minecraft(?:\s+game[_\s-]?version|\s+version)?|mc(?:\s+version)?|game[_\s-]?version)\s*[:=]?\s*(\d+\.\d+(?:\.\d+)?)/i
+  )?.[1];
+
+  return labeled ?? requestText.match(/\b1\.\d{1,2}(?:\.\d+)?\b/)?.[0];
 }
 
 function extractQuery(

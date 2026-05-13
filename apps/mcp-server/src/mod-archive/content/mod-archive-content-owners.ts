@@ -155,6 +155,7 @@ export async function lookupMixinTargetVerification(input: {
   workspaceRoot: string;
   archivePaths: string[];
   requestText?: string;
+  requestedTargets?: string[];
   cache?: ArchiveContentCache;
   databasePath?: string;
   runtimeRoot?: string;
@@ -165,6 +166,7 @@ export async function lookupMixinTargetVerification(input: {
     (member) => isMixinArchiveTarget(member.owner)
   );
   const requestedTargets = unique([
+    ...(input.requestedTargets ?? []),
     ...extractMixinTargetReferences(input.requestText),
     ...requestedMembers.map((member) => member.owner)
   ]).filter(isMixinArchiveTarget);
@@ -226,14 +228,17 @@ export async function lookupClassOwners(input: {
   workspaceRoot: string;
   archivePaths: string[];
   requestText?: string;
+  requestedClasses?: string[];
   cache?: ArchiveContentCache;
   databasePath?: string;
   refresh?: boolean;
 }): Promise<McpServerEvidenceExecutorResult | undefined> {
-  const requestedClasses = extractJavaClassReferences(input.requestText, {
-    ignoredPackagePrefixes: CLASS_OWNER_IGNORED_PACKAGE_PREFIXES,
-    limit: MOD_ARCHIVE_QUERY_LIMIT
-  });
+  const requestedClasses = input.requestedClasses?.length
+    ? input.requestedClasses.slice(0, MOD_ARCHIVE_QUERY_LIMIT)
+    : extractJavaClassReferences(input.requestText, {
+        ignoredPackagePrefixes: CLASS_OWNER_IGNORED_PACKAGE_PREFIXES,
+        limit: MOD_ARCHIVE_QUERY_LIMIT
+      });
 
   if (requestedClasses.length === 0) {
     return undefined;

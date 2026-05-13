@@ -15,7 +15,11 @@ export function executeMcpServerDocsLookup(
   input: McpServerEvidenceExecutorInput,
   options: McpServerDocsLookupOptions = {}
 ): McpServerEvidenceExecutorResult {
-  const queryText = input.candidate.queryHint ?? input.requestPlan.requestText ?? "";
+  const queryText =
+    input.candidate.operationInput?.docsQuery ??
+    input.candidate.queryHint ??
+    input.requestPlan.requestText ??
+    "";
   const docsSelection =
     input.docsSelection ??
     {

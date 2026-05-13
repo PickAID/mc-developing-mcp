@@ -118,7 +118,9 @@ export function buildMcpServerSourceBundleExecutor(
       );
     }
 
-    const request = extractVanillaSourceRequest(input.requestPlan.requestText);
+    const request =
+      input.candidate.operationInput?.vanillaSource ??
+      extractVanillaSourceRequest(input.requestPlan.requestText);
 
     if (!request) {
       return (

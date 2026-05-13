@@ -9,6 +9,7 @@ import type {
   McpServerEvidenceExecutorInput,
   McpServerEvidenceExecutorResult
 } from "../../request/execution/request-handler.js";
+import type { McpOperationDatapackInput } from "../../request/evidence/evidence-operation-input.js";
 import {
   executeMcpServerVanillaDatapackPackage,
   type McpServerVanillaDatapackPackageOptions
@@ -67,14 +68,22 @@ export async function executeMcpServerDatapackFiles(
     };
   }
 
-  const requestText = input.requestPlan.requestText ?? "";
+  const operation = input.candidate.operationInput?.datapack;
+  const requestText = buildDatapackRequestText(
+    operation,
+    input.requestPlan.requestText ?? ""
+  );
   const isClientVisualRequest =
+    operation?.mode === "client_visual" ||
     input.requestPlan.trace.taskIntent.id === "client_visual_resources";
   const isResourcePackRequest =
+    operation?.mode === "resource_pack" ||
     input.requestPlan.trace.taskIntent.id === "resource_pack_lookup" ||
     isClientVisualRequest;
-  const queries = extractResourceLocationQueries(requestText);
-  const requestedPaths = extractDatapackPathQueries(requestText);
+  const queries =
+    operation?.resourceLocations ?? extractResourceLocationQueries(requestText);
+  const requestedPaths =
+    operation?.paths ?? extractDatapackPathQueries(requestText);
   const discovery = await discoverDatapackContent(workspaceRoot);
   const ftbQuestsSummary = await summarizeFtbQuestsFiles(workspaceRoot);
 
@@ -262,4 +271,27 @@ export async function executeMcpServerDatapackFiles(
       truncated: search.truncated
     }
   };
+}
+
+function buildDatapackRequestText(
+  operation: McpOperationDatapackInput | undefined,
+  fallback: string
+): string {
+  if (!operation) {
+    return fallback;
+  }
+
+  const parts = [
+    ...(operation.resourceLocations ?? []),
+    ...(operation.paths ?? []),
+    operation.traceReferences ? "trace references" : undefined,
+    operation.migration
+      ? `from ${operation.migration.fromMinecraftVersion} to ${operation.migration.toMinecraftVersion}`
+      : undefined,
+    operation.mode === "resource_pack" ? "resource pack assets" : undefined,
+    operation.mode === "client_visual" ? "client visual resources" : undefined,
+    fallback
+  ].filter((part): part is string => typeof part === "string" && part.length > 0);
+
+  return parts.length > 0 ? parts.join(" ") : fallback;
 }
