@@ -20,7 +20,8 @@ const resourcepackPackageId = "minecraft-1.20.1-vanilla-resourcepack-profile";
 describe("mdm-sources datapack/resourcepack release split smoke", () => {
   it("keeps datapack and resourcepack channels separate through build, v2, install, and status", async () => {
     const mdmSourcesRoot = resolve(
-      "/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources"
+      process.env.MDM_SOURCES_ROOT ??
+        "/Users/gedwen/.local/share/mc-developing-mcp/mdm-sources"
     );
     const builderPath = join(mdmSourcesRoot, "tools/build-local-release.mjs");
     if (!(await pathExists(builderPath))) {

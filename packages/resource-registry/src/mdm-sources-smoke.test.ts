@@ -281,10 +281,9 @@ function countByReleaseChannel(
 
 async function findMdmSourcesRoot(): Promise<string | undefined> {
   const candidates = [
-    resolve(process.cwd(), "..", "mdm-sources"),
-    resolve(process.cwd(), "..", "..", "..", "mdm-sources"),
-    resolve("/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources")
-  ];
+    process.env.MDM_SOURCES_ROOT,
+    "/Users/gedwen/.local/share/mc-developing-mcp/mdm-sources"
+  ].filter(Boolean);
 
   for (const candidate of candidates) {
     if (await pathExists(join(candidate, "tools", "build-local-release.mjs"))) {

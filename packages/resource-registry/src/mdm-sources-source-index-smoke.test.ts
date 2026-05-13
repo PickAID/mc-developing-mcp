@@ -21,7 +21,8 @@ const packageId = "minecraft-1.20.1-source-index";
 describe("mdm-sources source_index_sqlite release smoke", () => {
   it("builds and validates a source index sqlite release package", async () => {
     const mdmSourcesRoot = resolve(
-      "/Users/gedwen/Documents/programing/MCProgrammingSkill/mdm-sources"
+      process.env.MDM_SOURCES_ROOT ??
+        "/Users/gedwen/.local/share/mc-developing-mcp/mdm-sources"
     );
     const builderPath = join(mdmSourcesRoot, "tools/build-local-release.mjs");
     if (!(await pathExists(builderPath))) {
