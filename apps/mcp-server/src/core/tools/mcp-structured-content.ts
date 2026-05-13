@@ -3,6 +3,7 @@ import type { MdmResourceStatusContext } from "../../docs/mdm-resource/mdm-resou
 import type { McpMdmReleaseInstallResult } from "../../docs/mdm-resource/mdm-release-install.js";
 import type { MdmDocsResourceSummary } from "../../docs/mdm-docs/mdm-docs-records.js";
 import type { MdmPackageRecommendations } from "../../docs/mdm-resource/mdm-package-recommendations.js";
+import type { McpRuntimeEnvironment } from "./mcp-tool-runtime-resolution.js";
 import { buildMcpResourceActions } from "./mcp-resource-actions.js";
 import { buildMcpPromptGuidance } from "./mcp-prompt-guidance.js";
 import { buildStructuredWorkspacePreparation } from "./mcp-structured-workspace-preparation.js";
@@ -20,6 +21,7 @@ type RequiredBudgetOptions = Required<
     | "mdmReleaseInstall"
     | "mdmDocs"
     | "mdmPackageRecommendations"
+    | "runtimeEnvironment"
   >
 >;
 
@@ -37,6 +39,7 @@ export interface McpDevelopStructuredContentOptions {
   mdmReleaseInstall?: McpMdmReleaseInstallResult;
   mdmDocs?: MdmDocsResourceSummary;
   mdmPackageRecommendations?: MdmPackageRecommendations;
+  runtimeEnvironment?: McpRuntimeEnvironment;
 }
 
 export function buildMcpDevelopStructuredContent(
@@ -90,6 +93,10 @@ export function buildMcpDevelopStructuredContent(
     },
     executions,
     selectedEvidence,
+    runtimeEnvironment: options.runtimeEnvironment
+      ? compactPayload(toRuntimeEnvironmentSummary(options.runtimeEnvironment), budget)
+          .value
+      : undefined,
     mdmResources: options.mdmResources
       ? compactPayload(options.mdmResources, budget).value
       : undefined,
@@ -110,6 +117,17 @@ export function buildMcpDevelopStructuredContent(
   };
 
   return JSON.parse(JSON.stringify(compact)) as Record<string, unknown>;
+}
+
+function toRuntimeEnvironmentSummary(
+  runtimeEnvironment: McpRuntimeEnvironment
+): Omit<McpRuntimeEnvironment, "env"> {
+  return {
+    values: runtimeEnvironment.values,
+    sources: runtimeEnvironment.sources,
+    inputPatch: runtimeEnvironment.inputPatch,
+    envPatch: runtimeEnvironment.envPatch
+  };
 }
 
 function normalizeBudget(

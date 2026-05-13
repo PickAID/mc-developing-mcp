@@ -50,9 +50,8 @@ import {
   formatToolError,
   resolveGradleSourceDiscovery,
   resolveLocalJarMode,
-  resolveRuntimeRoot,
-  resolveToolEnv,
-  resolveWorkspaceRoot
+  resolveMcpRuntimeEnvironment,
+  type McpRuntimeEnvironment
 } from "./mcp-tool-runtime-resolution.js";
 
 export const MC_DEVELOP_TOOL_NAME = "mc_develop";
@@ -137,6 +136,10 @@ const mcpDevelopInputSchema = z.object({
     .string()
     .optional()
     .describe("Managed MCP runtime/cache root. Defaults to MC_DEVELOPING_MCP_RUNTIME_ROOT or ~/.cache/mc-developing-mcp/runtime."),
+  mdmSourcesRoot: z
+    .string()
+    .optional()
+    .describe("Optional local mdm-sources consumer checkout. Defaults to MDM_SOURCES_ROOT, MDM_SOURCES_DEFAULT_ROOT, or ~/.local/share/mc-developing-mcp/mdm-sources."),
   prismRoot: z
     .string()
     .optional()
@@ -234,17 +237,17 @@ async function executeMcpDevelopTool(
 ): Promise<CallToolResult> {
   try {
     const input = mcpDevelopInputSchema.parse(rawInput);
-    const runtimeRoot = resolveRuntimeRoot(input, options);
-    const workspaceRoot = resolveWorkspaceRoot(input, options);
-    const env = resolveToolEnv(options);
-    const prismRoot = input.prismRoot ?? env.MC_DEVELOPING_MCP_PRISM_ROOT;
+    const runtimeEnvironment = resolveMcpRuntimeEnvironment(input, options);
+    const { env } = runtimeEnvironment;
+    const { runtimeRoot, workspaceRoot, prismRoot, mdmSourcesRoot } =
+      runtimeEnvironment.values;
     const bootstrap = await buildMcpServerBootstrap({
       runtimeRoot,
       workspace: { workspaceRoot, prismRoot }
     });
     let mdmResources = await buildMdmResourceStatusContext({
       runtimeRoot,
-      mdmSourcesRoot: env.MDM_SOURCES_ROOT
+      mdmSourcesRoot
     });
     const mdmReleaseInstall = input.mdmReleaseInstall
       ? await installMdmReleasePackage({
@@ -259,7 +262,7 @@ async function executeMcpDevelopTool(
     if (shouldRefreshMdmResourceStatus(mdmReleaseInstall)) {
       mdmResources = await buildMdmResourceStatusContext({
         runtimeRoot,
-        mdmSourcesRoot: env.MDM_SOURCES_ROOT
+        mdmSourcesRoot
       });
       mdmResources = await mergeInstalledReleaseResources({
         runtimeRoot,
@@ -356,7 +359,8 @@ async function executeMcpDevelopTool(
         mdmResources,
         mdmReleaseInstall,
         mdmDocs: mdmDocs.summary,
-        mdmPackageRecommendations
+        mdmPackageRecommendations,
+        runtimeEnvironment
       })
     };
   } catch (error) {
@@ -397,6 +401,7 @@ function toStructuredContent(
     mdmReleaseInstall?: McpMdmReleaseInstallResult;
     mdmDocs?: MdmDocsResourceSummary;
     mdmPackageRecommendations?: MdmPackageRecommendations;
+    runtimeEnvironment?: McpRuntimeEnvironment;
   }
 ): Record<string, unknown> {
   return buildMcpDevelopStructuredContent(result, options);

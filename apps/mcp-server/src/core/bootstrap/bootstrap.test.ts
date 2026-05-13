@@ -19,6 +19,7 @@ describe("buildMcpServerBootstrap", () => {
 
     expect(bootstrap.appId).toBe("mcp-server");
     expect(bootstrap.runtimePolicy.runtimeRoot).toBe("/tmp/mcpskill-runtime");
+    expect(bootstrap.runtimePolicy.runtimeVersion).toBe("0.1.1");
     expect(bootstrap.runtimePolicy.mode).toBe("managed-first");
     expect(bootstrap.runtimePolicy.requiredArtifacts.map((item) => item.id)).toEqual(
       ["jdk", "jdtls", "gradle-support"]

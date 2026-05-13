@@ -15,6 +15,10 @@ describe("mc_develop tool description", () => {
     expect(description).toContain("modrinth");
     expect(description).toContain("curseforge");
     expect(description).toContain("github");
+    expect(description).toContain("Runtime environment resolution is layered");
+    expect(description).toContain("mdmSourcesRoot");
+    expect(description).toContain("runtimeEnvironment");
+    expect(description).toContain("inputPatch/envPatch");
     expect(description).toContain("remoteMetadataPolicy: enabled");
     expect(description).toContain("https://github.com/neoforged/.github/tree/main/primers");
     expect(description).toContain("https://misode.github.io/versions/?id=26.1&tab=changelog");
@@ -49,6 +53,12 @@ describe("mc_develop tool description", () => {
     );
     expect(mcpDevelopInputShape.gradleSourceDiscovery.description).toContain(
       "includeDefaultGradleUserHome: true"
+    );
+    expect(mcpDevelopInputShape.mdmSourcesRoot.description).toContain(
+      "MDM_SOURCES_ROOT"
+    );
+    expect(mcpDevelopInputShape.mdmSourcesRoot.description).toContain(
+      "~/.local/share/mc-developing-mcp/mdm-sources"
     );
   });
 });

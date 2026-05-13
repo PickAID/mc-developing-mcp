@@ -16,6 +16,7 @@ export interface ManagedRuntimePolicy {
   mode: "managed-first" | "system-first";
   allowSystemFallback: boolean;
   runtimeRoot: string;
+  runtimeVersion: string;
   requiredArtifacts: RuntimeArtifactRequest[];
 }
 

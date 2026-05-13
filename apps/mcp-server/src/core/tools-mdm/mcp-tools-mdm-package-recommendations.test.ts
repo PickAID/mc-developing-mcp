@@ -60,6 +60,55 @@ describe("mc_develop mdm package recommendations", () => {
     });
   });
 
+  it("uses runtime environment defaults when no persistent MDM env is provided", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-default-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_DEFAULT_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText: "Need shader docs for ray marching and GLSL.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent?.runtimeEnvironment).toMatchObject({
+      sources: {
+        mdmSourcesRoot: "instance_default"
+      },
+      values: {
+        mdmSourcesRoot
+      },
+      inputPatch: {
+        runtimeRoot,
+        workspaceRoot,
+        mdmSourcesRoot
+      },
+      envPatch: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot
+      }
+    });
+    expect(result.structuredContent?.mdmPackageRecommendations).toMatchObject({
+      suggestions: expect.arrayContaining([
+        expect.objectContaining({
+          packageId: "shader-dev-docs",
+          mdmReleaseInstall: expect.objectContaining({
+            manifestPath: join(mdmSourcesRoot, "release-out", "mdm-release-manifest.json")
+          })
+        })
+      ])
+    });
+  });
+
   it("recommends source acquisition profiles for source lookup requests", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-rec-"));
     const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
