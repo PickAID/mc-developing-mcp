@@ -251,6 +251,46 @@ describe("mc_develop mdm package recommendations", () => {
     });
   });
 
+  it("recommends shader development docs for GLSL and ray marching requests", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-shader-docs-rec-"));
+    const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
+    const runtimeRoot = join(tempRoot, "runtime");
+    const workspaceRoot = await createWorkspaceRoot(tempRoot);
+    const registry = createCapturingRegistry();
+
+    registerMcpServerTools(registry, {
+      env: {
+        MDM_SOURCES_ROOT: mdmSourcesRoot,
+        PATH: ""
+      }
+    });
+
+    const result = await registry.calls[0].handler({
+      requestText:
+        "Need shader-dev GLSL docs for ray marching SDF scenes and WebGL2 fragment shader pitfalls.",
+      runtimeRoot,
+      workspaceRoot
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      mdmPackageRecommendations: {
+        suggestions: expect.arrayContaining([
+          expect.objectContaining({
+            packageId: "shader-dev-docs",
+            priority: "high",
+            matchedSignals: expect.arrayContaining(["shader-docs"]),
+            mdmReleaseInstall: {
+              packageId: "shader-dev-docs",
+              downloadPolicy: "disabled",
+              manifestPath: join(mdmSourcesRoot, "release-out", "mdm-release-manifest.json")
+            }
+          })
+        ])
+      }
+    });
+  });
+
   it("uses workspace Minecraft version when request text has no explicit version", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "mcpskill-mdm-source-workspace-rec-"));
     const mdmSourcesRoot = await createMdmSourcesRoot(tempRoot);
@@ -407,6 +447,7 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
       packageIndexEntry("minecraft-1.20.1-vanilla-source-profile", "sources"),
       packageIndexEntry("minecraft-26.1-vanilla-source-profile", "sources"),
       packageIndexEntry("minecraft-loader-docs", "minecraft-loader-docs"),
+      packageIndexEntry("shader-dev-docs", "shader-dev-docs"),
       packageIndexEntry("minecraft-1.21.10-version-changes", "minecraft-version-changes"),
       packageIndexEntry("minecraft-26.1-version-changes", "minecraft-version-changes")
     ]
@@ -504,6 +545,19 @@ async function createMdmSourcesRoot(tempRoot: string): Promise<string> {
     artifactName:
       "minecraft-loader-docs-0.1.0.sqlite",
     capabilities: ["docs_search", "docs_direct_read"]
+  });
+  await writePackage(root, {
+    id: "shader-dev-docs",
+    channel: "docs",
+    family: "shader-dev-docs",
+    artifactName:
+      "shader-dev-docs-0.1.0.sqlite",
+    capabilities: [
+      "docs_search",
+      "docs_direct_read",
+      "shader_reference",
+      "glsl_reference"
+    ]
   });
   await writePackage(root, {
     id: "minecraft-1.21.10-version-changes",

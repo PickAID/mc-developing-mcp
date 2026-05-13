@@ -142,6 +142,7 @@ function detectRequestSignals(requestText: string): Set<RequestSignal> {
   addSignal(signals, normalized, "schema-docs", /schema|mcdoc|vanilla[- ]?mcdoc|misode|explain|解释器|解释|结构|格式/u);
   addSignal(signals, normalized, "version-changes", /version changes?|technical changes?|changelog|change log|migration|migrate|upgrade|porting|primers?|neoforged primers?|neoforge primers?|misode changelog|technical-changes|版本变化|版本变更|迁移|升级|移植|更新日志|变更日志/u);
   addSignal(signals, normalized, "loader-docs", /neo[\s-]?forge(?:d)? docs?|neo[\s-]?forge(?:d)? documentation|docs\.neoforged\.net|neoforged\.net\/news|forge docs?|forge documentation|docs\.minecraftforge\.net|championash5357|loader docs?|加载器文档|加载器资料/u);
+  addSignal(signals, normalized, "shader-docs", /shader[- ]?dev|shader docs?|glsl|shadertoy|webgl2?|fragment shader|vertex shader|ray[- ]?march(?:ing)?|raymarch(?:ing)?|\bsdf\b|signed distance functions?|post[- ]?processing|procedural noise|着色器|光线步进/u);
   addSignal(signals, normalized, "client-visual", /client visual|\bgui\b|\bui\b|render|renderer|shader|screen|nine|nine-slice|视觉|渲染|界面/u);
   addSignal(signals, normalized, "mappings", /mapping|mapped|remap|yarn|parchment|mojmap|official name|obfuscated|mixin target|映射|混淆/u);
   addSignal(signals, normalized, "sources", /source|sources|source lookup|source pack|source index|decompile|decompiled|源码|源代码|反编译/u);
@@ -256,6 +257,11 @@ function matchPackageSignals(
     }
     if (signal === "loader-docs") {
       return /loader[-_ ]?docs|minecraft[-_ ]?loader[-_ ]?docs|neoforge(?:d)?[-_ ]?docs?|forge[-_ ]?docs?|documentation/u.test(
+        searchable
+      );
+    }
+    if (signal === "shader-docs") {
+      return /shader[-_ ]?dev|shader[-_ ]?docs|glsl|shadertoy|webgl|ray[-_ ]?march(?:ing)?|sdf|shader[-_ ]?reference/u.test(
         searchable
       );
     }
@@ -382,6 +388,7 @@ function resolvePriority(input: {
     matchedSignals.includes("schema-docs") ||
     matchedSignals.includes("version-changes") ||
     matchedSignals.includes("loader-docs") ||
+    matchedSignals.includes("shader-docs") ||
     score >= 20
   ) {
     return "high";
@@ -432,6 +439,7 @@ type RequestSignal =
   | "schema-docs"
   | "version-changes"
   | "loader-docs"
+  | "shader-docs"
   | "client-visual"
   | "mappings"
   | "sources"
