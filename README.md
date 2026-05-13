@@ -56,6 +56,26 @@ For MCP clients, prefer `npx` so the project stays easy to update:
 }
 ```
 
+Optional agent Skill:
+
+```sh
+npx skills add PickAID/mc-developing-mcp --skill mc-develop-first -g -a codex -y
+```
+
+This installs `skills/mc-develop-first`, a pluggable operating guide for agents. It makes `mc_develop` the first evidence step for Minecraft APIs, schemas, loader behavior, crash causes, KubeJS/ProbeJS context, datapack/resource-pack version details, local jar ownership, docs/version resources, and runtime environment handling. The Skill includes task-specific playbooks under `references/` so agents can route KubeJS, crashes, Java/Gradle mods, datapacks/resource packs, docs resources, and runtime root questions without adding rules to `AGENTS.md`.
+
+To remove it:
+
+```sh
+npx skills remove mc-develop-first -g -a codex -y
+```
+
+The older singular `skill` CLI currently uses `npx skill skills/<name>` and does not support an `add` subcommand in `skill@1.0.2`. If you specifically use that CLI, install from this repository by setting its base URL to the GitHub tree:
+
+```sh
+SKILL_BASE_URL=https://github.com/PickAID/mc-developing-mcp/tree/main npx skill skills/mc-develop-first
+```
+
 Requirements:
 
 - Node.js `>=22.5.0`

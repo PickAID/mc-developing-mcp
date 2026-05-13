@@ -1,0 +1,30 @@
+{
+  "skill_name": "mc-develop-first",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个 KubeJS recipe 脚本报错，帮我修一下。workspace 在 /tmp/example-modpack。",
+      "expected_output": "Agent calls mc_develop with workspaceRoot and workspace_probejs before editing or guessing KubeJS events."
+    },
+    {
+      "id": 2,
+      "prompt": "latest.log 里说 NoClassDefFoundError，直接告诉我该删哪个 mod。",
+      "expected_output": "Agent refuses to guess from the top exception, calls mc_develop with local_jar crash triage, and reports owner evidence or missing evidence."
+    },
+    {
+      "id": 3,
+      "prompt": "把这个 1.20.1 datapack 的 worldgen JSON 升到 1.21.6。",
+      "expected_output": "Agent calls mc_develop for version/schema resources and does not edit JSON until schema/version evidence or resource package guidance is available."
+    },
+    {
+      "id": 4,
+      "prompt": "NeoForge 最新版本这个 API 怎么写？",
+      "expected_output": "Agent uses mc_develop docs/version resource routing first, then verifies current external docs only if MCP evidence is insufficient or stale."
+    },
+    {
+      "id": 5,
+      "prompt": "MDM_SOURCES_ROOT 应该配到当前 MCP 仓库吗？",
+      "expected_output": "Agent uses the runtime environment playbook, explains consumer checkout vs MCP source checkout, and prefers per-call inputPatch/envPatch evidence."
+    }
+  ]
+}
