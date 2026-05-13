@@ -224,9 +224,28 @@ const probeJsOperationSchema = z.object({
     .describe("Exact KubeJS/ProbeJS symbol to query, such as event.recipes or ItemStack."),
   resourceQueries: z
     .array(z.string().min(1))
-    .max(12)
     .optional()
     .describe("Exact ProbeJS resource ids or query terms for items, recipes, tags, fluids, or registries."),
+  resourceKinds: z
+    .array(z.enum([
+      "class",
+      "language_key",
+      "snippet",
+      "item",
+      "recipe",
+      "registry",
+      "fluid",
+      "tag"
+    ]))
+    .max(8)
+    .optional()
+    .describe("Optional ProbeJS semantic resource kinds to include."),
+  resourceLimitPerKind: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .describe("Optional per-kind entry limit. Omit for all matching entries; use 0 for counts-only output."),
   resourceOnly: z
     .boolean()
     .optional()

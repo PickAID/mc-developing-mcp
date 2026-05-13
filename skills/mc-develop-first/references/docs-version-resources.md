@@ -6,7 +6,13 @@ Use for Minecraft version migration, NeoForge/Forge documentation, loader docs, 
 
 ```json
 {
-  "requestText": "Check which offline docs, version-change resources, loader docs, schema docs, source indexes, or mapping profiles would help this Minecraft task."
+  "requestText": "Context only: check docs/resource packages for Minecraft task.",
+  "operations": [
+    {
+      "kind": "docs_lookup",
+      "docsQuery": "NeoForge migration version changes datapack schema"
+    }
+  ]
 }
 ```
 
@@ -14,8 +20,14 @@ When a workspace exists:
 
 ```json
 {
-  "requestText": "Use workspace evidence and offline docs recommendations for this Minecraft version/docs task.",
+  "requestText": "Context only: use workspace evidence and offline docs recommendations.",
   "workspaceRoot": "/path/to/workspace",
+  "operations": [
+    {
+      "kind": "docs_lookup",
+      "docsQuery": "exact docs topic here"
+    }
+  ],
   "preparationRoutes": ["runtime_cache"]
 }
 ```
@@ -62,6 +74,7 @@ Do not invent package ids. Copy them from MCP output.
 ## Version Migration Rules
 
 - Use exact Minecraft/loader versions in the requestText.
+- Put the exact docs topic in `operations[].docsQuery`; do not rely on a broad prose prompt.
 - Ask the MCP for version-change docs before proposing code or JSON migration.
 - For NeoForge/Forge migrations, distinguish loader version, Minecraft version, and mappings/source evidence.
 - For vanilla schemas, ask for schema docs/version profiles before editing pack JSON.

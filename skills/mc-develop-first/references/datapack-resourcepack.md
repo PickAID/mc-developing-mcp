@@ -2,12 +2,26 @@
 
 Use for datapack JSON, resource-pack assets, models, blockstates, item models, loot tables, recipes, tags, predicates, advancements, worldgen, FTB quests data, client visuals, and vanilla schema/version migration.
 
-## First Call
+## Structured First Call
 
 ```json
 {
-  "requestText": "Inspect datapack/resource-pack evidence, pack roots, version profile, resource locations, and schema/docs before editing this content.",
-  "workspaceRoot": "/path/to/pack-or-modpack"
+  "requestText": "Context only: inspect datapack/resource-pack before editing.",
+  "workspaceRoot": "/path/to/pack-or-modpack",
+  "operations": [
+    {
+      "kind": "datapack_files",
+      "datapack": {
+        "mode": "datapack",
+        "paths": ["data/example/recipes/demo.json"],
+        "resourceLocations": ["example:demo"]
+      }
+    },
+    {
+      "kind": "docs_lookup",
+      "docsQuery": "vanilla datapack schema recipe format"
+    }
+  ]
 }
 ```
 
@@ -15,8 +29,17 @@ If you know the task is data-only:
 
 ```json
 {
-  "requestText": "Check datapack roots, resource locations, version profile, and vanilla schema evidence for this data edit.",
+  "requestText": "Context only: check datapack roots and schema evidence.",
   "workspaceRoot": "/path/to/pack-or-modpack",
+  "operations": [
+    {
+      "kind": "datapack_files",
+      "datapack": {
+        "mode": "datapack",
+        "resourceLocations": ["example:demo"]
+      }
+    }
+  ],
   "preparationRoutes": ["runtime_cache"]
 }
 ```
@@ -25,8 +48,18 @@ If assets/models/client visuals are involved:
 
 ```json
 {
-  "requestText": "Trace resource-pack asset/model references and client visual evidence before editing.",
-  "workspaceRoot": "/path/to/pack-or-modpack"
+  "requestText": "Context only: trace resource-pack asset/model references.",
+  "workspaceRoot": "/path/to/pack-or-modpack",
+  "operations": [
+    {
+      "kind": "datapack_files",
+      "datapack": {
+        "mode": "resource_pack",
+        "paths": ["assets/example/models/item/demo.json"],
+        "traceReferences": true
+      }
+    }
+  ]
 }
 ```
 
@@ -49,8 +82,14 @@ If assets/models/client visuals are involved:
 
 ```json
 {
-  "requestText": "Find or install the relevant vanilla schema docs/version profile for this datapack/resource-pack edit.",
+  "requestText": "Context only: find relevant vanilla schema docs/version profile.",
   "workspaceRoot": "/path/to/pack-or-modpack",
+  "operations": [
+    {
+      "kind": "docs_lookup",
+      "docsQuery": "vanilla datapack resource-pack schema version profile"
+    }
+  ],
   "preparationRoutes": ["runtime_cache"]
 }
 ```

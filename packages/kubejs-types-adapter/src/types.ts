@@ -151,6 +151,7 @@ export interface SummarizeKubeJsTypeResourcesOptions {
   maxAttributeBytes?: number;
   maxEntriesPerKind?: number;
   maxUnknownResources?: number;
+  resourceKinds?: KubeJsSemanticResourceKind[];
   resourceQueries?: string[];
   unknownPreviewBytes?: number;
 }

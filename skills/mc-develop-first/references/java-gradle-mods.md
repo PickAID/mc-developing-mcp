@@ -2,12 +2,17 @@
 
 Use for Java mod code, NeoForge/Forge/Fabric projects, Gradle dependencies, repositories, source jars, mappings, mixins, access wideners/transformers, and Java diagnostics.
 
-## First Call
+## Structured First Call
 
 ```json
 {
-  "requestText": "Inspect this Minecraft Java mod workspace before editing. Gather Gradle, loader, dependency, source jar, mapping, and Java diagnostic evidence relevant to the task.",
+  "requestText": "Context only: inspect Java mod workspace before editing.",
   "workspaceRoot": "/path/to/mod-project",
+  "operations": [
+    { "kind": "source_acquisition_plan" },
+    { "kind": "workspace_source", "workspaceSource": { "buildFiles": ["build.gradle"] } },
+    { "kind": "java_diagnostics" }
+  ],
   "preparationRoutes": ["workspace_gradle"]
 }
 ```
@@ -16,8 +21,18 @@ If Java diagnostics matter:
 
 ```json
 {
-  "requestText": "Inspect Gradle and Java diagnostics for this mod code issue before editing.",
+  "requestText": "Context only: inspect Gradle and Java diagnostics.",
   "workspaceRoot": "/path/to/mod-project",
+  "operations": [
+    { "kind": "java_diagnostics" },
+    {
+      "kind": "workspace_source",
+      "workspaceSource": {
+        "javaSymbols": ["com.example.ExampleMod"],
+        "buildFiles": ["build.gradle"]
+      }
+    }
+  ],
   "preparationRoutes": ["workspace_gradle"]
 }
 ```
@@ -28,8 +43,11 @@ If dependencies are found but source jars are missing, call again:
 
 ```json
 {
-  "requestText": "Look for dependency source jars in the default Gradle user home for this mod task.",
+  "requestText": "Context only: look for dependency source jars.",
   "workspaceRoot": "/path/to/mod-project",
+  "operations": [
+    { "kind": "source_acquisition_plan" }
+  ],
   "preparationRoutes": ["workspace_gradle"],
   "gradleSourceDiscovery": {
     "includeDefaultGradleUserHome": true

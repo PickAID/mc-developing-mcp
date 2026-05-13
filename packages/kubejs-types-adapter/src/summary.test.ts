@@ -15,6 +15,65 @@ afterEach(async () => {
 });
 
 describe("summarizeKubeJsTypeResources", () => {
+  it("returns all matching semantic resources by default", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-kjs-summary-all");
+    const itemIds = Array.from(
+      { length: 25 },
+      (_, index) => `example:item_${index}`
+    );
+
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "items", "example.txt"),
+      itemIds.join("\n")
+    );
+
+    const result = await summarizeKubeJsTypeResources({ workspaceRoot });
+
+    expect(result.entries.item.map((entry) => entry.name)).toEqual(itemIds);
+    expect(result.summary).toMatchObject({
+      counts: {
+        item: 25
+      },
+      totalCounts: {
+        item: 25
+      },
+      truncated: false
+    });
+  });
+
+  it("uses explicit resource kind and per-kind limits when requested", async () => {
+    const workspaceRoot = await createTempRoot("mcpskill-kjs-summary-limit");
+
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "items", "example.txt"),
+      [
+        "example:alpha_ingot",
+        "example:beta_ingot",
+        "example:gamma_ingot"
+      ].join("\n")
+    );
+    await writeText(
+      join(workspaceRoot, "kubejs", "probejs", "recipes", "example.txt"),
+      "example:alpha_recipe\n"
+    );
+
+    const result = await summarizeKubeJsTypeResources({
+      workspaceRoot,
+      maxEntriesPerKind: 2,
+      resourceKinds: ["item"],
+      resourceQueries: ["ingot"]
+    });
+
+    expect(result.entries.item.map((entry) => entry.name)).toEqual([
+      "example:alpha_ingot",
+      "example:beta_ingot"
+    ]);
+    expect(result.entries.recipe).toEqual([]);
+    expect(result.summary.counts.item).toBe(2);
+    expect(result.summary.totalCounts.item).toBe(3);
+    expect(result.summary.truncated).toBe(true);
+  });
+
   it("extracts token-efficient snippets, items, and registries from ProbeJS resources", async () => {
     const workspaceRoot = await createTempRoot("mcpskill-kjs-summary");
 

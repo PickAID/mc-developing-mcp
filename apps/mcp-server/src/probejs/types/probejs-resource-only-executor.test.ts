@@ -338,11 +338,57 @@ describe("ProbeJS resource-only summaries", () => {
       }
     });
   });
+
+  it("honors structured resource kind and per-kind limits", async () => {
+    const workspaceRoot = await createProbeResourceWorkspace();
+    const input = await createProbeJsExecutorInput(
+      workspaceRoot,
+      "Structured ProbeJS resource export.",
+      {
+        resourceOnly: true,
+        resourceKinds: ["item"],
+        resourceLimitPerKind: 1
+      }
+    );
+    const executor = createMcpServerProbeJsTypesExecutor();
+
+    const result = await executor(input);
+
+    expect(result).toMatchObject({
+      matched: true,
+      payload: {
+        source: "probejs_resources",
+        resourceQueries: [],
+        probeResources: {
+          summary: {
+            counts: { item: 1 },
+            totalCounts: { item: 2 },
+            truncated: true
+          },
+          entries: {
+            item: [
+              {
+                name: "minecraft:stone"
+              }
+            ],
+            recipe: [],
+            registry: [],
+            fluid: []
+          }
+        }
+      }
+    });
+  });
 });
 
 async function createProbeJsExecutorInput(
   workspaceRoot: string,
-  requestText: string
+  requestText: string,
+  probeJs?: {
+    resourceOnly?: boolean;
+    resourceKinds?: string[];
+    resourceLimitPerKind?: number;
+  }
 ) {
   const bootstrap = await buildMcpServerBootstrap({
     runtimeRoot: join(workspaceRoot, ".runtime"),
@@ -359,7 +405,12 @@ async function createProbeJsExecutorInput(
   }
 
   return {
-    candidate,
+    candidate: probeJs
+      ? {
+          ...candidate,
+          operationInput: { probeJs }
+        }
+      : candidate,
     evidencePlan,
     requestPlan
   };

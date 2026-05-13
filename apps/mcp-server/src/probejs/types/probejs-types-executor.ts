@@ -180,9 +180,8 @@ async function executeMcpServerProbeJsTypesWithCache(
   const probeResourcesResult = await summarizeProbeResourcesWithCache({
     workspaceRoot,
     includeUnknownResources: resourceQueries.length === 0,
-    maxFiles: 200,
-    maxBytesPerFile: 65_536,
-    maxEntriesPerKind: 20,
+    maxEntriesPerKind: operation?.resourceLimitPerKind,
+    resourceKinds: operation?.resourceKinds,
     resourceQueries,
     cache: probeResourceSummaryCache
   });
@@ -297,9 +296,8 @@ async function resolveProbeResourceOnlyQuery(
   const probeResourcesResult = await summarizeProbeResourcesWithCache({
     workspaceRoot,
     includeUnknownResources: false,
-    maxFiles: 200,
-    maxBytesPerFile: 65_536,
-    maxEntriesPerKind: 20,
+    maxEntriesPerKind: operation?.resourceLimitPerKind,
+    resourceKinds: operation?.resourceKinds,
     resourceQueries,
     cache: probeResourceSummaryCache
   });
@@ -333,6 +331,7 @@ function buildProbeJsRequestText(
 
   const parts = [
     operation.symbol,
+    operation.resourceKinds?.join(" "),
     ...(operation.resourceQueries ?? []),
     operation.scope,
     operation.resourceOnly ? "probe resources list" : undefined,

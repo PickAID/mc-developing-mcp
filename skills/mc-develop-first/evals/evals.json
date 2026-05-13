@@ -35,6 +35,26 @@
       "id": 7,
       "prompt": "查 JEI forge 1.20.1 的 CurseMaven 坐标，CurseForge project id 是 238222。",
       "expected_output": "Agent uses the external-mod-resolution playbook, calls mc_develop with a structured curseforge externalModRequest, and handles CURSEFORGE_API_KEY guidance if credentials are missing."
+    },
+    {
+      "id": 8,
+      "prompt": "我不知道这个 Modrinth 项目的 slug 和 project id，只知道名字大概叫 Sodium，帮我找 NeoForge 26.1.2 能用的 maven.modrinth 坐标。",
+      "expected_output": "Agent treats query as discovery only: calls mc_develop with external_mod_resolution and a structured Modrinth query/loader/minecraftVersion, then either retries with returned slug/projectId when uniquely identified or reports ambiguity instead of presenting a guessed final coordinate."
+    },
+    {
+      "id": 9,
+      "prompt": "帮我看看这个资源包 assets/example/models/item/demo.json 为什么没显示，workspace 在 /tmp/pack。",
+      "expected_output": "Agent calls mc_develop with operations.kind datapack_files and structured datapack.mode resource_pack plus datapack.paths for the exact asset path before inspecting files or guessing resource-pack behavior."
+    },
+    {
+      "id": 10,
+      "prompt": "这个类 com.example.MyBlock 在工作区里怎么注册的？workspace 在 /tmp/mod。",
+      "expected_output": "Agent calls mc_develop with operations.kind workspace_source and workspaceSource.javaSymbols containing com.example.MyBlock, not a broad text search first."
+    },
+    {
+      "id": 11,
+      "prompt": "列出这个整合包里 ProbeJS 能看到的所有 item，workspace 在 /tmp/pack。",
+      "expected_output": "Agent uses mc_develop with operations.kind probejs_types and structured probeJs.resourceOnly/resourceKinds item. If full export was not explicitly confirmed, it first uses resourceLimitPerKind 0 to get totalCounts, then asks or retries for full export; it does not treat a bounded preview as complete."
     }
   ]
 }

@@ -95,6 +95,7 @@ async function buildProbeResourceSummaryCacheKey(
       maxFiles: options.maxFiles,
       maxSnippetBytes: options.maxSnippetBytes,
       maxUnknownResources: options.maxUnknownResources,
+      resourceKinds: options.resourceKinds,
       resourceQueries,
       unknownPreviewBytes: options.unknownPreviewBytes
     }

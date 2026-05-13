@@ -96,7 +96,7 @@ describe("summarizeKubeJsTypeResources query filtering", () => {
     ]);
   });
 
-  it("keeps total matching counts separate from bounded returned entries", async () => {
+  it("keeps total matching counts separate when returned entries are explicitly limited", async () => {
     const workspaceRoot = await createTempRoot("mcpskill-kjs-filter-counts");
 
     await writeText(

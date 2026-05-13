@@ -136,6 +136,50 @@ describe("buildMcpDevelopStructuredContent", () => {
     });
   });
 
+  it("does not apply generic array caps to ProbeJS resource entries", () => {
+    const itemEntries = Array.from({ length: 25 }, (_, index) => ({
+      sourceKind: "item",
+      extractorId: "probejs-line-list-v1",
+      sourceFormat: "text-line-list",
+      confidence: 0.75,
+      name: `example:item_${index}`,
+      value: `example:item_${index}`,
+      file: "kubejs/probejs/items/example.txt"
+    }));
+    const result = createExecutorResult({
+      payload: {
+        source: "probejs_resources",
+        queryMode: "resource_summary",
+        probeResources: {
+          summary: {
+            counts: { item: 25 },
+            totalCounts: { item: 25 },
+            truncated: false
+          },
+          entries: {
+            item: itemEntries,
+            snippet: [],
+            recipe: [],
+            registry: [],
+            fluid: [],
+            tag: [],
+            language_key: [],
+            class: []
+          },
+          unknownResources: []
+        }
+      }
+    });
+
+    const content = buildMcpDevelopStructuredContent(result);
+
+    expect(
+      (content.selectedEvidence as any).payload.probeResources.entries.item
+    ).toHaveLength(25);
+    expect((content.selectedEvidence as any).payloadBudget).toBeUndefined();
+    expect((content.budget as any).truncatedExecutionIds).toEqual([]);
+  });
+
   it("promotes source acquisition capability guidance to top-level workspace preparation", () => {
     const result = createExecutorResult({
       candidateId: "candidate-1-source_acquisition_plan",

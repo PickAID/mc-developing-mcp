@@ -128,6 +128,7 @@ function buildOperationQueryHint(
     input.workspaceSource?.javaPaths?.join(" "),
     input.workspaceSource?.buildFiles?.join(" "),
     input.probeJs?.symbol,
+    input.probeJs?.resourceKinds?.join(" "),
     input.probeJs?.resourceQueries?.join(" "),
     input.modArchive?.archive,
     input.modArchive?.queries?.join(" "),

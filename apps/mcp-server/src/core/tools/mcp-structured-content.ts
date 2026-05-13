@@ -173,7 +173,7 @@ function compactPayload(
     depthLimitHits: 0,
     circularReferences: 0
   };
-  const compacted = compactValue(value, budget, stats, 0, new WeakSet());
+  const compacted = compactValue(value, budget, stats, 0, [], new WeakSet());
 
   return { value: compacted, stats };
 }
@@ -183,6 +183,7 @@ function compactValue(
   budget: RequiredBudgetOptions,
   stats: PayloadBudgetStats,
   depth: number,
+  path: string[],
   seen: WeakSet<object>
 ): unknown {
   if (value === null || typeof value === "number" || typeof value === "boolean") {
@@ -211,6 +212,16 @@ function compactValue(
   seen.add(value);
 
   if (Array.isArray(value)) {
+    if (isUnboundedProbeResourceEntryPath(path)) {
+      const compacted = value.map((item) =>
+        compactValue(item, budget, stats, depth + 1, path, seen)
+      );
+
+      seen.delete(value);
+
+      return compacted;
+    }
+
     const omitted = Math.max(0, value.length - budget.maxArrayItems);
 
     if (omitted > 0) {
@@ -220,7 +231,7 @@ function compactValue(
 
     const compacted = value
       .slice(0, budget.maxArrayItems)
-      .map((item) => compactValue(item, budget, stats, depth + 1, seen));
+      .map((item) => compactValue(item, budget, stats, depth + 1, path, seen));
 
     seen.delete(value);
 
@@ -230,13 +241,21 @@ function compactValue(
   const compacted = Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
       key,
-      compactValue(entry, budget, stats, depth + 1, seen)
+      compactValue(entry, budget, stats, depth + 1, [...path, key], seen)
     ])
   );
 
   seen.delete(value);
 
   return compacted;
+}
+
+function isUnboundedProbeResourceEntryPath(path: string[]): boolean {
+  return (
+    path.length >= 3 &&
+    path.at(-3) === "probeResources" &&
+    path.at(-2) === "entries"
+  );
 }
 
 function compactString(

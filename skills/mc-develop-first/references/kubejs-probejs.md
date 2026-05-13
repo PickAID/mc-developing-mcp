@@ -2,12 +2,22 @@
 
 Use for KubeJS scripts, recipes, item/fluid/tag lookups, startup/server/client scripts, ProbeJS declarations, and modpack scripting.
 
-## First Call
+## Structured First Call
 
 ```json
 {
-  "requestText": "Inspect KubeJS/ProbeJS context for this task, then identify the correct events, registries, items, tags, or script locations before editing.",
+  "requestText": "Context only: inspect KubeJS/ProbeJS before editing.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    {
+      "kind": "probejs_types",
+      "probeJs": {
+        "symbol": "event.recipes",
+        "resourceQueries": ["minecraft:iron_ingot"],
+        "scope": "server"
+      }
+    }
+  ],
   "preparationRoutes": ["workspace_probejs"]
 }
 ```
@@ -16,9 +26,18 @@ If the workspace is a Prism instance and the user gives the Prism root:
 
 ```json
 {
-  "requestText": "Use Prism and ProbeJS context for this KubeJS task.",
+  "requestText": "Context only: use Prism and ProbeJS context.",
   "workspaceRoot": "/path/to/PrismLauncher/instances/Name/minecraft",
   "prismRoot": "/path/to/PrismLauncher",
+  "operations": [
+    {
+      "kind": "probejs_types",
+      "probeJs": {
+        "resourceOnly": true,
+        "resourceQueries": ["minecraft:iron_ingot"]
+      }
+    }
+  ],
   "preparationRoutes": ["workspace_probejs"]
 }
 ```
@@ -29,22 +48,64 @@ Read these result fields:
 
 - `workspacePreparation`: confirms KubeJS folder shape and ProbeJS readiness.
 - `kubeJsQuality`: script warnings, invalid locations, missing ProbeJS hints.
-- `selectedEvidence`: relevant `.d.ts`, snippets, scripts, registry evidence.
+- `selectedEvidence`: relevant `.d.ts`, snippets, scripts, registry and resource evidence.
+- `selectedEvidence.payload.probeResources.summary.totalCounts`: total matching ProbeJS resources by kind.
+- `selectedEvidence.payload.probeResources.entries`: returned entries. If the caller set `resourceLimitPerKind`, this is intentionally bounded.
 - `resourceActions` and `mdmPackageRecommendations`: docs/package suggestions.
+
+ProbeJS is not a traditional docs reference. It is generated evidence from the current modpack instance: declarations, snippets, items, recipes, tags, fluids, registries, classes, and language keys. Use it to validate what exists in this instance before editing scripts.
 
 ## Follow-Up Calls
 
 If ProbeJS resources are missing but the workspace contains KubeJS, ask the user to generate ProbeJS data if needed. Do not invent event names.
 
-If the task needs item, fluid, recipe, or tag evidence, continue with a requestText that names the exact thing:
+If the task needs item, fluid, recipe, or tag evidence, continue with structured `probeJs.resourceQueries`:
 
 ```json
 {
-  "requestText": "Find KubeJS/ProbeJS evidence for item ids, tags, and recipe event signatures needed by <task>.",
+  "requestText": "Context only: find ProbeJS resource evidence.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    {
+      "kind": "probejs_types",
+      "probeJs": {
+        "resourceOnly": true,
+        "resourceQueries": ["#forge:ingots/iron", "minecraft:iron_ingot"]
+      }
+    }
+  ],
   "preparationRoutes": ["workspace_probejs"]
 }
 ```
+
+If the user asks for "all items" or another full registry-like list, do not guess or return a hidden preview. First ask MCP for counts only:
+
+```json
+{
+  "requestText": "Context only: count ProbeJS item resources.",
+  "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    {
+      "kind": "probejs_types",
+      "probeJs": {
+        "resourceOnly": true,
+        "resourceKinds": ["item"],
+        "resourceLimitPerKind": 0
+      }
+    }
+  ],
+  "preparationRoutes": ["workspace_probejs"]
+}
+```
+
+Then choose the next call from the user's goal:
+
+- Full export: omit `resourceLimitPerKind`.
+- Bounded export: set `resourceLimitPerKind` to the requested number.
+- Filtered export: set `resourceKinds` and `resourceQueries`, for example `["item"]` plus `["ingot", "create:"]`.
+- Counts-only: keep `resourceLimitPerKind: 0`.
+
+Do not call a bounded result "all items". Compare `summary.counts` with `summary.totalCounts`; if they differ or `summary.truncated` is true, say the output was intentionally limited and offer the exact follow-up shape.
 
 If the script references a mod API or class outside ProbeJS evidence, combine routes:
 
@@ -52,6 +113,21 @@ If the script references a mod API or class outside ProbeJS evidence, combine ro
 {
   "requestText": "Resolve this KubeJS script issue and identify any owning mod jar evidence for referenced ids/classes.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    {
+      "kind": "probejs_types",
+      "probeJs": {
+        "symbol": "event.recipes",
+        "scope": "server"
+      }
+    },
+    {
+      "kind": "mod_archive_content",
+      "modArchive": {
+        "queries": ["example:resource_id"]
+      }
+    }
+  ],
   "preparationRoutes": ["workspace_probejs", "local_jar"]
 }
 ```

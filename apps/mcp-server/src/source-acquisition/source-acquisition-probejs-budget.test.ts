@@ -15,8 +15,8 @@ afterEach(async () => {
   );
 });
 
-describe("source acquisition ProbeJS payload budget", () => {
-  it("summarizes large workspace_probejs_types resources without raw ProbeJS file payloads", async () => {
+describe("source acquisition ProbeJS payload shape", () => {
+  it("returns all ProbeJS semantic entries without raw ProbeJS file payloads", async () => {
     const workspaceRoot = await mkdtemp(
       join(tmpdir(), "mcpskill-source-acq-probe-budget-")
     );
@@ -26,8 +26,8 @@ describe("source acquisition ProbeJS payload budget", () => {
       { length: 160 },
       (_, index) => `budgetpack:item_${index.toString().padStart(3, "0")}`
     );
-    const lateUnbudgetedItem = "budgetpack:payload_budget_marker_159";
-    probeItemLines[159] = lateUnbudgetedItem;
+    const lateItem = "budgetpack:payload_marker_159";
+    probeItemLines[159] = lateItem;
     const rawProbeFileText = `${probeItemLines.join("\n")}\n`;
 
     await writeText(
@@ -76,8 +76,8 @@ describe("source acquisition ProbeJS payload budget", () => {
     const probePayload = probeExecution?.payload;
     const itemEntries = probePayload?.probeResources?.entries?.item ?? [];
 
-    expect(itemEntries).toHaveLength(20);
-    expect(probePayload?.probeResources?.summary?.counts?.item).toBe(20);
+    expect(itemEntries).toHaveLength(160);
+    expect(probePayload?.probeResources?.summary?.counts?.item).toBe(160);
     expect(probePayload?.probeResources?.summary?.totalCounts?.item).toBe(160);
     expect(itemEntries).toContainEqual(
       expect.objectContaining({
@@ -86,10 +86,16 @@ describe("source acquisition ProbeJS payload budget", () => {
         file: "kubejs/probejs/items/budgetpack.txt"
       })
     );
+    expect(itemEntries).toContainEqual(
+      expect.objectContaining({
+        name: lateItem,
+        value: lateItem,
+        file: "kubejs/probejs/items/budgetpack.txt"
+      })
+    );
 
     const serialized = JSON.stringify(result);
     expect(serialized).not.toContain(rawProbeFileText);
-    expect(serialized).not.toContain(lateUnbudgetedItem);
   });
 });
 

@@ -4,8 +4,6 @@ import type {
   SummarizeKubeJsTypeResourcesOptions
 } from "./types.js";
 
-const DEFAULT_LARGE_JSON_BYTES = 5_000_000;
-
 export function canExtractKubeJsSemanticResource(
   file: KubeJsTypeResourceFile
 ): boolean {
@@ -15,14 +13,14 @@ export function canExtractKubeJsSemanticResource(
 export function semanticReadBudget(
   file: KubeJsTypeResourceFile,
   options: SummarizeKubeJsTypeResourcesOptions
-): number {
+): number | undefined {
   if (isCodeSnippetFile(file)) {
-    return options.maxSnippetBytes ?? DEFAULT_LARGE_JSON_BYTES;
+    return options.maxSnippetBytes;
   }
   if (isKnownJsonSemanticFile(file)) {
-    return options.maxAttributeBytes ?? DEFAULT_LARGE_JSON_BYTES;
+    return options.maxAttributeBytes;
   }
-  return options.maxBytesPerFile ?? 65_536;
+  return options.maxBytesPerFile;
 }
 
 export function isCodeSnippetFile(file: KubeJsTypeResourceFile): boolean {

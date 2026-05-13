@@ -30,9 +30,10 @@ export async function summarizeKubeJsTypeResources(
   const totalEntryNames = createEmptySemanticEntryNameSets();
   const unknownResources: KubeJsUnknownResource[] = [];
   const resourceQueries = normalizeSemanticResourceQueries(options.resourceQueries);
+  const resourceKinds = normalizeResourceKinds(options.resourceKinds);
   const includeUnknownResources =
     options.includeUnknownResources ?? resourceQueries.length === 0;
-  const maxEntriesPerKind = normalizeBudget(options.maxEntriesPerKind, 20);
+  const maxEntriesPerKind = normalizeOptionalBudget(options.maxEntriesPerKind);
   const maxUnknownResources = normalizeBudget(options.maxUnknownResources, 5);
   let searchedFiles = 0;
   let truncated = discovery.summary.truncated;
@@ -50,7 +51,8 @@ export async function summarizeKubeJsTypeResources(
         totalEntryNames,
         extractKubeJsSemanticResourceEntries(file, read.text),
         maxEntriesPerKind,
-        resourceQueries
+        resourceQueries,
+        resourceKinds
       ) || truncated;
       continue;
     }
@@ -146,11 +148,15 @@ function pushEntries(
   totalEntryNames: Record<KubeJsSemanticResourceKind, Set<string>>,
   newEntries: KubeJsSemanticResourceEntry[],
   maxEntriesPerKind: number,
-  resourceQueries: string[]
+  resourceQueries: string[],
+  resourceKinds: Set<KubeJsSemanticResourceKind> | undefined
 ): boolean {
   let truncated = false;
 
   for (const entry of newEntries) {
+    if (resourceKinds && !resourceKinds.has(entry.sourceKind)) {
+      continue;
+    }
     if (!semanticEntryMatchesQueries(entry, resourceQueries)) {
       continue;
     }
@@ -232,4 +238,21 @@ function normalizeBudget(value: number | undefined, fallback: number): number {
     return fallback;
   }
   return Math.max(0, Math.floor(value));
+}
+
+function normalizeOptionalBudget(value: number | undefined): number {
+  if (value === undefined) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return Math.max(0, Math.floor(value));
+}
+
+function normalizeResourceKinds(
+  kinds: KubeJsSemanticResourceKind[] | undefined
+): Set<KubeJsSemanticResourceKind> | undefined {
+  if (!kinds || kinds.length === 0) {
+    return undefined;
+  }
+
+  return new Set(kinds);
 }

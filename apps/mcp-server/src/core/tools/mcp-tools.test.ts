@@ -599,6 +599,56 @@ describe("registerMcpServerTools", () => {
     });
   });
 
+  it("uses structured ProbeJS resource export controls without request text keywords", async () => {
+    const registry = createCapturingRegistry();
+    const runtimeRoot = await createTempRoot("mcpskill-structured-runtime-");
+    const workspaceRoot = await createKubeJsProbeWorkspace();
+
+    registerMcpServerTools(registry);
+
+    const result = await registry.calls[0].handler({
+      requestText: "需要这个能力",
+      runtimeRoot,
+      workspaceRoot,
+      operations: [
+        {
+          kind: "probejs_types",
+          probeJs: {
+            resourceOnly: true,
+            resourceKinds: ["item"],
+            resourceLimitPerKind: 0
+          }
+        }
+      ]
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).toMatchObject({
+      trace: {
+        routeSteps: ["probejs_types"],
+        selectedCandidateId: "candidate-1-probejs_types"
+      },
+      selectedEvidence: {
+        queryHint: "item",
+        payload: {
+          source: "probejs_resources",
+          queryMode: "resource_summary",
+          resourceQueries: [],
+          probeResources: {
+            summary: {
+              counts: { item: 0 },
+              totalCounts: { item: 2 },
+              truncated: true
+            },
+            entries: {
+              item: []
+            }
+          }
+        }
+      }
+    });
+  });
+
   it("uses structured datapack resource-pack mode without request text keywords", async () => {
     const registry = createCapturingRegistry();
     const runtimeRoot = await createTempRoot("mcpskill-structured-runtime-");
@@ -738,6 +788,21 @@ async function createResourcePackWorkspace(): Promise<string> {
       "demo.json"
     ),
     '{"parent":"minecraft:item/generated"}\n'
+  );
+
+  return workspaceRoot;
+}
+
+async function createKubeJsProbeWorkspace(): Promise<string> {
+  const workspaceRoot = await createTempRoot("mcpskill-mcp-kubejs-probe-");
+
+  await writeText(
+    join(workspaceRoot, "kubejs", "server_scripts", "main.js"),
+    "ServerEvents.recipes(event => {});\n"
+  );
+  await writeText(
+    join(workspaceRoot, "kubejs", "probejs", "items", "example.txt"),
+    "example:alpha\nexample:beta\n"
   );
 
   return workspaceRoot;

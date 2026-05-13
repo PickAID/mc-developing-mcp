@@ -8,7 +8,7 @@ describe("createDefaultRuntimePolicy", () => {
       mode: "managed-first",
       allowSystemFallback: false,
       runtimeRoot: "/tmp/mcpskill-runtime",
-      runtimeVersion: "0.1.2",
+      runtimeVersion: "0.1.3",
       requiredArtifacts: [
         { id: "jdk", version: "17" },
         { id: "jdtls", version: "latest" },

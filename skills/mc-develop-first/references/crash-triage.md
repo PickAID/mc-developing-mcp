@@ -2,12 +2,16 @@
 
 Use for latest.log, crash reports, missing classes, mixin failures, loader dependency errors, JarJar/nested jars, mod metadata, FTB-related errors, and startup failures.
 
-## First Call
+## Structured First Call
 
 ```json
 {
-  "requestText": "Triage this Minecraft crash. Identify exception signals, likely owner jars/classes/resources, and the next evidence route before suggesting a fix.",
+  "requestText": "Context only: triage Minecraft crash before suggesting a fix.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    { "kind": "log_files" },
+    { "kind": "mod_archive_content", "modArchive": { "inventory": true } }
+  ],
   "preparationRoutes": ["local_jar"]
 }
 ```
@@ -16,8 +20,12 @@ For broad startup crashes with many mods:
 
 ```json
 {
-  "requestText": "Prewarm local jar indexes and triage this startup crash using logs, mod metadata, nested jars, and class/resource owners.",
+  "requestText": "Context only: prewarm local jar indexes and triage startup crash.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    { "kind": "log_files" },
+    { "kind": "mod_archive_content", "modArchive": { "inventory": true } }
+  ],
   "preparationRoutes": ["local_jar"],
   "preparationPolicy": {
     "localJarMode": "prewarm_entry_index"
@@ -34,12 +42,20 @@ For broad startup crashes with many mods:
 
 ## Follow-Up Patterns
 
-If the MCP identifies a missing class or resource but no owner, ask for class/resource owner lookup:
+If the MCP identifies a missing class but no owner, ask for class owner lookup with `modArchive.classOwners`:
 
 ```json
 {
-  "requestText": "Find the owner jar and nested jar evidence for missing class/resource <name> from the crash.",
+  "requestText": "Context only: find owner jar for crash class.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    {
+      "kind": "mod_archive_content",
+      "modArchive": {
+        "classOwners": ["com.example.MissingClass"]
+      }
+    }
+  ],
   "preparationRoutes": ["local_jar"],
   "preparationPolicy": {
     "localJarMode": "prewarm_entry_index"
@@ -51,8 +67,11 @@ If the crash is dependency/version-related and local metadata is incomplete, rem
 
 ```json
 {
-  "requestText": "Local metadata was insufficient; resolve the likely dependency/version owner for this crash.",
+  "requestText": "Context only: local metadata was insufficient for crash dependency.",
   "workspaceRoot": "/path/to/modpack-or-instance",
+  "operations": [
+    { "kind": "external_mod_resolution" }
+  ],
   "preparationRoutes": ["local_jar", "modrinth", "github"],
   "preparationPolicy": {
     "remoteMetadataPolicy": "enabled"

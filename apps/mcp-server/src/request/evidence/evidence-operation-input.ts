@@ -1,4 +1,5 @@
 import type { ArchiveContentDomain } from "minecraft-developing-mcp-jar-source-adapter";
+import type { KubeJsSemanticResourceKind } from "minecraft-developing-mcp-kubejs-types-adapter";
 import type { VanillaSourceRequest } from "minecraft-developing-mcp-vanilla-source-adapter";
 
 import type { McpServerExternalModResolutionRequest } from "../../external-mod/resolution/external-mod-resolution-request.js";
@@ -22,6 +23,8 @@ export interface McpOperationWorkspaceSourceInput {
 export interface McpOperationProbeJsInput {
   symbol?: string;
   resourceQueries?: string[];
+  resourceKinds?: KubeJsSemanticResourceKind[];
+  resourceLimitPerKind?: number;
   resourceOnly?: boolean;
   scope?: "startup" | "server" | "client" | "shared";
   includeLifecycle?: boolean;
@@ -74,4 +77,3 @@ export interface McpOperationInput {
   logFiles?: McpOperationLogFilesInput;
   vanillaSource?: VanillaSourceRequest;
 }
-
